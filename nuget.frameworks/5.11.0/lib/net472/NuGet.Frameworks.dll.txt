@@ -1,0 +1,651 @@
+public class NuGet.Frameworks.AssetTargetFallbackFramework : NuGetFramework {
+    private IReadOnlyList`1<NuGetFramework> _fallback;
+    private Nullable`1<int> _hashCode;
+    private NuGetFramework _rootFramework;
+    public IReadOnlyList`1<NuGetFramework> Fallback { get; }
+    public NuGetFramework RootFramework { get; }
+    public AssetTargetFallbackFramework(NuGetFramework framework, IReadOnlyList`1<NuGetFramework> fallbackFrameworks);
+    public IReadOnlyList`1<NuGetFramework> get_Fallback();
+    public NuGetFramework get_RootFramework();
+    private static NuGetFramework ValidateFrameworkArgument(NuGetFramework framework);
+    public FallbackFramework AsFallbackFramework();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(AssetTargetFallbackFramework other);
+}
+internal class NuGet.Frameworks.CompatibilityCacheKey : object {
+    private NuGetFramework _target;
+    private NuGetFramework _candidate;
+    private int _hashCode;
+    public NuGetFramework Target { get; }
+    public NuGetFramework Candidate { get; }
+    public CompatibilityCacheKey(NuGetFramework target, NuGetFramework candidate);
+    public NuGetFramework get_Target();
+    public NuGetFramework get_Candidate();
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(CompatibilityCacheKey other);
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+}
+public class NuGet.Frameworks.CompatibilityListProvider : object {
+    private IFrameworkNameProvider _nameProvider;
+    private IFrameworkCompatibilityProvider _compatibilityProvider;
+    private FrameworkReducer _reducer;
+    private static IFrameworkCompatibilityListProvider _default;
+    public static IFrameworkCompatibilityListProvider Default { get; }
+    public CompatibilityListProvider(IFrameworkNameProvider nameProvider, IFrameworkCompatibilityProvider compatibilityProvider);
+    public sealed virtual IEnumerable`1<NuGetFramework> GetFrameworksSupporting(NuGetFramework target);
+    private IEnumerable`1<NuGetFramework> ReduceDownwards(IEnumerable`1<NuGetFramework> frameworks);
+    public static IFrameworkCompatibilityListProvider get_Default();
+}
+public class NuGet.Frameworks.CompatibilityMappingComparer : object {
+    public sealed virtual bool Equals(OneWayCompatibilityMappingEntry x, OneWayCompatibilityMappingEntry y);
+    public sealed virtual int GetHashCode(OneWayCompatibilityMappingEntry obj);
+}
+public class NuGet.Frameworks.CompatibilityProvider : object {
+    private IFrameworkNameProvider _mappings;
+    private FrameworkExpander _expander;
+    private static NuGetFrameworkFullComparer FullComparer;
+    private ConcurrentDictionary`2<CompatibilityCacheKey, bool> _cache;
+    public CompatibilityProvider(IFrameworkNameProvider mappings);
+    private static CompatibilityProvider();
+    public sealed virtual bool IsCompatible(NuGetFramework target, NuGetFramework candidate);
+    private Nullable`1<bool> IsCompatibleCore(NuGetFramework target, NuGetFramework candidate);
+    private Nullable`1<bool> IsSpecialFrameworkCompatible(NuGetFramework target, NuGetFramework candidate);
+    private bool IsPCLCompatible(NuGetFramework target, NuGetFramework candidate);
+    private bool PCLInnerCompare(IEnumerable`1<NuGetFramework> targetFrameworks, IEnumerable`1<NuGetFramework> candidateFrameworks);
+    private bool IsCompatibleWithTarget(NuGetFramework target, NuGetFramework candidate);
+    private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate);
+    private static bool IsVersionCompatible(Version target, Version candidate);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.CompatibilityProvider/<GetEquivalentFrameworksClosure>d__13")]
+private IEnumerable`1<NuGetFramework> GetEquivalentFrameworksClosure(NuGetFramework framework);
+}
+public class NuGet.Frameworks.CompatibilityTable : object {
+    private IFrameworkNameProvider _mappings;
+    private IFrameworkCompatibilityProvider _compat;
+    private Dictionary`2<NuGetFramework, HashSet`1<NuGetFramework>> _table;
+    private FrameworkReducer _reducer;
+    public CompatibilityTable(IEnumerable`1<NuGetFramework> frameworks);
+    public CompatibilityTable(IEnumerable`1<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat);
+    public bool HasFramework(NuGetFramework framework);
+    public IEnumerable`1<NuGetFramework> GetNearest(NuGetFramework framework);
+    public bool TryGetCompatible(NuGetFramework framework, IEnumerable`1& compatible);
+    private static Dictionary`2<NuGetFramework, HashSet`1<NuGetFramework>> GetTable(IEnumerable`1<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat);
+}
+public class NuGet.Frameworks.DefaultCompatibilityProvider : CompatibilityProvider {
+    private static IFrameworkCompatibilityProvider _instance;
+    public static IFrameworkCompatibilityProvider Instance { get; }
+    public static IFrameworkCompatibilityProvider get_Instance();
+}
+public class NuGet.Frameworks.DefaultFrameworkMappings : object {
+    private static Lazy`1<KeyValuePair`2[]> IdentifierSynonymsLazy;
+    private static Lazy`1<KeyValuePair`2[]> IdentifierShortNamesLazy;
+    private static Lazy`1<FrameworkSpecificMapping[]> ProfileShortNamesLazy;
+    private static Lazy`1<KeyValuePair`2[]> EquivalentFrameworksLazy;
+    private static Lazy`1<FrameworkSpecificMapping[]> EquivalentProfilesLazy;
+    private static Lazy`1<KeyValuePair`2[]> SubSetFrameworksLazy;
+    private static Lazy`1<OneWayCompatibilityMappingEntry[]> CompatibilityMappingsLazy;
+    private static Lazy`1<String[]> NonPackageBasedFrameworkPrecedenceLazy;
+    private static Lazy`1<String[]> PackageBasedFrameworkPrecedenceLazy;
+    private static Lazy`1<String[]> EquivalentFrameworkPrecedenceLazy;
+    private static Lazy`1<KeyValuePair`2[]> ShortNameReplacementsLazy;
+    private static Lazy`1<KeyValuePair`2[]> FullNameReplacementsLazy;
+    private static Lazy`1<IFrameworkMappings> InstanceLazy;
+    public IEnumerable`1<KeyValuePair`2<string, string>> IdentifierSynonyms { get; }
+    public IEnumerable`1<KeyValuePair`2<string, string>> IdentifierShortNames { get; }
+    public IEnumerable`1<FrameworkSpecificMapping> ProfileShortNames { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
+    public IEnumerable`1<FrameworkSpecificMapping> EquivalentProfiles { get; }
+    public IEnumerable`1<KeyValuePair`2<string, string>> SubSetFrameworks { get; }
+    public IEnumerable`1<OneWayCompatibilityMappingEntry> CompatibilityMappings { get; }
+    public IEnumerable`1<string> NonPackageBasedFrameworkPrecedence { get; }
+    public IEnumerable`1<string> PackageBasedFrameworkPrecedence { get; }
+    public IEnumerable`1<string> EquivalentFrameworkPrecedence { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> ShortNameReplacements { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> FullNameReplacements { get; }
+    public static IFrameworkMappings Instance { get; }
+    private static DefaultFrameworkMappings();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> get_IdentifierSynonyms();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> get_IdentifierShortNames();
+    public sealed virtual IEnumerable`1<FrameworkSpecificMapping> get_ProfileShortNames();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_EquivalentFrameworks();
+    public sealed virtual IEnumerable`1<FrameworkSpecificMapping> get_EquivalentProfiles();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> get_SubSetFrameworks();
+    public sealed virtual IEnumerable`1<OneWayCompatibilityMappingEntry> get_CompatibilityMappings();
+    private static OneWayCompatibilityMappingEntry CreateGenerationMapping(NuGetFramework framework, NuGetFramework netPlatform);
+    private static OneWayCompatibilityMappingEntry CreateStandardMapping(NuGetFramework framework, NuGetFramework netPlatform);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.DefaultFrameworkMappings/<CreateGenerationAndStandardMapping>d__23")]
+private static IEnumerable`1<OneWayCompatibilityMappingEntry> CreateGenerationAndStandardMapping(NuGetFramework framework, NuGetFramework netPlatform, NuGetFramework netStandard);
+    private static IEnumerable`1<OneWayCompatibilityMappingEntry> CreateGenerationAndStandardMappingForAllVersions(string framework, NuGetFramework netPlatform, NuGetFramework netStandard);
+    public sealed virtual IEnumerable`1<string> get_NonPackageBasedFrameworkPrecedence();
+    public sealed virtual IEnumerable`1<string> get_PackageBasedFrameworkPrecedence();
+    public sealed virtual IEnumerable`1<string> get_EquivalentFrameworkPrecedence();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_ShortNameReplacements();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_FullNameReplacements();
+    public static IFrameworkMappings get_Instance();
+}
+public class NuGet.Frameworks.DefaultFrameworkNameProvider : FrameworkNameProvider {
+    private static Lazy`1<IFrameworkNameProvider> InstanceLazy;
+    public static IFrameworkNameProvider Instance { get; }
+    private static DefaultFrameworkNameProvider();
+    public static IFrameworkNameProvider get_Instance();
+}
+public class NuGet.Frameworks.DefaultPortableFrameworkMappings : object {
+    private static Lazy`1<KeyValuePair`2[]> ProfileFrameworksLazy;
+    private static Int32[] ProfilesWithOptionalFrameworks;
+    private static Lazy`1<List`1<KeyValuePair`2<int, NuGetFramework[]>>> ProfileOptionalFrameworksLazy;
+    private static Lazy`1<KeyValuePair`2[]> CompatibilityMappingsLazy;
+    private static Lazy`1<IPortableFrameworkMappings> InstanceLazy;
+    public IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> ProfileFrameworks { get; }
+    public IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> ProfileOptionalFrameworks { get; }
+    public IEnumerable`1<KeyValuePair`2<int, FrameworkRange>> CompatibilityMappings { get; }
+    public static IPortableFrameworkMappings Instance { get; }
+    private static DefaultPortableFrameworkMappings();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> get_ProfileFrameworks();
+    private static KeyValuePair`2<int, NuGetFramework[]> CreateProfileFrameworks(int profile, NuGetFramework[] frameworks);
+    public sealed virtual IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> get_ProfileOptionalFrameworks();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<int, FrameworkRange>> get_CompatibilityMappings();
+    private static KeyValuePair`2<int, FrameworkRange> CreateStandardMapping(int profileNumber, NuGetFramework netStandard);
+    public static IPortableFrameworkMappings get_Instance();
+}
+public class NuGet.Frameworks.FallbackFramework : NuGetFramework {
+    private IReadOnlyList`1<NuGetFramework> _fallback;
+    private Nullable`1<int> _hashCode;
+    public IReadOnlyList`1<NuGetFramework> Fallback { get; }
+    public FallbackFramework(NuGetFramework framework, IReadOnlyList`1<NuGetFramework> fallbackFrameworks);
+    public IReadOnlyList`1<NuGetFramework> get_Fallback();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(FallbackFramework other);
+}
+public static class NuGet.Frameworks.FrameworkConstants : object {
+    public static Version EmptyVersion;
+    public static Version MaxVersion;
+    public static Version Version5;
+    public static Version Version10;
+    public static FrameworkRange DotNetAll;
+    private static FrameworkConstants();
+}
+public class NuGet.Frameworks.FrameworkException : Exception {
+    public FrameworkException(string message);
+}
+public class NuGet.Frameworks.FrameworkExpander : object {
+    private IFrameworkNameProvider _mappings;
+    public FrameworkExpander(IFrameworkNameProvider mappings);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.FrameworkExpander/<Expand>d__3")]
+public IEnumerable`1<NuGetFramework> Expand(NuGetFramework framework);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.FrameworkExpander/<ExpandInternal>d__4")]
+private IEnumerable`1<NuGetFramework> ExpandInternal(NuGetFramework framework);
+}
+public static class NuGet.Frameworks.FrameworkNameHelpers : object {
+    public static string GetPortableProfileNumberString(int profileNumber);
+    public static string GetFolderName(string identifierShortName, string versionString, string profileShortName);
+    public static string GetVersionString(Version version);
+    public static Version GetVersion(string versionString);
+}
+public class NuGet.Frameworks.FrameworkNameProvider : object {
+    private static HashSet`1<NuGetFramework> EmptyFrameworkSet;
+    private Dictionary`2<string, string> _identifierSynonyms;
+    private Dictionary`2<string, string> _identifierToShortName;
+    private Dictionary`2<string, string> _profilesToShortName;
+    private Dictionary`2<string, string> _identifierShortToLong;
+    private Dictionary`2<string, string> _profileShortToLong;
+    private Dictionary`2<int, HashSet`1<NuGetFramework>> _portableFrameworks;
+    private Dictionary`2<int, HashSet`1<NuGetFramework>> _portableOptionalFrameworks;
+    private Dictionary`2<int, HashSet`1<FrameworkRange>> _portableCompatibilityMappings;
+    private Dictionary`2<NuGetFramework, HashSet`1<NuGetFramework>> _equivalentFrameworks;
+    private Dictionary`2<string, Dictionary`2<string, HashSet`1<string>>> _equivalentProfiles;
+    private Dictionary`2<string, HashSet`1<OneWayCompatibilityMappingEntry>> _compatibilityMappings;
+    private Dictionary`2<string, HashSet`1<string>> _subSetFrameworks;
+    private Dictionary`2<string, int> _nonPackageBasedFrameworkPrecedence;
+    private Dictionary`2<string, int> _packageBasedFrameworkPrecedence;
+    private Dictionary`2<string, int> _equivalentFrameworkPrecedence;
+    private Dictionary`2<NuGetFramework, NuGetFramework> _shortNameRewrites;
+    private Dictionary`2<NuGetFramework, NuGetFramework> _fullNameRewrites;
+    private List`1<NuGetFramework> _netStandardVersions;
+    private List`1<NuGetFramework> _compatibleCandidates;
+    private static HashSet`1<string> SingleDigitVersionFrameworks;
+    public FrameworkNameProvider(IEnumerable`1<IFrameworkMappings> mappings, IEnumerable`1<IPortableFrameworkMappings> portableMappings);
+    private static FrameworkNameProvider();
+    private static bool TryConvertOrNormalize(string key, IDictionary`2<string, string> mappings, IDictionary`2<string, string> reverse, String& value);
+    public sealed virtual bool TryGetIdentifier(string framework, String& identifier);
+    public sealed virtual bool TryGetProfile(string frameworkIdentifier, string profileShortName, String& profile);
+    public sealed virtual bool TryGetShortIdentifier(string identifier, String& identifierShortName);
+    public sealed virtual bool TryGetShortProfile(string frameworkIdentifier, string profile, String& profileShortName);
+    public sealed virtual bool TryGetVersion(string versionString, Version& version);
+    public sealed virtual bool TryGetPlatformVersion(string versionString, Version& version);
+    public sealed virtual string GetVersionString(string framework, Version version);
+    public sealed virtual bool TryGetPortableProfile(IEnumerable`1<NuGetFramework> supportedFrameworks, Int32& profileNumber);
+    private HashSet`1<NuGetFramework> RemoveDuplicateFramework(IEnumerable`1<NuGetFramework> supportedFrameworks);
+    private HashSet`1<NuGetFramework> GetAllEquivalentFrameworks(NuGetFramework framework);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.FrameworkNameProvider/<GetEquivalentPermutations>d__33")]
+private IEnumerable`1<HashSet`1<NuGetFramework>> GetEquivalentPermutations(HashSet`1<NuGetFramework> frameworks);
+    private HashSet`1<NuGetFramework> GetOptionalFrameworks(int profile);
+    public sealed virtual bool TryGetPortableFrameworks(int profile, IEnumerable`1& frameworks);
+    public sealed virtual bool TryGetPortableFrameworks(int profile, bool includeOptional, IEnumerable`1& frameworks);
+    public sealed virtual bool TryGetPortableFrameworks(string shortPortableProfiles, IEnumerable`1& frameworks);
+    public sealed virtual bool TryGetPortableCompatibilityMappings(int profile, IEnumerable`1& supportedFrameworkRanges);
+    public sealed virtual bool TryGetPortableProfileNumber(string profile, Int32& profileNumber);
+    public sealed virtual bool TryGetPortableFrameworks(string profile, bool includeOptional, IEnumerable`1& frameworks);
+    public sealed virtual bool TryGetEquivalentFrameworks(NuGetFramework framework, IEnumerable`1& frameworks);
+    public sealed virtual bool TryGetEquivalentFrameworks(FrameworkRange range, IEnumerable`1& frameworks);
+    private void InitMappings(IEnumerable`1<IFrameworkMappings> mappings);
+    private void InitPortableMappings(IEnumerable`1<IPortableFrameworkMappings> portableMappings);
+    private void InitNetStandard();
+    private void AddShortNameRewriteMappings(IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> mappings);
+    private void AddFullNameRewriteMappings(IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> mappings);
+    private void AddCompatibilityMappings(IEnumerable`1<OneWayCompatibilityMappingEntry> mappings);
+    private void AddSubSetFrameworks(IEnumerable`1<KeyValuePair`2<string, string>> mappings);
+    private void AddEquivalentProfiles(IEnumerable`1<FrameworkSpecificMapping> mappings);
+    private void AddEquivalentFrameworks(IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> mappings);
+    private void AddFrameworkSynoyms(IEnumerable`1<KeyValuePair`2<string, string>> mappings);
+    private void AddIdentifierShortNames(IEnumerable`1<KeyValuePair`2<string, string>> mappings);
+    private void AddProfileShortNames(IEnumerable`1<FrameworkSpecificMapping> mappings);
+    private void AddPortableProfileMappings(IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> mappings);
+    private void AddPortableOptionalFrameworks(IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> mappings);
+    private void AddPortableCompatibilityMappings(IEnumerable`1<KeyValuePair`2<int, FrameworkRange>> mappings);
+    public void AddFrameworkPrecedenceMappings(IDictionary`2<string, int> destination, IEnumerable`1<string> mappings);
+    public sealed virtual bool TryGetCompatibilityMappings(NuGetFramework framework, IEnumerable`1& supportedFrameworkRanges);
+    public sealed virtual bool TryGetSubSetFrameworks(string frameworkIdentifier, IEnumerable`1& subSetFrameworks);
+    public sealed virtual int CompareFrameworks(NuGetFramework x, NuGetFramework y);
+    public sealed virtual int CompareEquivalentFrameworks(NuGetFramework x, NuGetFramework y);
+    private static int CompareUsingPrecedence(NuGetFramework x, NuGetFramework y, Dictionary`2<string, int> precedence);
+    public sealed virtual NuGetFramework GetShortNameReplacement(NuGetFramework framework);
+    public sealed virtual NuGetFramework GetFullNameReplacement(NuGetFramework framework);
+    public sealed virtual IEnumerable`1<NuGetFramework> GetNetStandardVersions();
+    public sealed virtual IEnumerable`1<NuGetFramework> GetCompatibleCandidates();
+    private void AddNetStandardVersions();
+    private void AddCompatibleCandidates();
+    private static bool SetEquals(HashSet`1<NuGetFramework> left, HashSet`1<NuGetFramework> right);
+    private static void UnionWith(HashSet`1<NuGetFramework> toAccumulate, HashSet`1<NuGetFramework> toAdd);
+}
+public class NuGet.Frameworks.FrameworkPrecedenceSorter : object {
+    private IFrameworkNameProvider _mappings;
+    private bool _allEquivalent;
+    public FrameworkPrecedenceSorter(IFrameworkNameProvider mappings, bool allEquivalent);
+    public sealed virtual int Compare(NuGetFramework x, NuGetFramework y);
+}
+public class NuGet.Frameworks.FrameworkRange : object {
+    private NuGetFramework _minFramework;
+    private NuGetFramework _maxFramework;
+    private bool _includeMin;
+    private bool _includeMax;
+    public NuGetFramework Min { get; }
+    public NuGetFramework Max { get; }
+    public bool IncludeMin { get; }
+    public bool IncludeMax { get; }
+    public string FrameworkIdentifier { get; }
+    public FrameworkRange(NuGetFramework min, NuGetFramework max);
+    public FrameworkRange(NuGetFramework min, NuGetFramework max, bool includeMin, bool includeMax);
+    public NuGetFramework get_Min();
+    public NuGetFramework get_Max();
+    public bool get_IncludeMin();
+    public bool get_IncludeMax();
+    public string get_FrameworkIdentifier();
+    public bool Satisfies(NuGetFramework framework);
+    private static bool SameExceptForVersion(NuGetFramework x, NuGetFramework y);
+    public virtual string ToString();
+    public sealed virtual bool Equals(FrameworkRange other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class NuGet.Frameworks.FrameworkRangeComparer : object {
+    public sealed virtual bool Equals(FrameworkRange x, FrameworkRange y);
+    public sealed virtual int GetHashCode(FrameworkRange obj);
+}
+public class NuGet.Frameworks.FrameworkReducer : object {
+    private IFrameworkNameProvider _mappings;
+    private IFrameworkCompatibilityProvider _compat;
+    private NuGetFrameworkFullComparer _fullComparer;
+    private NuGetFrameworkNameComparer _fwNameComparer;
+    public FrameworkReducer(IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat);
+    public NuGetFramework GetNearest(NuGetFramework framework, IEnumerable`1<NuGetFramework> possibleFrameworks);
+    private NuGetFramework GetNearestInternal(NuGetFramework framework, IEnumerable`1<NuGetFramework> possibleFrameworks);
+    [IteratorStateMachineAttribute("NuGet.Frameworks.FrameworkReducer/<ReduceEquivalent>d__8")]
+public IEnumerable`1<NuGetFramework> ReduceEquivalent(IEnumerable`1<NuGetFramework> frameworks);
+    public IEnumerable`1<NuGetFramework> ReduceUpwards(IEnumerable`1<NuGetFramework> frameworks);
+    public IEnumerable`1<NuGetFramework> ReduceDownwards(IEnumerable`1<NuGetFramework> frameworks);
+    private IEnumerable`1<NuGetFramework> ReduceCore(IEnumerable`1<NuGetFramework> frameworks, Func`3<NuGetFramework, NuGetFramework, bool> isCompat);
+    private IEnumerable`1<NuGetFramework> GetNearestNonPCLtoPCL(NuGetFramework framework, IEnumerable`1<NuGetFramework> reduced);
+    private IEnumerable`1<NuGetFramework> GetNearestPCLtoPCL(NuGetFramework framework, IEnumerable`1<NuGetFramework> reduced);
+    private Dictionary`2<NuGetFramework, IEnumerable`1<NuGetFramework>> ExplodePortableFrameworks(IEnumerable`1<NuGetFramework> pcls, bool includeOptional);
+    private IEnumerable`1<NuGetFramework> ExplodePortableFramework(NuGetFramework pcl, bool includeOptional);
+    private NuGetFramework GetBestPCL(IEnumerable`1<NuGetFramework> reduced);
+    private bool IsBetterPCL(NuGetFramework current, NuGetFramework considering);
+    [CompilerGeneratedAttribute]
+private bool <ReduceUpwards>b__9_2(NuGetFramework x, NuGetFramework y);
+    [CompilerGeneratedAttribute]
+private bool <ReduceDownwards>b__10_1(NuGetFramework x, NuGetFramework y);
+}
+public class NuGet.Frameworks.FrameworkRuntimePair : object {
+    private NuGetFramework _framework;
+    private string _runtimeIdentifier;
+    private string _name;
+    public NuGetFramework Framework { get; }
+    public string RuntimeIdentifier { get; }
+    public string Name { get; }
+    public FrameworkRuntimePair(NuGetFramework framework, string runtimeIdentifier);
+    public NuGetFramework get_Framework();
+    public string get_RuntimeIdentifier();
+    public string get_Name();
+    public sealed virtual bool Equals(FrameworkRuntimePair other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public FrameworkRuntimePair Clone();
+    public sealed virtual int CompareTo(FrameworkRuntimePair other);
+    public static string GetName(NuGetFramework framework, string runtimeIdentifier);
+    public static string GetTargetGraphName(NuGetFramework framework, string runtimeIdentifier);
+}
+public class NuGet.Frameworks.FrameworkSpecificMapping : object {
+    private string _frameworkIdentifier;
+    private KeyValuePair`2<string, string> _mapping;
+    public string FrameworkIdentifier { get; }
+    public KeyValuePair`2<string, string> Mapping { get; }
+    public FrameworkSpecificMapping(string frameworkIdentifier, string key, string value);
+    public FrameworkSpecificMapping(string frameworkIdentifier, KeyValuePair`2<string, string> mapping);
+    public string get_FrameworkIdentifier();
+    public KeyValuePair`2<string, string> get_Mapping();
+}
+public interface NuGet.Frameworks.IFrameworkCompatibilityListProvider {
+    public abstract virtual IEnumerable`1<NuGetFramework> GetFrameworksSupporting(NuGetFramework target);
+}
+public interface NuGet.Frameworks.IFrameworkCompatibilityProvider {
+    public abstract virtual bool IsCompatible(NuGetFramework framework, NuGetFramework other);
+}
+public interface NuGet.Frameworks.IFrameworkMappings {
+    public IEnumerable`1<KeyValuePair`2<string, string>> IdentifierSynonyms { get; }
+    public IEnumerable`1<KeyValuePair`2<string, string>> IdentifierShortNames { get; }
+    public IEnumerable`1<FrameworkSpecificMapping> ProfileShortNames { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> EquivalentFrameworks { get; }
+    public IEnumerable`1<FrameworkSpecificMapping> EquivalentProfiles { get; }
+    public IEnumerable`1<KeyValuePair`2<string, string>> SubSetFrameworks { get; }
+    public IEnumerable`1<OneWayCompatibilityMappingEntry> CompatibilityMappings { get; }
+    public IEnumerable`1<string> NonPackageBasedFrameworkPrecedence { get; }
+    public IEnumerable`1<string> PackageBasedFrameworkPrecedence { get; }
+    public IEnumerable`1<string> EquivalentFrameworkPrecedence { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> ShortNameReplacements { get; }
+    public IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> FullNameReplacements { get; }
+    public abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> get_IdentifierSynonyms();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> get_IdentifierShortNames();
+    public abstract virtual IEnumerable`1<FrameworkSpecificMapping> get_ProfileShortNames();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_EquivalentFrameworks();
+    public abstract virtual IEnumerable`1<FrameworkSpecificMapping> get_EquivalentProfiles();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> get_SubSetFrameworks();
+    public abstract virtual IEnumerable`1<OneWayCompatibilityMappingEntry> get_CompatibilityMappings();
+    public abstract virtual IEnumerable`1<string> get_NonPackageBasedFrameworkPrecedence();
+    public abstract virtual IEnumerable`1<string> get_PackageBasedFrameworkPrecedence();
+    public abstract virtual IEnumerable`1<string> get_EquivalentFrameworkPrecedence();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_ShortNameReplacements();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<NuGetFramework, NuGetFramework>> get_FullNameReplacements();
+}
+public interface NuGet.Frameworks.IFrameworkNameProvider {
+    public abstract virtual bool TryGetIdentifier(string identifierShortName, String& identifier);
+    public abstract virtual bool TryGetShortIdentifier(string identifier, String& identifierShortName);
+    public abstract virtual bool TryGetProfile(string frameworkIdentifier, string profileShortName, String& profile);
+    public abstract virtual bool TryGetShortProfile(string frameworkIdentifier, string profile, String& profileShortName);
+    public abstract virtual bool TryGetVersion(string versionString, Version& version);
+    public abstract virtual bool TryGetPlatformVersion(string versionString, Version& version);
+    public abstract virtual string GetVersionString(string framework, Version version);
+    public abstract virtual bool TryGetPortableProfileNumber(string profile, Int32& profileNumber);
+    public abstract virtual bool TryGetPortableProfile(IEnumerable`1<NuGetFramework> supportedFrameworks, Int32& profileNumber);
+    public abstract virtual bool TryGetPortableFrameworks(int profile, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetPortableFrameworks(int profile, bool includeOptional, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetPortableFrameworks(string profile, bool includeOptional, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetPortableFrameworks(string shortPortableProfiles, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetPortableCompatibilityMappings(int profile, IEnumerable`1& supportedFrameworkRanges);
+    public abstract virtual bool TryGetEquivalentFrameworks(NuGetFramework framework, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetEquivalentFrameworks(FrameworkRange range, IEnumerable`1& frameworks);
+    public abstract virtual bool TryGetCompatibilityMappings(NuGetFramework framework, IEnumerable`1& supportedFrameworkRanges);
+    public abstract virtual bool TryGetSubSetFrameworks(string frameworkIdentifier, IEnumerable`1& subSetFrameworkIdentifiers);
+    public abstract virtual int CompareFrameworks(NuGetFramework x, NuGetFramework y);
+    public abstract virtual int CompareEquivalentFrameworks(NuGetFramework x, NuGetFramework y);
+    public abstract virtual NuGetFramework GetShortNameReplacement(NuGetFramework framework);
+    public abstract virtual NuGetFramework GetFullNameReplacement(NuGetFramework framework);
+    public abstract virtual IEnumerable`1<NuGetFramework> GetNetStandardVersions();
+    public abstract virtual IEnumerable`1<NuGetFramework> GetCompatibleCandidates();
+}
+public interface NuGet.Frameworks.IFrameworkSpecific {
+    public NuGetFramework TargetFramework { get; }
+    public abstract virtual NuGetFramework get_TargetFramework();
+}
+public interface NuGet.Frameworks.IFrameworkTargetable {
+    public IEnumerable`1<NuGetFramework> SupportedFrameworks { get; }
+    public abstract virtual IEnumerable`1<NuGetFramework> get_SupportedFrameworks();
+}
+public interface NuGet.Frameworks.IPortableFrameworkMappings {
+    public IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> ProfileFrameworks { get; }
+    public IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> ProfileOptionalFrameworks { get; }
+    public IEnumerable`1<KeyValuePair`2<int, FrameworkRange>> CompatibilityMappings { get; }
+    public abstract virtual IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> get_ProfileFrameworks();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<int, NuGetFramework[]>> get_ProfileOptionalFrameworks();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<int, FrameworkRange>> get_CompatibilityMappings();
+}
+public class NuGet.Frameworks.NuGetFramework : object {
+    private string _frameworkIdentifier;
+    private Version _frameworkVersion;
+    private string _frameworkProfile;
+    private string _targetFrameworkMoniker;
+    private string _targetPlatformMoniker;
+    private Nullable`1<int> _hashCode;
+    private static int Version5;
+    [CompilerGeneratedAttribute]
+private string <Platform>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Version <PlatformVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsNet5Era>k__BackingField;
+    public static IEqualityComparer`1<NuGetFramework> Comparer;
+    public static IEqualityComparer`1<NuGetFramework> FrameworkNameComparer;
+    private static SortedSet`1<string> PackagesBased;
+    public static NuGetFramework UnsupportedFramework;
+    public static NuGetFramework AgnosticFramework;
+    public static NuGetFramework AnyFramework;
+    public string Framework { get; }
+    public Version Version { get; }
+    public string Platform { get; private set; }
+    public Version PlatformVersion { get; private set; }
+    public bool HasPlatform { get; }
+    public bool HasProfile { get; }
+    public string Profile { get; }
+    public string DotNetFrameworkName { get; }
+    public string DotNetPlatformName { get; }
+    public bool IsPCL { get; }
+    public bool IsPackageBased { get; }
+    public bool AllFrameworkVersions { get; }
+    public bool IsUnsupported { get; }
+    public bool IsAgnostic { get; }
+    public bool IsAny { get; }
+    public bool IsSpecificFramework { get; }
+    internal bool IsNet5Era { get; private set; }
+    public NuGetFramework(NuGetFramework framework);
+    public NuGetFramework(string framework);
+    public NuGetFramework(string framework, Version version);
+    public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile);
+    public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string platform, Version platformVersion);
+    internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string profile, string platform, Version platformVersion);
+    private static NuGetFramework();
+    private static string ProcessProfile(string profile);
+    public string get_Framework();
+    public Version get_Version();
+    [CompilerGeneratedAttribute]
+public string get_Platform();
+    [CompilerGeneratedAttribute]
+private void set_Platform(string value);
+    [CompilerGeneratedAttribute]
+public Version get_PlatformVersion();
+    [CompilerGeneratedAttribute]
+private void set_PlatformVersion(Version value);
+    public bool get_HasPlatform();
+    public bool get_HasProfile();
+    public string get_Profile();
+    public string get_DotNetFrameworkName();
+    public string GetDotNetFrameworkName(IFrameworkNameProvider mappings);
+    public string get_DotNetPlatformName();
+    public string GetShortFolderName();
+    private string GetFrameworkIdentifier();
+    public virtual string GetShortFolderName(IFrameworkNameProvider mappings);
+    private static string GetDisplayVersion(Version version);
+    private static string GetLettersAndDigitsOnly(string s);
+    public bool get_IsPCL();
+    public bool get_IsPackageBased();
+    public bool get_AllFrameworkVersions();
+    public bool get_IsUnsupported();
+    public bool get_IsAgnostic();
+    public bool get_IsAny();
+    public bool get_IsSpecificFramework();
+    [CompilerGeneratedAttribute]
+internal bool get_IsNet5Era();
+    [CompilerGeneratedAttribute]
+private void set_IsNet5Era(bool value);
+    public virtual string ToString();
+    public sealed virtual bool Equals(NuGetFramework other);
+    public static bool op_Equality(NuGetFramework left, NuGetFramework right);
+    public static bool op_Inequality(NuGetFramework left, NuGetFramework right);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    private static Version NormalizeVersion(Version version);
+    public static NuGetFramework Parse(string folderName);
+    public static NuGetFramework Parse(string folderName, IFrameworkNameProvider mappings);
+    public static NuGetFramework ParseComponents(string targetFrameworkMoniker, string targetPlatformMoniker);
+    internal static NuGetFramework ParseComponents(string targetFrameworkMoniker, string targetPlatformMoniker, IFrameworkNameProvider mappings);
+    private static String[] GetParts(string targetPlatformMoniker);
+    public static NuGetFramework ParseFrameworkName(string frameworkName, IFrameworkNameProvider mappings);
+    private static void ParseFrameworkNameParts(IFrameworkNameProvider mappings, String[] parts, String& framework, Version& version, String& profile);
+    private static void ParsePlatformParts(String[] parts, String& targetPlatformIdentifier, Version& platformVersion);
+    public static NuGetFramework ParseFolder(string folderName);
+    public static NuGetFramework ParseFolder(string folderName, IFrameworkNameProvider mappings);
+    private static bool TryParseDeprecatedFramework(string s, NuGetFramework& framework);
+    private static Tuple`3<string, string, string> RawParse(string s);
+    private static bool IsLetterOrDot(char c);
+    private static bool IsDigitOrDot(char c);
+    private static bool IsValidProfileChar(char c);
+    private static bool TryParseSpecialFramework(string frameworkString, NuGetFramework& framework);
+    private static bool TryParseCommonFramework(string frameworkString, NuGetFramework& framework);
+    private static string SingleOrDefaultSafe(IEnumerable`1<string> items);
+}
+[ExtensionAttribute]
+public static class NuGet.Frameworks.NuGetFrameworkExtensions : object {
+    [ExtensionAttribute]
+public static bool IsDesktop(NuGetFramework framework);
+    [ExtensionAttribute]
+public static T GetNearest(IEnumerable`1<T> items, NuGetFramework projectFramework);
+}
+public class NuGet.Frameworks.NuGetFrameworkFullComparer : object {
+    public sealed virtual bool Equals(NuGetFramework x, NuGetFramework y);
+    public sealed virtual int GetHashCode(NuGetFramework obj);
+}
+public class NuGet.Frameworks.NuGetFrameworkNameComparer : object {
+    public sealed virtual bool Equals(NuGetFramework x, NuGetFramework y);
+    public sealed virtual int GetHashCode(NuGetFramework obj);
+}
+public class NuGet.Frameworks.NuGetFrameworkSorter : object {
+    public sealed virtual int Compare(NuGetFramework x, NuGetFramework y);
+}
+public static class NuGet.Frameworks.NuGetFrameworkUtility : object {
+    public static T GetNearest(IEnumerable`1<T> items, NuGetFramework framework, Func`2<T, NuGetFramework> selector);
+    public static T GetNearest(IEnumerable`1<T> items, NuGetFramework framework, IFrameworkNameProvider frameworkMappings, IFrameworkCompatibilityProvider compatibilityProvider, Func`2<T, NuGetFramework> selector);
+    public static T GetNearest(IEnumerable`1<T> items, NuGetFramework framework);
+    public static T GetNearest(IEnumerable`1<T> items, NuGetFramework framework, IFrameworkNameProvider frameworkMappings, IFrameworkCompatibilityProvider compatibilityProvider);
+    public static bool IsCompatibleWithFallbackCheck(NuGetFramework projectFramework, NuGetFramework candidate);
+    public static bool IsNetCore50AndUp(NuGetFramework framework);
+}
+public class NuGet.Frameworks.OneWayCompatibilityMappingEntry : object {
+    private FrameworkRange _targetFramework;
+    private FrameworkRange _supportedFramework;
+    public FrameworkRange TargetFrameworkRange { get; }
+    public FrameworkRange SupportedFrameworkRange { get; }
+    public static CompatibilityMappingComparer Comparer { get; }
+    public OneWayCompatibilityMappingEntry(FrameworkRange targetFramework, FrameworkRange supportedFramework);
+    public FrameworkRange get_TargetFrameworkRange();
+    public FrameworkRange get_SupportedFrameworkRange();
+    public static CompatibilityMappingComparer get_Comparer();
+    public sealed virtual bool Equals(OneWayCompatibilityMappingEntry other);
+    public virtual string ToString();
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class NuGet.Frameworks.Strings : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string ArgumentCannotBeNullOrEmpty { get; }
+    internal static string FrameworkDoesNotSupportPlatforms { get; }
+    internal static string FrameworkDoesNotSupportProfiles { get; }
+    internal static string FrameworkMismatch { get; }
+    internal static string InvalidFrameworkIdentifier { get; }
+    internal static string InvalidFrameworkVersion { get; }
+    internal static string InvalidPlatformVersion { get; }
+    internal static string InvalidPortableFrameworksDueToHyphen { get; }
+    internal static string MissingPortableFrameworks { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_ArgumentCannotBeNullOrEmpty();
+    internal static string get_FrameworkDoesNotSupportPlatforms();
+    internal static string get_FrameworkDoesNotSupportProfiles();
+    internal static string get_FrameworkMismatch();
+    internal static string get_InvalidFrameworkIdentifier();
+    internal static string get_InvalidFrameworkVersion();
+    internal static string get_InvalidPlatformVersion();
+    internal static string get_InvalidPortableFrameworksDueToHyphen();
+    internal static string get_MissingPortableFrameworks();
+}
+internal static class NuGet.Shared.EncodingUtility : object {
+    internal static string ToHex(Byte[] bytes, int length);
+    private static char ToHexChar(int input);
+}
+[ExtensionAttribute]
+internal static class NuGet.Shared.EqualityUtility : object {
+    [ExtensionAttribute]
+internal static bool OrderedEquals(IEnumerable`1<TSource> self, IEnumerable`1<TSource> other, Func`2<TSource, TKey> keySelector, IComparer`1<TKey> orderComparer, IEqualityComparer`1<TSource> sequenceComparer);
+    [ExtensionAttribute]
+internal static bool SequenceEqualWithNullCheck(IEnumerable`1<T> self, IEnumerable`1<T> other, IEqualityComparer`1<T> comparer);
+    [ExtensionAttribute]
+internal static bool SetEqualsWithNullCheck(ISet`1<T> self, ISet`1<T> other, IEqualityComparer`1<T> comparer);
+    internal static bool DictionaryEquals(IDictionary`2<TKey, TValue> self, IDictionary`2<TKey, TValue> other, Func`3<TValue, TValue, bool> compareValues);
+    internal static bool DictionaryOfSequenceEquals(IDictionary`2<TKey, IEnumerable`1<TValue>> self, IDictionary`2<TKey, IEnumerable`1<TValue>> other);
+    internal static bool EqualsWithNullCheck(T self, T other);
+    private static bool TryIdentityEquals(T self, T other, Boolean& equals);
+}
+[ExtensionAttribute]
+internal static class NuGet.Shared.Extensions : object {
+    [ExtensionAttribute]
+public static List`1<T> AsList(IEnumerable`1<T> enumerable);
+    [ExtensionAttribute]
+public static HashSet`1<T> AsHashSet(ISet`1<T> enumerable, IEqualityComparer`1<T> comparer);
+    [ExtensionAttribute]
+public static void ForEach(IEnumerable`1<T> enumeration, Action`1<T> action);
+}
+internal class NuGet.Shared.HashCodeCombiner : ValueType {
+    private static long Seed;
+    private bool _initialized;
+    private long _combinedHash;
+    internal int CombinedHash { get; }
+    internal int get_CombinedHash();
+    private void AddHashCode(int i);
+    internal void AddObject(int i);
+    internal void AddObject(TValue o, IEqualityComparer`1<TValue> comparer);
+    internal void AddObject(T o);
+    internal void AddStringIgnoreCase(string s);
+    internal void AddSequence(IEnumerable`1<T> sequence);
+    internal void AddSequence(T[] array);
+    internal void AddSequence(IList`1<T> list);
+    internal void AddSequence(IReadOnlyList`1<T> list);
+    internal void AddDictionary(IEnumerable`1<KeyValuePair`2<TKey, TValue>> dictionary);
+    internal static int GetHashCode(T1 o1, T2 o2);
+    internal static int GetHashCode(T1 o1, T2 o2, T3 o3);
+    private void CheckInitialized();
+}
+internal static class NuGet.Shared.XmlUtility : object {
+    internal static XDocument Load(string inputUri);
+    internal static XDocument Load(string inputUri, LoadOptions options);
+    internal static XDocument Load(Stream input);
+    internal static XDocument Load(Stream input, LoadOptions options);
+    internal static string GetEncodedXMLName(string name);
+    internal static XmlReaderSettings GetXmlReaderSettings(LoadOptions options);
+}

@@ -1,0 +1,532 @@
+internal static class FxResources.System.Net.WebSockets.SR : object {
+}
+internal static class Interop : object {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+internal static class System.IO.Compression.ZLibNative : object {
+    public static ErrorCode CreateZLibStreamForDeflate(ZLibStreamHandle& zLibStreamHandle, CompressionLevel level, int windowBits, int memLevel, CompressionStrategy strategy);
+    public static ErrorCode CreateZLibStreamForInflate(ZLibStreamHandle& zLibStreamHandle, int windowBits);
+}
+internal class System.Net.WebSockets.Compression.WebSocketDeflater : object {
+    private int _windowBits;
+    private ZLibStreamHandle _stream;
+    private bool _persisted;
+    private Byte[] _buffer;
+    internal WebSocketDeflater(int windowBits, bool persisted);
+    public sealed virtual void Dispose();
+    public void ReleaseBuffer();
+    public ReadOnlySpan`1<byte> Deflate(ReadOnlySpan`1<byte> payload, bool endOfMessage);
+    private void DeflatePrivate(ReadOnlySpan`1<byte> payload, Span`1<byte> output, bool endOfMessage, Int32& consumed, Int32& written, Boolean& needsMoreOutput);
+    private void UnsafeDeflate(ReadOnlySpan`1<byte> input, Span`1<byte> output, Int32& consumed, Int32& written, Boolean& needsMoreBuffer);
+    private int UnsafeFlush(Span`1<byte> output, Boolean& needsMoreBuffer);
+    private static ErrorCode Deflate(ZLibStreamHandle stream, FlushCode flushCode);
+    private ZLibStreamHandle CreateDeflater();
+}
+internal class System.Net.WebSockets.Compression.WebSocketInflater : object {
+    private int _windowBits;
+    private ZLibStreamHandle _stream;
+    private bool _persisted;
+    private Nullable`1<byte> _remainingByte;
+    private bool _endOfMessage;
+    private Byte[] _buffer;
+    private int _position;
+    private int _available;
+    internal static ReadOnlySpan`1<byte> FlushMarker { get; }
+    public Memory`1<byte> Memory { get; }
+    public Span`1<byte> Span { get; }
+    internal WebSocketInflater(int windowBits, bool persisted);
+    internal static ReadOnlySpan`1<byte> get_FlushMarker();
+    public Memory`1<byte> get_Memory();
+    public Span`1<byte> get_Span();
+    public sealed virtual void Dispose();
+    public void Prepare(long payloadLength, int userBufferLength);
+    public void AddBytes(int totalBytesReceived, bool endOfMessage);
+    public bool Inflate(Span`1<byte> output, Int32& written);
+    private bool Finish(Span`1<byte> output, Int32& written);
+    private void ReleaseBuffer();
+    private static bool IsFinished(ZLibStreamHandle stream, Nullable`1& remainingByte);
+    private static int Inflate(ZLibStreamHandle stream, Span`1<byte> destination, FlushCode flushCode);
+    private ZLibStreamHandle CreateInflater();
+}
+internal class System.Net.WebSockets.ManagedWebSocket : WebSocket {
+    private static UTF8Encoding s_textEncoding;
+    private static WebSocketState[] s_validSendStates;
+    private static WebSocketState[] s_validReceiveStates;
+    private static WebSocketState[] s_validCloseOutputStates;
+    private static WebSocketState[] s_validCloseStates;
+    private Stream _stream;
+    private bool _isServer;
+    private string _subprotocol;
+    private Timer _keepAliveTimer;
+    private Memory`1<byte> _receiveBuffer;
+    private Utf8MessageState _utf8TextState;
+    private AsyncMutex _sendMutex;
+    private AsyncMutex _receiveMutex;
+    private WebSocketState _state;
+    private bool _disposed;
+    private bool _sentCloseFrame;
+    private bool _receivedCloseFrame;
+    private Nullable`1<WebSocketCloseStatus> _closeStatus;
+    private string _closeStatusDescription;
+    private MessageHeader _lastReceiveHeader;
+    private int _receiveBufferOffset;
+    private int _receiveBufferCount;
+    private int _receivedMaskOffsetOffset;
+    private Byte[] _sendBuffer;
+    private bool _lastSendWasFragment;
+    private bool _lastSendHadDisableCompression;
+    private WebSocketInflater _inflater;
+    private WebSocketDeflater _deflater;
+    private object StateUpdateLock { get; }
+    public Nullable`1<WebSocketCloseStatus> CloseStatus { get; }
+    public string CloseStatusDescription { get; }
+    public WebSocketState State { get; }
+    public string SubProtocol { get; }
+    internal ManagedWebSocket(Stream stream, bool isServer, string subprotocol, TimeSpan keepAliveInterval);
+    internal ManagedWebSocket(Stream stream, WebSocketCreationOptions options);
+    private static ManagedWebSocket();
+    private object get_StateUpdateLock();
+    public virtual void Dispose();
+    private void DisposeCore();
+    public virtual Nullable`1<WebSocketCloseStatus> get_CloseStatus();
+    public virtual string get_CloseStatusDescription();
+    public virtual WebSocketState get_State();
+    public virtual string get_SubProtocol();
+    public virtual Task SendAsync(ArraySegment`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+    public virtual ValueTask SendAsync(ReadOnlyMemory`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+    public virtual ValueTask SendAsync(ReadOnlyMemory`1<byte> buffer, WebSocketMessageType messageType, WebSocketMessageFlags messageFlags, CancellationToken cancellationToken);
+    public virtual Task`1<WebSocketReceiveResult> ReceiveAsync(ArraySegment`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual ValueTask`1<ValueWebSocketReceiveResult> ReceiveAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    public virtual Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<CloseOutputAsyncCore>d__52")]
+private Task CloseOutputAsyncCore(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    public virtual void Abort();
+    private void OnAborted();
+    private ValueTask SendFrameAsync(MessageOpcode opcode, bool endOfMessage, bool disableCompression, ReadOnlyMemory`1<byte> payloadBuffer, CancellationToken cancellationToken);
+    private ValueTask SendFrameLockAcquiredNonCancelableAsync(MessageOpcode opcode, bool endOfMessage, bool disableCompression, ReadOnlyMemory`1<byte> payloadBuffer);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<WaitForWriteTaskAsync>d__57")]
+private ValueTask WaitForWriteTaskAsync(ValueTask writeTask, bool shouldFlush);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<SendFrameFallbackAsync>d__58")]
+private ValueTask SendFrameFallbackAsync(MessageOpcode opcode, bool endOfMessage, bool disableCompression, ReadOnlyMemory`1<byte> payloadBuffer, Task lockTask, CancellationToken cancellationToken);
+    private int WriteFrameToSendBuffer(MessageOpcode opcode, bool endOfMessage, bool disableCompression, ReadOnlySpan`1<byte> payloadBuffer);
+    private void SendKeepAliveFrameAsync();
+    private static int WriteHeader(MessageOpcode opcode, Byte[] sendBuffer, ReadOnlySpan`1<byte> payload, bool endOfMessage, bool useMask, bool compressed);
+    private static void WriteRandomMask(Byte[] buffer, int offset);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<ReceiveAsyncPrivate>d__63`1")]
+[AsyncMethodBuilderAttribute("System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1")]
+private ValueTask`1<TResult> ReceiveAsyncPrivate(Memory`1<byte> payloadBuffer, CancellationToken cancellationToken);
+    private TResult GetReceiveResult(int count, WebSocketMessageType messageType, bool endOfMessage);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<HandleReceivedCloseAsync>d__65")]
+private ValueTask HandleReceivedCloseAsync(MessageHeader header, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<WaitForServerToCloseConnectionAsync>d__66")]
+private ValueTask WaitForServerToCloseConnectionAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<HandleReceivedPingPongAsync>d__67")]
+private ValueTask HandleReceivedPingPongAsync(MessageHeader header, CancellationToken cancellationToken);
+    private static bool IsValidCloseStatus(WebSocketCloseStatus closeStatus);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<CloseWithReceiveErrorAndThrowAsync>d__69")]
+private ValueTask CloseWithReceiveErrorAndThrowAsync(WebSocketCloseStatus closeStatus, WebSocketError error, string errorMessage, Exception innerException);
+    private string TryParseMessageHeaderFromReceiveBuffer(MessageHeader& resultHeader);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<CloseAsyncPrivate>d__71")]
+private Task CloseAsyncPrivate(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<SendCloseFrameAsync>d__72")]
+private ValueTask SendCloseFrameAsync(WebSocketCloseStatus closeStatus, string closeStatusDescription, CancellationToken cancellationToken);
+    private void ConsumeFromBuffer(int count);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.ManagedWebSocket/<EnsureBufferContainsAsync>d__74")]
+[AsyncMethodBuilderAttribute("System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder")]
+private ValueTask EnsureBufferContainsAsync(int minimumRequiredBytes, CancellationToken cancellationToken);
+    private void ThrowEOFUnexpected();
+    private void AllocateSendBuffer(int minLength);
+    private void ReleaseSendBuffer();
+    private static int CombineMaskBytes(Span`1<byte> buffer, int maskOffset);
+    private static int ApplyMask(Span`1<byte> toMask, Byte[] mask, int maskOffset, int maskOffsetIndex);
+    private static int ApplyMask(Span`1<byte> toMask, int mask, int maskIndex);
+    private static Exception CreateOperationCanceledException(Exception innerException, CancellationToken cancellationToken);
+    private static bool TryValidateUtf8(Span`1<byte> span, bool endOfMessage, Utf8MessageState state);
+}
+[IsReadOnlyAttribute]
+public class System.Net.WebSockets.ValueWebSocketReceiveResult : ValueType {
+    private UInt32 _countAndEndOfMessage;
+    private WebSocketMessageType _messageType;
+    public int Count { get; }
+    public bool EndOfMessage { get; }
+    public WebSocketMessageType MessageType { get; }
+    public ValueWebSocketReceiveResult(int count, WebSocketMessageType messageType, bool endOfMessage);
+    public int get_Count();
+    public bool get_EndOfMessage();
+    public WebSocketMessageType get_MessageType();
+    private static void ThrowCountOutOfRange();
+    private static void ThrowMessageTypeOutOfRange();
+}
+public abstract class System.Net.WebSockets.WebSocket : object {
+    public Nullable`1<WebSocketCloseStatus> CloseStatus { get; }
+    [NullableAttribute("2")]
+public string CloseStatusDescription { get; }
+    [NullableAttribute("2")]
+public string SubProtocol { get; }
+    public WebSocketState State { get; }
+    public static TimeSpan DefaultKeepAliveInterval { get; }
+    public abstract virtual Nullable`1<WebSocketCloseStatus> get_CloseStatus();
+    [NullableContextAttribute("2")]
+public abstract virtual string get_CloseStatusDescription();
+    [NullableContextAttribute("2")]
+public abstract virtual string get_SubProtocol();
+    public abstract virtual WebSocketState get_State();
+    public abstract virtual void Abort();
+    [NullableContextAttribute("1")]
+public abstract virtual Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    [NullableContextAttribute("1")]
+public abstract virtual Task CloseOutputAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    public abstract virtual void Dispose();
+    public abstract virtual Task`1<WebSocketReceiveResult> ReceiveAsync(ArraySegment`1<byte> buffer, CancellationToken cancellationToken);
+    public abstract virtual Task SendAsync(ArraySegment`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.WebSocket/<ReceiveAsync>d__14")]
+public virtual ValueTask`1<ValueWebSocketReceiveResult> ReceiveAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual ValueTask SendAsync(ReadOnlyMemory`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+    public virtual ValueTask SendAsync(ReadOnlyMemory`1<byte> buffer, WebSocketMessageType messageType, WebSocketMessageFlags messageFlags, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.WebSockets.WebSocket/<SendWithArrayPoolAsync>d__17")]
+private ValueTask SendWithArrayPoolAsync(ReadOnlyMemory`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+    public static TimeSpan get_DefaultKeepAliveInterval();
+    [NullableContextAttribute("1")]
+protected static void ThrowOnInvalidState(WebSocketState state, WebSocketState[] validStates);
+    protected static bool IsStateTerminal(WebSocketState state);
+    public static ArraySegment`1<byte> CreateClientBuffer(int receiveBufferSize, int sendBufferSize);
+    public static ArraySegment`1<byte> CreateServerBuffer(int receiveBufferSize);
+    [NullableContextAttribute("1")]
+public static WebSocket CreateFromStream(Stream stream, bool isServer, string subProtocol, TimeSpan keepAliveInterval);
+    [NullableContextAttribute("1")]
+public static WebSocket CreateFromStream(Stream stream, WebSocketCreationOptions options);
+    [EditorBrowsableAttribute("1")]
+[ObsoleteAttribute("This API supports the .NET Framework infrastructure and is not intended to be used directly from your code.")]
+public static bool IsApplicationTargeting45();
+    [EditorBrowsableAttribute("1")]
+[ObsoleteAttribute("This API supports the .NET Framework infrastructure and is not intended to be used directly from your code.")]
+public static void RegisterPrefixes();
+    [NullableContextAttribute("1")]
+[EditorBrowsableAttribute("1")]
+public static WebSocket CreateClientWebSocket(Stream innerStream, string subProtocol, int receiveBufferSize, int sendBufferSize, TimeSpan keepAliveInterval, bool useZeroMaskingKey, ArraySegment`1<byte> internalBuffer);
+}
+public enum System.Net.WebSockets.WebSocketCloseStatus : Enum {
+    public int value__;
+    public static WebSocketCloseStatus NormalClosure;
+    public static WebSocketCloseStatus EndpointUnavailable;
+    public static WebSocketCloseStatus ProtocolError;
+    public static WebSocketCloseStatus InvalidMessageType;
+    public static WebSocketCloseStatus Empty;
+    public static WebSocketCloseStatus InvalidPayloadData;
+    public static WebSocketCloseStatus PolicyViolation;
+    public static WebSocketCloseStatus MessageTooBig;
+    public static WebSocketCloseStatus MandatoryExtension;
+    public static WebSocketCloseStatus InternalServerError;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class System.Net.WebSockets.WebSocketContext : object {
+    public Uri RequestUri { get; }
+    public NameValueCollection Headers { get; }
+    public string Origin { get; }
+    public IEnumerable`1<string> SecWebSocketProtocols { get; }
+    public string SecWebSocketVersion { get; }
+    public string SecWebSocketKey { get; }
+    public CookieCollection CookieCollection { get; }
+    [NullableAttribute("2")]
+public IPrincipal User { get; }
+    public bool IsAuthenticated { get; }
+    public bool IsLocal { get; }
+    public bool IsSecureConnection { get; }
+    public WebSocket WebSocket { get; }
+    public abstract virtual Uri get_RequestUri();
+    public abstract virtual NameValueCollection get_Headers();
+    public abstract virtual string get_Origin();
+    public abstract virtual IEnumerable`1<string> get_SecWebSocketProtocols();
+    public abstract virtual string get_SecWebSocketVersion();
+    public abstract virtual string get_SecWebSocketKey();
+    public abstract virtual CookieCollection get_CookieCollection();
+    [NullableContextAttribute("2")]
+public abstract virtual IPrincipal get_User();
+    public abstract virtual bool get_IsAuthenticated();
+    public abstract virtual bool get_IsLocal();
+    public abstract virtual bool get_IsSecureConnection();
+    public abstract virtual WebSocket get_WebSocket();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class System.Net.WebSockets.WebSocketCreationOptions : object {
+    private string _subProtocol;
+    private TimeSpan _keepAliveInterval;
+    [CompilerGeneratedAttribute]
+private bool <IsServer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private WebSocketDeflateOptions <DangerousDeflateOptions>k__BackingField;
+    public bool IsServer { get; public set; }
+    public string SubProtocol { get; public set; }
+    public TimeSpan KeepAliveInterval { get; public set; }
+    public WebSocketDeflateOptions DangerousDeflateOptions { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_IsServer();
+    [CompilerGeneratedAttribute]
+public void set_IsServer(bool value);
+    public string get_SubProtocol();
+    public void set_SubProtocol(string value);
+    public TimeSpan get_KeepAliveInterval();
+    public void set_KeepAliveInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public WebSocketDeflateOptions get_DangerousDeflateOptions();
+    [CompilerGeneratedAttribute]
+public void set_DangerousDeflateOptions(WebSocketDeflateOptions value);
+}
+public class System.Net.WebSockets.WebSocketDeflateOptions : object {
+    private int _clientMaxWindowBits;
+    private int _serverMaxWindowBits;
+    [CompilerGeneratedAttribute]
+private bool <ClientContextTakeover>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ServerContextTakeover>k__BackingField;
+    public int ClientMaxWindowBits { get; public set; }
+    public bool ClientContextTakeover { get; public set; }
+    public int ServerMaxWindowBits { get; public set; }
+    public bool ServerContextTakeover { get; public set; }
+    public int get_ClientMaxWindowBits();
+    public void set_ClientMaxWindowBits(int value);
+    [CompilerGeneratedAttribute]
+public bool get_ClientContextTakeover();
+    [CompilerGeneratedAttribute]
+public void set_ClientContextTakeover(bool value);
+    public int get_ServerMaxWindowBits();
+    public void set_ServerMaxWindowBits(int value);
+    [CompilerGeneratedAttribute]
+public bool get_ServerContextTakeover();
+    [CompilerGeneratedAttribute]
+public void set_ServerContextTakeover(bool value);
+}
+[TypeForwardedFromAttribute("System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+public enum System.Net.WebSockets.WebSocketError : Enum {
+    public int value__;
+    public static WebSocketError Success;
+    public static WebSocketError InvalidMessageType;
+    public static WebSocketError Faulted;
+    public static WebSocketError NativeError;
+    public static WebSocketError NotAWebSocket;
+    public static WebSocketError UnsupportedVersion;
+    public static WebSocketError UnsupportedProtocol;
+    public static WebSocketError HeaderError;
+    public static WebSocketError ConnectionClosedPrematurely;
+    public static WebSocketError InvalidState;
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+[TypeForwardedFromAttribute("System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
+public class System.Net.WebSockets.WebSocketException : Win32Exception {
+    private WebSocketError _webSocketErrorCode;
+    public int ErrorCode { get; }
+    public WebSocketError WebSocketErrorCode { get; }
+    public WebSocketException(WebSocketError error);
+    public WebSocketException(WebSocketError error, string message);
+    public WebSocketException(WebSocketError error, Exception innerException);
+    public WebSocketException(WebSocketError error, string message, Exception innerException);
+    public WebSocketException(int nativeError);
+    public WebSocketException(int nativeError, string message);
+    public WebSocketException(int nativeError, Exception innerException);
+    public WebSocketException(WebSocketError error, int nativeError);
+    public WebSocketException(WebSocketError error, int nativeError, string message);
+    public WebSocketException(WebSocketError error, int nativeError, Exception innerException);
+    public WebSocketException(WebSocketError error, int nativeError, string message, Exception innerException);
+    public WebSocketException(string message);
+    public WebSocketException(string message, Exception innerException);
+    private WebSocketException(SerializationInfo serializationInfo, StreamingContext streamingContext);
+    [NullableContextAttribute("1")]
+public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+    public virtual int get_ErrorCode();
+    public WebSocketError get_WebSocketErrorCode();
+    private static string GetErrorMessage(WebSocketError error);
+    private void SetErrorCodeOnError(int nativeError);
+    private static bool Succeeded(int hr);
+}
+[FlagsAttribute]
+public enum System.Net.WebSockets.WebSocketMessageFlags : Enum {
+    public int value__;
+    public static WebSocketMessageFlags None;
+    public static WebSocketMessageFlags EndOfMessage;
+    public static WebSocketMessageFlags DisableCompression;
+}
+public enum System.Net.WebSockets.WebSocketMessageType : Enum {
+    public int value__;
+    public static WebSocketMessageType Text;
+    public static WebSocketMessageType Binary;
+    public static WebSocketMessageType Close;
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class System.Net.WebSockets.WebSocketReceiveResult : object {
+    [CompilerGeneratedAttribute]
+private int <Count>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EndOfMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private WebSocketMessageType <MessageType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<WebSocketCloseStatus> <CloseStatus>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CloseStatusDescription>k__BackingField;
+    public int Count { get; }
+    public bool EndOfMessage { get; }
+    public WebSocketMessageType MessageType { get; }
+    public Nullable`1<WebSocketCloseStatus> CloseStatus { get; }
+    public string CloseStatusDescription { get; }
+    public WebSocketReceiveResult(int count, WebSocketMessageType messageType, bool endOfMessage);
+    public WebSocketReceiveResult(int count, WebSocketMessageType messageType, bool endOfMessage, Nullable`1<WebSocketCloseStatus> closeStatus, string closeStatusDescription);
+    [CompilerGeneratedAttribute]
+public int get_Count();
+    [CompilerGeneratedAttribute]
+public bool get_EndOfMessage();
+    [CompilerGeneratedAttribute]
+public WebSocketMessageType get_MessageType();
+    [CompilerGeneratedAttribute]
+public Nullable`1<WebSocketCloseStatus> get_CloseStatus();
+    [CompilerGeneratedAttribute]
+public string get_CloseStatusDescription();
+}
+public enum System.Net.WebSockets.WebSocketState : Enum {
+    public int value__;
+    public static WebSocketState None;
+    public static WebSocketState Connecting;
+    public static WebSocketState Open;
+    public static WebSocketState CloseSent;
+    public static WebSocketState CloseReceived;
+    public static WebSocketState Closed;
+    public static WebSocketState Aborted;
+}
+internal static class System.Net.WebSockets.WebSocketValidate : object {
+    internal static void ThrowIfInvalidState(WebSocketState currentState, bool isDisposed, WebSocketState[] validStates);
+    internal static void ValidateSubprotocol(string subProtocol);
+    internal static void ValidateCloseStatus(WebSocketCloseStatus closeStatus, string statusDescription);
+    internal static void ValidateArraySegment(ArraySegment`1<byte> arraySegment, string parameterName);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.NullablePublicOnlyAttribute : Attribute {
+    public bool IncludesInternals;
+    public NullablePublicOnlyAttribute(bool );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
+internal static class System.SR : object {
+    private static bool s_usingResourceKeys;
+    private static ResourceManager s_resourceManager;
+    internal static ResourceManager ResourceManager { get; }
+    internal static string net_WebSockets_InvalidState { get; }
+    internal static string net_WebSockets_Generic { get; }
+    internal static string net_WebSockets_InvalidMessageType_Generic { get; }
+    internal static string net_Websockets_WebSocketBaseFaulted { get; }
+    internal static string net_WebSockets_NotAWebSocket_Generic { get; }
+    internal static string net_WebSockets_UnsupportedWebSocketVersion_Generic { get; }
+    internal static string net_WebSockets_UnsupportedProtocol_Generic { get; }
+    internal static string net_WebSockets_HeaderError_Generic { get; }
+    internal static string net_WebSockets_ConnectionClosedPrematurely_Generic { get; }
+    internal static string net_WebSockets_InvalidState_Generic { get; }
+    internal static string net_WebSockets_ArgumentOutOfRange_TooSmall { get; }
+    internal static string net_WebSockets_InvalidEmptySubProtocol { get; }
+    internal static string net_WebSockets_InvalidCharInProtocolString { get; }
+    internal static string net_WebSockets_ReasonNotNull { get; }
+    internal static string net_WebSockets_InvalidCloseStatusCode { get; }
+    internal static string net_WebSockets_InvalidCloseStatusDescription { get; }
+    internal static string net_WebSockets_Argument_InvalidMessageType { get; }
+    internal static string net_Websockets_ReservedBitsSet { get; }
+    internal static string net_Websockets_ClientReceivedMaskedFrame { get; }
+    internal static string net_Websockets_ContinuationFromFinalFrame { get; }
+    internal static string net_Websockets_NonContinuationAfterNonFinalFrame { get; }
+    internal static string net_Websockets_InvalidControlMessage { get; }
+    internal static string net_Websockets_UnknownOpcode { get; }
+    internal static string NotReadableStream { get; }
+    internal static string NotWriteableStream { get; }
+    internal static string net_WebSockets_ArgumentOutOfRange { get; }
+    internal static string net_Websockets_PerMessageCompressedFlagInContinuation { get; }
+    internal static string net_Websockets_PerMessageCompressedFlagWhenNotEnabled { get; }
+    internal static string ZLibErrorDLLLoadError { get; }
+    internal static string ZLibErrorInconsistentStream { get; }
+    internal static string ZLibErrorNotEnoughMemory { get; }
+    internal static string ZLibErrorUnexpected { get; }
+    internal static string ZLibUnsupportedCompression { get; }
+    internal static string net_WebSockets_Argument_MessageFlagsHasDifferentCompressionOptions { get; }
+    internal static string net_Websockets_InvalidPayloadLength { get; }
+    private static SR();
+    private static bool UsingResourceKeys();
+    internal static string GetResourceString(string resourceKey);
+    internal static string Format(string resourceFormat, object p1);
+    internal static string Format(string resourceFormat, object p1, object p2);
+    internal static string Format(string resourceFormat, Object[] args);
+    internal static ResourceManager get_ResourceManager();
+    internal static string get_net_WebSockets_InvalidState();
+    internal static string get_net_WebSockets_Generic();
+    internal static string get_net_WebSockets_InvalidMessageType_Generic();
+    internal static string get_net_Websockets_WebSocketBaseFaulted();
+    internal static string get_net_WebSockets_NotAWebSocket_Generic();
+    internal static string get_net_WebSockets_UnsupportedWebSocketVersion_Generic();
+    internal static string get_net_WebSockets_UnsupportedProtocol_Generic();
+    internal static string get_net_WebSockets_HeaderError_Generic();
+    internal static string get_net_WebSockets_ConnectionClosedPrematurely_Generic();
+    internal static string get_net_WebSockets_InvalidState_Generic();
+    internal static string get_net_WebSockets_ArgumentOutOfRange_TooSmall();
+    internal static string get_net_WebSockets_InvalidEmptySubProtocol();
+    internal static string get_net_WebSockets_InvalidCharInProtocolString();
+    internal static string get_net_WebSockets_ReasonNotNull();
+    internal static string get_net_WebSockets_InvalidCloseStatusCode();
+    internal static string get_net_WebSockets_InvalidCloseStatusDescription();
+    internal static string get_net_WebSockets_Argument_InvalidMessageType();
+    internal static string get_net_Websockets_ReservedBitsSet();
+    internal static string get_net_Websockets_ClientReceivedMaskedFrame();
+    internal static string get_net_Websockets_ContinuationFromFinalFrame();
+    internal static string get_net_Websockets_NonContinuationAfterNonFinalFrame();
+    internal static string get_net_Websockets_InvalidControlMessage();
+    internal static string get_net_Websockets_UnknownOpcode();
+    internal static string get_NotReadableStream();
+    internal static string get_NotWriteableStream();
+    internal static string get_net_WebSockets_ArgumentOutOfRange();
+    internal static string get_net_Websockets_PerMessageCompressedFlagInContinuation();
+    internal static string get_net_Websockets_PerMessageCompressedFlagWhenNotEnabled();
+    internal static string get_ZLibErrorDLLLoadError();
+    internal static string get_ZLibErrorInconsistentStream();
+    internal static string get_ZLibErrorNotEnoughMemory();
+    internal static string get_ZLibErrorUnexpected();
+    internal static string get_ZLibUnsupportedCompression();
+    internal static string get_net_WebSockets_Argument_MessageFlagsHasDifferentCompressionOptions();
+    internal static string get_net_Websockets_InvalidPayloadLength();
+}
+internal class System.Threading.AsyncMutex : object {
+    private int _gate;
+    private bool _lockedSemaphoreFull;
+    private Waiter _waitersTail;
+    private object SyncObj { get; }
+    private object get_SyncObj();
+    public Task EnterAsync(CancellationToken cancellationToken);
+    public void Exit();
+    [CompilerGeneratedAttribute]
+private Task <EnterAsync>g__Contended|7_0(CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+internal static void <EnterAsync>g__OnCancellation|7_2(object state, CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+private void <Exit>g__Contended|8_0();
+}
