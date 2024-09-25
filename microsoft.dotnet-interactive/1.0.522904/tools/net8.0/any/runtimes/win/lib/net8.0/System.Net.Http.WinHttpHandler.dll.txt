@@ -1,0 +1,976 @@
+internal static class FxResources.System.Net.Http.WinHttpHandler.SR : object {
+}
+internal static class Interop : object {
+    internal static int HRESULT_FROM_WIN32(int errorCode);
+}
+internal static class System.CharArrayHelpers : object {
+    [ConditionalAttribute("DEBUG")]
+internal static void DebugAssertArrayInputs(Char[] array, int startIndex, int length);
+}
+internal static class System.IO.StreamHelpers : object {
+    public static void ValidateCopyToArgs(Stream source, Stream destination, int bufferSize);
+}
+public enum System.Net.Http.CookieUsePolicy : Enum {
+    public int value__;
+    public static CookieUsePolicy IgnoreCookies;
+    public static CookieUsePolicy UseInternalCookieStoreOnly;
+    public static CookieUsePolicy UseSpecifiedCookieContainer;
+}
+internal static class System.Net.Http.HttpHandlerDefaults : object {
+    public static int DefaultMaxAutomaticRedirections;
+    public static int DefaultMaxResponseDrainSize;
+    public static TimeSpan DefaultResponseDrainTimeout;
+    public static int DefaultMaxResponseHeadersLength;
+    public static DecompressionMethods DefaultAutomaticDecompression;
+    public static bool DefaultAutomaticRedirection;
+    public static bool DefaultUseCookies;
+    public static bool DefaultPreAuthenticate;
+    public static ClientCertificateOption DefaultClientCertificateOption;
+    public static bool DefaultUseProxy;
+    public static bool DefaultUseDefaultCredentials;
+    public static bool DefaultCheckCertificateRevocationList;
+    public static TimeSpan DefaultPooledConnectionLifetime;
+    public static TimeSpan DefaultPooledConnectionIdleTimeout;
+    public static TimeSpan DefaultExpect100ContinueTimeout;
+    public static TimeSpan DefaultConnectTimeout;
+    private static HttpHandlerDefaults();
+}
+internal class System.Net.Http.NoWriteNoSeekStreamContent : HttpContent {
+    private Stream _content;
+    private bool _contentConsumed;
+    internal NoWriteNoSeekStreamContent(Stream content);
+    protected virtual Task SerializeToStreamAsync(Stream stream, TransportContext context);
+    protected virtual Task SerializeToStreamAsync(Stream stream, TransportContext context, CancellationToken cancellationToken);
+    protected virtual bool TryComputeLength(Int64& length);
+    protected virtual void Dispose(bool disposing);
+    protected virtual Task`1<Stream> CreateContentReadStreamAsync();
+}
+public enum System.Net.Http.WindowsProxyUsePolicy : Enum {
+    public int value__;
+    public static WindowsProxyUsePolicy DoNotUseProxy;
+    public static WindowsProxyUsePolicy UseWinHttpProxy;
+    public static WindowsProxyUsePolicy UseWinInetProxy;
+    public static WindowsProxyUsePolicy UseCustomProxy;
+}
+internal class System.Net.Http.WinHttpAuthHelper : object {
+    private static String[] s_authSchemeStringMapping;
+    private CredentialCache _credentialCache;
+    private object _credentialCacheLock;
+    private static ReadOnlySpan`1<UInt32> AuthSchemePriorityOrder { get; }
+    private static WinHttpAuthHelper();
+    private static ReadOnlySpan`1<UInt32> get_AuthSchemePriorityOrder();
+    public void CheckResponseForAuthentication(WinHttpRequestState state, UInt32& proxyAuthScheme, UInt32& serverAuthScheme);
+    public void PreAuthenticateRequest(WinHttpRequestState state, UInt32 proxyAuthScheme);
+    public bool GetServerCredentialsFromCache(Uri uri, UInt32& serverAuthScheme, NetworkCredential& serverCredentials);
+    public void SaveServerCredentialsToCache(Uri uri, UInt32 authScheme, ICredentials serverCredentials);
+    public void ChangeDefaultCredentialsPolicy(SafeWinHttpHandle requestHandle, UInt32 authTarget, bool allowDefaultCredentials);
+    private bool SetWinHttpCredential(SafeWinHttpHandle requestHandle, ICredentials credentials, Uri uri, UInt32 authScheme, UInt32 authTarget);
+    private static UInt32 ChooseAuthScheme(UInt32 supportedSchemes, Uri uri, ICredentials credentials);
+}
+internal static class System.Net.Http.WinHttpCertificateHelper : object {
+    private static Oid s_serverAuthOid;
+    private static WinHttpCertificateHelper();
+    public static void BuildChain(X509Certificate2 certificate, X509Certificate2Collection remoteCertificateStore, string hostName, bool checkCertificateRevocationList, X509Chain& chain, SslPolicyErrors& sslPolicyErrors);
+}
+internal class System.Net.Http.WinHttpChannelBinding : ChannelBinding {
+    private int _size;
+    private string _cachedToString;
+    public bool IsInvalid { get; }
+    public int Size { get; }
+    internal WinHttpChannelBinding(SafeWinHttpHandle requestHandle);
+    public virtual bool get_IsInvalid();
+    public virtual int get_Size();
+    public virtual string ToString();
+    protected virtual bool ReleaseHandle();
+}
+internal enum System.Net.Http.WinHttpChunkMode : Enum {
+    public int value__;
+    public static WinHttpChunkMode None;
+    public static WinHttpChunkMode Manual;
+    public static WinHttpChunkMode Automatic;
+}
+internal static class System.Net.Http.WinHttpCookieContainerAdapter : object {
+    private static string CookieHeaderNameWithColon;
+    public static void AddResponseCookiesToContainer(WinHttpRequestState state);
+    public static void ResetCookieRequestHeaders(WinHttpRequestState state, Uri redirectUri);
+    public static string GetCookieHeader(Uri uri, CookieContainer cookies);
+}
+internal class System.Net.Http.WinHttpException : Win32Exception {
+    public WinHttpException(int error, string message);
+    [ObsoleteAttribute("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.")]
+[EditorBrowsableAttribute("1")]
+public WinHttpException(SerializationInfo info, StreamingContext context);
+    public WinHttpException(int error, string message, Exception innerException);
+    public static int ConvertErrorCodeToHR(int error);
+    public static void ThrowExceptionUsingLastError(string nameOfCalledFunction);
+    public static WinHttpException CreateExceptionUsingLastError(string nameOfCalledFunction);
+    public static WinHttpException CreateExceptionUsingError(int error, string nameOfCalledFunction);
+    public static WinHttpException CreateExceptionUsingError(int error, string nameOfCalledFunction, Exception innerException);
+    public static string GetErrorMessage(int error, string nameOfCalledFunction);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class System.Net.Http.WinHttpHandler : HttpMessageHandler {
+    internal static Version HttpVersion20;
+    internal static Version HttpVersionUnknown;
+    private static TimeSpan s_maxTimeout;
+    private static StringWithQualityHeaderValue s_gzipHeaderValue;
+    private static StringWithQualityHeaderValue s_deflateHeaderValue;
+    private static Lazy`1<bool> s_supportsTls13;
+    [ThreadStaticAttribute]
+private static StringBuilder t_requestHeadersBuilder;
+    private object _lockObject;
+    private bool _doManualDecompressionCheck;
+    private WinInetProxyHelper _proxyHelper;
+    private bool _automaticRedirection;
+    private int _maxAutomaticRedirections;
+    private DecompressionMethods _automaticDecompression;
+    private CookieUsePolicy _cookieUsePolicy;
+    private CookieContainer _cookieContainer;
+    private bool _enableMultipleHttp2Connections;
+    private SslProtocols _sslProtocols;
+    private Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> _serverCertificateValidationCallback;
+    private bool _checkCertificateRevocationList;
+    private ClientCertificateOption _clientCertificateOption;
+    private X509Certificate2Collection _clientCertificates;
+    private ICredentials _serverCredentials;
+    private bool _preAuthenticate;
+    private WindowsProxyUsePolicy _windowsProxyUsePolicy;
+    private ICredentials _defaultProxyCredentials;
+    private IWebProxy _proxy;
+    private int _maxConnectionsPerServer;
+    private TimeSpan _sendTimeout;
+    private TimeSpan _receiveHeadersTimeout;
+    private TimeSpan _receiveDataTimeout;
+    private TimeSpan _tcpKeepAliveTime;
+    private TimeSpan _tcpKeepAliveInterval;
+    private bool _tcpKeepAliveEnabled;
+    private int _maxResponseHeadersLength;
+    private int _maxResponseDrainSize;
+    private IDictionary`2<string, object> _properties;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _operationStarted;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposed;
+    private SafeWinHttpHandle _sessionHandle;
+    private WinHttpAuthHelper _authHelper;
+    public bool AutomaticRedirection { get; public set; }
+    public int MaxAutomaticRedirections { get; public set; }
+    public DecompressionMethods AutomaticDecompression { get; public set; }
+    public CookieUsePolicy CookieUsePolicy { get; public set; }
+    public CookieContainer CookieContainer { get; public set; }
+    public SslProtocols SslProtocols { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> ServerCertificateValidationCallback { get; public set; }
+    public bool CheckCertificateRevocationList { get; public set; }
+    public ClientCertificateOption ClientCertificateOption { get; public set; }
+    [NullableAttribute("1")]
+public X509Certificate2Collection ClientCertificates { get; }
+    public bool PreAuthenticate { get; public set; }
+    public ICredentials ServerCredentials { get; public set; }
+    public WindowsProxyUsePolicy WindowsProxyUsePolicy { get; public set; }
+    public ICredentials DefaultProxyCredentials { get; public set; }
+    public IWebProxy Proxy { get; public set; }
+    public int MaxConnectionsPerServer { get; public set; }
+    public TimeSpan SendTimeout { get; public set; }
+    public TimeSpan ReceiveHeadersTimeout { get; public set; }
+    public TimeSpan ReceiveDataTimeout { get; public set; }
+    public bool TcpKeepAliveEnabled { get; public set; }
+    public TimeSpan TcpKeepAliveTime { get; public set; }
+    public TimeSpan TcpKeepAliveInterval { get; public set; }
+    public int MaxResponseHeadersLength { get; public set; }
+    public int MaxResponseDrainSize { get; public set; }
+    public bool EnableMultipleHttp2Connections { get; public set; }
+    [NullableAttribute("1")]
+public IDictionary`2<string, object> Properties { get; }
+    private static WinHttpHandler();
+    public bool get_AutomaticRedirection();
+    public void set_AutomaticRedirection(bool value);
+    public int get_MaxAutomaticRedirections();
+    public void set_MaxAutomaticRedirections(int value);
+    public DecompressionMethods get_AutomaticDecompression();
+    public void set_AutomaticDecompression(DecompressionMethods value);
+    public CookieUsePolicy get_CookieUsePolicy();
+    public void set_CookieUsePolicy(CookieUsePolicy value);
+    public CookieContainer get_CookieContainer();
+    public void set_CookieContainer(CookieContainer value);
+    public SslProtocols get_SslProtocols();
+    public void set_SslProtocols(SslProtocols value);
+    public Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> get_ServerCertificateValidationCallback();
+    public void set_ServerCertificateValidationCallback(Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> value);
+    public bool get_CheckCertificateRevocationList();
+    public void set_CheckCertificateRevocationList(bool value);
+    public ClientCertificateOption get_ClientCertificateOption();
+    public void set_ClientCertificateOption(ClientCertificateOption value);
+    [NullableContextAttribute("1")]
+public X509Certificate2Collection get_ClientCertificates();
+    public bool get_PreAuthenticate();
+    public void set_PreAuthenticate(bool value);
+    public ICredentials get_ServerCredentials();
+    public void set_ServerCredentials(ICredentials value);
+    public WindowsProxyUsePolicy get_WindowsProxyUsePolicy();
+    public void set_WindowsProxyUsePolicy(WindowsProxyUsePolicy value);
+    public ICredentials get_DefaultProxyCredentials();
+    public void set_DefaultProxyCredentials(ICredentials value);
+    public IWebProxy get_Proxy();
+    public void set_Proxy(IWebProxy value);
+    public int get_MaxConnectionsPerServer();
+    public void set_MaxConnectionsPerServer(int value);
+    public TimeSpan get_SendTimeout();
+    public void set_SendTimeout(TimeSpan value);
+    public TimeSpan get_ReceiveHeadersTimeout();
+    public void set_ReceiveHeadersTimeout(TimeSpan value);
+    public TimeSpan get_ReceiveDataTimeout();
+    public void set_ReceiveDataTimeout(TimeSpan value);
+    public bool get_TcpKeepAliveEnabled();
+    public void set_TcpKeepAliveEnabled(bool value);
+    public TimeSpan get_TcpKeepAliveTime();
+    public void set_TcpKeepAliveTime(TimeSpan value);
+    public TimeSpan get_TcpKeepAliveInterval();
+    public void set_TcpKeepAliveInterval(TimeSpan value);
+    public int get_MaxResponseHeadersLength();
+    public void set_MaxResponseHeadersLength(int value);
+    public int get_MaxResponseDrainSize();
+    public void set_MaxResponseDrainSize(int value);
+    public bool get_EnableMultipleHttp2Connections();
+    public void set_EnableMultipleHttp2Connections(bool value);
+    [NullableContextAttribute("1")]
+public IDictionary`2<string, object> get_Properties();
+    protected virtual void Dispose(bool disposing);
+    [NullableContextAttribute("1")]
+protected virtual Task`1<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
+    private static WinHttpChunkMode GetChunkedModeForSend(HttpRequestMessage requestMessage);
+    private static void AddRequestHeaders(SafeWinHttpHandle requestHandle, HttpRequestMessage requestMessage, CookieContainer cookies, DecompressionMethods manuallyProcessedDecompressionMethods);
+    private void EnsureSessionHandleExists(WinHttpRequestState state);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpHandler/<StartRequestAsync>d__122")]
+private Task StartRequestAsync(WinHttpRequestState state);
+    private void OpenRequestHandle(WinHttpRequestState state, SafeWinHttpHandle connectHandle, string httpVersion, WinHttpChunkMode& chunkedModeForSend, SafeWinHttpHandle& requestHandle);
+    private void SetSessionHandleOptions(SafeWinHttpHandle sessionHandle);
+    private void SetTcpKeepalive(SafeWinHttpHandle sessionHandle);
+    private void SetRequireStreamEnd(SafeWinHttpHandle sessionHandle);
+    private void SetSessionHandleConnectionOptions(SafeWinHttpHandle sessionHandle);
+    private void SetSessionHandleTlsOptions(SafeWinHttpHandle sessionHandle);
+    private static bool CheckTls13Support();
+    private void SetSessionHandleTimeoutOptions(SafeWinHttpHandle sessionHandle);
+    private void SetRequestHandleOptions(WinHttpRequestState state);
+    private void SetRequestHandleProxyOptions(WinHttpRequestState state);
+    private void SetRequestHandleDecompressionOptions(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleRedirectionOptions(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleCookieOptions(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleTlsOptions(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleClientCertificateOptions(SafeWinHttpHandle requestHandle, Uri requestUri);
+    private void SetEnableHttp2PlusClientCertificate(Uri requestUri, Version requestVersion);
+    private void SetDisableHttp2StreamQueue(SafeWinHttpHandle sessionHandle);
+    internal static void SetNoClientCertificate(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleCredentialsOptions(WinHttpRequestState state);
+    private void SetRequestHandleBufferingOptions(SafeWinHttpHandle requestHandle);
+    private void SetRequestHandleHttp2Options(SafeWinHttpHandle requestHandle, Version requestVersion);
+    private void SetWinHttpOption(SafeWinHttpHandle handle, UInt32 option, UInt32& optionData);
+    private static void SetWinHttpOption(SafeWinHttpHandle handle, UInt32 option, IntPtr optionData, UInt32 optionSize);
+    private static void HandleAsyncException(WinHttpRequestState state, Exception ex);
+    private void SetOperationStarted();
+    private void CheckDisposed();
+    private void CheckDisposedOrStarted();
+    private static void CheckTimeSpanPropertyValue(TimeSpan timeSpan);
+    private void SetStatusCallback(SafeWinHttpHandle requestHandle, WINHTTP_STATUS_CALLBACK callback);
+    private void ThrowOnInvalidHandle(SafeWinHttpHandle handle, string nameOfCalledFunction);
+    private RendezvousAwaitable`1<int> InternalSendRequestAsync(WinHttpRequestState state);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpHandler/<InternalSendRequestBodyAsync>d__154")]
+private static Task InternalSendRequestBodyAsync(WinHttpRequestState state, WinHttpChunkMode chunkedModeForSend);
+    private RendezvousAwaitable`1<int> InternalReceiveResponseHeadersAsync(WinHttpRequestState state);
+    [CompilerGeneratedAttribute]
+internal static UInt32 <OpenRequestHandle>g__GetRequestFlags|123_0(WinHttpRequestState state, WinHttpChunkMode chunkedModeForSend);
+}
+internal static class System.Net.Http.WinHttpRequestCallback : object {
+    public static WINHTTP_STATUS_CALLBACK StaticCallbackDelegate;
+    private static WinHttpRequestCallback();
+    public static void WinHttpCallback(IntPtr handle, IntPtr context, UInt32 internetStatus, IntPtr statusInformation, UInt32 statusInformationLength);
+    private static void RequestCallback(WinHttpRequestState state, UInt32 internetStatus, IntPtr statusInformation, UInt32 statusInformationLength);
+    private static void OnRequestHandleClosing(WinHttpRequestState state);
+    private static void OnRequestSendRequestComplete(WinHttpRequestState state);
+    private static void OnRequestDataAvailable(WinHttpRequestState state, int bytesAvailable);
+    private static void OnRequestReadComplete(WinHttpRequestState state, UInt32 bytesRead);
+    private static void OnRequestWriteComplete(WinHttpRequestState state);
+    private static void OnRequestReceiveResponseHeadersComplete(WinHttpRequestState state);
+    private static void OnRequestRedirect(WinHttpRequestState state, Uri redirectUri);
+    private static void OnRequestSendingRequest(WinHttpRequestState state);
+    private static void OnRequestError(WinHttpRequestState state, WINHTTP_ASYNC_RESULT asyncResult);
+    private static void ResetAuthRequestHeaders(WinHttpRequestState state);
+}
+internal class System.Net.Http.WinHttpRequestState : object {
+    private GCHandle _operationHandle;
+    private WinHttpTransportContext _transportContext;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposed;
+    [CompilerGeneratedAttribute]
+private TaskCompletionSource`1<HttpResponseMessage> <Tcs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CancellationToken <CancellationToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HttpRequestMessage <RequestMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private WinHttpHandler <Handler>k__BackingField;
+    private SafeWinHttpHandle _requestHandle;
+    [CompilerGeneratedAttribute]
+private Exception <SavedException>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CheckCertificateRevocationList>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> <ServerCertificateValidationCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private WindowsProxyUsePolicy <WindowsProxyUsePolicy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IWebProxy <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICredentials <ServerCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICredentials <DefaultProxyCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PreAuthenticate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HttpStatusCode <LastStatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <RetryRequest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RendezvousAwaitable`1<int> <LifecycleAwaitable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TaskCompletionSource`1<bool> <TcsInternalWriteDataToRequestStream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AsyncReadInProgress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <ExpectedBytesToRead>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <CurrentBytesRead>k__BackingField;
+    private GCHandle _cachedReceivePinnedBuffer;
+    public object Lock { get; }
+    public TaskCompletionSource`1<HttpResponseMessage> Tcs { get; public set; }
+    public CancellationToken CancellationToken { get; public set; }
+    public HttpRequestMessage RequestMessage { get; public set; }
+    public WinHttpHandler Handler { get; public set; }
+    public SafeWinHttpHandle RequestHandle { get; public set; }
+    public Exception SavedException { get; public set; }
+    public bool CheckCertificateRevocationList { get; public set; }
+    public Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> ServerCertificateValidationCallback { get; public set; }
+    public WinHttpTransportContext TransportContext { get; public set; }
+    public WindowsProxyUsePolicy WindowsProxyUsePolicy { get; public set; }
+    public IWebProxy Proxy { get; public set; }
+    public ICredentials ServerCredentials { get; public set; }
+    public ICredentials DefaultProxyCredentials { get; public set; }
+    public bool PreAuthenticate { get; public set; }
+    public HttpStatusCode LastStatusCode { get; public set; }
+    public bool RetryRequest { get; public set; }
+    public RendezvousAwaitable`1<int> LifecycleAwaitable { get; public set; }
+    public TaskCompletionSource`1<bool> TcsInternalWriteDataToRequestStream { get; public set; }
+    public bool AsyncReadInProgress { get; public set; }
+    public Nullable`1<long> ExpectedBytesToRead { get; public set; }
+    public long CurrentBytesRead { get; public set; }
+    public void Pin();
+    public static WinHttpRequestState FromIntPtr(IntPtr gcHandle);
+    public IntPtr ToIntPtr();
+    public object get_Lock();
+    public void ClearSendRequestState();
+    [CompilerGeneratedAttribute]
+public TaskCompletionSource`1<HttpResponseMessage> get_Tcs();
+    [CompilerGeneratedAttribute]
+public void set_Tcs(TaskCompletionSource`1<HttpResponseMessage> value);
+    [CompilerGeneratedAttribute]
+public CancellationToken get_CancellationToken();
+    [CompilerGeneratedAttribute]
+public void set_CancellationToken(CancellationToken value);
+    [CompilerGeneratedAttribute]
+public HttpRequestMessage get_RequestMessage();
+    [CompilerGeneratedAttribute]
+public void set_RequestMessage(HttpRequestMessage value);
+    [CompilerGeneratedAttribute]
+public WinHttpHandler get_Handler();
+    [CompilerGeneratedAttribute]
+public void set_Handler(WinHttpHandler value);
+    public SafeWinHttpHandle get_RequestHandle();
+    public void set_RequestHandle(SafeWinHttpHandle value);
+    [CompilerGeneratedAttribute]
+public Exception get_SavedException();
+    [CompilerGeneratedAttribute]
+public void set_SavedException(Exception value);
+    [CompilerGeneratedAttribute]
+public bool get_CheckCertificateRevocationList();
+    [CompilerGeneratedAttribute]
+public void set_CheckCertificateRevocationList(bool value);
+    [CompilerGeneratedAttribute]
+public Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> get_ServerCertificateValidationCallback();
+    [CompilerGeneratedAttribute]
+public void set_ServerCertificateValidationCallback(Func`5<HttpRequestMessage, X509Certificate2, X509Chain, SslPolicyErrors, bool> value);
+    public WinHttpTransportContext get_TransportContext();
+    public void set_TransportContext(WinHttpTransportContext value);
+    [CompilerGeneratedAttribute]
+public WindowsProxyUsePolicy get_WindowsProxyUsePolicy();
+    [CompilerGeneratedAttribute]
+public void set_WindowsProxyUsePolicy(WindowsProxyUsePolicy value);
+    [CompilerGeneratedAttribute]
+public IWebProxy get_Proxy();
+    [CompilerGeneratedAttribute]
+public void set_Proxy(IWebProxy value);
+    [CompilerGeneratedAttribute]
+public ICredentials get_ServerCredentials();
+    [CompilerGeneratedAttribute]
+public void set_ServerCredentials(ICredentials value);
+    [CompilerGeneratedAttribute]
+public ICredentials get_DefaultProxyCredentials();
+    [CompilerGeneratedAttribute]
+public void set_DefaultProxyCredentials(ICredentials value);
+    [CompilerGeneratedAttribute]
+public bool get_PreAuthenticate();
+    [CompilerGeneratedAttribute]
+public void set_PreAuthenticate(bool value);
+    [CompilerGeneratedAttribute]
+public HttpStatusCode get_LastStatusCode();
+    [CompilerGeneratedAttribute]
+public void set_LastStatusCode(HttpStatusCode value);
+    [CompilerGeneratedAttribute]
+public bool get_RetryRequest();
+    [CompilerGeneratedAttribute]
+public void set_RetryRequest(bool value);
+    [CompilerGeneratedAttribute]
+public RendezvousAwaitable`1<int> get_LifecycleAwaitable();
+    [CompilerGeneratedAttribute]
+public void set_LifecycleAwaitable(RendezvousAwaitable`1<int> value);
+    [CompilerGeneratedAttribute]
+public TaskCompletionSource`1<bool> get_TcsInternalWriteDataToRequestStream();
+    [CompilerGeneratedAttribute]
+public void set_TcsInternalWriteDataToRequestStream(TaskCompletionSource`1<bool> value);
+    [CompilerGeneratedAttribute]
+public bool get_AsyncReadInProgress();
+    [CompilerGeneratedAttribute]
+public void set_AsyncReadInProgress(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_ExpectedBytesToRead();
+    [CompilerGeneratedAttribute]
+public void set_ExpectedBytesToRead(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public long get_CurrentBytesRead();
+    [CompilerGeneratedAttribute]
+public void set_CurrentBytesRead(long value);
+    public void PinReceiveBuffer(Byte[] buffer);
+    private void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+internal class System.Net.Http.WinHttpRequestStream : Stream {
+    private static Byte[] s_crLfTerminator;
+    private static Byte[] s_endChunk;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposed;
+    private WinHttpRequestState _state;
+    private SafeWinHttpHandle _requestHandle;
+    private WinHttpChunkMode _chunkedMode;
+    private GCHandle _cachedSendPinnedBuffer;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    internal WinHttpRequestStream(WinHttpRequestState state, WinHttpChunkMode chunkedMode);
+    private static WinHttpRequestStream();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken token);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual IAsyncResult BeginWrite(Byte[] buffer, int offset, int count, AsyncCallback asyncCallback, object asyncState);
+    public virtual void EndWrite(IAsyncResult asyncResult);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpRequestStream/<EndUploadAsync>d__28")]
+internal Task EndUploadAsync(CancellationToken token);
+    protected virtual void Dispose(bool disposing);
+    private void CheckDisposed();
+    private Task InternalWriteAsync(Byte[] buffer, int offset, int count, CancellationToken token);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpRequestStream/<InternalWriteChunkedModeAsync>d__32")]
+private Task InternalWriteChunkedModeAsync(Byte[] buffer, int offset, int count, CancellationToken token);
+    private Task`1<bool> InternalWriteDataAsync(Byte[] buffer, int offset, int count, CancellationToken token);
+    private Task`1<bool> InternalWriteEndDataAsync(CancellationToken token);
+}
+internal class System.Net.Http.WinHttpResponseHeaderReader : ValueType {
+    private Char[] _buffer;
+    private int _length;
+    private int _position;
+    public WinHttpResponseHeaderReader(Char[] buffer, int startIndex, int length);
+    public bool ReadHeader(String& name, String& value);
+    public bool ReadLine();
+    private bool ReadLine(Int32& startIndex, Int32& length);
+}
+internal static class System.Net.Http.WinHttpResponseParser : object {
+    private static string EncodingNameDeflate;
+    private static string EncodingNameGzip;
+    public static HttpResponseMessage CreateResponseMessage(WinHttpRequestState state, DecompressionMethods manuallyProcessedDecompressionMethods);
+    public static UInt32 GetResponseHeaderNumberInfo(SafeWinHttpHandle requestHandle, UInt32 infoLevel);
+    public static bool GetResponseHeader(SafeWinHttpHandle requestHandle, UInt32 infoLevel, Char[]& buffer, UInt32& index, String& headerValue);
+    private static int GetResponseHeader(SafeWinHttpHandle requestHandle, UInt32 infoLevel, Char[] buffer);
+    public static int GetResponseHeaderCharBufferLength(SafeWinHttpHandle requestHandle, bool isTrailingHeaders);
+    private static bool QueryHeaders(SafeWinHttpHandle requestHandle, UInt32 infoLevel, Char* buffer, Int32& bufferLength, UInt32& index);
+    private static string GetReasonPhrase(HttpStatusCode statusCode, Char[] buffer, int bufferLength);
+    private static void ParseResponseHeaders(SafeWinHttpHandle requestHandle, HttpResponseMessage response, Char[] buffer, bool stripEncodingHeaders);
+    public static void ParseResponseTrailers(SafeWinHttpHandle requestHandle, HttpResponseMessage response, Char[] buffer);
+    private static bool IsResponseHttp2(SafeWinHttpHandle requestHandle);
+}
+internal class System.Net.Http.WinHttpResponseStream : Stream {
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposed;
+    private WinHttpRequestState _state;
+    private HttpResponseMessage _responseMessage;
+    private SafeWinHttpHandle _requestHandle;
+    private bool _readTrailingHeaders;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    internal WinHttpResponseStream(SafeWinHttpHandle requestHandle, WinHttpRequestState state, HttpResponseMessage responseMessage);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpResponseStream/<CopyToAsyncCore>d__20")]
+private Task CopyToAsyncCore(Stream destination, Byte[] buffer, CancellationToken cancellationToken);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken token);
+    public virtual IAsyncResult BeginRead(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual int EndRead(IAsyncResult asyncResult);
+    [AsyncStateMachineAttribute("System.Net.Http.WinHttpResponseStream/<ReadAsyncCore>d__24")]
+private Task`1<int> ReadAsyncCore(Byte[] buffer, int offset, int count, CancellationToken token);
+    private void ReadResponseTrailers();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    private void CheckDisposed();
+    private void CancelPendingResponseStreamReadOperation();
+}
+internal static class System.Net.Http.WinHttpTraceHelper : object {
+    public static void TraceCallbackStatus(object thisOrContextObject, IntPtr handle, IntPtr context, UInt32 status, string memberName);
+    public static void TraceAsyncError(object thisOrContextObject, WINHTTP_ASYNC_RESULT asyncResult, string memberName);
+    private static string GetNameFromApiIndex(UInt32 index);
+    private static string GetNameFromError(UInt32 error);
+    private static string GetStringFromInternetStatus(UInt32 status);
+}
+internal static class System.Net.Http.WinHttpTrailersHelper : object {
+    private static Lazy`1<bool> s_trailersSupported;
+    public static bool OsSupportsTrailers { get; }
+    private static WinHttpTrailersHelper();
+    public static bool get_OsSupportsTrailers();
+    public static HttpHeaders GetResponseTrailers(HttpResponseMessage response);
+    private static bool GetTrailersSupported();
+}
+internal class System.Net.Http.WinHttpTransportContext : TransportContext {
+    private WinHttpChannelBinding _channelBinding;
+    public virtual ChannelBinding GetChannelBinding(ChannelBindingKind kind);
+    internal void SetChannelBinding(SafeWinHttpHandle requestHandle);
+}
+internal class System.Net.Http.WinInetProxyHelper : object {
+    private static int RecentAutoDetectionInterval;
+    private string _autoConfigUrl;
+    private string _proxy;
+    private string _proxyBypass;
+    private bool _autoDetect;
+    private bool _useProxy;
+    private bool _autoDetectionFailed;
+    private int _lastTimeAutoDetectionFailed;
+    public string AutoConfigUrl { get; }
+    public bool AutoDetect { get; }
+    public bool AutoSettingsUsed { get; }
+    public bool ManualSettingsUsed { get; }
+    public bool ManualSettingsOnly { get; }
+    public string Proxy { get; }
+    public string ProxyBypass { get; }
+    public bool RecentAutoDetectionFailure { get; }
+    public string get_AutoConfigUrl();
+    public bool get_AutoDetect();
+    public bool get_AutoSettingsUsed();
+    public bool get_ManualSettingsUsed();
+    public bool get_ManualSettingsOnly();
+    public string get_Proxy();
+    public string get_ProxyBypass();
+    public bool get_RecentAutoDetectionFailure();
+    public bool GetProxyForUrl(SafeWinHttpHandle sessionHandle, Uri uri, WINHTTP_PROXY_INFO& proxyInfo);
+}
+internal static class System.Net.HttpKnownHeaderNames : object {
+    public static string Accept;
+    public static string AcceptCharset;
+    public static string AcceptEncoding;
+    public static string AcceptLanguage;
+    public static string AcceptPatch;
+    public static string AcceptRanges;
+    public static string AccessControlAllowCredentials;
+    public static string AccessControlAllowHeaders;
+    public static string AccessControlAllowMethods;
+    public static string AccessControlAllowOrigin;
+    public static string AccessControlExposeHeaders;
+    public static string AccessControlMaxAge;
+    public static string Age;
+    public static string Allow;
+    public static string AltSvc;
+    public static string Authorization;
+    public static string CacheControl;
+    public static string Connection;
+    public static string ContentDisposition;
+    public static string ContentEncoding;
+    public static string ContentLanguage;
+    public static string ContentLength;
+    public static string ContentLocation;
+    public static string ContentMD5;
+    public static string ContentRange;
+    public static string ContentSecurityPolicy;
+    public static string ContentType;
+    public static string Cookie;
+    public static string Cookie2;
+    public static string Date;
+    public static string ETag;
+    public static string Expect;
+    public static string Expires;
+    public static string From;
+    public static string Host;
+    public static string IfMatch;
+    public static string IfModifiedSince;
+    public static string IfNoneMatch;
+    public static string IfRange;
+    public static string IfUnmodifiedSince;
+    public static string KeepAlive;
+    public static string LastModified;
+    public static string Link;
+    public static string Location;
+    public static string MaxForwards;
+    public static string Origin;
+    public static string P3P;
+    public static string Pragma;
+    public static string ProxyAuthenticate;
+    public static string ProxyAuthorization;
+    public static string ProxyConnection;
+    public static string PublicKeyPins;
+    public static string Range;
+    public static string Referer;
+    public static string RetryAfter;
+    public static string SecWebSocketAccept;
+    public static string SecWebSocketExtensions;
+    public static string SecWebSocketKey;
+    public static string SecWebSocketProtocol;
+    public static string SecWebSocketVersion;
+    public static string Server;
+    public static string SetCookie;
+    public static string SetCookie2;
+    public static string StrictTransportSecurity;
+    public static string TE;
+    public static string TSV;
+    public static string Trailer;
+    public static string TransferEncoding;
+    public static string Upgrade;
+    public static string UpgradeInsecureRequests;
+    public static string UserAgent;
+    public static string Vary;
+    public static string Via;
+    public static string WWWAuthenticate;
+    public static string Warning;
+    public static string XAspNetVersion;
+    public static string XContentDuration;
+    public static string XContentTypeOptions;
+    public static string XFrameOptions;
+    public static string XMSEdgeRef;
+    public static string XPoweredBy;
+    public static string XRequestID;
+    public static string XUACompatible;
+    private static string Gzip;
+    private static string Deflate;
+    public static bool TryGetHeaderName(Char[] array, int startIndex, int length, String& name);
+    public static bool TryGetHeaderName(IntPtr buffer, int length, String& name);
+    public static string GetHeaderValue(string name, ReadOnlySpan`1<char> value);
+    private static bool TryGetHeaderName(T key, int startIndex, int length, Func`3<T, int, char> charAt, Func`5<string, T, int, int, bool> equals, String& name);
+    private static bool TryMatch(string known, T key, int startIndex, int length, Func`5<string, T, int, int, bool> equals, String& name);
+    private static bool EqualsOrdinal(string left, IntPtr right, int rightLength);
+}
+internal static class System.Net.HttpStatusDescription : object {
+    internal static string Get(HttpStatusCode code);
+    internal static string Get(int code);
+}
+[EventSourceAttribute]
+internal class System.Net.NetEventSource : EventSource {
+    private static string EventSourceSuppressMessage;
+    public static NetEventSource Log;
+    private static string MissingMember;
+    private static string NullInstance;
+    private static string StaticMethodObject;
+    private static string NoParameters;
+    private static int InfoEventId;
+    private static int ErrorEventId;
+    private static int NextAvailableEventId;
+    private static NetEventSource();
+    [NonEventAttribute]
+public static void Info(object thisOrContextObject, FormattableString formattableString, string memberName);
+    [NonEventAttribute]
+public static void Info(object thisOrContextObject, object message, string memberName);
+    [EventAttribute("1")]
+private void Info(string thisOrContextObject, string memberName, string message);
+    [NonEventAttribute]
+public static void Error(object thisOrContextObject, FormattableString formattableString, string memberName);
+    [NonEventAttribute]
+public static void Error(object thisOrContextObject, object message, string memberName);
+    [EventAttribute("2")]
+private void ErrorMessage(string thisOrContextObject, string memberName, string message);
+    [NonEventAttribute]
+public static string IdOf(object value);
+    [NonEventAttribute]
+public static int GetHashCode(object value);
+    [NonEventAttribute]
+public static string Format(object value);
+    [NonEventAttribute]
+private static string Format(FormattableString s);
+    [UnconditionalSuppressMessageAttribute("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern")]
+[NonEventAttribute]
+private void WriteEvent(int eventId, string arg1, string arg2, int arg3);
+}
+internal static class System.Net.Security.CertificateHelper : object {
+    private static string ClientAuthenticationOID;
+    internal static X509Certificate2 GetEligibleClientCertificate(X509CertificateCollection candidateCerts);
+    internal static X509Certificate2 GetEligibleClientCertificate(X509Certificate2Collection candidateCerts);
+    private static bool IsValidClientCertificate(X509Certificate2 cert);
+    private static bool IsValidForClientAuthenticationEKU(X509EnhancedKeyUsageExtension eku);
+    private static bool IsValidForDigitalSignatureUsage(X509KeyUsageExtension ku);
+    internal static X509Certificate2 GetEligibleClientCertificate();
+}
+internal static class System.Net.SecurityProtocol : object {
+    public static SslProtocols DefaultSecurityProtocols;
+    public static SslProtocols SystemDefaultSecurityProtocols;
+}
+internal static class System.Net.UnmanagedCertificateContext : object {
+    internal static void GetRemoteCertificatesFromStoreContext(IntPtr certContext, X509Certificate2Collection result);
+}
+internal static class System.Net.UriScheme : object {
+    public static string File;
+    public static string Ftp;
+    public static string Gopher;
+    public static string Http;
+    public static string Https;
+    public static string News;
+    public static string NetPipe;
+    public static string NetTcp;
+    public static string Nntp;
+    public static string Mailto;
+    public static string Ws;
+    public static string Wss;
+    public static string SchemeDelimiter;
+}
+internal static class System.Obsoletions : object {
+    internal static string SharedUrlFormat;
+    internal static string SystemTextEncodingUTF7Message;
+    internal static string SystemTextEncodingUTF7DiagId;
+    internal static string PrincipalPermissionAttributeMessage;
+    internal static string PrincipalPermissionAttributeDiagId;
+    internal static string CodeAccessSecurityMessage;
+    internal static string CodeAccessSecurityDiagId;
+    internal static string ConstrainedExecutionRegionMessage;
+    internal static string ConstrainedExecutionRegionDiagId;
+    internal static string GlobalAssemblyCacheMessage;
+    internal static string GlobalAssemblyCacheDiagId;
+    internal static string ThreadAbortMessage;
+    internal static string ThreadResetAbortMessage;
+    internal static string ThreadAbortDiagId;
+    internal static string DefaultCryptoAlgorithmsMessage;
+    internal static string DefaultCryptoAlgorithmsDiagId;
+    internal static string CreatePdbGeneratorMessage;
+    internal static string CreatePdbGeneratorDiagId;
+    internal static string AuthenticationManagerMessage;
+    internal static string AuthenticationManagerDiagId;
+    internal static string RemotingApisMessage;
+    internal static string RemotingApisDiagId;
+    internal static string BinaryFormatterMessage;
+    internal static string BinaryFormatterDiagId;
+    internal static string CodeBaseMessage;
+    internal static string CodeBaseDiagId;
+    internal static string EscapeUriStringMessage;
+    internal static string EscapeUriStringDiagId;
+    internal static string WebRequestMessage;
+    internal static string WebRequestDiagId;
+    internal static string DisablePrivateReflectionAttributeMessage;
+    internal static string DisablePrivateReflectionAttributeDiagId;
+    internal static string GetContextInfoMessage;
+    internal static string GetContextInfoDiagId;
+    internal static string StrongNameKeyPairMessage;
+    internal static string StrongNameKeyPairDiagId;
+    internal static string ReflectionOnlyLoadingMessage;
+    internal static string ReflectionOnlyLoadingDiagId;
+    internal static string RuntimeEnvironmentMessage;
+    internal static string RuntimeEnvironmentDiagId;
+    internal static string JsonSerializerOptionsIgnoreNullValuesMessage;
+    internal static string JsonSerializerOptionsIgnoreNullValuesDiagId;
+    internal static string DerivedCryptographicTypesMessage;
+    internal static string DerivedCryptographicTypesDiagId;
+    internal static string RijndaelMessage;
+    internal static string RijndaelDiagId;
+    internal static string RNGCryptoServiceProviderMessage;
+    internal static string RNGCryptoServiceProviderDiagId;
+    internal static string AppDomainCreateUnloadMessage;
+    internal static string AppDomainCreateUnloadDiagId;
+    internal static string SuppressIldasmAttributeMessage;
+    internal static string SuppressIldasmAttributeDiagId;
+    internal static string X509CertificateImmutableMessage;
+    internal static string X509CertificateImmutableDiagId;
+    internal static string PublicKeyPropertyMessage;
+    internal static string PublicKeyPropertyDiagId;
+    internal static string X509CertificatePrivateKeyMessage;
+    internal static string X509CertificatePrivateKeyDiagId;
+    internal static string ProduceLegacyHmacValuesMessage;
+    internal static string ProduceLegacyHmacValuesDiagId;
+    internal static string UseManagedSha1Message;
+    internal static string UseManagedSha1DiagId;
+    internal static string CryptoConfigEncodeOIDMessage;
+    internal static string CryptoConfigEncodeOIDDiagId;
+    internal static string CorruptedStateRecoveryMessage;
+    internal static string CorruptedStateRecoveryDiagId;
+    internal static string Rfc2898CryptDeriveKeyMessage;
+    internal static string Rfc2898CryptDeriveKeyDiagId;
+    internal static string CmsSignerCspParamsCtorMessage;
+    internal static string CmsSignerCspParamsCtorDiagId;
+    internal static string SignerInfoCounterSigMessage;
+    internal static string SignerInfoCounterSigDiagId;
+    internal static string RegexCompileToAssemblyMessage;
+    internal static string RegexCompileToAssemblyDiagId;
+    internal static string AssemblyNameMembersMessage;
+    internal static string AssemblyNameMembersDiagId;
+    internal static string SystemDataSerializationFormatBinaryMessage;
+    internal static string SystemDataSerializationFormatBinaryDiagId;
+    internal static string TlsVersion10and11Message;
+    internal static string TlsVersion10and11DiagId;
+    internal static string EncryptionPolicyMessage;
+    internal static string EncryptionPolicyDiagId;
+    internal static string Rfc2898OutdatedCtorMessage;
+    internal static string Rfc2898OutdatedCtorDiagId;
+    internal static string EccXmlExportImportMessage;
+    internal static string EccXmlExportImportDiagId;
+    internal static string EcDhPublicKeyBlobMessage;
+    internal static string EcDhPublicKeyBlobDiagId;
+    internal static string AssemblyNameCodeBaseMessage;
+    internal static string AssemblyNameCodeBaseDiagId;
+    internal static string CryptoStringFactoryMessage;
+    internal static string CryptoStringFactoryDiagId;
+    internal static string ControlledExecutionRunMessage;
+    internal static string ControlledExecutionRunDiagId;
+    internal static string XmlSecureResolverMessage;
+    internal static string XmlSecureResolverDiagId;
+    internal static string RsaEncryptDecryptValueMessage;
+    internal static string RsaEncryptDecryptDiagId;
+    internal static string JsonSerializerOptionsAddContextMessage;
+    internal static string JsonSerializerOptionsAddContextDiagId;
+    internal static string LegacyFormatterMessage;
+    internal static string LegacyFormatterDiagId;
+    internal static string LegacyFormatterImplMessage;
+    internal static string LegacyFormatterImplDiagId;
+    internal static string RegexExtensibilityImplMessage;
+    internal static string RegexExtensibilityDiagId;
+    internal static string AesGcmTagConstructorMessage;
+    internal static string AesGcmTagConstructorDiagId;
+}
+internal static class System.Runtime.ExceptionServices.ExceptionStackTrace : object {
+    [ConditionalAttribute("DEBUG")]
+public static void AddCurrentStack(Exception exception);
+}
+internal static class System.SR : object {
+    private static bool s_usingResourceKeys;
+    private static ResourceManager s_resourceManager;
+    internal static ResourceManager ResourceManager { get; }
+    internal static string net_securityprotocolnotsupported { get; }
+    internal static string net_http_invalid_cookiecontainer { get; }
+    internal static string net_http_invalid_proxyusepolicy { get; }
+    internal static string net_http_invalid_proxy { get; }
+    internal static string net_http_handler_norequest { get; }
+    internal static string net_http_operation_started { get; }
+    internal static string net_http_client_execution_error { get; }
+    internal static string net_http_io_read { get; }
+    internal static string net_http_io_read_incomplete { get; }
+    internal static string net_http_io_write { get; }
+    internal static string net_http_chunked_not_allowed_with_empty_content { get; }
+    internal static string net_http_invalid_enable_first { get; }
+    internal static string net_http_value_must_be_greater_than { get; }
+    internal static string net_http_username_empty_string { get; }
+    internal static string net_http_no_concurrent_io_allowed { get; }
+    internal static string net_http_buffer_insufficient_length { get; }
+    internal static string ArgumentOutOfRange_NeedPosNum { get; }
+    internal static string NotSupported_UnreadableStream { get; }
+    internal static string NotSupported_UnwritableStream { get; }
+    internal static string ObjectDisposed_StreamClosed { get; }
+    internal static string net_http_content_stream_already_read { get; }
+    internal static string net_http_winhttp_error { get; }
+    internal static string PlatformNotSupported_WinHttpHandler { get; }
+    internal static string net_http_unsupported_requesturi_scheme { get; }
+    internal static string net_http_client_invalid_requesturi { get; }
+    private static SR();
+    internal static bool UsingResourceKeys();
+    private static string GetResourceString(string resourceKey);
+    private static string GetResourceString(string resourceKey, string defaultString);
+    internal static string Format(string resourceFormat, object p1);
+    internal static string Format(string resourceFormat, object p1, object p2);
+    internal static string Format(string resourceFormat, object p1, object p2, object p3);
+    internal static string Format(string resourceFormat, Object[] args);
+    internal static string Format(IFormatProvider provider, string resourceFormat, object p1);
+    internal static string Format(IFormatProvider provider, string resourceFormat, object p1, object p2);
+    internal static string Format(IFormatProvider provider, string resourceFormat, object p1, object p2, object p3);
+    internal static string Format(IFormatProvider provider, string resourceFormat, Object[] args);
+    internal static ResourceManager get_ResourceManager();
+    internal static string get_net_securityprotocolnotsupported();
+    internal static string get_net_http_invalid_cookiecontainer();
+    internal static string get_net_http_invalid_proxyusepolicy();
+    internal static string get_net_http_invalid_proxy();
+    internal static string get_net_http_handler_norequest();
+    internal static string get_net_http_operation_started();
+    internal static string get_net_http_client_execution_error();
+    internal static string get_net_http_io_read();
+    internal static string get_net_http_io_read_incomplete();
+    internal static string get_net_http_io_write();
+    internal static string get_net_http_chunked_not_allowed_with_empty_content();
+    internal static string get_net_http_invalid_enable_first();
+    internal static string get_net_http_value_must_be_greater_than();
+    internal static string get_net_http_username_empty_string();
+    internal static string get_net_http_no_concurrent_io_allowed();
+    internal static string get_net_http_buffer_insufficient_length();
+    internal static string get_ArgumentOutOfRange_NeedPosNum();
+    internal static string get_NotSupported_UnreadableStream();
+    internal static string get_NotSupported_UnwritableStream();
+    internal static string get_ObjectDisposed_StreamClosed();
+    internal static string get_net_http_content_stream_already_read();
+    internal static string get_net_http_winhttp_error();
+    internal static string get_PlatformNotSupported_WinHttpHandler();
+    internal static string get_net_http_unsupported_requesturi_scheme();
+    internal static string get_net_http_client_invalid_requesturi();
+}
+[ExtensionAttribute]
+internal static class System.StringExtensions : object {
+    [ExtensionAttribute]
+internal static string SubstringTrim(string value, int startIndex, int length);
+}
+internal class System.Threading.Tasks.RendezvousAwaitable`1 : object {
+    private static Action s_completionSentinel;
+    private Action _continuation;
+    private ExceptionDispatchInfo _error;
+    private TResult _result;
+    [CompilerGeneratedAttribute]
+private bool <RunContinuationsAsynchronously>k__BackingField;
+    public bool RunContinuationsAsynchronously { get; public set; }
+    public bool IsCompleted { get; }
+    private static RendezvousAwaitable`1();
+    [CompilerGeneratedAttribute]
+public bool get_RunContinuationsAsynchronously();
+    [CompilerGeneratedAttribute]
+public void set_RunContinuationsAsynchronously(bool value);
+    public RendezvousAwaitable`1<TResult> GetAwaiter();
+    public bool get_IsCompleted();
+    public TResult GetResult();
+    public void SetResult(TResult result);
+    public void SetCanceled(CancellationToken token);
+    public void SetException(Exception exception);
+    private void NotifyAwaiter();
+    public sealed virtual void OnCompleted(Action continuation);
+    public sealed virtual void UnsafeOnCompleted(Action continuation);
+    [ConditionalAttribute("DEBUG")]
+private void AssertResultConsistency(bool expectedCompleted);
+}
