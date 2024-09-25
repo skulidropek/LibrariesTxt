@@ -1,0 +1,2016 @@
+public class Irony.Ast.AstBuilder : object {
+    public AstContext Context;
+    public AstBuilder(AstContext context);
+    public virtual void BuildAst(ParseTree parseTree);
+    public virtual void VerifyLanguageData();
+    protected virtual Type GetDefaultNodeType(BnfTerm term);
+    public virtual void BuildAst(ParseTreeNode parseNode);
+    private DefaultAstNodeCreator CompileDefaultNodeCreator(Type nodeType);
+}
+public class Irony.Ast.AstContext : object {
+    public LanguageData Language;
+    public Type DefaultNodeType;
+    public Type DefaultLiteralNodeType;
+    public Type DefaultIdentifierNodeType;
+    public Dictionary`2<object, object> Values;
+    public LogMessageList Messages;
+    public AstContext(LanguageData language);
+    public void AddMessage(ErrorLevel level, SourceLocation location, string message, Object[] args);
+}
+[ExtensionAttribute]
+public static class Irony.Ast.AstExtensions : object {
+    [ExtensionAttribute]
+public static ParseTreeNodeList GetMappedChildNodes(ParseTreeNode node);
+}
+public class Irony.Ast.AstNodeConfig : object {
+    public Type NodeType;
+    public object Data;
+    public AstNodeCreator NodeCreator;
+    public DefaultAstNodeCreator DefaultNodeCreator;
+    public Int32[] PartsMap;
+    public bool CanCreateNode();
+}
+public class Irony.Ast.AstNodeCreator : MulticastDelegate {
+    public AstNodeCreator(object object, IntPtr method);
+    public virtual void Invoke(AstContext context, ParseTreeNode parseNode);
+    public virtual IAsyncResult BeginInvoke(AstContext context, ParseTreeNode parseNode, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Irony.Ast.AstNodeEventArgs : EventArgs {
+    public ParseTreeNode ParseTreeNode;
+    public object AstNode { get; }
+    public AstNodeEventArgs(ParseTreeNode parseTreeNode);
+    public object get_AstNode();
+}
+public class Irony.Ast.DefaultAstNodeCreator : MulticastDelegate {
+    public DefaultAstNodeCreator(object object, IntPtr method);
+    public virtual object Invoke();
+    public virtual IAsyncResult BeginInvoke(AsyncCallback callback, object object);
+    public virtual object EndInvoke(IAsyncResult result);
+}
+public interface Irony.Ast.IAstNodeInit {
+    public abstract virtual void Init(AstContext context, ParseTreeNode parseNode);
+}
+public interface Irony.Ast.IBrowsableAstNode {
+    public int Position { get; }
+    public abstract virtual int get_Position();
+    public abstract virtual IEnumerable GetChildNodes();
+}
+public class Irony.CharHashSet : HashSet`1<char> {
+    private bool _caseSensitive;
+    public CharHashSet(bool caseSensitive);
+    public void Add(char ch);
+}
+public class Irony.CharList : List`1<char> {
+}
+public enum Irony.ErrorLevel : Enum {
+    public int value__;
+    public static ErrorLevel Info;
+    public static ErrorLevel Warning;
+    public static ErrorLevel Error;
+}
+public class Irony.LogMessage : object {
+    public ErrorLevel Level;
+    public ParserState ParserState;
+    public SourceLocation Location;
+    public string Message;
+    public LogMessage(ErrorLevel level, SourceLocation location, string message, ParserState parserState);
+    public virtual string ToString();
+}
+public class Irony.LogMessageList : List`1<LogMessage> {
+    public static int ByLocation(LogMessage x, LogMessage y);
+}
+public class Irony.Parsing.AcceptParserAction : ParserAction {
+    public virtual void Execute(ParsingContext context);
+    public virtual string ToString();
+}
+public enum Irony.Parsing.Associativity : Enum {
+    public int value__;
+    public static Associativity Left;
+    public static Associativity Right;
+    public static Associativity Neutral;
+}
+public class Irony.Parsing.BnfExpression : BnfTerm {
+    internal BnfExpressionData Data;
+    public BnfExpression(BnfTerm element);
+    public virtual string ToString();
+    public static BnfExpression op_Implicit(string symbol);
+    public static BnfExpression op_Implicit(Terminal term);
+    public static BnfExpression op_Implicit(NonTerminal nonTerminal);
+}
+internal class Irony.Parsing.BnfExpressionData : List`1<BnfTermList> {
+    public virtual string ToString();
+}
+public abstract class Irony.Parsing.BnfTerm : object {
+    private static int _hashCounter;
+    private int _hashCode;
+    public static int NoPrecedence;
+    public string Name;
+    public string ErrorAlias;
+    public TermFlags Flags;
+    protected GrammarData GrammarData;
+    public int Precedence;
+    public Associativity Associativity;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ParsingEventArgs> Shifting;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<AstNodeEventArgs> AstNodeCreated;
+    private AstNodeConfig _astConfig;
+    private NonTerminal _q;
+    public Grammar Grammar { get; }
+    public AstNodeConfig AstConfig { get; public set; }
+    public BnfTerm(string name);
+    public BnfTerm(string name, string errorAlias, Type nodeType);
+    public BnfTerm(string name, string errorAlias, AstNodeCreator nodeCreator);
+    public BnfTerm(string name, string errorAlias);
+    public virtual void Init(GrammarData grammarData);
+    public virtual string GetParseNodeCaption(ParseTreeNode node);
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public Grammar get_Grammar();
+    public void SetFlag(TermFlags flag);
+    public void SetFlag(TermFlags flag, bool value);
+    [CompilerGeneratedAttribute]
+public void add_Shifting(EventHandler`1<ParsingEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_Shifting(EventHandler`1<ParsingEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void add_AstNodeCreated(EventHandler`1<AstNodeEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_AstNodeCreated(EventHandler`1<AstNodeEventArgs> value);
+    protected internal void OnShifting(ParsingEventArgs args);
+    protected internal void OnAstNodeCreated(ParseTreeNode parseNode);
+    public AstNodeConfig get_AstConfig();
+    public void set_AstConfig(AstNodeConfig value);
+    public bool HasAstConfig();
+    public BnfExpression Q();
+    public static BnfExpression op_Addition(BnfTerm term1, BnfTerm term2);
+    public static BnfExpression op_Addition(BnfTerm term1, string symbol2);
+    public static BnfExpression op_Addition(string symbol1, BnfTerm term2);
+    public static BnfExpression op_BitwiseOr(BnfTerm term1, BnfTerm term2);
+    public static BnfExpression op_BitwiseOr(BnfTerm term1, string symbol2);
+    public static BnfExpression op_BitwiseOr(string symbol1, BnfTerm term2);
+    internal static BnfExpression Op_Plus(BnfTerm term1, BnfTerm term2);
+    internal static BnfExpression Op_Pipe(BnfTerm term1, BnfTerm term2);
+}
+public class Irony.Parsing.BnfTermList : List`1<BnfTerm> {
+}
+public class Irony.Parsing.BnfTermSet : HashSet`1<BnfTerm> {
+}
+public enum Irony.Parsing.CaseRestriction : Enum {
+    public int value__;
+    public static CaseRestriction None;
+    public static CaseRestriction FirstUpper;
+    public static CaseRestriction FirstLower;
+    public static CaseRestriction AllUpper;
+    public static CaseRestriction AllLower;
+}
+public class Irony.Parsing.CodeOutlineFilter : TokenFilter {
+    public OutlineOptions Options;
+    public KeyTerm ContinuationTerminal;
+    private GrammarData _grammarData;
+    private Grammar _grammar;
+    private ParsingContext _context;
+    private bool _produceIndents;
+    private bool _checkBraces;
+    private bool _checkOperator;
+    public Stack`1<int> Indents;
+    public Token CurrentToken;
+    public Token PreviousToken;
+    public SourceLocation PreviousTokenLocation;
+    public TokenStack OutputTokens;
+    private bool _isContinuation;
+    private bool _prevIsContinuation;
+    private bool _isOperator;
+    private bool _prevIsOperator;
+    private bool _doubleEof;
+    public CodeOutlineFilter(GrammarData grammarData, OutlineOptions options, KeyTerm continuationTerminal);
+    public virtual void Reset();
+    public bool OptionIsSet(OutlineOptions option);
+    [IteratorStateMachineAttribute("Irony.Parsing.CodeOutlineFilter/<BeginFiltering>d__21")]
+public virtual IEnumerable`1<Token> BeginFiltering(ParsingContext context, IEnumerable`1<Token> tokens);
+    public void ProcessToken(Token token);
+    private void SetCurrentToken(Token token);
+    private void ProcessEofToken();
+    private void PushDedents(int untilPosition);
+    private SourceLocation ComputeEosLocation();
+    private void PushOutlineToken(Terminal term, SourceLocation location);
+}
+public class Irony.Parsing.CommentTerminal : Terminal {
+    public string StartSymbol;
+    public StringList EndSymbols;
+    private Char[] _endSymbolsFirsts;
+    private bool _isLineComment;
+    public CommentTerminal(string name, string startSymbol, String[] endSymbols);
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    private Token CreateIncompleteToken(ParsingContext context, ISourceStream source);
+    private bool BeginMatch(ParsingContext context, ISourceStream source);
+    private Token CompleteMatch(ParsingContext context, ISourceStream source);
+    public virtual IList`1<string> GetFirsts();
+}
+public abstract class Irony.Parsing.CompoundTerminalBase : Terminal {
+    public char EscapeChar;
+    public EscapeTable Escapes;
+    public bool CaseSensitivePrefixesSuffixes;
+    protected ScanFlagTable PrefixFlags;
+    protected TypeCodeTable SuffixTypeCodes;
+    protected StringList Prefixes;
+    protected StringList Suffixes;
+    private CharHashSet _prefixesFirsts;
+    private CharHashSet _suffixesFirsts;
+    public CompoundTerminalBase(string name);
+    public CompoundTerminalBase(string name, TermFlags flags);
+    protected void AddPrefixFlag(string prefix, short flags);
+    public void AddSuffix(string suffix, TypeCode[] typeCodes);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    protected virtual Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details);
+    protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details);
+    protected virtual Token QuickParse(ParsingContext context, ISourceStream source);
+    protected virtual void ReadPrefix(ISourceStream source, CompoundTokenDetails details);
+    protected virtual bool ReadBody(ISourceStream source, CompoundTokenDetails details);
+    protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details);
+    protected virtual bool ConvertValue(CompoundTokenDetails details, ParsingContext context);
+    public static EscapeTable GetDefaultEscapes();
+}
+public class Irony.Parsing.ConditionalParserAction : ParserAction {
+    public ConditionalEntryList ConditionalEntries;
+    public ParserAction DefaultAction;
+    public virtual void Execute(ParsingContext context);
+}
+public class Irony.Parsing.ConstantsTable : Dictionary`2<string, object> {
+}
+public class Irony.Parsing.ConstantTerminal : Terminal {
+    public ConstantsTable Constants;
+    public ConstantTerminal(string name, Type nodeType);
+    public void Add(string lexeme, object value);
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    public virtual IList`1<string> GetFirsts();
+}
+internal class Irony.Parsing.Construction.GrammarDataBuilder : object {
+    private LanguageData _language;
+    private Grammar _grammar;
+    private GrammarData _grammarData;
+    private int _unnamedCount;
+    internal int _lastItemId;
+    internal GrammarDataBuilder(LanguageData language);
+    internal void Build();
+    private void CreateAugmentedRoots();
+    private NonTerminal CreateAugmentedRoot(NonTerminal root);
+    private void CollectTermsFromGrammar();
+    private void CollectTermsRecursive(BnfTerm term);
+    private void FillOperatorReportGroup();
+    private void InitTermLists();
+    private void CreateProductions();
+    private Production CreateProduction(NonTerminal lvalue, BnfTermList operands);
+    private void ComputeProductionFlags(Production production);
+    private static void ComputeNonTerminalsNullability(GrammarData data);
+    private static bool ComputeNullability(NonTerminal nonTerminal);
+    private static void ComputeTailsNullability(GrammarData data);
+    private void ValidateGrammar();
+    private int CountNonPunctuationTerms(Production production);
+}
+internal class Irony.Parsing.Construction.LanguageDataBuilder : object {
+    internal LanguageData Language;
+    private Grammar _grammar;
+    public LanguageDataBuilder(LanguageData language);
+    public bool Build();
+    private void Validate();
+}
+public class Irony.Parsing.Construction.LR0Item : object {
+    public Production Production;
+    public int Position;
+    public BnfTerm Current;
+    public bool TailIsNullable;
+    public GrammarHintList Hints;
+    internal int ID;
+    private int _hashCode;
+    public LR0Item ShiftedItem { get; }
+    public bool IsKernel { get; }
+    public bool IsInitial { get; }
+    public bool IsFinal { get; }
+    public LR0Item(int id, Production production, int position, GrammarHintList hints);
+    public LR0Item get_ShiftedItem();
+    public bool get_IsKernel();
+    public bool get_IsInitial();
+    public bool get_IsFinal();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+}
+public class Irony.Parsing.Construction.LR0ItemList : List`1<LR0Item> {
+}
+public class Irony.Parsing.Construction.LR0ItemSet : HashSet`1<LR0Item> {
+}
+public class Irony.Parsing.Construction.LRItem : object {
+    public ParserState State;
+    public LR0Item Core;
+    public LRItem ShiftedItem;
+    public Transition Transition;
+    private int _hashCode;
+    public TransitionSet Lookbacks;
+    public TerminalSet Lookaheads;
+    public LRItem(ParserState state, LR0Item core);
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public TerminalSet GetLookaheadsInConflict();
+}
+public class Irony.Parsing.Construction.LRItemList : List`1<LRItem> {
+}
+public class Irony.Parsing.Construction.LRItemSet : HashSet`1<LRItem> {
+    public LRItem FindByCore(LR0Item core);
+    public LRItemSet SelectByCurrent(BnfTerm current);
+    public LR0ItemSet GetShiftedCores();
+    public LRItemSet SelectByLookahead(Terminal lookahead);
+}
+internal class Irony.Parsing.Construction.ParserDataBuilder : object {
+    private LanguageData _language;
+    private ParserData _data;
+    private Grammar _grammar;
+    private ParserStateHash _stateHash;
+    internal ParserDataBuilder(LanguageData language);
+    public void Build();
+    private void CreateParserStates();
+    private void CreateAcceptAction(ParserState initialState, NonTerminal augmentedRoot);
+    private ParserState CreateInitialState(NonTerminal augmentedRoot);
+    private void ExpandParserStateList(int initialIndex);
+    private ParserState FindOrCreateState(LR0ItemSet coreItems);
+    private void ComputeTransitions(LRItemSet forItems);
+    private LRItemSet SelectNewItemsThatNeedLookback(TransitionList transitions);
+    private LRItemSet GetReduceItemsInInadequateState();
+    private TransitionList CreateLookbackTransitions(LRItemSet sourceItems);
+    private void ComputeLookaheads(LRItemSet forItems);
+    private void ComputeConflicts();
+    private void ApplyHints();
+    private void HandleUnresolvedConflicts();
+    private void CreateRemainingReduceActions();
+    private void ComputeStatesExpectedTerminals();
+    private void RemoveTerminals(TerminalSet terms, Terminal[] termsToRemove);
+    public void CleanupStateData();
+    public static string ComputeLR0ItemSetKey(LR0ItemSet items);
+    private static int CompareLR0Items(LR0Item x, LR0Item y);
+    internal static StringSet ComputeGroupedExpectedSetForState(Grammar grammar, ParserState state);
+}
+public class Irony.Parsing.Construction.ParserStateData : object {
+    public ParserState State;
+    public LRItemSet AllItems;
+    public LRItemSet ShiftItems;
+    public LRItemSet ReduceItems;
+    public LRItemSet InitialItems;
+    public BnfTermSet ShiftTerms;
+    public TerminalSet ShiftTerminals;
+    public TerminalSet Conflicts;
+    public bool IsInadequate;
+    public LR0ItemSet AllCores;
+    private TransitionTable _transitions;
+    private ParserStateSet _readStateSet;
+    public TransitionTable Transitions { get; }
+    public ParserStateSet ReadStateSet { get; }
+    public ParserStateData(ParserState state, LR0ItemSet kernelCores);
+    public void AddItem(LR0Item core);
+    public TransitionTable get_Transitions();
+    public ParserStateSet get_ReadStateSet();
+    public ParserState GetNextState(BnfTerm shiftTerm);
+    public TerminalSet GetShiftReduceConflicts();
+    public TerminalSet GetReduceReduceConflicts();
+}
+internal class Irony.Parsing.Construction.ScannerDataBuilder : object {
+    private LanguageData _language;
+    private Grammar _grammar;
+    private GrammarData _grammarData;
+    private ScannerData _data;
+    internal ScannerDataBuilder(LanguageData language);
+    internal void Build();
+    private void InitMultilineTerminalsList();
+    private void ProcessNonGrammarTerminals();
+    private void BuildTerminalsLookupTable();
+    private void AddTerminalToLookup(TerminalLookupTable _lookup, Terminal term, IList`1<string> firsts);
+    private void AddTerminalToLookupByFirstChar(TerminalLookupTable _lookup, Terminal term, char firstChar);
+}
+public class Irony.Parsing.Construction.Transition : object {
+    public ParserState FromState;
+    public ParserState ToState;
+    public NonTerminal OverNonTerminal;
+    public LRItemSet Items;
+    public TransitionSet Includes;
+    public TransitionSet IncludedBy;
+    private int _hashCode;
+    public Transition(ParserState fromState, NonTerminal overNonTerminal);
+    public void Include(Transition other);
+    private bool IncludeTransition(Transition other);
+    public virtual string ToString();
+    public virtual int GetHashCode();
+}
+public class Irony.Parsing.Construction.TransitionList : List`1<Transition> {
+}
+public class Irony.Parsing.Construction.TransitionSet : HashSet`1<Transition> {
+}
+public class Irony.Parsing.Construction.TransitionTable : Dictionary`2<NonTerminal, Transition> {
+}
+public class Irony.Parsing.CustomActionHint : GrammarHint {
+    private ExecuteActionMethod _executeMethod;
+    private PreviewActionMethod _previewMethod;
+    public CustomActionHint(ExecuteActionMethod executeMethod, PreviewActionMethod previewMethod);
+    public virtual void Apply(LanguageData language, LRItem owner);
+}
+public class Irony.Parsing.CustomParserAction : ParserAction {
+    public LanguageData Language;
+    public ParserState State;
+    public ExecuteActionMethod ExecuteRef;
+    public TerminalSet Conflicts;
+    public IList`1<ShiftParserAction> ShiftActions;
+    public IList`1<ReduceParserAction> ReduceActions;
+    public object CustomData;
+    public CustomParserAction(LanguageData language, ParserState state, ExecuteActionMethod executeRef);
+    public virtual void Execute(ParsingContext context);
+    public virtual string ToString();
+}
+public class Irony.Parsing.CustomTerminal : Terminal {
+    public StringList Prefixes;
+    private MatchHandler _handler;
+    public MatchHandler Handler { get; }
+    public CustomTerminal(string name, MatchHandler handler, String[] prefixes);
+    [DebuggerStepThroughAttribute]
+public MatchHandler get_Handler();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    [DebuggerStepThroughAttribute]
+public virtual IList`1<string> GetFirsts();
+}
+public class Irony.Parsing.DataLiteralBase : Terminal {
+    public TypeCode DataType;
+    public string DateTimeFormat;
+    public int IntRadix;
+    public DataLiteralBase(string name, TypeCode dataType);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    protected virtual string ReadBody(ParsingContext context, ISourceStream source);
+    protected virtual object ConvertValue(ParsingContext context, string textValue);
+}
+public class Irony.Parsing.DsvLiteral : DataLiteralBase {
+    public string Terminator;
+    public bool ConsumeTerminator;
+    private Char[] _terminators;
+    public DsvLiteral(string name, TypeCode dataType, string terminator);
+    public DsvLiteral(string name, TypeCode dataType);
+    public virtual void Init(GrammarData grammarData);
+    protected virtual string ReadBody(ParsingContext context, ISourceStream source);
+    private string ReadQuotedBody(ParsingContext context, ISourceStream source);
+    private string ReadNotQuotedBody(ParsingContext context, ISourceStream source);
+    private void MoveSourcePositionAfterTerminator(ISourceStream source);
+}
+public class Irony.Parsing.ErrorRecoveryParserAction : ParserAction {
+    public virtual void Execute(ParsingContext context);
+    protected bool TryRecoverFromError(ParsingContext context);
+    private ParserAction FindErrorShiftActionInStack(ParsingContext context);
+}
+public class Irony.Parsing.EscapeTable : Dictionary`2<char, char> {
+}
+public class Irony.Parsing.ExecuteActionMethod : MulticastDelegate {
+    public ExecuteActionMethod(object object, IntPtr method);
+    public virtual void Invoke(ParsingContext context, CustomParserAction action);
+    public virtual IAsyncResult BeginInvoke(ParsingContext context, CustomParserAction action, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Irony.Parsing.FixedLengthLiteral : DataLiteralBase {
+    public int Length;
+    public FixedLengthLiteral(string name, int length, TypeCode dataType);
+    protected virtual string ReadBody(ParsingContext context, ISourceStream source);
+}
+public class Irony.Parsing.FreeTextLiteral : Terminal {
+    public StringSet Terminators;
+    public StringSet Firsts;
+    public StringDictionary Escapes;
+    public FreeTextOptions FreeTextOptions;
+    private Char[] _stopChars;
+    private bool _isSimple;
+    private string _singleTerminator;
+    public FreeTextLiteral(string name, String[] terminators);
+    public FreeTextLiteral(string name, FreeTextOptions freeTextOptions, String[] terminators);
+    public virtual IList`1<string> GetFirsts();
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    private bool TryMatchPrefixes(ParsingContext context, ISourceStream source);
+    private Token TryMatchContentSimple(ParsingContext context, ISourceStream source);
+    private Token TryMatchContentExtended(ParsingContext context, ISourceStream source);
+    private bool CheckEscape(ISourceStream source, StringBuilder tokenText);
+    private bool CheckTerminators(ISourceStream source, StringBuilder tokenText);
+    private bool IsSet(FreeTextOptions option);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.FreeTextOptions : Enum {
+    public int value__;
+    public static FreeTextOptions None;
+    public static FreeTextOptions ConsumeTerminator;
+    public static FreeTextOptions IncludeTerminator;
+    public static FreeTextOptions AllowEof;
+    public static FreeTextOptions AllowEmpty;
+}
+public class Irony.Parsing.Grammar : object {
+    public bool CaseSensitive;
+    [ObsoleteAttribute("Use IsWhitespaceOrDelimiter() method instead.")]
+public string Delimiters;
+    [ObsoleteAttribute("Override Grammar.SkipWhitespace method instead.")]
+public string WhitespaceChars;
+    public LanguageFlags LanguageFlags;
+    public TermReportGroupList TermReportGroups;
+    public TerminalSet NonGrammarTerminals;
+    public NonTerminal Root;
+    public NonTerminalSet SnippetRoots;
+    public string GrammarComments;
+    public CultureInfo DefaultCulture;
+    public string ConsoleTitle;
+    public string ConsoleGreeting;
+    public string ConsolePrompt;
+    public string ConsolePromptMoreInput;
+    public Terminal Empty;
+    public NewLineTerminal NewLine;
+    public bool UsesNewLine;
+    public Terminal Indent;
+    public Terminal Dedent;
+    public Terminal Eos;
+    public Terminal Eof;
+    public Terminal Skip;
+    public Terminal LineStartTerminal;
+    public Terminal SyntaxError;
+    private NonTerminal _newLinePlus;
+    private NonTerminal _newLineStar;
+    public KeyTermTable KeyTerms;
+    [ThreadStaticAttribute]
+private static Grammar _currentGrammar;
+    public NonTerminal NewLinePlus { get; }
+    public NonTerminal NewLineStar { get; }
+    public static Grammar CurrentGrammar { get; }
+    public Grammar(bool caseSensitive);
+    public void MarkReservedWords(String[] reservedWords);
+    public void RegisterOperators(int precedence, String[] opSymbols);
+    public void RegisterOperators(int precedence, Associativity associativity, String[] opSymbols);
+    public void RegisterOperators(int precedence, BnfTerm[] opTerms);
+    public void RegisterOperators(int precedence, Associativity associativity, BnfTerm[] opTerms);
+    public void RegisterBracePair(string openBrace, string closeBrace);
+    public void MarkPunctuation(String[] symbols);
+    public void MarkPunctuation(BnfTerm[] terms);
+    public void MarkTransient(NonTerminal[] nonTerminals);
+    public void MarkMemberSelect(String[] symbols);
+    public void MarkNotReported(BnfTerm[] terms);
+    public void MarkNotReported(String[] symbols);
+    public virtual void CreateTokenFilters(LanguageData language, TokenFilterList filters);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    public virtual string GetParseNodeCaption(ParseTreeNode node);
+    public virtual void OnScannerSelectTerminal(ParsingContext context);
+    public virtual void SkipWhitespace(ISourceStream source);
+    public virtual bool IsWhitespaceOrDelimiter(char ch);
+    public virtual void OnGrammarDataConstructed(LanguageData language);
+    public virtual void OnLanguageDataConstructed(LanguageData language);
+    public virtual string ConstructParserErrorMessage(ParsingContext context, StringSet expectedTerms);
+    public virtual void ReportParseError(ParsingContext context);
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm listMember);
+    public BnfExpression MakePlusRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember);
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm listMember);
+    public BnfExpression MakeStarRule(NonTerminal listNonTerminal, BnfTerm delimiter, BnfTerm listMember);
+    protected BnfExpression MakeListRule(NonTerminal list, BnfTerm delimiter, BnfTerm listMember, TermListOptions options);
+    protected GrammarHint PreferShiftHere();
+    protected GrammarHint ReduceHere();
+    protected TokenPreviewHint ReduceIf(string thisSymbol, String[] comesBefore);
+    protected TokenPreviewHint ReduceIf(Terminal thisSymbol, Terminal[] comesBefore);
+    protected TokenPreviewHint ShiftIf(string thisSymbol, String[] comesBefore);
+    protected TokenPreviewHint ShiftIf(Terminal thisSymbol, Terminal[] comesBefore);
+    protected GrammarHint ImplyPrecedenceHere(int precedence);
+    protected GrammarHint ImplyPrecedenceHere(int precedence, Associativity associativity);
+    protected CustomActionHint CustomActionHere(ExecuteActionMethod executeMethod, PreviewActionMethod previewMethod);
+    protected void AddTermsReportGroup(string alias, String[] symbols);
+    protected void AddTermsReportGroup(string alias, Terminal[] terminals);
+    protected void AddToNoReportGroup(String[] symbols);
+    protected void AddToNoReportGroup(Terminal[] terminals);
+    protected void AddOperatorReportGroup(string alias);
+    private IEnumerable`1<Terminal> SymbolsToTerms(IEnumerable`1<string> symbols);
+    public NonTerminal get_NewLinePlus();
+    public NonTerminal get_NewLineStar();
+    public KeyTerm ToTerm(string text);
+    public KeyTerm ToTerm(string text, string name);
+    public static Grammar get_CurrentGrammar();
+    internal static void ClearCurrentGrammar();
+    public virtual void BuildAst(LanguageData language, ParseTree parseTree);
+}
+public class Irony.Parsing.GrammarData : object {
+    public LanguageData Language;
+    public Grammar Grammar;
+    public NonTerminal AugmentedRoot;
+    public NonTerminalSet AugmentedSnippetRoots;
+    public BnfTermSet AllTerms;
+    public TerminalSet Terminals;
+    public NonTerminalSet NonTerminals;
+    public TerminalSet NoPrefixTerminals;
+    public GrammarData(LanguageData language);
+}
+public class Irony.Parsing.GrammarError : object {
+    public GrammarErrorLevel Level;
+    public string Message;
+    public ParserState State;
+    public GrammarError(GrammarErrorLevel level, ParserState state, string message);
+    public virtual string ToString();
+}
+public class Irony.Parsing.GrammarErrorException : Exception {
+    public GrammarError Error;
+    public GrammarErrorException(string message, GrammarError error);
+}
+public enum Irony.Parsing.GrammarErrorLevel : Enum {
+    public int value__;
+    public static GrammarErrorLevel NoError;
+    public static GrammarErrorLevel Info;
+    public static GrammarErrorLevel Warning;
+    public static GrammarErrorLevel Conflict;
+    public static GrammarErrorLevel Error;
+    public static GrammarErrorLevel InternalError;
+}
+public class Irony.Parsing.GrammarErrorList : List`1<GrammarError> {
+    public void Add(GrammarErrorLevel level, ParserState state, string message, Object[] args);
+    public void AddAndThrow(GrammarErrorLevel level, ParserState state, string message, Object[] args);
+    public GrammarErrorLevel GetMaxLevel();
+}
+public abstract class Irony.Parsing.GrammarHint : BnfTerm {
+    public virtual void Apply(LanguageData language, LRItem owner);
+}
+public class Irony.Parsing.GrammarHintList : List`1<GrammarHint> {
+}
+public interface Irony.Parsing.ICanRunSample {
+    public abstract virtual string RunSample(RunSampleArgs args);
+}
+public class Irony.Parsing.IdentifierTerminal : CompoundTerminalBase {
+    private CharHashSet _allCharsSet;
+    private CharHashSet _allFirstCharsSet;
+    public string AllFirstChars;
+    public string AllChars;
+    public TokenEditorInfo KeywordEditorInfo;
+    public IdOptions Options;
+    public CaseRestriction CaseRestriction;
+    public UnicodeCategoryList StartCharCategories;
+    public UnicodeCategoryList CharCategories;
+    public UnicodeCategoryList CharsToRemoveCategories;
+    public IdentifierTerminal(string name);
+    public IdentifierTerminal(string name, IdOptions options);
+    public IdentifierTerminal(string name, string extraChars, string extraFirstChars);
+    public void AddPrefix(string prefix, IdOptions options);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details);
+    protected virtual Token CreateToken(ParsingContext context, ISourceStream source, CompoundTokenDetails details);
+    private void CheckReservedWord(Token token);
+    protected virtual Token QuickParse(ParsingContext context, ISourceStream source);
+    protected virtual bool ReadBody(ISourceStream source, CompoundTokenDetails details);
+    private bool CharOk(char ch, bool first);
+    private bool CheckCaseRestriction(string body);
+    private char ReadUnicodeEscape(ISourceStream source, CompoundTokenDetails details);
+    protected virtual bool ConvertValue(CompoundTokenDetails details, ParsingContext context);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.IdOptions : Enum {
+    public short value__;
+    public static IdOptions None;
+    public static IdOptions AllowsEscapes;
+    public static IdOptions CanStartWithEscape;
+    public static IdOptions IsNotKeyword;
+    public static IdOptions NameIncludesPrefix;
+}
+public class Irony.Parsing.ImpliedPrecedenceHint : GrammarHint {
+    public static int ImpliedPrecedenceCustomFlag;
+    public ImpliedPrecedenceHint(int precedence, Associativity associativity);
+    public virtual void Apply(LanguageData language, LRItem owner);
+    private void Term_Shifting(object sender, ParsingEventArgs e);
+}
+public class Irony.Parsing.ImpliedSymbolTerminal : Terminal {
+    public ImpliedSymbolTerminal(string name);
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+internal class Irony.Parsing.IntList : List`1<int> {
+}
+public interface Irony.Parsing.ISourceStream {
+    public string Text { get; }
+    public SourceLocation Location { get; public set; }
+    public int Position { get; public set; }
+    public int PreviewPosition { get; public set; }
+    public char PreviewChar { get; }
+    public char NextPreviewChar { get; }
+    public abstract virtual string get_Text();
+    public abstract virtual SourceLocation get_Location();
+    public abstract virtual void set_Location(SourceLocation value);
+    public abstract virtual int get_Position();
+    public abstract virtual void set_Position(int value);
+    public abstract virtual int get_PreviewPosition();
+    public abstract virtual void set_PreviewPosition(int value);
+    public abstract virtual char get_PreviewChar();
+    public abstract virtual char get_NextPreviewChar();
+    public abstract virtual Token CreateToken(Terminal terminal);
+    public abstract virtual Token CreateToken(Terminal terminal, object value);
+    public abstract virtual bool MatchSymbol(string symbol);
+    public abstract virtual bool EOF();
+}
+public class Irony.Parsing.KeyTerm : Terminal {
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    public bool AllowAlphaAfterKeyword;
+    public string Text { get; private set; }
+    public KeyTerm(string text, string name);
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    [CompilerGeneratedAttribute]
+private void set_Text(string value);
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    public virtual IList`1<string> GetFirsts();
+    public virtual string ToString();
+    public virtual string TokenToString(Token token);
+    [DebuggerStepThroughAttribute]
+public virtual bool Equals(object obj);
+    [DebuggerStepThroughAttribute]
+public virtual int GetHashCode();
+}
+public class Irony.Parsing.KeyTermList : List`1<KeyTerm> {
+}
+public class Irony.Parsing.KeyTermTable : Dictionary`2<string, KeyTerm> {
+    public KeyTermTable(StringComparer comparer);
+}
+[AttributeUsageAttribute("4")]
+public class Irony.Parsing.LanguageAttribute : Attribute {
+    private string _languageName;
+    private string _version;
+    private string _description;
+    public string LanguageName { get; }
+    public string Version { get; }
+    public string Description { get; }
+    public LanguageAttribute(string languageName);
+    public LanguageAttribute(string languageName, string version, string description);
+    public string get_LanguageName();
+    public string get_Version();
+    public string get_Description();
+    public static LanguageAttribute GetValue(Type grammarClass);
+}
+public class Irony.Parsing.LanguageData : object {
+    public Grammar Grammar;
+    public GrammarData GrammarData;
+    public ParserData ParserData;
+    public ScannerData ScannerData;
+    public GrammarErrorList Errors;
+    public GrammarErrorLevel ErrorLevel;
+    public long ConstructionTime;
+    public bool AstDataVerified;
+    public LanguageData(Grammar grammar);
+    public void ConstructAll();
+    public bool CanParse();
+}
+[FlagsAttribute]
+public enum Irony.Parsing.LanguageFlags : Enum {
+    public int value__;
+    public static LanguageFlags None;
+    public static LanguageFlags NewLineBeforeEOF;
+    public static LanguageFlags EmitLineStartToken;
+    public static LanguageFlags DisableScannerParserLink;
+    public static LanguageFlags CreateAst;
+    public static LanguageFlags SupportsCommandLine;
+    public static LanguageFlags TailRecursive;
+    public static LanguageFlags SupportsBigInt;
+    public static LanguageFlags SupportsComplex;
+    public static LanguageFlags SupportsRational;
+    public static LanguageFlags Default;
+}
+public class Irony.Parsing.LineContinuationTerminal : Terminal {
+    public StringList StartSymbols;
+    private string _startSymbolsFirsts;
+    private static String[] _defaultStartSymbols;
+    public string LineTerminators;
+    public LineContinuationTerminal(string name, String[] startSymbols);
+    private static LineContinuationTerminal();
+    public virtual void Init(GrammarData grammarData);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    private bool BeginMatch(ISourceStream source, int startFrom, char lookAhead);
+    private Token CompleteMatch(ISourceStream source);
+    public virtual IList`1<string> GetFirsts();
+    private static bool IsNullOrWhiteSpace(string s);
+}
+public class Irony.Parsing.MatchHandler : MulticastDelegate {
+    public MatchHandler(object object, IntPtr method);
+    public virtual Token Invoke(Terminal terminal, ParsingContext context, ISourceStream source);
+    public virtual IAsyncResult BeginInvoke(Terminal terminal, ParsingContext context, ISourceStream source, AsyncCallback callback, object object);
+    public virtual Token EndInvoke(IAsyncResult result);
+}
+public class Irony.Parsing.MultiToken : Token {
+    public TokenList ChildTokens;
+    public MultiToken(Token[] tokens);
+    public MultiToken(Terminal term, SourceLocation location, TokenList childTokens);
+}
+public class Irony.Parsing.NewLineTerminal : Terminal {
+    public string LineTerminators;
+    public NewLineTerminal(string name);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+public class Irony.Parsing.NonTerminal : BnfTerm {
+    public BnfExpression Rule;
+    public BnfExpression ErrorRule;
+    public string NodeCaptionTemplate;
+    private string _convertedTemplate;
+    private IntList _captionParameters;
+    internal ProductionList Productions;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ReducedEventArgs> Reduced;
+    public NonTerminal(string name);
+    public NonTerminal(string name, string errorAlias);
+    public NonTerminal(string name, string errorAlias, Type nodeType);
+    public NonTerminal(string name, string errorAlias, AstNodeCreator nodeCreator);
+    public NonTerminal(string name, Type nodeType);
+    public NonTerminal(string name, AstNodeCreator nodeCreator);
+    public NonTerminal(string name, BnfExpression expression);
+    [CompilerGeneratedAttribute]
+public void add_Reduced(EventHandler`1<ReducedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_Reduced(EventHandler`1<ReducedEventArgs> value);
+    internal void OnReduced(ParsingContext context, Production reducedProduction, ParseTreeNode resultNode);
+    public virtual string ToString();
+    public virtual void Init(GrammarData grammarData);
+    public void AddHintToAll(GrammarHint hint);
+    private void ConvertNodeCaptionTemplate();
+    public string GetNodeCaption(ParseTreeNode node);
+}
+public class Irony.Parsing.NonTerminalList : List`1<NonTerminal> {
+    public virtual string ToString();
+}
+public class Irony.Parsing.NonTerminalSet : HashSet`1<NonTerminal> {
+    public virtual string ToString();
+}
+public class Irony.Parsing.NumberLiteral : CompoundTerminalBase {
+    public static TypeCode TypeCodeBigInt;
+    public static TypeCode TypeCodeImaginary;
+    public NumberOptions Options;
+    public char DecimalSeparator;
+    public TypeCode[] DefaultIntTypes;
+    public TypeCode DefaultFloatType;
+    private ExponentsTable _exponentsTable;
+    public NumberLiteral(string name);
+    public NumberLiteral(string name, NumberOptions options, Type astNodeType);
+    public NumberLiteral(string name, NumberOptions options, AstNodeCreator astNodeCreator);
+    public NumberLiteral(string name, NumberOptions options);
+    public void AddPrefix(string prefix, NumberOptions options);
+    public void AddExponentSymbols(string symbols, TypeCode floatType);
+    public bool IsSet(NumberOptions option);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    protected virtual Token QuickParse(ParsingContext context, ISourceStream source);
+    protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details);
+    protected virtual void ReadPrefix(ISourceStream source, CompoundTokenDetails details);
+    protected virtual bool ReadBody(ISourceStream source, CompoundTokenDetails details);
+    protected internal virtual void OnValidateToken(ParsingContext context);
+    protected virtual bool ConvertValue(CompoundTokenDetails details, ParsingContext context);
+    private void AssignTypeCodes(CompoundTokenDetails details);
+    private bool QuickConvertToInt32(CompoundTokenDetails details, ParsingContext context);
+    private bool QuickConvertToDouble(CompoundTokenDetails details, ParsingContext context);
+    private bool ConvertToFloat(TypeCode typeCode, CompoundTokenDetails details, ParsingContext context);
+    private bool TryCastToIntegerType(TypeCode typeCode, CompoundTokenDetails details, ParsingContext context);
+    private bool TryConvertToLong(CompoundTokenDetails details, bool useULong, ParsingContext context);
+    private bool ConvertToBigInteger(CompoundTokenDetails details);
+    private int GetRadix(CompoundTokenDetails details);
+    private string GetDigits(CompoundTokenDetails details);
+    private int GetSafeWordLength(CompoundTokenDetails details);
+    private int GetSectionCount(int stringLength, int safeWordLength);
+    private ulong GetSafeWordRadix(CompoundTokenDetails details);
+    private static bool IsIntegerCode(TypeCode code);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.NumberOptions : Enum {
+    public int value__;
+    public static NumberOptions None;
+    public static NumberOptions Default;
+    public static NumberOptions AllowStartEndDot;
+    public static NumberOptions IntOnly;
+    public static NumberOptions NoDotAfterInt;
+    public static NumberOptions AllowSign;
+    public static NumberOptions DisableQuickParse;
+    public static NumberOptions AllowLetterAfter;
+    public static NumberOptions AllowUnderscore;
+    public static NumberOptions Binary;
+    public static NumberOptions Octal;
+    public static NumberOptions Hex;
+}
+[FlagsAttribute]
+public enum Irony.Parsing.OutlineOptions : Enum {
+    public int value__;
+    public static OutlineOptions None;
+    public static OutlineOptions ProduceIndents;
+    public static OutlineOptions CheckBraces;
+    public static OutlineOptions CheckOperator;
+}
+public enum Irony.Parsing.ParseMode : Enum {
+    public int value__;
+    public static ParseMode File;
+    public static ParseMode VsLineScan;
+    public static ParseMode CommandLine;
+}
+[FlagsAttribute]
+public enum Irony.Parsing.ParseOptions : Enum {
+    public int value__;
+    public static ParseOptions Reserved;
+    public static ParseOptions AnalyzeCode;
+}
+public class Irony.Parsing.Parser : object {
+    public LanguageData Language;
+    public ParserData Data;
+    private Grammar _grammar;
+    public Scanner Scanner;
+    [CompilerGeneratedAttribute]
+private ParsingContext <Context>k__BackingField;
+    public NonTerminal Root;
+    internal ParserState InitialState;
+    public ParsingContext Context { get; internal set; }
+    public Parser(Grammar grammar);
+    public Parser(LanguageData language);
+    public Parser(LanguageData language, NonTerminal root);
+    [CompilerGeneratedAttribute]
+public ParsingContext get_Context();
+    [CompilerGeneratedAttribute]
+internal void set_Context(ParsingContext value);
+    internal void Reset();
+    public ParseTree Parse(string sourceText);
+    public ParseTree Parse(string sourceText, string fileName);
+    private void ParseAll();
+    public ParseTree ScanOnly(string sourceText, string fileName);
+    private void ExecuteNextAction();
+    internal ParserAction GetNextAction();
+    public void ReadInput();
+    public void RecoverFromError();
+    private bool CheckPartialInputCompleted();
+    private bool CheckBraceToken(Token token);
+}
+public abstract class Irony.Parsing.ParserAction : object {
+    public virtual void Execute(ParsingContext context);
+    public virtual string ToString();
+}
+public class Irony.Parsing.ParserActionTable : Dictionary`2<BnfTerm, ParserAction> {
+}
+public class Irony.Parsing.ParserData : object {
+    public LanguageData Language;
+    public ParserState InitialState;
+    public ParserStateTable InitialStates;
+    public ParserStateList States;
+    public ParserAction ErrorAction;
+    public ParserData(LanguageData language);
+}
+public static class Irony.Parsing.ParserDataPrinter : object {
+    public static string PrintStateList(LanguageData language);
+    public static string PrintTerminals(LanguageData language);
+    public static string PrintNonTerminals(LanguageData language);
+}
+public class Irony.Parsing.ParserStack : List`1<ParseTreeNode> {
+    public ParseTreeNode Top { get; }
+    public void Push(ParseTreeNode nodeInfo);
+    public void Push(ParseTreeNode nodeInfo, ParserState state);
+    public ParseTreeNode Pop();
+    public void Pop(int count);
+    public void PopUntil(int finalCount);
+    public ParseTreeNode get_Top();
+}
+public class Irony.Parsing.ParserState : object {
+    public string Name;
+    public ParserActionTable Actions;
+    public ParserAction DefaultAction;
+    public TerminalSet ExpectedTerminals;
+    public StringSet ReportedExpectedSet;
+    internal ParserStateData BuilderData;
+    public int CustomFlags;
+    public ParserState(string name);
+    public void ClearData();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public bool CustomFlagIsSet(int flag);
+}
+public class Irony.Parsing.ParserStateHash : Dictionary`2<string, ParserState> {
+}
+public class Irony.Parsing.ParserStateList : List`1<ParserState> {
+}
+public class Irony.Parsing.ParserStateSet : HashSet`1<ParserState> {
+}
+public class Irony.Parsing.ParserStateTable : Dictionary`2<NonTerminal, ParserState> {
+}
+public enum Irony.Parsing.ParserStatus : Enum {
+    public int value__;
+    public static ParserStatus Init;
+    public static ParserStatus Parsing;
+    public static ParserStatus Previewing;
+    public static ParserStatus Recovering;
+    public static ParserStatus Accepted;
+    public static ParserStatus AcceptedPartial;
+    public static ParserStatus Error;
+}
+public class Irony.Parsing.ParserTrace : List`1<ParserTraceEntry> {
+}
+public class Irony.Parsing.ParserTraceEntry : object {
+    public ParserState State;
+    public ParseTreeNode StackTop;
+    public ParseTreeNode Input;
+    public string Message;
+    public bool IsError;
+    public ParserTraceEntry(ParserState state, ParseTreeNode stackTop, ParseTreeNode input, string message, bool isError);
+}
+public class Irony.Parsing.ParserTraceEventArgs : EventArgs {
+    public ParserTraceEntry Entry;
+    public ParserTraceEventArgs(ParserTraceEntry entry);
+    public virtual string ToString();
+}
+public class Irony.Parsing.ParseTree : object {
+    [CompilerGeneratedAttribute]
+private ParseTreeStatus <Status>k__BackingField;
+    public string SourceText;
+    public string FileName;
+    public TokenList Tokens;
+    public TokenList OpenBraces;
+    public ParseTreeNode Root;
+    public LogMessageList ParserMessages;
+    public long ParseTimeMilliseconds;
+    public object Tag;
+    public ParseTreeStatus Status { get; internal set; }
+    public ParseTree(string sourceText, string fileName);
+    [CompilerGeneratedAttribute]
+public ParseTreeStatus get_Status();
+    [CompilerGeneratedAttribute]
+internal void set_Status(ParseTreeStatus value);
+    public bool HasErrors();
+}
+public class Irony.Parsing.ParseTreeNode : object {
+    public object AstNode;
+    public Token Token;
+    public BnfTerm Term;
+    public int Precedence;
+    public Associativity Associativity;
+    public SourceSpan Span;
+    [CompilerGeneratedAttribute]
+private ParseTreeNodeList <ChildNodes>k__BackingField;
+    public bool IsError;
+    internal ParserState State;
+    public object Tag;
+    public TokenList Comments;
+    public ParseTreeNodeList ChildNodes { get; private set; }
+    public ParseTreeNode(Token token);
+    public ParseTreeNode(ParserState initialState);
+    public ParseTreeNode(NonTerminal term, SourceSpan span);
+    [CompilerGeneratedAttribute]
+public ParseTreeNodeList get_ChildNodes();
+    [CompilerGeneratedAttribute]
+private void set_ChildNodes(ParseTreeNodeList value);
+    public virtual string ToString();
+    public string FindTokenAndGetText();
+    public Token FindToken();
+    private static Token FindFirstChildTokenRec(ParseTreeNode node);
+    public bool IsPunctuationOrEmptyTransient();
+    public bool IsOperator();
+}
+public class Irony.Parsing.ParseTreeNodeList : List`1<ParseTreeNode> {
+}
+public enum Irony.Parsing.ParseTreeStatus : Enum {
+    public int value__;
+    public static ParseTreeStatus Parsing;
+    public static ParseTreeStatus Partial;
+    public static ParseTreeStatus Parsed;
+    public static ParseTreeStatus Error;
+}
+public class Irony.Parsing.ParsingContext : object {
+    public Parser Parser;
+    public LanguageData Language;
+    public ParseOptions Options;
+    public bool TracingEnabled;
+    public ParseMode Mode;
+    public int MaxErrors;
+    public CultureInfo Culture;
+    [CompilerGeneratedAttribute]
+private ParseTree <CurrentParseTree>k__BackingField;
+    public TokenStack OpenBraces;
+    public ParserTrace ParserTrace;
+    internal ParserStack ParserStack;
+    [CompilerGeneratedAttribute]
+private ParserState <CurrentParserState>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ParseTreeNode <CurrentParserInput>k__BackingField;
+    public Token CurrentToken;
+    public TokenList CurrentCommentTokens;
+    public Token PreviousToken;
+    public SourceLocation PreviousLineStart;
+    public TerminalList CurrentTerminals;
+    public ISourceStream Source;
+    internal TokenFilterList TokenFilters;
+    internal TokenStack BufferedTokens;
+    internal IEnumerator`1<Token> FilteredTokens;
+    internal TokenStack PreviewTokens;
+    internal ParsingEventArgs SharedParsingEventArgs;
+    internal ValidateTokenEventArgs SharedValidateTokenEventArgs;
+    public VsScannerStateMap VsLineScanState;
+    [CompilerGeneratedAttribute]
+private ParserStatus <Status>k__BackingField;
+    public bool HasErrors;
+    public Dictionary`2<string, object> Values;
+    public int TabWidth;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ParsingEventArgs> TokenCreated;
+    public ParseTree CurrentParseTree { get; internal set; }
+    public ParserState CurrentParserState { get; internal set; }
+    public ParseTreeNode CurrentParserInput { get; internal set; }
+    public ParserStatus Status { get; internal set; }
+    public ParsingContext(Parser parser);
+    [CompilerGeneratedAttribute]
+public ParseTree get_CurrentParseTree();
+    [CompilerGeneratedAttribute]
+internal void set_CurrentParseTree(ParseTree value);
+    [CompilerGeneratedAttribute]
+public ParserState get_CurrentParserState();
+    [CompilerGeneratedAttribute]
+internal void set_CurrentParserState(ParserState value);
+    [CompilerGeneratedAttribute]
+public ParseTreeNode get_CurrentParserInput();
+    [CompilerGeneratedAttribute]
+internal void set_CurrentParserInput(ParseTreeNode value);
+    [CompilerGeneratedAttribute]
+public ParserStatus get_Status();
+    [CompilerGeneratedAttribute]
+internal void set_Status(ParserStatus value);
+    [CompilerGeneratedAttribute]
+public void add_TokenCreated(EventHandler`1<ParsingEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_TokenCreated(EventHandler`1<ParsingEventArgs> value);
+    internal void OnTokenCreated();
+    public Token CreateErrorToken(string message, Object[] args);
+    public void AddParserError(string message, Object[] args);
+    public void AddParserMessage(ErrorLevel level, SourceLocation location, string message, Object[] args);
+    public void AddTrace(string message, Object[] args);
+    public void AddTrace(bool asError, string message, Object[] args);
+    internal static StringSet ComputeGroupedExpectedSetForState(Grammar grammar, ParserState state);
+    internal void Reset();
+    public void SetSourceLocation(SourceLocation location);
+    public SourceSpan ComputeStackRangeSpan(int nodeCount);
+    public StringSet GetExpectedTermSet();
+    private StringSet FilterBracesInExpectedSet(StringSet stateExpectedSet);
+}
+[ExtensionAttribute]
+public static class Irony.Parsing.ParsingEnumExtensions : object {
+    [ExtensionAttribute]
+public static bool IsSet(TermFlags flags, TermFlags flag);
+    [ExtensionAttribute]
+public static bool IsSet(LanguageFlags flags, LanguageFlags flag);
+    [ExtensionAttribute]
+public static bool IsSet(ParseOptions options, ParseOptions option);
+    [ExtensionAttribute]
+public static bool IsSet(TermListOptions options, TermListOptions option);
+    [ExtensionAttribute]
+public static bool IsSet(ProductionFlags flags, ProductionFlags flag);
+}
+public class Irony.Parsing.ParsingEventArgs : EventArgs {
+    public ParsingContext Context;
+    public ParsingEventArgs(ParsingContext context);
+}
+public class Irony.Parsing.PrecedenceBasedParserAction : ConditionalParserAction {
+    private ShiftParserAction _shiftAction;
+    private ReduceParserAction _reduceAction;
+    public PrecedenceBasedParserAction(BnfTerm shiftTerm, ParserState newShiftState, Production reduceProduction);
+    private bool CheckMustReduce(ParsingContext context);
+    public virtual string ToString();
+}
+public class Irony.Parsing.PrecedenceHint : GrammarHint {
+    public virtual void Apply(LanguageData language, LRItem owner);
+}
+public class Irony.Parsing.PreferredActionHint : GrammarHint {
+    private PreferredActionType ActionType;
+    public PreferredActionHint(PreferredActionType actionType);
+    public virtual void Apply(LanguageData language, LRItem owner);
+}
+public enum Irony.Parsing.PreferredActionType : Enum {
+    public int value__;
+    public static PreferredActionType Shift;
+    public static PreferredActionType Reduce;
+}
+public class Irony.Parsing.PreviewActionMethod : MulticastDelegate {
+    public PreviewActionMethod(object object, IntPtr method);
+    public virtual void Invoke(CustomParserAction action);
+    public virtual IAsyncResult BeginInvoke(CustomParserAction action, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Irony.Parsing.Production : object {
+    public ProductionFlags Flags;
+    public NonTerminal LValue;
+    public BnfTermList RValues;
+    internal LR0ItemList LR0Items;
+    public Production(NonTerminal lvalue);
+    public string ToStringQuoted();
+    public virtual string ToString();
+    public static string ProductionToString(Production production, int dotPosition);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.ProductionFlags : Enum {
+    public int value__;
+    public static ProductionFlags None;
+    public static ProductionFlags HasTerminals;
+    public static ProductionFlags IsError;
+    public static ProductionFlags IsEmpty;
+}
+public class Irony.Parsing.ProductionList : List`1<Production> {
+}
+public class Irony.Parsing.QuotedValueLiteral : DataLiteralBase {
+    public string StartSymbol;
+    public string EndSymbol;
+    public QuotedValueLiteral(string name, string startEndSymbol, TypeCode dataType);
+    public QuotedValueLiteral(string name, string startSymbol, string endSymbol, TypeCode dataType);
+    public virtual IList`1<string> GetFirsts();
+    protected virtual string ReadBody(ParsingContext context, ISourceStream source);
+}
+public class Irony.Parsing.ReducedEventArgs : ParsingEventArgs {
+    public Production ReducedProduction;
+    public ParseTreeNode ResultNode;
+    public ReducedEventArgs(ParsingContext context, Production reducedProduction, ParseTreeNode resultNode);
+}
+public class Irony.Parsing.ReduceListBuilderParserAction : ReduceParserAction {
+    public ReduceListBuilderParserAction(Production production);
+    protected virtual ParseTreeNode GetResultNode(ParsingContext context);
+}
+public class Irony.Parsing.ReduceListContainerParserAction : ReduceParserAction {
+    public ReduceListContainerParserAction(Production production);
+    protected virtual ParseTreeNode GetResultNode(ParsingContext context);
+}
+public class Irony.Parsing.ReduceParserAction : ParserAction {
+    public Production Production;
+    public ReduceParserAction(Production production);
+    public virtual string ToString();
+    public static ReduceParserAction Create(Production production);
+    public virtual void Execute(ParsingContext context);
+    protected virtual ParseTreeNode GetResultNode(ParsingContext context);
+    protected void CompleteReduce(ParsingContext context);
+    private void InheritPrecedence(ParseTreeNode node);
+}
+public class Irony.Parsing.ReduceTransientParserAction : ReduceParserAction {
+    public ReduceTransientParserAction(Production production);
+    protected virtual ParseTreeNode GetResultNode(ParsingContext context);
+}
+public class Irony.Parsing.RegexBasedTerminal : Terminal {
+    public string Pattern;
+    public StringList Prefixes;
+    private Regex _expression;
+    public Regex Expression { get; }
+    public RegexBasedTerminal(string pattern, String[] prefixes);
+    public RegexBasedTerminal(string name, string pattern, String[] prefixes);
+    public Regex get_Expression();
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+public class Irony.Parsing.RegexLiteral : Terminal {
+    public char StartSymbol;
+    public char EndSymbol;
+    public char EscapeSymbol;
+    public RegexSwitchTable Switches;
+    public RegexOptions DefaultOptions;
+    public RegexTermOptions Options;
+    private Char[] _stopChars;
+    public RegexLiteral(string name);
+    public RegexLiteral(string name, char startEndSymbol, char escapeSymbol);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    private bool CheckEscaped(ISourceStream source);
+    private bool ReadSwitch(ISourceStream source, RegexOptions& options);
+    public bool IsSet(RegexTermOptions option);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.RegexTermOptions : Enum {
+    public int value__;
+    public static RegexTermOptions None;
+    public static RegexTermOptions AllowLetterAfter;
+    public static RegexTermOptions CreateRegExObject;
+    public static RegexTermOptions UniqueSwitches;
+    public static RegexTermOptions Default;
+}
+public class Irony.Parsing.RunSampleArgs : object {
+    public LanguageData Language;
+    public string Sample;
+    public ParseTree ParsedSample;
+    public RunSampleArgs(LanguageData language, string sample, ParseTree parsedSample);
+}
+public class Irony.Parsing.Scanner : object {
+    public ScannerData Data;
+    public Parser Parser;
+    private Grammar _grammar;
+    private SourceLocation _previewStartLocation;
+    private ParsingContext Context { get; }
+    public Scanner(Parser parser);
+    private ParsingContext get_Context();
+    internal void Reset();
+    public Token GetToken();
+    [IteratorStateMachineAttribute("Irony.Parsing.Scanner/<GetUnfilteredTokens>d__8")]
+private IEnumerable`1<Token> GetUnfilteredTokens();
+    private void NextToken();
+    private void ScanToken();
+    private bool MatchNonGrammarTerminals();
+    private bool NeedLineStartToken(SourceLocation forLocation);
+    private bool MatchRegularTerminals();
+    private bool MatchAllTerminals();
+    private void UnpackMultiToken();
+    private void ComputeCurrentTerminals();
+    private void MatchTerminals();
+    public Token VsReadToken(Int32& state);
+    public void VsSetSource(string text, int offset);
+    private bool Recover();
+    public void BeginPreview();
+    public void EndPreview(bool keepPreviewTokens);
+}
+public class Irony.Parsing.ScannerData : object {
+    public LanguageData Language;
+    public TerminalLookupTable TerminalsLookup;
+    public TerminalList MultilineTerminals;
+    public TerminalList NoPrefixTerminals;
+    public TerminalLookupTable NonGrammarTerminalsLookup;
+    public ScannerData(LanguageData language);
+}
+public class Irony.Parsing.ShiftParserAction : ParserAction {
+    public BnfTerm Term;
+    public ParserState NewState;
+    public ShiftParserAction(LRItem item);
+    public ShiftParserAction(BnfTerm term, ParserState newState);
+    public virtual void Execute(ParsingContext context);
+    public virtual string ToString();
+}
+public class Irony.Parsing.SourceLocation : ValueType {
+    public int Position;
+    public int Line;
+    public int Column;
+    private static SourceLocation _empty;
+    public static SourceLocation Empty { get; }
+    public SourceLocation(int position, int line, int column);
+    private static SourceLocation();
+    public virtual string ToString();
+    public string ToUiString();
+    public static int Compare(SourceLocation x, SourceLocation y);
+    public static SourceLocation get_Empty();
+    public static SourceLocation op_Addition(SourceLocation x, SourceLocation y);
+    public static SourceLocation op_Addition(SourceLocation x, int offset);
+}
+public class Irony.Parsing.SourceSpan : ValueType {
+    public SourceLocation Location;
+    public int Length;
+    public int EndPosition { get; }
+    public SourceSpan(SourceLocation location, int length);
+    public int get_EndPosition();
+    public bool InRange(int position);
+}
+public class Irony.Parsing.SourceStream : object {
+    private StringComparison _stringComparison;
+    private int _tabWidth;
+    private Char[] _chars;
+    private int _textLength;
+    private string _text;
+    private SourceLocation _location;
+    private int _previewPosition;
+    public string Text { get; }
+    public int Position { get; public set; }
+    public SourceLocation Location { get; public set; }
+    public int PreviewPosition { get; public set; }
+    public char PreviewChar { get; }
+    public char NextPreviewChar { get; }
+    public SourceStream(string text, bool caseSensitive, int tabWidth);
+    public SourceStream(string text, bool caseSensitive, int tabWidth, SourceLocation initialLocation);
+    public sealed virtual string get_Text();
+    public sealed virtual int get_Position();
+    public sealed virtual void set_Position(int value);
+    [DebuggerStepThroughAttribute]
+public sealed virtual SourceLocation get_Location();
+    public sealed virtual void set_Location(SourceLocation value);
+    public sealed virtual int get_PreviewPosition();
+    public sealed virtual void set_PreviewPosition(int value);
+    [DebuggerStepThroughAttribute]
+public sealed virtual char get_PreviewChar();
+    [DebuggerStepThroughAttribute]
+public sealed virtual char get_NextPreviewChar();
+    public sealed virtual bool MatchSymbol(string symbol);
+    public sealed virtual Token CreateToken(Terminal terminal);
+    public sealed virtual Token CreateToken(Terminal terminal, object value);
+    [DebuggerStepThroughAttribute]
+public sealed virtual bool EOF();
+    private string GetPreviewText();
+    public virtual string ToString();
+    private void SetNewPosition(int newPosition);
+}
+public class Irony.Parsing.StringLiteral : CompoundTerminalBase {
+    private StringSubTypeList _subtypes;
+    private string _startSymbolsFirsts;
+    public StringLiteral(string name);
+    public StringLiteral(string name, string startEndSymbol, StringOptions options);
+    public StringLiteral(string name, string startEndSymbol);
+    public StringLiteral(string name, string startEndSymbol, StringOptions options, Type astNodeType);
+    public StringLiteral(string name, string startEndSymbol, StringOptions options, AstNodeCreator astNodeCreator);
+    public void AddStartEnd(string startEndSymbol, StringOptions stringOptions);
+    public void AddStartEnd(string startSymbol, string endSymbol, StringOptions stringOptions);
+    public void AddPrefix(string prefix, StringOptions flags);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    protected virtual bool ReadBody(ISourceStream source, CompoundTokenDetails details);
+    private bool CompleteReadBody(ISourceStream source, CompoundTokenDetails details);
+    private void ProcessPartialBody(ISourceStream source, CompoundTokenDetails details);
+    protected virtual void InitDetails(ParsingContext context, CompoundTokenDetails details);
+    protected virtual void ReadSuffix(ISourceStream source, CompoundTokenDetails details);
+    private bool IsEndQuoteEscaped(string text, int quotePosition);
+    private bool ReadStartSymbol(ISourceStream source, CompoundTokenDetails details);
+    protected virtual bool ConvertValue(CompoundTokenDetails details, ParsingContext context);
+    protected virtual string HandleSpecialEscape(string segment, CompoundTokenDetails details);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.StringOptions : Enum {
+    public short value__;
+    public static StringOptions None;
+    public static StringOptions IsChar;
+    public static StringOptions AllowsDoubledQuote;
+    public static StringOptions AllowsLineBreak;
+    public static StringOptions IsTemplate;
+    public static StringOptions NoEscapes;
+    public static StringOptions AllowsUEscapes;
+    public static StringOptions AllowsXEscapes;
+    public static StringOptions AllowsOctalEscapes;
+    public static StringOptions AllowsAllEscapes;
+}
+public class Irony.Parsing.StringTemplateSettings : object {
+    public string StartTag;
+    public string EndTag;
+    public NonTerminal ExpressionRoot;
+}
+public class Irony.Parsing.SyntaxError : object {
+    public SourceLocation Location;
+    public string Message;
+    public ParserState ParserState;
+    public SyntaxError(SourceLocation location, string message, ParserState parserState);
+    public virtual string ToString();
+}
+public class Irony.Parsing.SyntaxErrorList : List`1<SyntaxError> {
+    public static int ByLocation(SyntaxError x, SyntaxError y);
+}
+[FlagsAttribute]
+public enum Irony.Parsing.TermFlags : Enum {
+    public int value__;
+    public static TermFlags None;
+    public static TermFlags IsOperator;
+    public static TermFlags IsOpenBrace;
+    public static TermFlags IsCloseBrace;
+    public static TermFlags IsBrace;
+    public static TermFlags IsLiteral;
+    public static TermFlags IsConstant;
+    public static TermFlags IsPunctuation;
+    public static TermFlags IsDelimiter;
+    public static TermFlags IsReservedWord;
+    public static TermFlags IsMemberSelect;
+    public static TermFlags InheritPrecedence;
+    public static TermFlags IsNonScanner;
+    public static TermFlags IsNonGrammar;
+    public static TermFlags IsTransient;
+    public static TermFlags IsNotReported;
+    public static TermFlags IsNullable;
+    public static TermFlags IsVisible;
+    public static TermFlags IsKeyword;
+    public static TermFlags IsMultiline;
+    public static TermFlags IsList;
+    public static TermFlags IsListContainer;
+    public static TermFlags NoAstNode;
+    public static TermFlags AstDelayChildren;
+}
+public class Irony.Parsing.Terminal : BnfTerm {
+    public TokenCategory Category;
+    public int Priority;
+    [CompilerGeneratedAttribute]
+private Terminal <OutputTerminal>k__BackingField;
+    public TokenEditorInfo EditorInfo;
+    public byte MultilineIndex;
+    public Terminal IsPairFor;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ValidateTokenEventArgs> ValidateToken;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ParsingEventArgs> ParserInputPreview;
+    [ObsoleteAttribute("Deprecated: use constants in TerminalPriority class instead")]
+public static int LowestPriority;
+    [ObsoleteAttribute("Deprecated: use constants in TerminalPriority class instead")]
+public static int HighestPriority;
+    [ObsoleteAttribute("Deprecated: use constants in TerminalPriority class instead")]
+public static int ReservedWordsPriority;
+    public Terminal OutputTerminal { get; protected set; }
+    public Terminal(string name);
+    public Terminal(string name, TokenCategory category);
+    public Terminal(string name, string errorAlias, TokenCategory category, TermFlags flags);
+    public Terminal(string name, TokenCategory category, TermFlags flags);
+    [CompilerGeneratedAttribute]
+public Terminal get_OutputTerminal();
+    [CompilerGeneratedAttribute]
+protected void set_OutputTerminal(Terminal value);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+    public virtual string TokenToString(Token token);
+    [CompilerGeneratedAttribute]
+public void add_ValidateToken(EventHandler`1<ValidateTokenEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_ValidateToken(EventHandler`1<ValidateTokenEventArgs> value);
+    protected internal virtual void OnValidateToken(ParsingContext context);
+    [CompilerGeneratedAttribute]
+public void add_ParserInputPreview(EventHandler`1<ParsingEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_ParserInputPreview(EventHandler`1<ParsingEventArgs> value);
+    protected internal virtual void OnParserInputPreview(ParsingContext context);
+    public static int ByPriorityReverse(Terminal x, Terminal y);
+    public void SetOutputTerminal(Grammar grammar, Terminal outputTerminal);
+    public static string TerminalsToString(IEnumerable`1<Terminal> terminals);
+}
+public static class Irony.Parsing.TerminalFactory : object {
+    public static StringLiteral CreateCSharpString(string name);
+    public static StringLiteral CreateCSharpChar(string name);
+    public static StringLiteral CreateVbString(string name);
+    public static StringLiteral CreatePythonString(string name);
+    public static NumberLiteral CreateCSharpNumber(string name);
+    public static NumberLiteral CreateVbNumber(string name);
+    public static NumberLiteral CreatePythonNumber(string name);
+    public static NumberLiteral CreateSchemeNumber(string name);
+    public static IdentifierTerminal CreateCSharpIdentifier(string name);
+    public static IdentifierTerminal CreatePythonIdentifier(string name);
+    public static IdentifierTerminal CreateSqlExtIdentifier(Grammar grammar, string name);
+}
+public class Irony.Parsing.TerminalList : List`1<Terminal> {
+    public virtual string ToString();
+}
+public class Irony.Parsing.TerminalLookupTable : Dictionary`2<char, TerminalList> {
+}
+public static class Irony.Parsing.TerminalPriority : object {
+    public static int Low;
+    public static int Normal;
+    public static int High;
+    public static int ReservedWords;
+    private static TerminalPriority();
+}
+public class Irony.Parsing.TerminalSet : HashSet`1<Terminal> {
+    public virtual string ToString();
+}
+[FlagsAttribute]
+public enum Irony.Parsing.TermListOptions : Enum {
+    public int value__;
+    public static TermListOptions None;
+    public static TermListOptions AllowEmpty;
+    public static TermListOptions AllowTrailingDelimiter;
+    public static TermListOptions AddPreferShiftHint;
+    public static TermListOptions PlusList;
+    public static TermListOptions StarList;
+}
+public class Irony.Parsing.TermReportGroup : object {
+    public string Alias;
+    public TermReportGroupType GroupType;
+    public TerminalSet Terminals;
+    public TermReportGroup(string alias, TermReportGroupType groupType, IEnumerable`1<Terminal> terminals);
+}
+public class Irony.Parsing.TermReportGroupList : List`1<TermReportGroup> {
+}
+public enum Irony.Parsing.TermReportGroupType : Enum {
+    public int value__;
+    public static TermReportGroupType Normal;
+    public static TermReportGroupType DoNotReport;
+    public static TermReportGroupType Operator;
+}
+public class Irony.Parsing.Token : object {
+    [CompilerGeneratedAttribute]
+private Terminal <Terminal>k__BackingField;
+    public KeyTerm KeyTerm;
+    public SourceLocation Location;
+    public string Text;
+    public object Value;
+    public object Details;
+    public TokenFlags Flags;
+    public TokenEditorInfo EditorInfo;
+    public Token OtherBrace;
+    public short ScannerState;
+    public Terminal Terminal { get; private set; }
+    public string ValueString { get; }
+    public TokenCategory Category { get; }
+    public int Length { get; }
+    public Token(Terminal term, SourceLocation location, string text, object value);
+    [CompilerGeneratedAttribute]
+public Terminal get_Terminal();
+    [CompilerGeneratedAttribute]
+private void set_Terminal(Terminal value);
+    public string get_ValueString();
+    public void SetTerminal(Terminal terminal);
+    public bool IsSet(TokenFlags flag);
+    public TokenCategory get_Category();
+    public bool IsError();
+    public int get_Length();
+    [DebuggerStepThroughAttribute]
+public virtual string ToString();
+}
+public enum Irony.Parsing.TokenCategory : Enum {
+    public int value__;
+    public static TokenCategory Content;
+    public static TokenCategory Outline;
+    public static TokenCategory Comment;
+    public static TokenCategory Directive;
+    public static TokenCategory Error;
+}
+public enum Irony.Parsing.TokenColor : Enum {
+    public int value__;
+    public static TokenColor Text;
+    public static TokenColor Keyword;
+    public static TokenColor Comment;
+    public static TokenColor Identifier;
+    public static TokenColor String;
+    public static TokenColor Number;
+}
+public class Irony.Parsing.TokenEditorInfo : object {
+    public TokenType Type;
+    public TokenColor Color;
+    public TokenTriggers Triggers;
+    public string ToolTip;
+    public int UnderlineType;
+    public TokenEditorInfo(TokenType type, TokenColor color, TokenTriggers triggers);
+}
+public class Irony.Parsing.TokenFilter : object {
+    [IteratorStateMachineAttribute("Irony.Parsing.TokenFilter/<BeginFiltering>d__0")]
+public virtual IEnumerable`1<Token> BeginFiltering(ParsingContext context, IEnumerable`1<Token> tokens);
+    public virtual void Reset();
+    protected internal virtual void OnSetSourceLocation(SourceLocation location);
+}
+public class Irony.Parsing.TokenFilterList : List`1<TokenFilter> {
+}
+public enum Irony.Parsing.TokenFlags : Enum {
+    public int value__;
+    public static TokenFlags IsIncomplete;
+}
+public class Irony.Parsing.TokenList : List`1<Token> {
+}
+public class Irony.Parsing.TokenPreviewHint : GrammarHint {
+    public int MaxPreviewTokens;
+    private PreferredActionType _actionType;
+    private string _firstString;
+    private StringSet _beforeStrings;
+    private Terminal _firstTerminal;
+    private TerminalSet _beforeTerminals;
+    private string _description;
+    public TokenPreviewHint(PreferredActionType actionType, string thisSymbol, String[] comesBefore);
+    public TokenPreviewHint(PreferredActionType actionType, Terminal thisTerm, Terminal[] comesBefore);
+    public virtual void Init(GrammarData grammarData);
+    public virtual string ToString();
+    public virtual void Apply(LanguageData language, LRItem owner);
+    private bool CheckCondition(ParsingContext context);
+    private void AddConditionalEntry(ParserState state, BnfTerm term, ConditionalEntry entry);
+    private ParserAction FindDefaultAction(ParserState state, BnfTerm term);
+}
+public class Irony.Parsing.TokenStack : Stack`1<Token> {
+}
+[FlagsAttribute]
+public enum Irony.Parsing.TokenTriggers : Enum {
+    public int value__;
+    public static TokenTriggers None;
+    public static TokenTriggers MemberSelect;
+    public static TokenTriggers MatchBraces;
+    public static TokenTriggers ParameterStart;
+    public static TokenTriggers ParameterNext;
+    public static TokenTriggers ParameterEnd;
+    public static TokenTriggers Parameter;
+    public static TokenTriggers MethodTip;
+}
+public enum Irony.Parsing.TokenType : Enum {
+    public int value__;
+    public static TokenType Unknown;
+    public static TokenType Text;
+    public static TokenType Keyword;
+    public static TokenType Identifier;
+    public static TokenType String;
+    public static TokenType Literal;
+    public static TokenType Operator;
+    public static TokenType Delimiter;
+    public static TokenType WhiteSpace;
+    public static TokenType LineComment;
+    public static TokenType Comment;
+}
+public class Irony.Parsing.UnicodeCategoryList : List`1<UnicodeCategory> {
+}
+public class Irony.Parsing.ValidateTokenEventArgs : ParsingEventArgs {
+    public Token Token { get; }
+    public ValidateTokenEventArgs(ParsingContext context);
+    public Token get_Token();
+    public void ReplaceToken(Token token);
+    public void SetError(string errorMessage, Object[] messageArgs);
+    public void RejectToken();
+}
+public class Irony.Parsing.VsScannerStateMap : ValueType {
+    public int Value;
+    public byte TerminalIndex;
+    public byte TokenSubType;
+    public short TerminalFlags;
+}
+public class Irony.Parsing.WikiBlockTerminal : WikiTerminalBase {
+    public WikiBlockType BlockType;
+    public WikiBlockTerminal(string name, WikiBlockType blockType, string openTag, string closeTag, string htmlElementName);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+public enum Irony.Parsing.WikiBlockType : Enum {
+    public int value__;
+    public static WikiBlockType EscapedText;
+    public static WikiBlockType CodeBlock;
+    public static WikiBlockType Anchor;
+    public static WikiBlockType LinkToAnchor;
+    public static WikiBlockType Url;
+    public static WikiBlockType FileLink;
+    public static WikiBlockType Image;
+}
+public class Irony.Parsing.WikiTagTerminal : WikiTerminalBase {
+    public WikiTagTerminal(string name, WikiTermType termType, string tag, string htmlElementName);
+    public WikiTagTerminal(string name, WikiTermType termType, string openTag, string closeTag, string htmlElementName);
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+public abstract class Irony.Parsing.WikiTerminalBase : Terminal {
+    public WikiTermType TermType;
+    public string OpenTag;
+    public string CloseTag;
+    public string HtmlElementName;
+    public string ContainerHtmlElementName;
+    public string OpenHtmlTag;
+    public string CloseHtmlTag;
+    public string ContainerOpenHtmlTag;
+    public string ContainerCloseHtmlTag;
+    public WikiTerminalBase(string name, WikiTermType termType, string openTag, string closeTag, string htmlElementName);
+    public virtual IList`1<string> GetFirsts();
+    public virtual void Init(GrammarData grammarData);
+}
+public enum Irony.Parsing.WikiTermType : Enum {
+    public int value__;
+    public static WikiTermType Text;
+    public static WikiTermType Element;
+    public static WikiTermType Format;
+    public static WikiTermType Heading;
+    public static WikiTermType List;
+    public static WikiTermType Block;
+    public static WikiTermType Table;
+}
+public class Irony.Parsing.WikiTextTerminal : WikiTerminalBase {
+    public static char NoEscape;
+    public char EscapeChar;
+    private Char[] _stopChars;
+    public WikiTextTerminal(string name);
+    public virtual void Init(GrammarData grammarData);
+    public virtual IList`1<string> GetFirsts();
+    public virtual Token TryMatch(ParsingContext context, ISourceStream source);
+}
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+public class Irony.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+public static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+public static CultureInfo Culture { get; public set; }
+    public static string ConsoleNoChars { get; }
+    public static string ConsoleYesChars { get; }
+    public static string ErrAmbigGrammarRR { get; }
+    public static string ErrAmbigGrammarSR { get; }
+    public static string ErrArgListNotFound { get; }
+    public static string ErrAssignLiteralValue { get; }
+    public static string ErrBadChar { get; }
+    public static string ErrBadStrLiteral { get; }
+    public static string ErrBadUnEscape { get; }
+    public static string ErrBadXEscape { get; }
+    public static string ErrCannotConvertValue { get; }
+    public static string ErrCannotConvertValueToType { get; }
+    public static string ErrCannotMoveBackInSource { get; }
+    public static string ErrConflictMsgTemplate { get; }
+    public static string ErrConsoleFatalError { get; }
+    public static string ErrConstructNotSupported { get; }
+    public static string ErrDsvNoClosingQuote { get; }
+    public static string ErrDupRegexSwitch { get; }
+    public static string ErrDupStartSymbolStr { get; }
+    public static string ErrFailedCreateNode { get; }
+    public static string ErrFreeTextNoEndTag { get; }
+    public static string ErrImpliedOpUseParserLink { get; }
+    public static string ErrInternalErrDataPopFailed { get; }
+    public static string ErrInterpreterIsBusy { get; }
+    public static string ErrInvalidArgsForIncDec { get; }
+    public static string ErrInvalidAstMode { get; }
+    public static string ErrInvalidChar { get; }
+    public static string ErrInvalidEmbeddedPrefix { get; }
+    public static string ErrInvDedent { get; }
+    public static string ErrInvEscape { get; }
+    public static string ErrInvEscSeq { get; }
+    public static string ErrInvEscSymbol { get; }
+    public static string ErrInvNumber { get; }
+    public static string ErrInvRegexSwitch { get; }
+    public static string ErrInvStrDef { get; }
+    public static string ErrLastTermOfErrorProd { get; }
+    public static string ErrListCannotBeTransient { get; }
+    public static string ErrNewLineExpected { get; }
+    public static string ErrNoClosingBrace { get; }
+    public static string ErrNodeTypeNotSetOn { get; }
+    public static string ErrNoEndForRegex { get; }
+    public static string ErrNoEndTagInEmbExpr { get; }
+    public static string ErrNoImplForUnaryOp { get; }
+    public static string ErrNoLetterAfterNum { get; }
+    public static string ErrNoLkhds { get; }
+    public static string ErrNtRuleIsNull { get; }
+    public static string ErrNullNodeEval { get; }
+    public static string ErrOpNotDefinedForType { get; }
+    public static string ErrOpNotDefinedForTypes { get; }
+    public static string ErrOpNotImplemented { get; }
+    public static string ErrOutErrorPrintFormat { get; }
+    public static string ErrOutlineFilterContSymbol { get; }
+    public static string ErrParserUnexpectedInput { get; }
+    public static string ErrParseTreeNull { get; }
+    public static string ErrParseTreeRootNull { get; }
+    public static string ErrRootAstNodeNull { get; }
+    public static string ErrRootAstNoInterface { get; }
+    public static string ErrRootNotRegistered { get; }
+    public static string ErrRootNotSet { get; }
+    public static string ErrRRConflict { get; }
+    public static string ErrRuleContainsNull { get; }
+    public static string ErrSRConflict { get; }
+    public static string ErrSyntaxErrorExpected { get; }
+    public static string ErrSyntaxErrorNoInfo { get; }
+    public static string ErrTemplExprNotRoot { get; }
+    public static string ErrTemplMissingExprRoot { get; }
+    public static string ErrTemplNoSettings { get; }
+    public static string ErrTerminalHasEmptyPrefix { get; }
+    public static string ErrTransientNtMustHaveOneTerm { get; }
+    public static string ErrUnclosedComment { get; }
+    public static string ErrUnexpEof { get; }
+    public static string ErrUnexpIndent { get; }
+    public static string ErrUnmatchedCloseBrace { get; }
+    public static string ErrVarIsNotCallable { get; }
+    public static string ErrVarNotDefined { get; }
+    public static string ErrWrongArgCount { get; }
+    public static string FmtRowCol { get; }
+    public static string LabelActionAccept { get; }
+    public static string LabelActionOp { get; }
+    public static string LabelActionReduce { get; }
+    public static string LabelActionShift { get; }
+    public static string LabelActionUnknown { get; }
+    public static string LabelEofMark { get; }
+    public static string LabelEosLabel { get; }
+    public static string LabelInitialState { get; }
+    public static string LabelKeySymbol { get; }
+    public static string LabelKeyword { get; }
+    public static string LabelLineBreak { get; }
+    public static string LabelLocation { get; }
+    public static string LabelNone { get; }
+    public static string LabelSrcHaveMore { get; }
+    public static string LabelUnnamed { get; }
+    public static string MsgAbortScriptYN { get; }
+    public static string MsgDefaultConsoleGreeting { get; }
+    public static string MsgDefaultConsoleTitle { get; }
+    public static string MsgErrorCustomActionDidNotAdvance { get; }
+    public static string MsgExitConsoleYN { get; }
+    public static string MsgNLALRAdvice { get; }
+    public static string MsgPressAnyKeyToExit { get; }
+    public static string MsgSrcPosToString { get; }
+    public static string MsgTraceConflictResolved { get; }
+    public static string MsgTraceExecCustomAction { get; }
+    public static string MsgTraceOpResolved { get; }
+    public static string MsgTracePoppedState { get; }
+    public static string MsgTraceRecoverAction { get; }
+    public static string MsgTraceRecoverFailed { get; }
+    public static string MsgTraceRecoverFoundState { get; }
+    public static string MsgTraceRecovering { get; }
+    public static string MsgTraceRecoverReducing { get; }
+    public static string MsgTraceRecoverShiftError { get; }
+    public static string MsgTraceRecoverShiftTillEnd { get; }
+    public static string MsgTraceRecoverSuccess { get; }
+    public static ResourceManager get_ResourceManager();
+    public static CultureInfo get_Culture();
+    public static void set_Culture(CultureInfo value);
+    public static string get_ConsoleNoChars();
+    public static string get_ConsoleYesChars();
+    public static string get_ErrAmbigGrammarRR();
+    public static string get_ErrAmbigGrammarSR();
+    public static string get_ErrArgListNotFound();
+    public static string get_ErrAssignLiteralValue();
+    public static string get_ErrBadChar();
+    public static string get_ErrBadStrLiteral();
+    public static string get_ErrBadUnEscape();
+    public static string get_ErrBadXEscape();
+    public static string get_ErrCannotConvertValue();
+    public static string get_ErrCannotConvertValueToType();
+    public static string get_ErrCannotMoveBackInSource();
+    public static string get_ErrConflictMsgTemplate();
+    public static string get_ErrConsoleFatalError();
+    public static string get_ErrConstructNotSupported();
+    public static string get_ErrDsvNoClosingQuote();
+    public static string get_ErrDupRegexSwitch();
+    public static string get_ErrDupStartSymbolStr();
+    public static string get_ErrFailedCreateNode();
+    public static string get_ErrFreeTextNoEndTag();
+    public static string get_ErrImpliedOpUseParserLink();
+    public static string get_ErrInternalErrDataPopFailed();
+    public static string get_ErrInterpreterIsBusy();
+    public static string get_ErrInvalidArgsForIncDec();
+    public static string get_ErrInvalidAstMode();
+    public static string get_ErrInvalidChar();
+    public static string get_ErrInvalidEmbeddedPrefix();
+    public static string get_ErrInvDedent();
+    public static string get_ErrInvEscape();
+    public static string get_ErrInvEscSeq();
+    public static string get_ErrInvEscSymbol();
+    public static string get_ErrInvNumber();
+    public static string get_ErrInvRegexSwitch();
+    public static string get_ErrInvStrDef();
+    public static string get_ErrLastTermOfErrorProd();
+    public static string get_ErrListCannotBeTransient();
+    public static string get_ErrNewLineExpected();
+    public static string get_ErrNoClosingBrace();
+    public static string get_ErrNodeTypeNotSetOn();
+    public static string get_ErrNoEndForRegex();
+    public static string get_ErrNoEndTagInEmbExpr();
+    public static string get_ErrNoImplForUnaryOp();
+    public static string get_ErrNoLetterAfterNum();
+    public static string get_ErrNoLkhds();
+    public static string get_ErrNtRuleIsNull();
+    public static string get_ErrNullNodeEval();
+    public static string get_ErrOpNotDefinedForType();
+    public static string get_ErrOpNotDefinedForTypes();
+    public static string get_ErrOpNotImplemented();
+    public static string get_ErrOutErrorPrintFormat();
+    public static string get_ErrOutlineFilterContSymbol();
+    public static string get_ErrParserUnexpectedInput();
+    public static string get_ErrParseTreeNull();
+    public static string get_ErrParseTreeRootNull();
+    public static string get_ErrRootAstNodeNull();
+    public static string get_ErrRootAstNoInterface();
+    public static string get_ErrRootNotRegistered();
+    public static string get_ErrRootNotSet();
+    public static string get_ErrRRConflict();
+    public static string get_ErrRuleContainsNull();
+    public static string get_ErrSRConflict();
+    public static string get_ErrSyntaxErrorExpected();
+    public static string get_ErrSyntaxErrorNoInfo();
+    public static string get_ErrTemplExprNotRoot();
+    public static string get_ErrTemplMissingExprRoot();
+    public static string get_ErrTemplNoSettings();
+    public static string get_ErrTerminalHasEmptyPrefix();
+    public static string get_ErrTransientNtMustHaveOneTerm();
+    public static string get_ErrUnclosedComment();
+    public static string get_ErrUnexpEof();
+    public static string get_ErrUnexpIndent();
+    public static string get_ErrUnmatchedCloseBrace();
+    public static string get_ErrVarIsNotCallable();
+    public static string get_ErrVarNotDefined();
+    public static string get_ErrWrongArgCount();
+    public static string get_FmtRowCol();
+    public static string get_LabelActionAccept();
+    public static string get_LabelActionOp();
+    public static string get_LabelActionReduce();
+    public static string get_LabelActionShift();
+    public static string get_LabelActionUnknown();
+    public static string get_LabelEofMark();
+    public static string get_LabelEosLabel();
+    public static string get_LabelInitialState();
+    public static string get_LabelKeySymbol();
+    public static string get_LabelKeyword();
+    public static string get_LabelLineBreak();
+    public static string get_LabelLocation();
+    public static string get_LabelNone();
+    public static string get_LabelSrcHaveMore();
+    public static string get_LabelUnnamed();
+    public static string get_MsgAbortScriptYN();
+    public static string get_MsgDefaultConsoleGreeting();
+    public static string get_MsgDefaultConsoleTitle();
+    public static string get_MsgErrorCustomActionDidNotAdvance();
+    public static string get_MsgExitConsoleYN();
+    public static string get_MsgNLALRAdvice();
+    public static string get_MsgPressAnyKeyToExit();
+    public static string get_MsgSrcPosToString();
+    public static string get_MsgTraceConflictResolved();
+    public static string get_MsgTraceExecCustomAction();
+    public static string get_MsgTraceOpResolved();
+    public static string get_MsgTracePoppedState();
+    public static string get_MsgTraceRecoverAction();
+    public static string get_MsgTraceRecoverFailed();
+    public static string get_MsgTraceRecoverFoundState();
+    public static string get_MsgTraceRecovering();
+    public static string get_MsgTraceRecoverReducing();
+    public static string get_MsgTraceRecoverShiftError();
+    public static string get_MsgTraceRecoverShiftTillEnd();
+    public static string get_MsgTraceRecoverSuccess();
+}
+public class Irony.StringDictionary : Dictionary`2<string, string> {
+}
+public class Irony.StringList : List`1<string> {
+    public StringList(String[] args);
+    public virtual string ToString();
+    public string ToString(string separator);
+    public static int LongerFirst(string x, string y);
+}
+public static class Irony.Strings : object {
+    public static string AllLatinLetters;
+    public static string DecimalDigits;
+    public static string OctalDigits;
+    public static string HexDigits;
+    public static string BinaryDigits;
+    public static string JoinStrings(string separator, IEnumerable`1<string> values);
+}
+public class Irony.StringSet : HashSet`1<string> {
+    public StringSet(StringComparer comparer);
+    public virtual string ToString();
+    public void AddRange(String[] items);
+    public string ToString(string separator);
+}
+public class Irony.TypeList : List`1<Type> {
+    public TypeList(Type[] types);
+}
