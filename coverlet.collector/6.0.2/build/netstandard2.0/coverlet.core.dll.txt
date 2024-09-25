@@ -1,0 +1,1041 @@
+internal interface Coverlet.Core.Abstractions.IAssemblyAdapter {
+    public abstract virtual string GetAssemblyName(string assemblyPath);
+}
+internal interface Coverlet.Core.Abstractions.ICecilSymbolHelper {
+    public abstract virtual IReadOnlyList`1<BranchPoint> GetBranchPoints(MethodDefinition methodDefinition);
+    public abstract virtual bool SkipNotCoverableInstruction(MethodDefinition methodDefinition, Instruction instruction);
+    public abstract virtual bool SkipInlineAssignedAutoProperty(bool skipAutoProps, MethodDefinition methodDefinition, Instruction instruction);
+}
+internal interface Coverlet.Core.Abstractions.IConsole {
+    public abstract virtual void WriteLine(string value);
+}
+internal interface Coverlet.Core.Abstractions.IFileSystem {
+    public abstract virtual bool Exists(string path);
+    public abstract virtual void WriteAllText(string path, string contents);
+    public abstract virtual string ReadAllText(string path);
+    public abstract virtual Stream OpenRead(string path);
+    public abstract virtual void Copy(string sourceFileName, string destFileName, bool overwrite);
+    public abstract virtual void Delete(string path);
+    public abstract virtual Stream NewFileStream(string path, FileMode mode);
+    public abstract virtual Stream NewFileStream(string path, FileMode mode, FileAccess access);
+    public abstract virtual String[] ReadAllLines(string path);
+}
+internal interface Coverlet.Core.Abstractions.IInstrumentationHelper {
+    public abstract virtual void BackupOriginalModule(string module, string identifier);
+    public abstract virtual void DeleteHitsFile(string path);
+    public abstract virtual String[] GetCoverableModules(string module, String[] directories, bool includeTestAssembly);
+    public abstract virtual bool HasPdb(string module, Boolean& embedded);
+    public abstract virtual bool IsModuleExcluded(string module, String[] excludeFilters);
+    public abstract virtual bool IsModuleIncluded(string module, String[] includeFilters);
+    public abstract virtual bool IsValidFilterExpression(string filter);
+    public abstract virtual bool IsTypeExcluded(string module, string type, String[] excludeFilters);
+    public abstract virtual bool IsTypeIncluded(string module, string type, String[] includeFilters);
+    public abstract virtual void RestoreOriginalModule(string module, string identifier);
+    public abstract virtual bool EmbeddedPortablePdbHasLocalSource(string module, AssemblySearchType excludeAssembliesWithoutSources);
+    public abstract virtual bool PortablePdbHasLocalSource(string module, AssemblySearchType excludeAssembliesWithoutSources);
+    public abstract virtual bool IsLocalMethod(string method);
+    public abstract virtual void SetLogger(ILogger logger);
+}
+internal interface Coverlet.Core.Abstractions.ILogger {
+    public abstract virtual void LogVerbose(string message);
+    public abstract virtual void LogInformation(string message, bool important);
+    public abstract virtual void LogWarning(string message);
+    public abstract virtual void LogError(string message);
+    public abstract virtual void LogError(Exception exception);
+}
+internal interface Coverlet.Core.Abstractions.IProcessExitHandler {
+    public abstract virtual void Add(EventHandler handler);
+}
+internal interface Coverlet.Core.Abstractions.IReporter {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public abstract virtual ReporterOutputType get_OutputType();
+    public abstract virtual string get_Format();
+    public abstract virtual string get_Extension();
+    public abstract virtual string Report(CoverageResult result, ISourceRootTranslator sourceRootTranslator);
+}
+internal interface Coverlet.Core.Abstractions.IRetryHelper {
+    public abstract virtual void Retry(Action action, Func`1<TimeSpan> backoffStrategy, int maxAttemptCount);
+    public abstract virtual T Do(Func`1<T> action, Func`1<TimeSpan> backoffStrategy, int maxAttemptCount);
+}
+internal interface Coverlet.Core.Abstractions.ISourceRootTranslator {
+    public abstract virtual bool AddMappingInCache(string originalFileName, string targetFileName);
+    public abstract virtual string ResolveFilePath(string originalFileName);
+    public abstract virtual string ResolveDeterministicPath(string originalFileName);
+    public abstract virtual IReadOnlyList`1<SourceRootMapping> ResolvePathRoot(string pathRoot);
+}
+internal enum Coverlet.Core.Abstractions.ReporterOutputType : Enum {
+    public int value__;
+    public static ReporterOutputType File;
+    public static ReporterOutputType Console;
+}
+[AttributeUsageAttribute("228")]
+internal class Coverlet.Core.Attributes.DoesNotReturnAttribute : Attribute {
+}
+[AttributeUsageAttribute("228")]
+internal class Coverlet.Core.Attributes.ExcludeFromCoverageAttribute : Attribute {
+}
+internal class Coverlet.Core.Branches : List`1<BranchInfo> {
+}
+internal class Coverlet.Core.BranchInfo : object {
+    [CompilerGeneratedAttribute]
+private int <Line>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Offset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <EndOffset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <Ordinal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Hits>k__BackingField;
+    public int Line { get; public set; }
+    public int Offset { get; public set; }
+    public int EndOffset { get; public set; }
+    public int Path { get; public set; }
+    public UInt32 Ordinal { get; public set; }
+    public int Hits { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_Line();
+    [CompilerGeneratedAttribute]
+public void set_Line(int value);
+    [CompilerGeneratedAttribute]
+public int get_Offset();
+    [CompilerGeneratedAttribute]
+public void set_Offset(int value);
+    [CompilerGeneratedAttribute]
+public int get_EndOffset();
+    [CompilerGeneratedAttribute]
+public void set_EndOffset(int value);
+    [CompilerGeneratedAttribute]
+public int get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(int value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_Ordinal();
+    [CompilerGeneratedAttribute]
+public void set_Ordinal(UInt32 value);
+    [CompilerGeneratedAttribute]
+public int get_Hits();
+    [CompilerGeneratedAttribute]
+public void set_Hits(int value);
+}
+internal class Coverlet.Core.Classes : Dictionary`2<string, Methods> {
+}
+internal class Coverlet.Core.Coverage : object {
+    private string _moduleOrAppDirectory;
+    private ILogger _logger;
+    private IInstrumentationHelper _instrumentationHelper;
+    private IFileSystem _fileSystem;
+    private ISourceRootTranslator _sourceRootTranslator;
+    private ICecilSymbolHelper _cecilSymbolHelper;
+    private List`1<InstrumenterResult> _results;
+    private CoverageParameters _parameters;
+    [CompilerGeneratedAttribute]
+private string <Identifier>k__BackingField;
+    public string Identifier { get; }
+    public Coverage(string moduleOrDirectory, CoverageParameters parameters, ILogger logger, IInstrumentationHelper instrumentationHelper, IFileSystem fileSystem, ISourceRootTranslator sourceRootTranslator, ICecilSymbolHelper cecilSymbolHelper);
+    public Coverage(CoveragePrepareResult prepareResult, ILogger logger, IInstrumentationHelper instrumentationHelper, IFileSystem fileSystem, ISourceRootTranslator sourceRootTranslator);
+    [CompilerGeneratedAttribute]
+public string get_Identifier();
+    public CoveragePrepareResult PrepareModules();
+    public CoverageResult GetCoverageResult();
+    private bool BranchInCompilerGeneratedClass(string methodName);
+    private static Method GetMethodWithSameLineInSameDocument(Classes documentClasses, string compilerGeneratedClassName, int branchLine);
+    private void CalculateCoverage();
+    private string GetSourceLinkUrl(Dictionary`2<string, string> sourceLinkDocuments, string document);
+    [CompilerGeneratedAttribute]
+private void <PrepareModules>b__13_0(string filter);
+    [CompilerGeneratedAttribute]
+private void <PrepareModules>b__13_1(string filter);
+    [CompilerGeneratedAttribute]
+private void <PrepareModules>b__13_2(string filter);
+    [CompilerGeneratedAttribute]
+private bool <PrepareModules>b__13_3(string f);
+    [CompilerGeneratedAttribute]
+private bool <PrepareModules>b__13_4(string f);
+}
+internal class Coverlet.Core.CoverageDetails : object {
+    private double _averageModulePercent;
+    [CompilerGeneratedAttribute]
+private Modules <Modules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Covered>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Total>k__BackingField;
+    public Modules Modules { get; internal set; }
+    public double Covered { get; internal set; }
+    public int Total { get; internal set; }
+    public double Percent { get; }
+    public double AverageModulePercent { get; internal set; }
+    [CompilerGeneratedAttribute]
+public Modules get_Modules();
+    [CompilerGeneratedAttribute]
+internal void set_Modules(Modules value);
+    [CompilerGeneratedAttribute]
+public double get_Covered();
+    [CompilerGeneratedAttribute]
+internal void set_Covered(double value);
+    [CompilerGeneratedAttribute]
+public int get_Total();
+    [CompilerGeneratedAttribute]
+internal void set_Total(int value);
+    public double get_Percent();
+    public double get_AverageModulePercent();
+    internal void set_AverageModulePercent(double value);
+}
+[DataContractAttribute]
+internal class Coverlet.Core.CoverageParameters : object {
+    [CompilerGeneratedAttribute]
+private string <Module>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <IncludeFilters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <IncludeDirectories>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <ExcludeFilters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <ExcludedSourceFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <ExcludeAttributes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IncludeTestAssembly>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SingleHit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MergeWith>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseSourceLink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <DoesNotReturnAttributes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SkipAutoProps>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DeterministicReport>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ExcludeAssembliesWithoutSources>k__BackingField;
+    [DataMemberAttribute]
+public string Module { get; public set; }
+    [DataMemberAttribute]
+public String[] IncludeFilters { get; public set; }
+    [DataMemberAttribute]
+public String[] IncludeDirectories { get; public set; }
+    [DataMemberAttribute]
+public String[] ExcludeFilters { get; public set; }
+    [DataMemberAttribute]
+public String[] ExcludedSourceFiles { get; public set; }
+    [DataMemberAttribute]
+public String[] ExcludeAttributes { get; public set; }
+    [DataMemberAttribute]
+public bool IncludeTestAssembly { get; public set; }
+    [DataMemberAttribute]
+public bool SingleHit { get; public set; }
+    [DataMemberAttribute]
+public string MergeWith { get; public set; }
+    [DataMemberAttribute]
+public bool UseSourceLink { get; public set; }
+    [DataMemberAttribute]
+public String[] DoesNotReturnAttributes { get; public set; }
+    [DataMemberAttribute]
+public bool SkipAutoProps { get; public set; }
+    [DataMemberAttribute]
+public bool DeterministicReport { get; public set; }
+    [DataMemberAttribute]
+public string ExcludeAssembliesWithoutSources { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Module();
+    [CompilerGeneratedAttribute]
+public void set_Module(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_IncludeFilters();
+    [CompilerGeneratedAttribute]
+public void set_IncludeFilters(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_IncludeDirectories();
+    [CompilerGeneratedAttribute]
+public void set_IncludeDirectories(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_ExcludeFilters();
+    [CompilerGeneratedAttribute]
+public void set_ExcludeFilters(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_ExcludedSourceFiles();
+    [CompilerGeneratedAttribute]
+public void set_ExcludedSourceFiles(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_ExcludeAttributes();
+    [CompilerGeneratedAttribute]
+public void set_ExcludeAttributes(String[] value);
+    [CompilerGeneratedAttribute]
+public bool get_IncludeTestAssembly();
+    [CompilerGeneratedAttribute]
+public void set_IncludeTestAssembly(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_SingleHit();
+    [CompilerGeneratedAttribute]
+public void set_SingleHit(bool value);
+    [CompilerGeneratedAttribute]
+public string get_MergeWith();
+    [CompilerGeneratedAttribute]
+public void set_MergeWith(string value);
+    [CompilerGeneratedAttribute]
+public bool get_UseSourceLink();
+    [CompilerGeneratedAttribute]
+public void set_UseSourceLink(bool value);
+    [CompilerGeneratedAttribute]
+public String[] get_DoesNotReturnAttributes();
+    [CompilerGeneratedAttribute]
+public void set_DoesNotReturnAttributes(String[] value);
+    [CompilerGeneratedAttribute]
+public bool get_SkipAutoProps();
+    [CompilerGeneratedAttribute]
+public void set_SkipAutoProps(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_DeterministicReport();
+    [CompilerGeneratedAttribute]
+public void set_DeterministicReport(bool value);
+    [CompilerGeneratedAttribute]
+public string get_ExcludeAssembliesWithoutSources();
+    [CompilerGeneratedAttribute]
+public void set_ExcludeAssembliesWithoutSources(string value);
+}
+[DataContractAttribute]
+internal class Coverlet.Core.CoveragePrepareResult : object {
+    [CompilerGeneratedAttribute]
+private string <Identifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ModuleOrDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MergeWith>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseSourceLink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private InstrumenterResult[] <Results>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CoverageParameters <Parameters>k__BackingField;
+    [DataMemberAttribute]
+public string Identifier { get; public set; }
+    [DataMemberAttribute]
+public string ModuleOrDirectory { get; public set; }
+    [DataMemberAttribute]
+public string MergeWith { get; public set; }
+    [DataMemberAttribute]
+public bool UseSourceLink { get; public set; }
+    [DataMemberAttribute]
+public InstrumenterResult[] Results { get; public set; }
+    [DataMemberAttribute]
+public CoverageParameters Parameters { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Identifier();
+    [CompilerGeneratedAttribute]
+public void set_Identifier(string value);
+    [CompilerGeneratedAttribute]
+public string get_ModuleOrDirectory();
+    [CompilerGeneratedAttribute]
+public void set_ModuleOrDirectory(string value);
+    [CompilerGeneratedAttribute]
+public string get_MergeWith();
+    [CompilerGeneratedAttribute]
+public void set_MergeWith(string value);
+    [CompilerGeneratedAttribute]
+public bool get_UseSourceLink();
+    [CompilerGeneratedAttribute]
+public void set_UseSourceLink(bool value);
+    [CompilerGeneratedAttribute]
+public InstrumenterResult[] get_Results();
+    [CompilerGeneratedAttribute]
+public void set_Results(InstrumenterResult[] value);
+    [CompilerGeneratedAttribute]
+public CoverageParameters get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(CoverageParameters value);
+    public static CoveragePrepareResult Deserialize(Stream serializedInstrumentState);
+    public static Stream Serialize(CoveragePrepareResult instrumentState);
+}
+internal class Coverlet.Core.CoverageResult : object {
+    [CompilerGeneratedAttribute]
+private string <Identifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Modules <Modules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<InstrumenterResult> <InstrumentedResults>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CoverageParameters <Parameters>k__BackingField;
+    public string Identifier { get; public set; }
+    public Modules Modules { get; public set; }
+    public List`1<InstrumenterResult> InstrumentedResults { get; public set; }
+    public CoverageParameters Parameters { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Identifier();
+    [CompilerGeneratedAttribute]
+public void set_Identifier(string value);
+    [CompilerGeneratedAttribute]
+public Modules get_Modules();
+    [CompilerGeneratedAttribute]
+public void set_Modules(Modules value);
+    [CompilerGeneratedAttribute]
+public List`1<InstrumenterResult> get_InstrumentedResults();
+    [CompilerGeneratedAttribute]
+public void set_InstrumentedResults(List`1<InstrumenterResult> value);
+    [CompilerGeneratedAttribute]
+public CoverageParameters get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(CoverageParameters value);
+    public void Merge(Modules modules);
+    public ThresholdTypeFlags GetThresholdTypesBelowThreshold(CoverageSummary summary, Dictionary`2<ThresholdTypeFlags, double> thresholdTypeFlagValues, ThresholdStatistic thresholdStat);
+    private static ThresholdTypeFlags CompareThresholdValues(Dictionary`2<ThresholdTypeFlags, double> thresholdTypeFlagValues, ThresholdTypeFlags thresholdTypeFlags, double line, double branch, double method);
+}
+internal class Coverlet.Core.CoverageSummary : object {
+    public CoverageDetails CalculateLineCoverage(Lines lines);
+    public CoverageDetails CalculateLineCoverage(Methods methods);
+    public CoverageDetails CalculateLineCoverage(Classes classes);
+    public CoverageDetails CalculateLineCoverage(Documents documents);
+    public CoverageDetails CalculateLineCoverage(Modules modules);
+    public CoverageDetails CalculateBranchCoverage(IList`1<BranchInfo> branches);
+    public int CalculateNpathComplexity(IList`1<BranchInfo> branches);
+    public int CalculateCyclomaticComplexity(IList`1<BranchInfo> branches);
+    public int CalculateCyclomaticComplexity(Methods methods);
+    public int CalculateMaxCyclomaticComplexity(Methods methods);
+    public int CalculateMinCyclomaticComplexity(Methods methods);
+    public int CalculateCyclomaticComplexity(Modules modules);
+    public int CalculateMaxCyclomaticComplexity(Modules modules);
+    public int CalculateMinCyclomaticComplexity(Modules modules);
+    public int CalculateCyclomaticComplexity(Documents documents);
+    public CoverageDetails CalculateBranchCoverage(Methods methods);
+    public CoverageDetails CalculateBranchCoverage(Classes classes);
+    public CoverageDetails CalculateBranchCoverage(Documents documents);
+    public CoverageDetails CalculateBranchCoverage(Modules modules);
+    public CoverageDetails CalculateMethodCoverage(Lines lines);
+    public CoverageDetails CalculateMethodCoverage(Methods methods);
+    public CoverageDetails CalculateMethodCoverage(Classes classes);
+    public CoverageDetails CalculateMethodCoverage(Documents documents);
+    public CoverageDetails CalculateMethodCoverage(Modules modules);
+    [CompilerGeneratedAttribute]
+private int <CalculateCyclomaticComplexity>b__8_0(Method m);
+    [CompilerGeneratedAttribute]
+private int <CalculateMaxCyclomaticComplexity>b__9_0(Method m);
+    [CompilerGeneratedAttribute]
+private int <CalculateMinCyclomaticComplexity>b__10_0(Method m);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<int> <CalculateCyclomaticComplexity>b__14_0(Classes c);
+}
+internal class Coverlet.Core.Documents : Dictionary`2<string, Classes> {
+}
+internal enum Coverlet.Core.Enums.AssemblySearchType : Enum {
+    public int value__;
+    public static AssemblySearchType MissingAny;
+    public static AssemblySearchType MissingAll;
+    public static AssemblySearchType None;
+}
+internal enum Coverlet.Core.Enums.ThresholdStatistic : Enum {
+    public int value__;
+    public static ThresholdStatistic Minimum;
+    public static ThresholdStatistic Average;
+    public static ThresholdStatistic Total;
+}
+[FlagsAttribute]
+internal enum Coverlet.Core.Enums.ThresholdTypeFlags : Enum {
+    public int value__;
+    public static ThresholdTypeFlags None;
+    public static ThresholdTypeFlags Line;
+    public static ThresholdTypeFlags Branch;
+    public static ThresholdTypeFlags Method;
+}
+internal class Coverlet.Core.Exceptions.CecilAssemblyResolutionException : CoverletException {
+    public CecilAssemblyResolutionException(string message);
+    public CecilAssemblyResolutionException(string message, Exception inner);
+    protected CecilAssemblyResolutionException(SerializationInfo info, StreamingContext context);
+}
+public class Coverlet.Core.Exceptions.CoverletException : Exception {
+    public CoverletException(string message);
+    public CoverletException(string message, Exception inner);
+    protected CoverletException(SerializationInfo info, StreamingContext context);
+}
+[ExtensionAttribute]
+internal static class Coverlet.Core.Extensions.HelperExtensions : object {
+    [ExtensionAttribute]
+[ExcludeFromCoverageAttribute]
+public static TRet Maybe(T value, Func`2<T, TRet> action, TRet defValue);
+}
+internal class Coverlet.Core.Helpers.AssemblyAdapter : object {
+    public sealed virtual string GetAssemblyName(string assemblyPath);
+}
+internal class Coverlet.Core.Helpers.FileSystem : object {
+    public virtual bool Exists(string path);
+    public sealed virtual void WriteAllText(string path, string contents);
+    public sealed virtual string ReadAllText(string path);
+    public virtual Stream OpenRead(string path);
+    public sealed virtual void Copy(string sourceFileName, string destFileName, bool overwrite);
+    public sealed virtual void Delete(string path);
+    public virtual Stream NewFileStream(string path, FileMode mode);
+    public virtual Stream NewFileStream(string path, FileMode mode, FileAccess access);
+    public sealed virtual String[] ReadAllLines(string path);
+    internal static string EscapeFileName(string fileName);
+}
+internal class Coverlet.Core.Helpers.InstrumentationHelper : object {
+    private static int RetryAttempts;
+    private ConcurrentDictionary`2<string, string> _backupList;
+    private IRetryHelper _retryHelper;
+    private IFileSystem _fileSystem;
+    private ISourceRootTranslator _sourceRootTranslator;
+    private ILogger _logger;
+    private static RegexOptions s_regexOptions;
+    public InstrumentationHelper(IProcessExitHandler processExitHandler, IRetryHelper retryHelper, IFileSystem fileSystem, ILogger logger, ISourceRootTranslator sourceRootTranslator);
+    private static InstrumentationHelper();
+    public sealed virtual String[] GetCoverableModules(string moduleOrAppDirectory, String[] directories, bool includeTestAssembly);
+    public sealed virtual bool HasPdb(string module, Boolean& embedded);
+    public sealed virtual bool EmbeddedPortablePdbHasLocalSource(string module, AssemblySearchType excludeAssembliesWithoutSources);
+    public sealed virtual bool PortablePdbHasLocalSource(string module, AssemblySearchType excludeAssembliesWithoutSources);
+    private bool MatchDocumentsWithSources(string module, AssemblySearchType excludeAssembliesWithoutSources, MetadataReader metadataReader);
+    private IEnumerable`1<ValueTuple`2<string, bool>> DocumentSourceMap(MetadataReader metadataReader);
+    private bool MatchDocumentsWithSourcesMissingAll(MetadataReader metadataReader);
+    private ValueTuple`2<bool, string> MatchDocumentsWithSourcesMissingAny(MetadataReader metadataReader);
+    public sealed virtual void BackupOriginalModule(string module, string identifier);
+    public virtual void RestoreOriginalModule(string module, string identifier);
+    public virtual void RestoreOriginalModules();
+    public sealed virtual void DeleteHitsFile(string path);
+    public sealed virtual bool IsValidFilterExpression(string filter);
+    public sealed virtual bool IsModuleExcluded(string module, String[] excludeFilters);
+    public sealed virtual bool IsModuleIncluded(string module, String[] includeFilters);
+    public sealed virtual bool IsTypeExcluded(string module, string type, String[] excludeFilters);
+    public sealed virtual bool IsTypeIncluded(string module, string type, String[] includeFilters);
+    public sealed virtual bool IsLocalMethod(string method);
+    public sealed virtual void SetLogger(ILogger logger);
+    private static bool IsTypeFilterMatch(string module, string type, String[] filters);
+    private static string GetBackupPath(string module, string identifier);
+    private Func`1<TimeSpan> CreateRetryStrategy(int initialSleepSeconds);
+    private static string WildcardToRegex(string pattern);
+    private static bool IsAssembly(string filePath);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_0(object s, EventArgs e);
+}
+internal class Coverlet.Core.Helpers.ProcessExitHandler : object {
+    public sealed virtual void Add(EventHandler handler);
+}
+internal class Coverlet.Core.Helpers.RetryHelper : object {
+    public sealed virtual void Retry(Action action, Func`1<TimeSpan> backoffStrategy, int maxAttemptCount);
+    public sealed virtual T Do(Func`1<T> action, Func`1<TimeSpan> backoffStrategy, int maxAttemptCount);
+}
+[DebuggerDisplayAttribute("ProjectPath = {ProjectPath} OriginalPath = {OriginalPath}")]
+internal class Coverlet.Core.Helpers.SourceRootMapping : object {
+    [CompilerGeneratedAttribute]
+private string <ProjectPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OriginalPath>k__BackingField;
+    public string ProjectPath { get; public set; }
+    public string OriginalPath { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ProjectPath();
+    [CompilerGeneratedAttribute]
+public void set_ProjectPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_OriginalPath();
+    [CompilerGeneratedAttribute]
+public void set_OriginalPath(string value);
+}
+internal class Coverlet.Core.Helpers.SourceRootTranslator : object {
+    private ILogger _logger;
+    private IFileSystem _fileSystem;
+    private Dictionary`2<string, List`1<SourceRootMapping>> _sourceRootMapping;
+    private Dictionary`2<string, List`1<string>> _sourceToDeterministicPathMapping;
+    private Dictionary`2<string, string> _resolutionCacheFiles;
+    public SourceRootTranslator(ILogger logger, IFileSystem fileSystem);
+    public SourceRootTranslator(string sourceMappingFile, ILogger logger, IFileSystem fileSystem);
+    public SourceRootTranslator(string moduleTestPath, ILogger logger, IFileSystem fileSystem, IAssemblyAdapter assemblyAdapter);
+    private static Dictionary`2<string, List`1<string>> LoadSourceToDeterministicPathMapping(Dictionary`2<string, List`1<SourceRootMapping>> sourceRootMapping);
+    private Dictionary`2<string, List`1<SourceRootMapping>> LoadSourceRootMapping(string mappingFilePath);
+    public sealed virtual bool AddMappingInCache(string originalFileName, string targetFileName);
+    public sealed virtual IReadOnlyList`1<SourceRootMapping> ResolvePathRoot(string pathRoot);
+    public sealed virtual string ResolveFilePath(string originalFileName);
+    public sealed virtual string ResolveDeterministicPath(string originalFileName);
+}
+public class Coverlet.Core.Helpers.SystemConsole : object {
+    public sealed virtual void WriteLine(string value);
+}
+[DebuggerDisplayAttribute("Line = {Number} Offset = {Offset} EndOffset = {EndOffset} Path = {Path} Ordinal = {Ordinal} Hits = {Hits}")]
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.Branch : Line {
+    [DataMemberAttribute]
+public int Offset;
+    [DataMemberAttribute]
+public int EndOffset;
+    [DataMemberAttribute]
+public int Path;
+    [DataMemberAttribute]
+public UInt32 Ordinal;
+}
+[DebuggerDisplayAttribute("line = {Line} Ordinal = {Ordinal}")]
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.BranchKey : object {
+    [CompilerGeneratedAttribute]
+private int <Line>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Ordinal>k__BackingField;
+    [DataMemberAttribute]
+public int Line { get; public set; }
+    [DataMemberAttribute]
+public int Ordinal { get; public set; }
+    public BranchKey(int line, int ordinal);
+    [CompilerGeneratedAttribute]
+public int get_Line();
+    [CompilerGeneratedAttribute]
+public void set_Line(int value);
+    [CompilerGeneratedAttribute]
+public int get_Ordinal();
+    [CompilerGeneratedAttribute]
+public void set_Ordinal(int value);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(BranchKey other);
+    public virtual int GetHashCode();
+}
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.Document : object {
+    [DataMemberAttribute]
+public string Path;
+    [DataMemberAttribute]
+public int Index;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<int, Line> <Lines>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<BranchKey, Branch> <Branches>k__BackingField;
+    [DataMemberAttribute]
+public Dictionary`2<int, Line> Lines { get; private set; }
+    [DataMemberAttribute]
+public Dictionary`2<BranchKey, Branch> Branches { get; private set; }
+    [CompilerGeneratedAttribute]
+public Dictionary`2<int, Line> get_Lines();
+    [CompilerGeneratedAttribute]
+private void set_Lines(Dictionary`2<int, Line> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<BranchKey, Branch> get_Branches();
+    [CompilerGeneratedAttribute]
+private void set_Branches(Dictionary`2<BranchKey, Branch> value);
+}
+internal class Coverlet.Core.Instrumentation.ExcludedFilesHelper : object {
+    private Matcher _matcher;
+    public ExcludedFilesHelper(String[] excludes, ILogger logger);
+    public bool Exclude(string sourceFile);
+}
+[DebuggerDisplayAttribute("isBranch = {isBranch} docIndex = {docIndex} start = {start} end = {end}")]
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.HitCandidate : object {
+    [CompilerGeneratedAttribute]
+private bool <isBranch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <docIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <start>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <end>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<int> <AccountedByNestedInstrumentation>k__BackingField;
+    [DataMemberAttribute]
+public bool isBranch { get; public set; }
+    [DataMemberAttribute]
+public int docIndex { get; public set; }
+    [DataMemberAttribute]
+public int start { get; public set; }
+    [DataMemberAttribute]
+public int end { get; public set; }
+    public HashSet`1<int> AccountedByNestedInstrumentation { get; public set; }
+    public HitCandidate(bool isBranch, int docIndex, int start, int end);
+    [CompilerGeneratedAttribute]
+public bool get_isBranch();
+    [CompilerGeneratedAttribute]
+public void set_isBranch(bool value);
+    [CompilerGeneratedAttribute]
+public int get_docIndex();
+    [CompilerGeneratedAttribute]
+public void set_docIndex(int value);
+    [CompilerGeneratedAttribute]
+public int get_start();
+    [CompilerGeneratedAttribute]
+public void set_start(int value);
+    [CompilerGeneratedAttribute]
+public int get_end();
+    [CompilerGeneratedAttribute]
+public void set_end(int value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<int> get_AccountedByNestedInstrumentation();
+    [CompilerGeneratedAttribute]
+public void set_AccountedByNestedInstrumentation(HashSet`1<int> value);
+}
+internal class Coverlet.Core.Instrumentation.Instrumenter : object {
+    private string _module;
+    private string _identifier;
+    private ExcludedFilesHelper _excludedFilesHelper;
+    private CoverageParameters _parameters;
+    private String[] _excludedAttributes;
+    private bool _isCoreLibrary;
+    private ILogger _logger;
+    private IInstrumentationHelper _instrumentationHelper;
+    private IFileSystem _fileSystem;
+    private ISourceRootTranslator _sourceRootTranslator;
+    private ICecilSymbolHelper _cecilSymbolHelper;
+    private String[] _doesNotReturnAttributes;
+    private AssemblySearchType _excludeAssembliesWithoutSources;
+    private InstrumenterResult _result;
+    private FieldDefinition _customTrackerHitsArray;
+    private FieldDefinition _customTrackerHitsFilePath;
+    private FieldDefinition _customTrackerSingleHit;
+    private FieldDefinition _customTrackerFlushHitFile;
+    private ILProcessor _customTrackerClassConstructorIl;
+    private TypeDefinition _customTrackerTypeDef;
+    private MethodReference _customTrackerRegisterUnloadEventsMethod;
+    private MethodReference _customTrackerRecordHitMethod;
+    private List`1<string> _excludedSourceFiles;
+    private List`1<string> _branchesInCompiledGeneratedClass;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private List`1<ValueTuple`2<SequencePoint, SequencePoint>> _excludedMethodSections;
+    private List`1<string> _excludedLambdaMethods;
+    private ReachabilityHelper _reachabilityHelper;
+    [CompilerGeneratedAttribute]
+private bool <SkipModule>k__BackingField;
+    public bool SkipModule { get; public set; }
+    public Instrumenter(string module, string identifier, CoverageParameters parameters, ILogger logger, IInstrumentationHelper instrumentationHelper, IFileSystem fileSystem, ISourceRootTranslator sourceRootTranslator, ICecilSymbolHelper cecilSymbolHelper);
+    [CompilerGeneratedAttribute]
+public bool get_SkipModule();
+    [CompilerGeneratedAttribute]
+public void set_SkipModule(bool value);
+    private AssemblySearchType DetermineHeuristics(string parametersExcludeAssembliesWithoutSources);
+    private static String[] PrepareAttributes(IEnumerable`1<string> providedAttrs, String[] defaultAttrs);
+    public bool CanInstrument();
+    public InstrumenterResult Instrument();
+    private bool IsTypeExcluded(TypeDefinition type);
+    private bool Is_System_Threading_Interlocked_CoreLib_Type(TypeDefinition type);
+    private void CreateReachabilityHelper();
+    private void InstrumentModule();
+    private void AddCustomModuleTrackerToModule(ModuleDefinition module);
+    private bool IsMethodOfCompilerGeneratedClassOfAsyncStateMachineToBeExcluded(MethodDefinition method);
+    private void InstrumentType(TypeDefinition type);
+    private static bool IsCompilerGenerated(IMemberDefinition member);
+    private void InstrumentMethod(MethodDefinition method);
+    private void InstrumentIL(MethodDefinition method);
+    private Instruction AddInstrumentationCode(MethodDefinition method, ILProcessor processor, Instruction instruction, SequencePoint sequencePoint);
+    private Instruction AddInstrumentationCode(MethodDefinition method, ILProcessor processor, Instruction instruction, BranchPoint branchPoint);
+    private Instruction AddInstrumentationInstructions(MethodDefinition method, ILProcessor processor, Instruction instruction, int hitEntryIndex);
+    private static void ReplaceInstructionTarget(Instruction instruction, IDictionary`2<int, Instruction> targetsMap);
+    private static void ReplaceExceptionHandlerBoundary(ExceptionHandler handler, IDictionary`2<int, Instruction> targetsMap);
+    private bool IsExcludeAttribute(CustomAttribute customAttribute);
+    private static MethodBody GetMethodBody(MethodDefinition method);
+    private bool IsInsideExcludedMethodSection(SequencePoint sequencePoint);
+    private void AnalyzeCompileGeneratedTypesForExcludedMethod(MethodDefinition method);
+    private void CacheExcludedMethodSection(MethodDefinition method);
+    [IteratorStateMachineAttribute("Coverlet.Core.Instrumentation.Instrumenter/<CollectLambdaMethodsInsideLocalFunction>d__56")]
+private static IEnumerable`1<string> CollectLambdaMethodsInsideLocalFunction(MethodDefinition methodDefinition);
+    [CompilerGeneratedAttribute]
+private string <InstrumentMethod>b__44_0(SequencePoint s);
+    [CompilerGeneratedAttribute]
+private void <AnalyzeCompileGeneratedTypesForExcludedMethod>b__54_2(TypeDefinition x);
+}
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.InstrumenterResult : object {
+    [DataMemberAttribute]
+public string Module;
+    [DataMemberAttribute]
+public String[] BranchesInCompiledGeneratedClass;
+    [DataMemberAttribute]
+public string HitsFilePath;
+    [DataMemberAttribute]
+public string ModulePath;
+    [DataMemberAttribute]
+public string SourceLink;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, Document> <Documents>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<HitCandidate> <HitCandidates>k__BackingField;
+    [DataMemberAttribute]
+public Dictionary`2<string, Document> Documents { get; private set; }
+    [DataMemberAttribute]
+public List`1<HitCandidate> HitCandidates { get; private set; }
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, Document> get_Documents();
+    [CompilerGeneratedAttribute]
+private void set_Documents(Dictionary`2<string, Document> value);
+    [CompilerGeneratedAttribute]
+public List`1<HitCandidate> get_HitCandidates();
+    [CompilerGeneratedAttribute]
+private void set_HitCandidates(List`1<HitCandidate> value);
+}
+[DebuggerDisplayAttribute("Number = {Number} Hits = {Hits} Class = {Class} Method = {Method}")]
+[DataContractAttribute]
+internal class Coverlet.Core.Instrumentation.Line : object {
+    [DataMemberAttribute]
+public int Number;
+    [DataMemberAttribute]
+public string Class;
+    [DataMemberAttribute]
+public string Method;
+    [DataMemberAttribute]
+public int Hits;
+}
+[CompilerGeneratedAttribute]
+[ExcludeFromCodeCoverageAttribute]
+internal static class Coverlet.Core.Instrumentation.ModuleTrackerTemplate : object {
+    public static string HitsFilePath;
+    public static Int32[] HitsArray;
+    public static bool SingleHit;
+    public static bool FlushHitFile;
+    private static bool s_enableLog;
+    private static string s_sessionId;
+    private static ModuleTrackerTemplate();
+    public static void RegisterUnloadEvents();
+    public static void RecordHitInCoreLibrary(int hitLocationIndex);
+    public static void RecordHit(int hitLocationIndex);
+    public static void RecordSingleHitInCoreLibrary(int hitLocationIndex);
+    public static void RecordSingleHit(int hitLocationIndex);
+    public static void UnloadModule(object sender, EventArgs e);
+    private static void WriteHits(object sender);
+    private static void WriteLog(string logText);
+}
+internal class Coverlet.Core.Instrumentation.NetCoreSharedFrameworkResolver : object {
+    private List`1<string> _aspNetSharedFrameworkDirs;
+    private ILogger _logger;
+    public NetCoreSharedFrameworkResolver(string modulePath, ILogger logger);
+    public sealed virtual bool TryResolveAssemblyPaths(CompilationLibrary library, List`1<string> assemblies);
+}
+internal class Coverlet.Core.Instrumentation.NetstandardAwareAssemblyResolver : DefaultAssemblyResolver {
+    private static Assembly s_netStandardAssembly;
+    private static string s_name;
+    private static Byte[] s_publicKeyToken;
+    private static AssemblyDefinition s_assemblyDefinition;
+    private string _modulePath;
+    private Lazy`1<CompositeCompilationAssemblyResolver> _compositeResolver;
+    private ILogger _logger;
+    private static NetstandardAwareAssemblyResolver();
+    public NetstandardAwareAssemblyResolver(string modulePath, ILogger logger);
+    private static bool CheckIfSearchingNetstandard(AssemblyNameReference name);
+    public virtual AssemblyDefinition Resolve(AssemblyNameReference name);
+    private static bool IsDotNetCore();
+    internal AssemblyDefinition TryWithCustomResolverOnDotNetCore(AssemblyNameReference name);
+}
+internal class Coverlet.Core.Instrumentation.Reachability.ReachabilityHelper : object {
+    private static ImmutableHashSet`1<OpCode> s_branchOpCodes;
+    private static ImmutableHashSet`1<OpCode> s_unconditionalBranchOpCodes;
+    private ImmutableHashSet`1<MetadataToken> _doesNotReturnMethods;
+    private ReachabilityHelper(ImmutableHashSet`1<MetadataToken> doesNotReturnMethods);
+    private static ReachabilityHelper();
+    public static ReachabilityHelper CreateForModule(ModuleDefinition module, String[] doesNotReturnAttributes, ILogger logger);
+    public ImmutableArray`1<UnreachableRange> FindUnreachableIL(Collection`1<Instruction> instrs, Collection`1<ExceptionHandler> exceptionHandlers);
+    private ValueTuple`2<bool, ImmutableArray`1<BranchInstruction>> AnalyzeInstructions(Collection`1<Instruction> instrs, Collection`1<ExceptionHandler> exceptionHandlers);
+    private static ValueTuple`2<Nullable`1<int>, ImmutableArray`1<int>> GetInstructionTargets(Instruction i, Collection`1<ExceptionHandler> exceptionHandlers);
+    private static ImmutableArray`1<UnreachableRange> DetermineUnreachableRanges(ImmutableArray`1<BasicBlock> blocks, int lastInstructionOffset);
+    private static void DetermineHeadReachability(ImmutableArray`1<BasicBlock> blocks);
+    private ImmutableArray`1<BasicBlock> CreateBasicBlocks(Collection`1<Instruction> instrs, Collection`1<ExceptionHandler> exceptionHandlers, ImmutableArray`1<BranchInstruction> branches);
+    private bool DoesNotReturn(Instruction instr);
+    private static bool IsCall(Instruction instr, MethodReference& mtd);
+}
+internal class Coverlet.Core.Instrumentation.RuntimeConfigurationReader : object {
+    private string _runtimeConfigFile;
+    public RuntimeConfigurationReader(string runtimeConfigFile);
+    public IEnumerable`1<ValueTuple`2<string, string>> GetFrameworks();
+}
+internal class Coverlet.Core.Lines : SortedDictionary`2<int, int> {
+}
+internal class Coverlet.Core.Method : object {
+    public Lines Lines;
+    public Branches Branches;
+}
+internal class Coverlet.Core.Methods : Dictionary`2<string, Method> {
+}
+internal class Coverlet.Core.Modules : Dictionary`2<string, Documents> {
+}
+internal class Coverlet.Core.Reporters.CoberturaReporter : object {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public sealed virtual ReporterOutputType get_OutputType();
+    public sealed virtual string get_Format();
+    public sealed virtual string get_Extension();
+    public sealed virtual string Report(CoverageResult result, ISourceRootTranslator sourceRootTranslator);
+    private static IEnumerable`1<string> GetBasePaths(Modules modules, bool useSourceLink);
+    private static string GetRelativePathFromBase(IEnumerable`1<string> basePaths, string path, bool useSourceLink);
+}
+internal class Coverlet.Core.Reporters.JsonReporter : object {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public sealed virtual ReporterOutputType get_OutputType();
+    public sealed virtual string get_Format();
+    public sealed virtual string get_Extension();
+    public sealed virtual string Report(CoverageResult result, ISourceRootTranslator _);
+}
+internal class Coverlet.Core.Reporters.LcovReporter : object {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public sealed virtual ReporterOutputType get_OutputType();
+    public sealed virtual string get_Format();
+    public sealed virtual string get_Extension();
+    public sealed virtual string Report(CoverageResult result, ISourceRootTranslator sourceRootTranslator);
+}
+internal class Coverlet.Core.Reporters.OpenCoverReporter : object {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public sealed virtual ReporterOutputType get_OutputType();
+    public sealed virtual string get_Format();
+    public sealed virtual string get_Extension();
+    public sealed virtual string Report(CoverageResult result, ISourceRootTranslator sourceRootTranslator);
+}
+internal class Coverlet.Core.Reporters.ReporterFactory : object {
+    private string _format;
+    private IReporter[] _reporters;
+    public ReporterFactory(string format);
+    public bool IsValidFormat();
+    public IReporter CreateReporter();
+    [CompilerGeneratedAttribute]
+private bool <CreateReporter>b__4_0(IReporter r);
+}
+internal class Coverlet.Core.Reporters.TeamCityReporter : object {
+    public ReporterOutputType OutputType { get; }
+    public string Format { get; }
+    public string Extension { get; }
+    public sealed virtual ReporterOutputType get_OutputType();
+    public sealed virtual string get_Format();
+    public sealed virtual string get_Extension();
+    public sealed virtual string Report(CoverageResult result, ISourceRootTranslator sourceRootTranslator);
+    private static void OutputLineCoverage(CoverageDetails coverageDetails, StringBuilder builder);
+    private static void OutputBranchCoverage(CoverageDetails coverageDetails, StringBuilder builder);
+    private static void OutputMethodCoverage(CoverageDetails coverageDetails, StringBuilder builder);
+    private static void OutputTeamCityServiceMessage(string key, double value, StringBuilder builder);
+}
+[DebuggerDisplayAttribute("StartLine = {StartLine}")]
+internal class Coverlet.Core.Symbols.BranchPoint : object {
+    [CompilerGeneratedAttribute]
+private int <StartLine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <Ordinal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<int> <OffsetPoints>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Offset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <EndOffset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Document>k__BackingField;
+    public int StartLine { get; public set; }
+    public int Path { get; public set; }
+    public UInt32 Ordinal { get; public set; }
+    public List`1<int> OffsetPoints { get; public set; }
+    public int Offset { get; public set; }
+    public int EndOffset { get; public set; }
+    public string Document { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StartLine();
+    [CompilerGeneratedAttribute]
+public void set_StartLine(int value);
+    [CompilerGeneratedAttribute]
+public int get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(int value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_Ordinal();
+    [CompilerGeneratedAttribute]
+public void set_Ordinal(UInt32 value);
+    [CompilerGeneratedAttribute]
+public List`1<int> get_OffsetPoints();
+    [CompilerGeneratedAttribute]
+public void set_OffsetPoints(List`1<int> value);
+    [CompilerGeneratedAttribute]
+public int get_Offset();
+    [CompilerGeneratedAttribute]
+public void set_Offset(int value);
+    [CompilerGeneratedAttribute]
+public int get_EndOffset();
+    [CompilerGeneratedAttribute]
+public void set_EndOffset(int value);
+    [CompilerGeneratedAttribute]
+public string get_Document();
+    [CompilerGeneratedAttribute]
+public void set_Document(string value);
+}
+internal class Coverlet.Core.Symbols.CecilSymbolHelper : object {
+    private static int StepOverLineCode;
+    private ConcurrentDictionary`2<string, Int32[]> _compilerGeneratedBranchesToExclude;
+    private ConcurrentDictionary`2<string, List`1<int>> _sequencePointOffsetToSkip;
+    private static bool IsCompilerGenerated(MethodDefinition methodDefinition);
+    private static bool IsCompilerGenerated(FieldDefinition fieldDefinition);
+    private static bool IsMoveNextInsideAsyncStateMachine(MethodDefinition methodDefinition);
+    private static bool IsMoveNextInsideAsyncIterator(MethodDefinition methodDefinition);
+    private static bool IsMoveNextInsideEnumerator(MethodDefinition methodDefinition);
+    private static bool IsMoveNextInsideAsyncStateMachineProlog(MethodDefinition methodDefinition);
+    private static bool SkipMoveNextPrologueBranches(Instruction instruction);
+    private static bool SkipIsCompleteAwaiters(Instruction instruction);
+    private static bool SkipLambdaCachedField(Instruction instruction);
+    private static bool SkipDelegateCacheField(Instruction instruction);
+    private static bool SkipGeneratedBranchForExceptionRethrown(List`1<Instruction> instructions, Instruction instruction);
+    private bool SkipGeneratedBranchesForExceptionHandlers(MethodDefinition methodDefinition, Instruction instruction, List`1<Instruction> bodyInstructions);
+    private static bool SkipGeneratedBranchesForAwaitForeach(List`1<Instruction> instructions, Instruction instruction);
+    private static bool SkipGeneratedBranchesForAwaitUsing(List`1<Instruction> instructions, Instruction instruction);
+    private static bool SkipGeneratedBranchesForAsyncIterator(List`1<Instruction> instructions, Instruction instruction);
+    private static bool SkipGeneratedBranchesForEnumeratorCancellationAttribute(List`1<Instruction> instructions, Instruction instruction);
+    private static bool SkipExpressionBreakpointsBranches(Instruction instruction);
+    public sealed virtual IReadOnlyList`1<BranchPoint> GetBranchPoints(MethodDefinition methodDefinition);
+    private static bool BuildPointsForConditionalBranch(List`1<BranchPoint> list, Instruction instruction, int branchingInstructionLine, string document, int branchOffset, int pathCounter, List`1<Instruction> instructions, UInt32& ordinal, MethodDefinition methodDefinition);
+    private static UInt32 BuildPointsForBranch(List`1<BranchPoint> list, Instruction then, int branchingInstructionLine, string document, int branchOffset, UInt32 ordinal, int pathCounter, BranchPoint path0, List`1<Instruction> instructions, MethodDefinition methodDefinition);
+    private static UInt32 BuildPointsForSwitchCases(List`1<BranchPoint> list, BranchPoint path0, Instruction[] branchInstructions, int branchingInstructionLine, string document, int branchOffset, UInt32 ordinal, Int32& pathCounter);
+    public sealed virtual bool SkipNotCoverableInstruction(MethodDefinition methodDefinition, Instruction instruction);
+    public bool SkipNotCoverableInstructionAfterExceptionRethrowInsiceCatchBlock(MethodDefinition methodDefinition, Instruction instruction);
+    private bool SkipExpressionBreakpointsSequences(MethodDefinition methodDefinition, Instruction instruction);
+    public sealed virtual bool SkipInlineAssignedAutoProperty(bool skipAutoProps, MethodDefinition methodDefinition, Instruction instruction);
+    private static bool SkipGeneratedBackingFieldAssignment(MethodDefinition methodDefinition, Instruction instruction);
+    private static bool SkipDefaultInitializationSystemObject(Instruction instruction);
+    private static bool SkipBranchGeneratedExceptionFilter(Instruction branchInstruction, MethodDefinition methodDefinition);
+    private static bool SkipBranchGeneratedFinallyBlock(Instruction branchInstruction, MethodDefinition methodDefinition);
+    private static int GetOffsetOfNextEndfinally(MethodBody body, int startOffset);
+    private static List`1<int> GetBranchPath(Instruction instruction);
+    private static Instruction FindClosestInstructionWithSequencePoint(MethodBody methodBody, Instruction instruction);
+    private static bool HasValidSequencePoint(Instruction instruction, MethodDefinition methodDefinition);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAwaitForeach>g__CheckForAsyncEnumerator|15_0(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAwaitForeach>g__CheckIfExceptionThrown|15_1(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAwaitForeach>g__CheckThrownExceptionType|15_2(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAwaitUsing>g__CheckForSkipDisposal|16_0(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAwaitUsing>g__CheckForCleanup|16_1(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAsyncIterator>g__CheckForStateSwitch|17_0(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static bool <SkipGeneratedBranchesForAsyncIterator>g__DisposeCheck|17_1(List`1<Instruction> instructions, Instruction instruction, int currentIndex);
+    [CompilerGeneratedAttribute]
+internal static Instruction <SkipNotCoverableInstructionAfterExceptionRethrowInsiceCatchBlock>g__GetPreviousNoNopInstruction|25_0(Instruction i);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
+[GeneratedCodeAttribute("Nerdbank.GitVersioning.Tasks", "3.6.133.12845")]
+[ExcludeFromCodeCoverageAttribute]
+internal static class ThisAssembly : object {
+    internal static string AssemblyConfiguration;
+    internal static string AssemblyFileVersion;
+    internal static string AssemblyInformationalVersion;
+    internal static string AssemblyName;
+    internal static string AssemblyTitle;
+    internal static string AssemblyVersion;
+    internal static DateTime GitCommitDate;
+    internal static string GitCommitId;
+    internal static bool IsPrerelease;
+    internal static bool IsPublicRelease;
+    internal static string RootNamespace;
+    private static ThisAssembly();
+}
