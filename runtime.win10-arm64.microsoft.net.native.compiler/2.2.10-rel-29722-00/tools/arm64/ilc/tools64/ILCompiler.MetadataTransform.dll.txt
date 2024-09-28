@@ -1,0 +1,130 @@
+internal class ILCompiler.Metadata.EntityMap`2 : ValueType {
+    private Dictionary`2<TEntity, TRecord> _map;
+    public IReadOnlyCollection`1<TRecord> Records { get; }
+    public EntityMap`2(IEqualityComparer`1<TEntity> comparer);
+    public IReadOnlyCollection`1<TRecord> get_Records();
+    public TRecord GetOrCreate(TConcreteEntity entity, Action`2<TConcreteEntity, TConcreteRecord> initializer);
+    public bool TryGet(TEntity entity, TRecord& record);
+    public TConcreteRecord Create(TConcreteEntity entity, Action`2<TConcreteEntity, TConcreteRecord> initializer);
+}
+public class ILCompiler.Metadata.ExplicitScopeAssemblyPolicyMixin : object {
+    private Dictionary`2<AssemblyName, ExplicitScopeAssembly> _dynamicallyGeneratedExplicitScopes;
+    private ModuleDesc OverrideModuleOfTypeViaExplicitScope(MetadataType typeDef);
+    public ModuleDesc GetModuleOfType(MetadataType typeDef);
+}
+public interface ILCompiler.Metadata.IMetadataPolicy {
+    public abstract virtual bool GeneratesMetadata(MetadataType typeDef);
+    public abstract virtual bool GeneratesMetadata(MethodDesc methodDef);
+    public abstract virtual bool GeneratesMetadata(FieldDesc fieldDef);
+    public abstract virtual bool IsBlocked(MetadataType typeDef);
+    public abstract virtual bool IsBlocked(MethodDesc methodDef);
+    public abstract virtual ModuleDesc GetModuleOfType(MetadataType typeDef);
+}
+public abstract class ILCompiler.Metadata.MetadataTransform : object {
+    public static MetadataTransformResult`1<TPolicy> Run(TPolicy policy, IEnumerable`1<ModuleDesc> modules);
+    public abstract virtual MetadataRecord HandleType(TypeDesc type);
+    public abstract virtual MetadataRecord HandleQualifiedMethod(MethodDesc method);
+    public abstract virtual MetadataRecord HandleQualifiedField(FieldDesc field);
+    public abstract virtual MethodSignature HandleMethodSignature(MethodSignature signature);
+}
+public class ILCompiler.Metadata.MetadataTransformResult`1 : ValueType {
+    private Transform`1<T> _transform;
+    public IReadOnlyCollection`1<ScopeDefinition> Scopes { get; }
+    public MetadataTransform Transform { get; }
+    internal MetadataTransformResult`1(Transform`1<T> transform);
+    public IReadOnlyCollection`1<ScopeDefinition> get_Scopes();
+    public MetadataTransform get_Transform();
+    public TypeDefinition GetTransformedTypeDefinition(MetadataType type);
+    public TypeReference GetTransformedTypeReference(MetadataType type);
+    public Method GetTransformedMethodDefinition(MethodDesc method);
+    public Field GetTransformedFieldDefinition(FieldDesc field);
+}
+internal class ILCompiler.Metadata.NamespaceKey : ValueType {
+    public ModuleDesc Module;
+    public string Namespace;
+    public NamespaceKey(ModuleDesc module, string namespaceName);
+    public sealed virtual bool Equals(NamespaceKey other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+internal class ILCompiler.Metadata.Transform`1 : MetadataTransform {
+    private TPolicy _policy;
+    internal EntityMap`2<FieldDesc, MetadataRecord> _fields;
+    private Action`2<FieldDesc, Field> _initFieldDef;
+    private Action`2<FieldDesc, MemberReference> _initFieldRef;
+    internal EntityMap`2<MethodDesc, MetadataRecord> _methods;
+    private Action`2<MethodDesc, Method> _initMethodDef;
+    private Action`2<MethodDesc, MemberReference> _initMethodRef;
+    private Action`2<MethodDesc, MethodInstantiation> _initMethodInst;
+    private Dictionary`2<NamespaceKey, NamespaceDefinition> _namespaceDefs;
+    private Dictionary`2<NamespaceKey, NamespaceReference> _namespaceRefs;
+    internal EntityMap`2<ModuleDesc, ScopeDefinition> _scopeDefs;
+    private Action`2<ModuleDesc, ScopeDefinition> _initScopeDef;
+    private EntityMap`2<AssemblyName, ScopeReference> _scopeRefs;
+    private Action`2<AssemblyName, ScopeReference> _initScopeRef;
+    private Dictionary`2<string, ConstantStringValue> _strings;
+    internal EntityMap`2<TypeDesc, MetadataRecord> _types;
+    private Action`2<MetadataType, TypeDefinition> _initTypeDef;
+    private Action`2<MetadataType, TypeReference> _initTypeRef;
+    private Action`2<ArrayType, TypeSpecification> _initSzArray;
+    private Action`2<ArrayType, TypeSpecification> _initArray;
+    private Action`2<ByRefType, TypeSpecification> _initByRef;
+    private Action`2<PointerType, TypeSpecification> _initPointer;
+    private Action`2<FunctionPointerType, TypeSpecification> _initFunctionPointer;
+    private Action`2<TypeDesc, TypeSpecification> _initTypeInst;
+    private Action`2<SignatureTypeVariable, TypeSpecification> _initTypeVar;
+    private Action`2<SignatureMethodVariable, TypeSpecification> _initMethodVar;
+    public Transform`1(TPolicy policy);
+    private MetadataRecord HandleConstant(EcmaModule module, ConstantHandle constantHandle);
+    private bool IsBlocked(TypeDesc type);
+    private List`1<CustomAttribute> HandleCustomAttributes(EcmaModule module, CustomAttributeHandleCollection attributes);
+    private CustomAttribute HandleCustomAttribute(MethodDesc constructor, CustomAttributeValue`1<TypeDesc> decodedValue);
+    private MetadataRecord HandleCustomAttributeConstantValue(TypeDesc type, object value);
+    private MetadataRecord HandleCustomAttributeConstantArray(ArrayType type, ImmutableArray`1<CustomAttributeTypedArgument`1<TypeDesc>> value);
+    private bool IsBlockedCustomAttribute(MethodDesc constructor, CustomAttributeValue`1<TypeDesc> decodedValue);
+    private bool IsBlockedCustomAttributeConstantValue(TypeDesc type, object value);
+    private static TValue[] GetCustomAttributeConstantArrayElements(ImmutableArray`1<CustomAttributeTypedArgument`1<TypeDesc>> value);
+    private Event HandleEvent(EcmaModule module, EventDefinitionHandle eventHandle);
+    public virtual MetadataRecord HandleQualifiedField(FieldDesc field);
+    private Field HandleFieldDefinition(FieldDesc field);
+    private void InitializeFieldDefinition(FieldDesc entity, Field record);
+    private MemberReference HandleFieldReference(FieldDesc field);
+    private void InitializeFieldReference(FieldDesc entity, MemberReference record);
+    private FieldAttributes GetFieldAttributes(FieldDesc field);
+    public virtual MetadataRecord HandleQualifiedMethod(MethodDesc method);
+    private Method HandleMethodDefinition(MethodDesc method);
+    private void InitializeMethodDefinition(MethodDesc entity, Method record);
+    private MemberReference HandleMethodReference(MethodDesc method);
+    private void InitializeMethodReference(MethodDesc entity, MemberReference record);
+    private MethodInstantiation HandleMethodInstantiation(MethodDesc method);
+    private void InitializeMethodInstantiation(MethodDesc entity, MethodInstantiation record);
+    public virtual MethodSignature HandleMethodSignature(MethodSignature signature);
+    private MethodAttributes GetMethodAttributes(MethodDesc method);
+    private MethodImplAttributes GetMethodImplAttributes(MethodDesc method);
+    private CallingConventions GetSignatureCallingConvention(MethodSignature signature);
+    private NamespaceDefinition HandleNamespaceDefinition(ModuleDesc parentScope, string namespaceString);
+    private NamespaceReference HandleNamespaceReference(ModuleDesc parentScope, string namespaceString);
+    private GenericParameter HandleGenericParameter(GenericParameterDesc genParam);
+    private Property HandleProperty(EcmaModule module, PropertyDefinitionHandle property);
+    private ScopeDefinition HandleScopeDefinition(ModuleDesc module);
+    private void InitializeScopeDefinition(ModuleDesc module, ScopeDefinition scopeDefinition);
+    private ScopeReference HandleScopeReference(ModuleDesc module);
+    private ScopeReference HandleScopeReference(AssemblyName assemblyName);
+    private void InitializeScopeReference(AssemblyName assemblyName, ScopeReference scopeReference);
+    private ConstantStringValue HandleString(string s);
+    public virtual MetadataRecord HandleType(TypeDesc type);
+    private void InitializeSzArray(ArrayType entity, TypeSpecification record);
+    private void InitializeArray(ArrayType entity, TypeSpecification record);
+    private void InitializeByRef(ByRefType entity, TypeSpecification record);
+    private void InitializePointer(PointerType entity, TypeSpecification record);
+    private void InitializeFunctionPointer(FunctionPointerType entity, TypeSpecification record);
+    private void InitializeTypeVariable(SignatureTypeVariable entity, TypeSpecification record);
+    private void InitializeMethodVariable(SignatureMethodVariable entity, TypeSpecification record);
+    private void InitializeTypeInstance(TypeDesc entity, TypeSpecification record);
+    private TypeReference GetNestedReferenceParent(MetadataType entity);
+    private void InitializeTypeRef(MetadataType entity, TypeReference record);
+    private void InitializeTypeDef(MetadataType entity, TypeDefinition record);
+    private TypeAttributes GetTypeAttributes(MetadataType type);
+    private void HandleTypeForwarders(EcmaModule module);
+    private TypeForwarder HandleTypeForwarder(EcmaModule module, ExportedType exportedType);
+}

@@ -1,0 +1,808 @@
+internal static class Microsoft.VisualStudio.Coverage.ConfigurationFileUtility : object {
+    private static string ClrIeInstrumentationForNetCoreVariable;
+    private static string ClrIeInstrumentationForNetFrameworkVariable;
+    private static string AllowedUsersKey;
+    private static string AllowedUsersItemKey;
+    private static string UseManagedVanguardSettingName;
+    public static CodeCoverageRunSettings ReadRunSettings(string path);
+    public static CodeCoverageRunSettings ReadRunSettings(XDocument document);
+    public static DataCollectorConfiguration ReadDataCollectorConfiguration(string path);
+    public static DataCollectorConfiguration ReadDataCollectorConfiguration(XDocument document);
+    public static void Write(string path, CodeCoverageRunSettings source);
+    public static string GetXmlString(CodeCoverageConfig source);
+    internal static XmlElement GetDefaultConfiguration();
+    public static Nullable`1<bool> GetConfigurationValue(XmlElement configurationElement, string configurationSettingName);
+    internal static bool UseManagedVanguard(XmlElement configurationElement);
+    internal static bool IsClrInstrumentationNetCoreEnabled(DataCollectorConfiguration configuration);
+    internal static bool IsClrInstrumentationNetFrameworkEnabled(DataCollectorConfiguration configuration);
+    private static bool GetEnvironmentVariableValue(string environmentVariableName);
+    internal static XmlElement AddDefaultExclusions(XmlElement configurationElement, XmlElement defaultConfigurationElement);
+}
+[DataCollectorTypeUriAttribute("datacollector://Microsoft/CodeCoverage/2.0")]
+[DataCollectorFriendlyNameAttribute("Code Coverage")]
+public class Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector : BaseDataCollector {
+    private static string VanguardX86ProfilerConfigVariable;
+    private static string VanguardX64ProfilerConfigVariable;
+    private static string CoreclrProfilerPathVariable32;
+    private static string CoreclrProfilerPathVariable64;
+    private static string CoreclrEnableProfilingVariable;
+    private static string CoreclrProfilerVariable;
+    private static string CorProfilerPathVariable32;
+    private static string CorProfilerPathVariable64;
+    private static string CorEnableProfilingVariable;
+    private static string CorProfilerVariable;
+    private static string VanguardProfilerGuid;
+    private static string VanguardInstrumentationMethodGuid;
+    private static string ClrInstrumentationEngineProfilerGuid;
+    private static string CodeCoverageSessionNameVariable;
+    private static string CodeCoveragePipePathVariable;
+    private static string ClrIeLogLevelVariable;
+    private static string ClrIeDisableCodeSignatureValidationVariable;
+    private static string ClrieFileLogPathVariable;
+    private static string VanguardDotnetAdditionalDepsVariable;
+    private IEnvironment _environment;
+    private IDirectoryHelper _directoryHelper;
+    private IFileHelper _fileHelper;
+    private IProfilersLocationProviderFactory _profilersLocationProviderFactory;
+    private IDynamicCoverageDataCollectorImplFactory _dynamicCoverageDataCollectorImplFactory;
+    private IVanguardProvider _vanguardProvider;
+    private IProfilersLocationProvider _profilersLocationProvider;
+    private DataCollectorConfiguration _collectorConfiguration;
+    private IDynamicCoverageDataCollectorImpl _implementation;
+    internal DynamicCoverageDataCollector(IProfilersLocationProviderFactory vanguardLocationProviderFactory, IVanguardProvider vanguardProvider, IDynamicCoverageDataCollectorImplFactory dynamicCoverageDataCollectorImplFactory, IEnvironment environment, IFileHelper fileHelper, IDirectoryHelper directoryHelper, ITraceLogger traceLogger);
+    protected virtual void OnInitialize(XmlElement configurationElement);
+    private void InitializeVanguardProvider(XmlElement configurationElement);
+    protected virtual void Dispose(bool disposing);
+    protected virtual IEnumerable`1<KeyValuePair`2<string, string>> GetEnvironmentVariables();
+    private IEnumerable`1<KeyValuePair`2<string, string>> GetNetFrameworkEnvironmentVariables();
+    private IEnumerable`1<KeyValuePair`2<string, string>> GetNetCoreEnvironmentVariables();
+    private IEnumerable`1<KeyValuePair`2<string, string>> GetClrIeProfilerCommonEnvironmentVariables();
+    private string GetFileLogPathAndGenerateDirectoryIfNeeded();
+    private string GetFileLogPath();
+    private bool IsDirectory(string path);
+    private void SessionEnd(object sender, SessionEndEventArgs e);
+    private void SessionStart(object sender, SessionStartEventArgs e);
+    private void TestHostLaunched(object sender, TestHostLaunchedEventArgs e);
+}
+[DataCollectorTypeUriAttribute("datacollector://Microsoft/CodeCoverage/2.1")]
+[DataCollectorFriendlyNameAttribute("Code Coverage 2.1")]
+public class Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollector21 : DynamicCoverageDataCollector {
+}
+internal class Microsoft.VisualStudio.Coverage.DynamicCoverageDataCollectorImpl : object {
+    private IDirectoryHelper _directoryHelper;
+    private IFileHelper _fileHelper;
+    private IDataCollectionLogger _logger;
+    private IDataCollectionSink _dataSink;
+    private string _coverageFilePath;
+    [CompilerGeneratedAttribute]
+private IVanguardProvider <VanguardProvider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectorConfiguration <DataCollectorConfiguration>k__BackingField;
+    public IVanguardProvider VanguardProvider { get; private set; }
+    public DataCollectorConfiguration DataCollectorConfiguration { get; private set; }
+    internal DynamicCoverageDataCollectorImpl(IDirectoryHelper directoryHelper, IFileHelper fileHelper);
+    [CompilerGeneratedAttribute]
+public sealed virtual IVanguardProvider get_VanguardProvider();
+    [CompilerGeneratedAttribute]
+private void set_VanguardProvider(IVanguardProvider value);
+    [CompilerGeneratedAttribute]
+public DataCollectorConfiguration get_DataCollectorConfiguration();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectorConfiguration(DataCollectorConfiguration value);
+    public virtual void Initialize(DataCollectorConfiguration dataCollectorConfiguration, IDataCollectionSink dataSink, IDataCollectionLogger logger, IVanguardProvider vanguardProvider);
+    public virtual void Dispose();
+    public virtual void SessionStart(object sender, SessionStartEventArgs e);
+    public virtual void SessionEnd(object sender, SessionEndEventArgs e);
+    protected void StartVanguard(DataCollectionContext context);
+    protected void StopVanguard(DataCollectionContext context);
+    protected void GetCoverageData(DataCollectionContext context);
+    protected void OnSendFileCompletedEvent(object sender, AsyncCompletedEventArgs e);
+    private void CreateDirectory(DataCollectionContext context, string path);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IDynamicCoverageDataCollectorImpl {
+    public IVanguardProvider VanguardProvider { get; }
+    public abstract virtual IVanguardProvider get_VanguardProvider();
+    public abstract virtual void Initialize(DataCollectorConfiguration dataCollectorConfiguration, IDataCollectionSink dataSink, IDataCollectionLogger logger, IVanguardProvider vanguardProvider);
+    public abstract virtual void SessionEnd(object sender, SessionEndEventArgs sessionEndEventArgs);
+    public abstract virtual void SessionStart(object sender, SessionStartEventArgs sessionStartEventArgs);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IProfilersLocationProvider {
+    public abstract virtual string GetVanguardPath();
+    public abstract virtual string GetVanguardProfilerX86Path();
+    public abstract virtual string GetVanguardProfilerConfigX64Path();
+    public abstract virtual string GetVanguardProfilerConfigX86Path();
+    public abstract virtual string GetVanguardProfilerX64Path();
+    public abstract virtual string GetClrInstrumentationEngineX86Path();
+    public abstract virtual string GetClrInstrumentationEngineX64Path();
+    public abstract virtual string GetCodeCoverageShimPath();
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IProfilersLocationProviderFactory {
+    public abstract virtual IProfilersLocationProvider CreateProfilerLocationProvider(DataCollectorConfiguration configuration);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IVanguard {
+    public string OutputName { get; }
+    public DataCollectorConfiguration Configuration { get; public set; }
+    public int TestHostProcessId { get; public set; }
+    public abstract virtual string get_OutputName();
+    public abstract virtual DataCollectorConfiguration get_Configuration();
+    public abstract virtual void set_Configuration(DataCollectorConfiguration value);
+    public abstract virtual int get_TestHostProcessId();
+    public abstract virtual void set_TestHostProcessId(int value);
+    public abstract virtual void Initialize(string sessionName, string configurationFileName, IDataCollectionLogger logger);
+    public abstract virtual void Start(string outputName, DataCollectionContext context);
+    public abstract virtual void Stop();
+    public abstract virtual void GetCoverageData(string outputName);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IVanguardCommandBuilder {
+    public abstract virtual string GenerateCommandLine(VanguardCommand vanguardCommand, string sessionName, string outputName, string configurationFilePath, string entryPoint);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interfaces.IVanguardProvider {
+    public IVanguard Vanguard { get; }
+    public string CodeCoverageDepsJsonFilePath { get; }
+    public string SessionName { get; }
+    public string PipePath { get; }
+    public string SessionDirectory { get; }
+    public string CoverageFileName { get; }
+    public string ConfigurationFilePath { get; }
+    public abstract virtual IVanguard get_Vanguard();
+    public abstract virtual string get_CodeCoverageDepsJsonFilePath();
+    public abstract virtual string get_SessionName();
+    public abstract virtual string get_PipePath();
+    public abstract virtual string get_SessionDirectory();
+    public abstract virtual string get_CoverageFileName();
+    public abstract virtual string get_ConfigurationFilePath();
+    public abstract virtual void Initialize(bool forceManagedCollector, DataCollectorConfiguration collectorConfiguration, IDataCollectionLogger logger, IProfilersLocationProvider profilersLocationProvider);
+    public abstract virtual void WriteConfigurationFiles();
+    public abstract virtual string GenerateCoverageFileName();
+    public abstract virtual void DeleteSessionDirectory();
+}
+public enum Microsoft.VisualStudio.Coverage.Interfaces.VanguardCommand : Enum {
+    public int value__;
+    public static VanguardCommand Collect;
+    public static VanguardCommand Shutdown;
+    public static VanguardCommand Register;
+    public static VanguardCommand Unregister;
+    public static VanguardCommand UnregisterAll;
+    public static VanguardCommand GetCoverageData;
+    public static VanguardCommand StartIISCollection;
+}
+internal class Microsoft.VisualStudio.Coverage.ManagedVanguard : VanguardBase {
+    private string _pipePath;
+    private VanguardLogger _vanguardLogger;
+    private bool _disposed;
+    public int TestHostProcessId { get; public set; }
+    public ManagedVanguard(string sessionName, string pipePath, string configurationFilePath, DataCollectorConfiguration configuration);
+    public ManagedVanguard(string sessionName, string pipePath, string configurationFilePath, DataCollectorConfiguration configuration, IDataCollectionLogger logger);
+    public virtual int get_TestHostProcessId();
+    public virtual void set_TestHostProcessId(int value);
+    public virtual void Start(string outputName, DataCollectionContext context);
+    public virtual void Stop();
+    public virtual void GetCoverageData(string outputName);
+    protected virtual void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.Coverage.UnmanagedVanguard : VanguardBase {
+    private static UInt32 WaitObject0;
+    private static int ProcessExitWaitLimit;
+    private static string GlobalEventNamePrefix;
+    private ManualResetEvent _vanguardProcessExitEvent;
+    private Process _vanguardProcess;
+    private UInt32 _eventTimeout;
+    private IProcessJobObject _processJobObject;
+    private IProfilersLocationProvider _vanguardLocationProvider;
+    private IVanguardCommandBuilder _vanguardCommandBuilder;
+    private bool _disposed;
+    private bool IsRunning { get; }
+    public UnmanagedVanguard(string sessionName, string configurationFilePath, DataCollectorConfiguration configuration, IEnumerable`1<string> entryPoints, IProfilersLocationProvider profilersLocationProvider);
+    public UnmanagedVanguard(string sessionName, string configurationFilePath, DataCollectorConfiguration configuration, IEnumerable`1<string> entryPoints, IDataCollectionLogger logger, IProfilersLocationProvider profilersLocationProvider);
+    internal UnmanagedVanguard(IProfilersLocationProvider vanguardLocationProvider, IVanguardCommandBuilder commandBuilder, IProcessJobObject processJobObject);
+    private bool get_IsRunning();
+    public virtual void Start(string outputName, DataCollectionContext context);
+    public virtual void Stop();
+    public virtual void GetCoverageData(string outputName);
+    public virtual void Register(string entryPoint, string configFileName);
+    public virtual void Unregister(string entryPoint);
+    public virtual void UnregisterAll();
+    protected virtual void Dispose(bool disposing);
+    private Process StartVanguardProcess(string commandLine, bool wait, bool standardErrorAsynchronousCall);
+    private void WaitForRunningEvent();
+    private void LoggerProcessExited(object sender, EventArgs e);
+    private void LoggerProcessErrorDataReceived(object sender, DataReceivedEventArgs e);
+    private static int GetProcessId(Process process);
+    private void CreateProcessJobObject();
+    protected void WaitForEvent(string eventName);
+    private static IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
+    private static UInt32 WaitForMultipleObjects(UInt32 nCount, IntPtr[] lpHandles, bool bWaitAll, UInt32 dwMilliseconds);
+    private static UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);
+    private static bool CloseHandle(IntPtr hObject);
+}
+internal abstract class Microsoft.VisualStudio.Coverage.VanguardBase : object {
+    public static string SideBySideKeyOnTeamBuildMachine;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private IDataCollectionLogger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OutputName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConfigurationFilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectorConfiguration <Configuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <TestHostProcessId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <EntryPoints>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectionContext <Context>k__BackingField;
+    public IDataCollectionLogger Logger { get; private set; }
+    public string SessionName { get; private set; }
+    public string OutputName { get; protected set; }
+    public string ConfigurationFilePath { get; private set; }
+    public DataCollectorConfiguration Configuration { get; public set; }
+    public int TestHostProcessId { get; public set; }
+    public List`1<string> EntryPoints { get; protected set; }
+    protected DataCollectionContext Context { get; protected set; }
+    protected VanguardBase(string sessionName, string configurationFilePath, DataCollectorConfiguration configuration, IDataCollectionLogger logger);
+    [CompilerGeneratedAttribute]
+public IDataCollectionLogger get_Logger();
+    [CompilerGeneratedAttribute]
+private void set_Logger(IDataCollectionLogger value);
+    [CompilerGeneratedAttribute]
+public string get_SessionName();
+    [CompilerGeneratedAttribute]
+private void set_SessionName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_OutputName();
+    [CompilerGeneratedAttribute]
+protected void set_OutputName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ConfigurationFilePath();
+    [CompilerGeneratedAttribute]
+private void set_ConfigurationFilePath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DataCollectorConfiguration get_Configuration();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Configuration(DataCollectorConfiguration value);
+    [CompilerGeneratedAttribute]
+public virtual int get_TestHostProcessId();
+    [CompilerGeneratedAttribute]
+public virtual void set_TestHostProcessId(int value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_EntryPoints();
+    [CompilerGeneratedAttribute]
+protected void set_EntryPoints(List`1<string> value);
+    [CompilerGeneratedAttribute]
+protected DataCollectionContext get_Context();
+    [CompilerGeneratedAttribute]
+protected void set_Context(DataCollectionContext value);
+    public sealed virtual void Initialize(string sessionName, string configurationFileName, IDataCollectionLogger logger);
+    public abstract virtual void Start(string outputName, DataCollectionContext context);
+    public abstract virtual void Stop();
+    public abstract virtual void GetCoverageData(string outputName);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.Coverage.VanguardCommandBuilder : object {
+    public sealed virtual string GenerateCommandLine(VanguardCommand vanguardCommand, string sessionName, string outputName, string configurationFilePath, string entryPoint);
+}
+internal class Microsoft.VisualStudio.Coverage.VanguardException : Exception {
+    [CompilerGeneratedAttribute]
+private bool <IsCritical>k__BackingField;
+    public bool IsCritical { get; }
+    internal VanguardException(string message, bool isCritical);
+    public VanguardException(string message);
+    public VanguardException(string message, Exception innerException);
+    [CompilerGeneratedAttribute]
+public bool get_IsCritical();
+}
+internal class Microsoft.VisualStudio.Coverage.VanguardLogger : LoggerBase {
+    public VanguardLogger(string sessionName, string pipePath, string coverageFilePath, string configurationFilePath, DataCollectorConfiguration configuration);
+}
+internal class Microsoft.VisualStudio.Coverage.VanguardProvider : object {
+    public static string MagicMtmSessionPrefix;
+    internal static string VanguardConfigFileName;
+    private static string CodeCoverageDepsJsonFileName;
+    private static string CodeCoverageDepsJsonTemplate;
+    private IDirectoryHelper _directoryHelper;
+    private IFileHelper _fileHelper;
+    private IProfilersLocationProvider _profilersLocationProvider;
+    private bool _disposed;
+    private IDataCollectionLogger _logger;
+    private DataCollectorConfiguration _collectorConfiguration;
+    [CompilerGeneratedAttribute]
+private string <CodeCoverageDepsJsonFilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IVanguard <Vanguard>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PipePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CoverageFileName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConfigurationFilePath>k__BackingField;
+    public string CodeCoverageDepsJsonFilePath { get; private set; }
+    public IVanguard Vanguard { get; private set; }
+    public string SessionName { get; private set; }
+    public string PipePath { get; private set; }
+    public string SessionDirectory { get; private set; }
+    public string CoverageFileName { get; private set; }
+    public string ConfigurationFilePath { get; private set; }
+    public VanguardProvider(IDirectoryHelper directoryHelper, IFileHelper fileHelper);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_CodeCoverageDepsJsonFilePath();
+    [CompilerGeneratedAttribute]
+private void set_CodeCoverageDepsJsonFilePath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IVanguard get_Vanguard();
+    [CompilerGeneratedAttribute]
+private void set_Vanguard(IVanguard value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SessionName();
+    [CompilerGeneratedAttribute]
+private void set_SessionName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_PipePath();
+    [CompilerGeneratedAttribute]
+private void set_PipePath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SessionDirectory();
+    [CompilerGeneratedAttribute]
+private void set_SessionDirectory(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_CoverageFileName();
+    [CompilerGeneratedAttribute]
+private void set_CoverageFileName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConfigurationFilePath();
+    [CompilerGeneratedAttribute]
+private void set_ConfigurationFilePath(string value);
+    public sealed virtual void Initialize(bool forceManagedCollector, DataCollectorConfiguration collectorConfiguration, IDataCollectionLogger logger, IProfilersLocationProvider profilersLocationProvider);
+    private void SetSessionInfo();
+    private static string GetSessionName();
+    private string GetCoverageFileName(DataCollectorConfiguration configuration);
+    public sealed virtual string GenerateCoverageFileName();
+    private void PrepareVanguard(bool forceManagedCollector);
+    private IList`1<string> GetEntryPoints();
+    public sealed virtual void WriteConfigurationFiles();
+    public sealed virtual void DeleteSessionDirectory();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+internal static string <GenerateCoverageFileName>g__GetUserName|43_0();
+}
+public abstract class Microsoft.VisualStudio.TraceCollector.BaseDataCollector : DataCollector {
+    private static List`1<BaseDataCollector> DataCollectors;
+    private static string LogFile;
+    [CompilerGeneratedAttribute]
+private bool <IsDisposed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDataCollectionEvents <Events>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDataCollectionLogger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDataCollectionSink <DataSink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDataCollectionAgentContext <AgentContext>k__BackingField;
+    protected bool IsDisposed { get; private set; }
+    internal IDataCollectionEvents Events { get; private set; }
+    internal IDataCollectionLogger Logger { get; private set; }
+    internal IDataCollectionSink DataSink { get; private set; }
+    internal IDataCollectionAgentContext AgentContext { get; private set; }
+    protected static ReadOnlyCollection`1<BaseDataCollector> Collectors { get; }
+    private static BaseDataCollector();
+    [CompilerGeneratedAttribute]
+protected bool get_IsDisposed();
+    [CompilerGeneratedAttribute]
+private void set_IsDisposed(bool value);
+    [CompilerGeneratedAttribute]
+internal IDataCollectionEvents get_Events();
+    [CompilerGeneratedAttribute]
+private void set_Events(IDataCollectionEvents value);
+    [CompilerGeneratedAttribute]
+internal IDataCollectionLogger get_Logger();
+    [CompilerGeneratedAttribute]
+private void set_Logger(IDataCollectionLogger value);
+    [CompilerGeneratedAttribute]
+internal IDataCollectionSink get_DataSink();
+    [CompilerGeneratedAttribute]
+private void set_DataSink(IDataCollectionSink value);
+    [CompilerGeneratedAttribute]
+internal IDataCollectionAgentContext get_AgentContext();
+    [CompilerGeneratedAttribute]
+private void set_AgentContext(IDataCollectionAgentContext value);
+    protected static ReadOnlyCollection`1<BaseDataCollector> get_Collectors();
+    public virtual void Initialize(XmlElement configurationElement, DataCollectionEvents events, DataCollectionSink dataSink, DataCollectionLogger logger, DataCollectionEnvironmentContext environmentContext);
+    private sealed virtual override IEnumerable`1<KeyValuePair`2<string, string>> Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection.ITestExecutionEnvironmentSpecifier.GetTestExecutionEnvironmentVariables();
+    internal void Initialize(XmlElement configurationElement, IDataCollectionEvents events, IDataCollectionSink dataSink, IDataCollectionLogger logger, IDataCollectionAgentContext agentContext);
+    protected abstract virtual void OnInitialize(XmlElement configurationElement);
+    protected abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> GetEnvironmentVariables();
+}
+public class Microsoft.VisualStudio.TraceCollector.CodeCoverageRunSettingsProcessor : object {
+    private XmlNode _defaultSettingsRootNode;
+    public CodeCoverageRunSettingsProcessor(XmlNode defaultSettingsRootNode);
+    public XmlNode Process(string currentSettings);
+    public XmlNode Process(XmlDocument currentSettingsDocument);
+    public XmlNode Process(XmlNode currentSettingsRootNode);
+    private XmlNode SelectNodeOrAddDefaults(XmlNode currentRootNode, XmlNode defaultRootNode, IList`1<string> pathComponents);
+    private bool ShouldProcessCurrentExclusion(XmlNode node);
+    private string BuildPath(IList`1<string> pathComponents);
+    private XmlNode ExtractNode(XmlNode node, string path);
+    private void MergeNodes(XmlNode currentNode, XmlNode defaultNode);
+}
+internal class Microsoft.VisualStudio.TraceCollector.DataCollectionEnvironmentContextWrapper : object {
+    private DataCollectionEnvironmentContext _environmentContext;
+    public DataCollectionContext SessionDataCollectionContext { get; }
+    public DataCollectionEnvironmentContextWrapper(DataCollectionEnvironmentContext environmentContext);
+    public sealed virtual DataCollectionContext get_SessionDataCollectionContext();
+}
+internal class Microsoft.VisualStudio.TraceCollector.DataCollectionEventsWrapper : object {
+    private DataCollectionEvents _wrapped;
+    public DataCollectionEventsWrapper(DataCollectionEvents wrapped);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.add_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.remove_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.add_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.remove_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.add_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.remove_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.add_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.remove_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.add_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents.remove_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+}
+internal class Microsoft.VisualStudio.TraceCollector.DataCollectionLoggerWrapper : object {
+    private DataCollectionLogger _wrapped;
+    public DataCollectionLoggerWrapper(DataCollectionLogger wrapped);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionLogger.LogError(DataCollectionContext context, Exception exception);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionLogger.LogError(DataCollectionContext context, string text);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionLogger.LogError(DataCollectionContext context, string text, Exception exception);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionLogger.LogWarning(DataCollectionContext context, string text);
+}
+internal class Microsoft.VisualStudio.TraceCollector.DataCollectionSinkWrapper : object {
+    private DataCollectionSink _wrapped;
+    public DataCollectionSinkWrapper(DataCollectionSink wrapped);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionSink.add_SendFileCompleted(AsyncCompletedEventHandler value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionSink.remove_SendFileCompleted(AsyncCompletedEventHandler value);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionSink.SendFileAsync(DataCollectionContext context, string path, bool deleteFile);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionSink.SendFileAsync(DataCollectionContext context, string path, string description, bool deleteFile);
+    private sealed virtual override void Microsoft.VisualStudio.TraceCollector.IDataCollectionSink.SendFileAsync(FileTransferInformation fileInformation);
+}
+internal class Microsoft.VisualStudio.TraceCollector.DirectoryHelper : object {
+    public sealed virtual void Delete(string path, bool recursive);
+    public sealed virtual void CreateDirectory(string path);
+    public sealed virtual bool Exists(string path);
+}
+internal class Microsoft.VisualStudio.TraceCollector.FileHelper : object {
+    public sealed virtual bool Exists(string path);
+    public sealed virtual void WriteAllText(string path, string contents);
+    public sealed virtual String[] ReadAllLines(string path);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.IDataCollectionAgentContext {
+    public DataCollectionContext SessionDataCollectionContext { get; }
+    public abstract virtual DataCollectionContext get_SessionDataCollectionContext();
+}
+internal interface Microsoft.VisualStudio.TraceCollector.IDataCollectionEvents {
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.IDataCollectionLogger {
+    public abstract virtual void LogError(DataCollectionContext context, Exception exception);
+    public abstract virtual void LogError(DataCollectionContext context, string text);
+    public abstract virtual void LogError(DataCollectionContext context, string text, Exception exception);
+    public abstract virtual void LogWarning(DataCollectionContext context, string text);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.IDataCollectionSink {
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendFileCompleted(AsyncCompletedEventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendFileCompleted(AsyncCompletedEventHandler value);
+    public abstract virtual void SendFileAsync(DataCollectionContext context, string path, bool deleteFile);
+    public abstract virtual void SendFileAsync(DataCollectionContext context, string path, string displayName, bool deleteFile);
+    public abstract virtual void SendFileAsync(FileTransferInformation fileInformation);
+}
+internal class Microsoft.VisualStudio.TraceCollector.Interfaces.DynamicCoverageDataCollectorImplFactory : object {
+    private IEnvironment _environment;
+    public DynamicCoverageDataCollectorImplFactory(IEnvironment environment);
+    public sealed virtual IDynamicCoverageDataCollectorImpl CreateImpl();
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IDirectoryHelper {
+    public abstract virtual void Delete(string path, bool recursive);
+    public abstract virtual void CreateDirectory(string path);
+    public abstract virtual bool Exists(string path);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IDynamicCoverageDataCollectorImplFactory {
+    public abstract virtual IDynamicCoverageDataCollectorImpl CreateImpl();
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IEnvironment {
+    public PlatformOperatingSystem OperatingSystem { get; }
+    public bool IsLinux { get; }
+    public abstract virtual PlatformOperatingSystem get_OperatingSystem();
+    public abstract virtual bool get_IsLinux();
+    public abstract virtual bool IsClrIECompatible();
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IFileHelper {
+    public abstract virtual bool Exists(string path);
+    public abstract virtual void WriteAllText(string path, string contents);
+    public abstract virtual String[] ReadAllLines(string path);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IProcessJobObject {
+    public abstract virtual void AddProcess(IntPtr handle);
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.IRuntimeInformationHelper {
+    public string RuntimeIdentifier { get; }
+    public Architecture OSArchitecture { get; }
+    public OperatingSystem OSVersion { get; }
+    public abstract virtual string get_RuntimeIdentifier();
+    public abstract virtual bool IsOSPlatform(OSPlatform osPlatform);
+    public abstract virtual Architecture get_OSArchitecture();
+    public abstract virtual OperatingSystem get_OSVersion();
+}
+internal interface Microsoft.VisualStudio.TraceCollector.Interfaces.ITraceLogger {
+    public abstract virtual IList`1<KeyValuePair`2<string, string>> GetProfilerEnvVars();
+}
+public enum Microsoft.VisualStudio.TraceCollector.Interfaces.PlatformOperatingSystem : Enum {
+    public int value__;
+    public static PlatformOperatingSystem Windows;
+    public static PlatformOperatingSystem UbuntuX64;
+    public static PlatformOperatingSystem AlpineX64;
+    public static PlatformOperatingSystem NotSupported;
+}
+internal interface Microsoft.VisualStudio.TraceCollector.ITestCaseContextEventArgs {
+    public DataCollectionContext Context { get; }
+    public bool IsChildTestCase { get; }
+    public Guid TestCaseId { get; }
+    public string TestCaseName { get; }
+    public TestCase TestElement { get; }
+    public abstract virtual DataCollectionContext get_Context();
+    public abstract virtual bool get_IsChildTestCase();
+    public abstract virtual Guid get_TestCaseId();
+    public abstract virtual string get_TestCaseName();
+    public abstract virtual TestCase get_TestElement();
+}
+internal class Microsoft.VisualStudio.TraceCollector.PlatformEnvironment : object {
+    private static string LinuxReleaseFile;
+    private static string LinuxReleaseFileIdPrefix;
+    private IFileHelper _fileHelper;
+    private IRuntimeInformationHelper _runtimeInformationHelper;
+    private Nullable`1<PlatformOperatingSystem> _platformOperatingSystem;
+    public PlatformOperatingSystem OperatingSystem { get; }
+    public bool IsLinux { get; }
+    internal PlatformEnvironment(IFileHelper fileHelper, IRuntimeInformationHelper runtimeInformationHelper);
+    public sealed virtual PlatformOperatingSystem get_OperatingSystem();
+    public sealed virtual bool get_IsLinux();
+    public sealed virtual bool IsClrIECompatible();
+    private string GetLinuxDistributionFromFile();
+}
+internal class Microsoft.VisualStudio.TraceCollector.ProcessJobObject : object {
+    private static bool Is32Bit;
+    private IntPtr _jobHandle;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposed;
+    private static ProcessJobObject();
+    protected virtual override void Finalize();
+    public sealed virtual void AddProcess(IntPtr handle);
+    public sealed virtual void Dispose();
+    private void CreateJobObject();
+    private void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.TraceCollector.ProfilersLocationProvider : object {
+    private static string ClrIeX86InstallDirVariable;
+    private static string ClrIeX64InstallDirVariable;
+    private static string ClrIeX86FileName;
+    private static string ClrIeX64FileName;
+    private static string ClrieX64LinuxFileName;
+    private static string VanguardInstallDirVariable;
+    private static string VanguardX86ProfilerPath;
+    private static string VanguardX64ProfilerPath;
+    private static string VanguardX86ProfilerConfigPath;
+    private static string VanguardX64ProfilerConfigPath;
+    private static string VanguardShimPath;
+    private IFileHelper _fileHelper;
+    private IEnvironment _environment;
+    private DataCollectorConfiguration _configuration;
+    private static string VanguardExeName;
+    internal ProfilersLocationProvider(IFileHelper fileHelper, IEnvironment environment, DataCollectorConfiguration configuration);
+    private static ProfilersLocationProvider();
+    public sealed virtual string GetVanguardPath();
+    public sealed virtual string GetVanguardProfilerX86Path();
+    public sealed virtual string GetVanguardProfilerX64Path();
+    public sealed virtual string GetVanguardProfilerConfigX86Path();
+    public sealed virtual string GetVanguardProfilerConfigX64Path();
+    public sealed virtual string GetClrInstrumentationEngineX86Path();
+    public sealed virtual string GetClrInstrumentationEngineX64Path();
+    public sealed virtual string GetCodeCoverageShimPath();
+    private string GetClrInstrumentationEnginePath(string arch, string fileName, string environmentVariableName, string configurationInstallationPath);
+    private string GetVanguardDirectory();
+    private string GetClrIeDefaultDirectory();
+    private string GetCurrentAssemblyLocation();
+}
+internal class Microsoft.VisualStudio.TraceCollector.ProfilersLocationProviderFactory : object {
+    private IFileHelper _fileHelper;
+    private IEnvironment _environment;
+    public ProfilersLocationProviderFactory(IFileHelper fileHelper, IEnvironment environment);
+    public sealed virtual IProfilersLocationProvider CreateProfilerLocationProvider(DataCollectorConfiguration configuration);
+}
+internal static class Microsoft.VisualStudio.TraceCollector.Properties.Resources : object {
+    private static ResourceManager s_resourceManager;
+    [CompilerGeneratedAttribute]
+private static CultureInfo <Culture>k__BackingField;
+    internal static ResourceManager ResourceManager { get; }
+    internal static CultureInfo Culture { get; internal set; }
+    internal static string FailedToCreateDirectory { get; }
+    internal static string FailedToCreateFile { get; }
+    internal static string CodeCoverageLoggingDisabled { get; }
+    internal static string FailedToInitializeCodeCoverageDataCollector { get; }
+    internal static string NoRunningEventFromVanguard { get; }
+    internal static string VanguardNotFound { get; }
+    internal static string VanguardConnectionTimeout { get; }
+    internal static string CodeCoverageOnlySupportsWindowsUbuntuAndAlpine { get; }
+    internal static string AndSeparator { get; }
+    internal static string ASPNetNotInstalled { get; }
+    internal static string Both { get; }
+    internal static string Error_ArgumentIsEmpty { get; }
+    internal static string Error_ArgumentIsNegative { get; }
+    internal static string Error_ArgumentNotTypeOf { get; }
+    internal static string Error_ArgumentPropertyIsEmpty { get; }
+    internal static string Error_ArgumentPropertyIsNegative { get; }
+    internal static string Error_ArgumentPropertyIsNull { get; }
+    internal static string Error_ArgumentPropertyNotTypeOf { get; }
+    internal static string Error_ConditionIsFalse { get; }
+    internal static string EventsMustHaveId { get; }
+    internal static string FailedToCreateCopy { get; }
+    internal static string FailedToDeleteTestImpactFile { get; }
+    internal static string GenericIISFailure { get; }
+    internal static string IISAccessLocal { get; }
+    internal static string IISAccessRemote { get; }
+    internal static string IISNotInstalled { get; }
+    internal static string MustSetEnvironmentVariables { get; }
+    internal static string NoConfiguration { get; }
+    internal static string NoLoggersConnected { get; }
+    internal static string NoWebRequestsMade { get; }
+    internal static string TestImpactCollectorFriendlyName { get; }
+    internal static string TestImpactData { get; }
+    internal static string TestImpactLogFileFull { get; }
+    internal static string TraceDebuggerCollectorFriendlyName { get; }
+    internal static string TraceLogName { get; }
+    internal static string UnableEnumerateIISService { get; }
+    internal static string UnableSetVss { get; }
+    internal static string CodeCoverageCollectorDescription { get; }
+    internal static string CodeCoverageCollectorFriendlyName { get; }
+    internal static string CodeCoverageRunSettingsProcessorFailed { get; }
+    internal static string ErrorLaunchVanguard { get; }
+    internal static string ErrorNoEntryPoint { get; }
+    internal static string ErrorNoVanguard { get; }
+    internal static string ErrorRegisterExecutable { get; }
+    internal static string GeneralErrorLaunchVanguard { get; }
+    internal static string LabAgentTaskExecutionFailed { get; }
+    internal static ResourceManager get_ResourceManager();
+    [CompilerGeneratedAttribute]
+internal static CultureInfo get_Culture();
+    [CompilerGeneratedAttribute]
+internal static void set_Culture(CultureInfo value);
+    internal static string GetResourceString(string resourceKey, string defaultValue);
+    internal static string get_FailedToCreateDirectory();
+    internal static string get_FailedToCreateFile();
+    internal static string get_CodeCoverageLoggingDisabled();
+    internal static string get_FailedToInitializeCodeCoverageDataCollector();
+    internal static string get_NoRunningEventFromVanguard();
+    internal static string get_VanguardNotFound();
+    internal static string get_VanguardConnectionTimeout();
+    internal static string get_CodeCoverageOnlySupportsWindowsUbuntuAndAlpine();
+    internal static string get_AndSeparator();
+    internal static string get_ASPNetNotInstalled();
+    internal static string get_Both();
+    internal static string get_Error_ArgumentIsEmpty();
+    internal static string get_Error_ArgumentIsNegative();
+    internal static string get_Error_ArgumentNotTypeOf();
+    internal static string get_Error_ArgumentPropertyIsEmpty();
+    internal static string get_Error_ArgumentPropertyIsNegative();
+    internal static string get_Error_ArgumentPropertyIsNull();
+    internal static string get_Error_ArgumentPropertyNotTypeOf();
+    internal static string get_Error_ConditionIsFalse();
+    internal static string get_EventsMustHaveId();
+    internal static string get_FailedToCreateCopy();
+    internal static string get_FailedToDeleteTestImpactFile();
+    internal static string get_GenericIISFailure();
+    internal static string get_IISAccessLocal();
+    internal static string get_IISAccessRemote();
+    internal static string get_IISNotInstalled();
+    internal static string get_MustSetEnvironmentVariables();
+    internal static string get_NoConfiguration();
+    internal static string get_NoLoggersConnected();
+    internal static string get_NoWebRequestsMade();
+    internal static string get_TestImpactCollectorFriendlyName();
+    internal static string get_TestImpactData();
+    internal static string get_TestImpactLogFileFull();
+    internal static string get_TraceDebuggerCollectorFriendlyName();
+    internal static string get_TraceLogName();
+    internal static string get_UnableEnumerateIISService();
+    internal static string get_UnableSetVss();
+    internal static string get_CodeCoverageCollectorDescription();
+    internal static string get_CodeCoverageCollectorFriendlyName();
+    internal static string get_CodeCoverageRunSettingsProcessorFailed();
+    internal static string get_ErrorLaunchVanguard();
+    internal static string get_ErrorNoEntryPoint();
+    internal static string get_ErrorNoVanguard();
+    internal static string get_ErrorRegisterExecutable();
+    internal static string get_GeneralErrorLaunchVanguard();
+    internal static string get_LabAgentTaskExecutionFailed();
+}
+internal class Microsoft.VisualStudio.TraceCollector.RuntimeInformationHelper : object {
+    public string RuntimeIdentifier { get; }
+    public Architecture OSArchitecture { get; }
+    public OperatingSystem OSVersion { get; }
+    public sealed virtual string get_RuntimeIdentifier();
+    public sealed virtual Architecture get_OSArchitecture();
+    public sealed virtual OperatingSystem get_OSVersion();
+    public sealed virtual bool IsOSPlatform(OSPlatform osPlatform);
+}
+internal class Microsoft.VisualStudio.TraceCollector.TestCaseEndEventArgsWrapper : object {
+    private TestCaseEndEventArgs _args;
+    public DataCollectionContext Context { get; }
+    public bool IsChildTestCase { get; }
+    public Guid TestCaseId { get; }
+    public string TestCaseName { get; }
+    public TestCase TestElement { get; }
+    public TestCaseEndEventArgsWrapper(TestCaseEndEventArgs e);
+    public sealed virtual DataCollectionContext get_Context();
+    public sealed virtual bool get_IsChildTestCase();
+    public sealed virtual Guid get_TestCaseId();
+    public sealed virtual string get_TestCaseName();
+    public sealed virtual TestCase get_TestElement();
+}
+internal class Microsoft.VisualStudio.TraceCollector.TestCaseStartEventArgsWrapper : object {
+    private TestCaseStartEventArgs _args;
+    public DataCollectionContext Context { get; }
+    public bool IsChildTestCase { get; }
+    public Guid TestCaseId { get; }
+    public string TestCaseName { get; }
+    public TestCase TestElement { get; }
+    public TestCaseStartEventArgsWrapper(TestCaseStartEventArgs e);
+    public sealed virtual DataCollectionContext get_Context();
+    public sealed virtual bool get_IsChildTestCase();
+    public sealed virtual Guid get_TestCaseId();
+    public sealed virtual string get_TestCaseName();
+    public sealed virtual TestCase get_TestElement();
+}
+public static class Microsoft.VisualStudio.TraceCollector.Validate : object {
+    [DebuggerStepThroughAttribute]
+public static T NotNull(T arg, string parameterName);
+    [DebuggerStepThroughAttribute]
+public static string NotNullOrEmpty(string arg, string parameterName);
+    [DebuggerStepThroughAttribute]
+public static string NotNullOrWhiteSpace(string arg, string parameterName);
+    [DebuggerStepThroughAttribute]
+public static void NotNegative(int arg, string parameterName);
+    [DebuggerStepThroughAttribute]
+public static void True(bool condition);
+    [DebuggerStepThroughAttribute]
+public static void True(bool condition, string message);
+    [DebuggerStepThroughAttribute]
+public static void NotNegative(long arg, string parameterName);
+    [DebuggerStepThroughAttribute]
+public static void NotNullOrEmpty(IEnumerable`1<T> arg, string parameterName);
+    public static void Assert(bool condition, string message);
+    public static void Assert(string message);
+}
+[AttributeUsageAttribute("2048")]
+internal class Microsoft.VisualStudio.TraceCollector.ValidatedNotNullAttribute : Attribute {
+}

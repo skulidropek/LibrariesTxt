@@ -1,0 +1,1052 @@
+public class ILCompiler.ByteArrayEqualityComparer : object {
+    public sealed virtual bool Equals(Byte[] left, Byte[] right);
+    public sealed virtual int GetHashCode(Byte[] array);
+}
+internal enum ILCompiler.CtlClassification : Enum {
+    public int value__;
+    public static CtlClassification CtlTokenNormal;
+    public static CtlClassification CtlTokenLoadToken;
+    public static CtlClassification CtlTokenLoadInst;
+    public static CtlClassification CtlTokenLoadSize;
+    public static CtlClassification CtlTokenAllocObject;
+    public static CtlClassification CtlTokenAllocArray;
+    public static CtlClassification CtlTokenAllocLocal;
+    public static CtlClassification CtlTokenActivatorCreateInstanceAny;
+    public static CtlClassification CtlTokenBox;
+    public static CtlClassification CtlTokenUnboxAny;
+    public static CtlClassification CtlTokenSharedImplementation;
+    public static CtlClassification CtlTokenGetBase;
+    public static CtlClassification CtlTokenGetTlsBase;
+    public static CtlClassification CtlTokenCallDefaultCtor;
+    public static CtlClassification CtlTokenCast;
+    public static CtlClassification CtlTokenIsInst;
+    public static CtlClassification CtlTokenConstrained;
+    public static CtlClassification CtlTokenElemAddressCheck;
+    public static CtlClassification CtlTokenArrayStoreCheckAny;
+    public static CtlClassification CtlTokenLoadRvaField;
+    public static CtlClassification CtlTokenCall;
+    public static CtlClassification CtlTokenCallVirtual;
+    public static CtlClassification CtlTokenLoadFunction;
+    public static CtlClassification CtlTokenLoadVirtualFunction;
+    public static CtlClassification CtlTokenLoadLazyDictContext;
+    public static CtlClassification CtlTokenConstData;
+    public static CtlClassification CtlTokenTypeFieldsOnly;
+    public static CtlClassification CtlTokenSignature;
+}
+public class ILCompiler.DependencyAnalysis.ObjectWriterUTC : object {
+    private Dictionary`2<int, List`1<ISymbolDefinitionNode>> _offsetToDefSym;
+    private LinkageNames _linkageNames;
+    private Utf8StringBuilder _utf8StringBuilder;
+    private HashSet`1<ISymbolNode> _exportedSymbols;
+    private HashSet`1<string> _customSectionNames;
+    private static string UTCObjectWriterFileName;
+    private TargetDetails _targetPlatform;
+    private NodeFactory _nodeFactory;
+    private string _objectFilePath;
+    public static ObjectNodeSection LsdaSection;
+    private IntPtr _nativeObjectWriter;
+    public ObjectWriterUTC(string objectFilePath, NodeFactory factory, LinkageNames linkageNames);
+    private static ObjectWriterUTC();
+    private static IntPtr InitObjWriter(string objectFilePath);
+    private static void FinishObjWriter(IntPtr objWriter);
+    private CustomSectionAttributes GetCustomSectionAttributes(ObjectNodeSection section);
+    private static void EmitObject(IntPtr objWriter, string sectionName, int isComdat, int byteAlignment, UtcSymbol* symbols, int szSymbols, Byte[] data, int szData, UtcRelocation* relocs, int szRelocs, Byte[] nameData, int nameSize);
+    private void EmitUtcObject(UtcObject utcObject, Byte[] nameArray);
+    private static void SetSymbolEmissionOrder(UInt32 symId);
+    private void SetSymbolEmissionOrder(ExternSymbolNode node);
+    public static void SetStringTableInfo(string stringTableFile, int numEntriesWithSymbols);
+    public void EmitObject(ObjectNode node, bool useFullSymbolNamesForDebugging);
+    private int GetUtf8MangledName(ISymbolNode symbolNode, bool useFullSymbolNamesForDebugging);
+    private static bool CreateCustomSection(IntPtr objWriter, string sectionName, CustomSectionAttributes attributes);
+    public void CreateCustomSection(ObjectNodeSection section);
+    public sealed virtual void Dispose();
+    public virtual void Dispose(bool bDisposing);
+    protected virtual override void Finalize();
+    private bool ShouldShareSymbol(ObjectNode node);
+    public ObjectNodeSection GetSharedSection(ObjectNodeSection section, string key);
+    public static void EmitObject(string objectFilePath, IEnumerable`1<DependencyNode> nodes, NodeFactory factory, LinkageNames linkageNames, bool useFullSymbolNamesForDebugging);
+}
+public class ILCompiler.DependencyAnalysis.PartiallyPrecomputedDictionaryLayoutNode : DictionaryLayoutNode {
+    private GenericLookupResult[] _fixedLayout;
+    private EntryHashTable _entries;
+    private GenericLookupResult[] modreq(System.Runtime.CompilerServices.IsVolatile) _layout;
+    public bool HasFixedSlots { get; }
+    public bool HasUnfixedSlots { get; }
+    public IEnumerable`1<GenericLookupResult> FixedEntries { get; }
+    public IEnumerable`1<GenericLookupResult> Entries { get; }
+    public PartiallyPrecomputedDictionaryLayoutNode(TypeSystemEntity owningMethodOrType, IEnumerable`1<GenericLookupResult> fixedLayout);
+    public virtual bool get_HasFixedSlots();
+    public virtual bool get_HasUnfixedSlots();
+    public virtual void EnsureEntry(GenericLookupResult entry);
+    protected virtual GenericLookupResult[] ComputeLayoutImpl(GenericLookupResult[] fixedLayout, EntryHashTable entries);
+    private void ComputeLayout();
+    public virtual int GetSlotForFixedEntry(GenericLookupResult entry);
+    public virtual int GetSlotForEntry(GenericLookupResult entry);
+    public virtual IEnumerable`1<GenericLookupResult> get_FixedEntries();
+    public virtual IEnumerable`1<GenericLookupResult> get_Entries();
+}
+public class ILCompiler.DependencyAnalysis.UtcDictionaryLayoutEngine : object {
+    private CompilationModuleGroup _compilationModuleGroup;
+    private Dictionary`2<TypeSystemEntity, PrecomputedDictionaryLayoutNode> _tocData;
+    private TocReader _tocReader;
+    private bool _singleFile;
+    private bool _sharedLibrary;
+    private Dictionary`2<TypeSystemEntity, DictionaryLayoutNode> _scannerPhaseGeneratedDictionaryLayouts;
+    private UtcScannerPhaseDictionaryLayoutProvider _scanner;
+    private UtcCompilerPhaseDictionaryLayoutProvider _compiler;
+    public DictionaryLayoutProvider Scanner { get; }
+    public DictionaryLayoutProvider Compiler { get; }
+    public UtcDictionaryLayoutEngine(CompilationModuleGroup compilationModuleGroup, TocReader tocReader, bool singleFile, bool sharedLibrary);
+    public void SetScannerGeneratedLayouts(NodeFactory scannerNodeFactory, Dictionary`2<TypeSystemEntity, DictionaryLayoutNode> layouts);
+    public DictionaryLayoutProvider get_Scanner();
+    public DictionaryLayoutProvider get_Compiler();
+    private bool EntityIsInCompilation(TypeSystemEntity entity);
+    private bool EntityIsExportedFromCompilation(TypeSystemEntity entity);
+    private bool EntityHasNoCrossModuleGenericBehavior(TypeSystemEntity entity);
+    private PrecomputedDictionaryLayoutNode GetPrecomputedDictionaryLayoutFromToc(TypeSystemEntity methodOrType);
+    private PrecomputedDictionaryLayoutNode GetPrecomputedLayoutFromTocForVersionResilientUse(TypeSystemEntity methodOrType);
+}
+public class ILCompiler.DependencyAnalysis.UtcGenericLookupNode : DependencyNodeCore`1<NodeFactory> {
+    private GenericLookupResult _lookupResult;
+    private TypeSystemEntity _dictionaryOwner;
+    public bool HasConditionalStaticDependencies { get; }
+    public bool HasDynamicDependencies { get; }
+    public bool InterestingForDynamicDependencyAnalysis { get; }
+    public bool StaticDependenciesAreComputed { get; }
+    public UtcGenericLookupNode(GenericLookupResult lookupResult, TypeSystemEntity dictionaryOwner);
+    protected virtual string GetName(NodeFactory factory);
+    public bool IsLazy(NodeFactory factory);
+    public virtual bool get_HasConditionalStaticDependencies();
+    public virtual bool get_HasDynamicDependencies();
+    public virtual bool get_InterestingForDynamicDependencyAnalysis();
+    public virtual bool get_StaticDependenciesAreComputed();
+    public virtual IEnumerable`1<CombinedDependencyListEntry<NodeFactory>> SearchDynamicDependencies(List`1<DependencyNodeCore`1<NodeFactory>> markedNodes, int firstNode, NodeFactory factory);
+    public virtual IEnumerable`1<CombinedDependencyListEntry<NodeFactory>> GetConditionalStaticDependencies(NodeFactory factory);
+    [IteratorStateMachineAttribute("ILCompiler.DependencyAnalysis.UtcGenericLookupNode/<GetStaticDependencies_FullAnalysis>d__15")]
+private IEnumerable`1<DependencyListEntry<NodeFactory>> GetStaticDependencies_FullAnalysis(NodeFactory factory);
+    public virtual IEnumerable`1<DependencyListEntry<NodeFactory>> GetStaticDependencies(NodeFactory factory);
+    public void GetLazyTypeDependencies(NodeFactory factory, TypeDesc dependencyType, List`1& dependencies);
+    public sealed virtual IEnumerable`1<DependencyListEntry<NodeFactory>> InstantiateDependencies(NodeFactory factory, Instantiation typeInstantiation, Instantiation methodInstantiation);
+}
+public class ILCompiler.DependencyAnalysis.UtcVersionedDictionaryLayoutNode : PartiallyPrecomputedDictionaryLayoutNode {
+    private PrecomputedDictionaryLayoutNode _previousVersionDictionaryLayout;
+    public UtcVersionedDictionaryLayoutNode(TypeSystemEntity owningMethodOrType, IEnumerable`1<GenericLookupResult> fixedLayout, PrecomputedDictionaryLayoutNode previousVersionDictionaryLayout);
+    private static bool HasVersionNumberInPrecomputedLayout(PrecomputedDictionaryLayoutNode previousLayout);
+    private static int GetVersionOfPrecomputedLayout(PrecomputedDictionaryLayoutNode previousLayout);
+    [IteratorStateMachineAttribute("ILCompiler.DependencyAnalysis.UtcVersionedDictionaryLayoutNode/<GetFixedLayoutFromPrecomputedLayout>d__3")]
+public static IEnumerable`1<GenericLookupResult> GetFixedLayoutFromPrecomputedLayout(PrecomputedDictionaryLayoutNode previousLayout);
+    public static IEnumerable`1<GenericLookupResult> GetFloatingLayoutFromPrecomputedLayoutExcludingVersionSlot(PrecomputedDictionaryLayoutNode previousLayout);
+    protected virtual GenericLookupResult[] ComputeLayoutImpl(GenericLookupResult[] fixedLayout, EntryHashTable entries);
+    public bool IsExternal(NodeFactory factory);
+    public virtual ObjectNodeSection DictionarySection(NodeFactory factory);
+}
+internal class ILCompiler.DependencyAnalysis.WriteablePrecomputedDictionaryLayoutNode : PrecomputedDictionaryLayoutNode {
+    public WriteablePrecomputedDictionaryLayoutNode(TypeSystemEntity owningMethodOrType, IEnumerable`1<GenericLookupResult> layout);
+    public virtual ObjectNodeSection DictionarySection(NodeFactory factory);
+}
+public class ILCompiler.DictionaryQueryResult : ValueType {
+    public GenericLookupResultReferenceType GenericReferenceType;
+    public GenericLookupLayoutType GenericLayoutType;
+    public int SlotIndex;
+    public string SlotName;
+    public GenericLookupResult LookupResult;
+    public DictionaryLayoutNode DictLayout;
+}
+internal class ILCompiler.FloatingLookupKey : ValueType {
+    public DictionaryLayoutNode LayoutNode;
+    public GenericLookupResult LookupResult;
+    public FloatingLookupKey(DictionaryLayoutNode layoutNode, GenericLookupResult lookupResult);
+    public bool Equals(FloatingLookupKey other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public enum ILCompiler.GenericLookupLayoutType : Enum {
+    public int value__;
+    public static GenericLookupLayoutType Fixed;
+    public static GenericLookupLayoutType FloatingSlotWithIndex;
+    public static GenericLookupLayoutType FloatingSlotWithFixup;
+}
+public class ILCompiler.HostedCompilation : object {
+    private ConcurrentBag`1<TypeDesc> _requiredConstructedEETypes;
+    private ConcurrentBag`1<TypeDesc> _requiredNecessaryEETypes;
+    private ConcurrentBag`1<FieldDesc> _requiredRuntimeFieldHandles;
+    private ConcurrentBag`1<MethodDesc> _requiredRuntimeMethodHandles;
+    private ConcurrentBag`1<string> _requiredUserStrings;
+    private ConcurrentBag`1<FieldDesc> _requiredReadOnlyDataBlobs;
+    private ConcurrentDictionary`2<string, MethodDesc> _requiredInterfaceDispatchCells;
+    private ConcurrentBag`1<MethodKey> _requiredCompiledMethods;
+    private ConcurrentBag`1<MethodKey> _requiredPInvokeMethods;
+    private IComparer`1<DependencyNodeCore`1<NodeFactory>> _nodeComparer;
+    private ConcurrentDictionary`2<FloatingLookupKey, DictionaryQueryResult> _floatingGenericLookupResults;
+    private HostedCompilation _compilerCompilation;
+    private ISTSTokenProvider _stsTokenProvider;
+    private UtcNodeFactory _utcNodeFactory;
+    [CompilerGeneratedAttribute]
+private Logger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ScannerOutcome <ScannerOutcome>k__BackingField;
+    private HostedCompilationType _compilationType;
+    private IEnumerable`1<ModuleDesc> _inputModules;
+    private DependencyAnalyzerBase`1<NodeFactory> _dependencyGraph;
+    private bool _rootingPhase;
+    public static string UsgDictionarySigPrefix;
+    private bool _useFullSymbolNamesForDebugging;
+    [CompilerGeneratedAttribute]
+private string <OutputFilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LogFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DgmLog>k__BackingField;
+    private int _lookupResultSlotIndex;
+    private Logger Logger { get; }
+    private ScannerOutcome ScannerOutcome { get; }
+    public HostedCompilationType CompilationType { get; }
+    private string OutputFilePath { get; private set; }
+    private string LogFile { get; private set; }
+    private string DgmLog { get; private set; }
+    public CompilerTypeSystemContext TypeSystemContext { get; }
+    public NodeFactory NodeFactory { get; }
+    public NameMangler NameMangler { get; }
+    public HostedCompilation(DependencyAnalyzerBase`1<NodeFactory> dependencyGraph, UtcNodeFactory nodeFactory, string outputfile, string logfile, string dgmLog, HostedCompilationType compilationType, Logger logger, IEnumerable`1<ModuleDesc> inputModules, IComparer`1<DependencyNodeCore`1<NodeFactory>> nodeComparer, ScannerOutcome scannerOutcome, bool useFullSymbolNamesForDebugging);
+    [CompilerGeneratedAttribute]
+private Logger get_Logger();
+    [CompilerGeneratedAttribute]
+private ScannerOutcome get_ScannerOutcome();
+    public HostedCompilationType get_CompilationType();
+    public void AttachCompilerHostedCompilation(HostedCompilation compilerCompilation);
+    public void AttachStsTokenProvider(ISTSTokenProvider stsTokenProvider);
+    [CompilerGeneratedAttribute]
+private string get_OutputFilePath();
+    [CompilerGeneratedAttribute]
+private void set_OutputFilePath(string value);
+    [CompilerGeneratedAttribute]
+private string get_LogFile();
+    [CompilerGeneratedAttribute]
+private void set_LogFile(string value);
+    [CompilerGeneratedAttribute]
+private string get_DgmLog();
+    [CompilerGeneratedAttribute]
+private void set_DgmLog(string value);
+    public CompilerTypeSystemContext get_TypeSystemContext();
+    public NodeFactory get_NodeFactory();
+    public NameMangler get_NameMangler();
+    public void RequireConstructedEEType(TypeDesc type);
+    public void RequireNecessaryEEType(TypeDesc type);
+    public void RequireRuntimeFieldHandle(FieldDesc field);
+    public void RequireRuntimeMethodHandle(MethodKey method);
+    public void RequireUserString(string userString);
+    public void RequireReadOnlyDataBlob(FieldDesc field);
+    public void RequireCompiledMethod(MethodKey methodKey);
+    public void RequireLibEntryforPInvokeMethod(MethodKey methodKey);
+    public void RequireInterfaceDispatchCell(MethodDesc method, string callsiteString);
+    private TypeSystemEntity GetCanonicalDictionaryOwner(MethodDesc canonicalMethod);
+    public bool IsFloatingLayoutAlwaysUpToDate(MethodDesc canonicalMethod);
+    public bool MethodHasAssociatedData(MethodKey methodKey);
+    public GenericLookupResult GetLookupResult(int entryType, TypeSystemEntity queryEntity, TypeSystemEntity additionalQueryEntity);
+    public void EnsureDictionarySlot(MethodKey methodKey, int entryType, TypeSystemEntity queryEntity, TypeSystemEntity additionalQueryEntity);
+    private DictionaryQueryResult ComputeQueryResult(GenericLookupResult lookupResult, DictionaryLayoutNode dictLayout, Boolean& isRedundant);
+    public DictionaryQueryResult ComputeDictionarySlot(MethodKey methodKey, int entryType, TypeSystemEntity queryEntity, TypeSystemEntity additionalQueryEntity, Boolean& isRedundant);
+    public bool IsExternal(DictionaryLayoutNode dictLayout);
+    private DictionaryLayoutNode AssociateLookupResultAsTemplateDepenency(MethodKey methodKey, GenericLookupResult lookupResult);
+    public DictionaryLayoutNode GetGenericDictionaryLayout(MethodKey methodKey);
+    public int GetFloatingDictionaryIndirectionCellIndex(MethodKey methodKey);
+    public int GetFixedDictionaryStartIndex(MethodKey methodKey);
+    public int GetFloatingDictionaryStartIndex(MethodKey methodKey);
+    public int GetSlotForVirtualMethod(MethodDesc method);
+    private void AddCompilationRoot(DependencyNode node, string reason);
+    private void AddStaticRegionsIfNeeded(MetadataType type);
+    private void RootRequiredNodes_STSAnalysis();
+    private void RootRequiredNodes_CoreRTAnalysis();
+    private void RootRequiredNodes_Scanner();
+    private void RootRequiredNodes_Compiler();
+    public void PrintGenericDictionaryLayout(Stream stream, IEnumerable`1<DependencyNode> nodes);
+    public bool WasFunctionFoundInScannerTimeAnalysis(MethodKey methodKey);
+    private void PopulateScannerOutcome(IEnumerable`1<DependencyNode> nodes);
+    private static int ShutdownMethodCompilation();
+    public void OutputObjectFile(LinkageNames linkageNames);
+    public void OutputStringTable(LinkageNames linkageNames);
+    public void OutputImportDefFiles();
+    private void ComputeDependencyNodeDependenciesForScanner(List`1<DependencyNodeCore`1<NodeFactory>> obj);
+    private void CompileMethodNodes(NonExternMethodSymbolNode[] batchedMethodsToCompile);
+    private static int CompileMethods(Int32[] pMethods, int methodCount, NutcCompileMethodsFlags compilationFlags);
+    private void ComputeDependencyNodeDependenciesForCompile(List`1<DependencyNodeCore`1<NodeFactory>> obj);
+    public void EnsureDependency(MethodKey contextMethod, TypeDesc dependencyType, int classification);
+    public void EnsureUserStringDependency(MethodKey contextMethod, string literal);
+    public void EnsureDataBlobDependency(MethodKey contextMethod, FieldDesc dataField);
+    public void EnsureInterfaceDispatchCell(MethodKey contextMethod, InterfaceDispatchCellNode dispatchCell);
+    public void EnsureDependency(MethodKey contextMethod, MethodKey dependencyMethod, int classification);
+    private void AddDependencyOfLoadFunction(MethodKey dependencyMethod, List`1<IDependencyNode`1<NodeFactory>> dependencies);
+    public void EnsureDependency(MethodKey contextMethod, FieldDesc dependencyField, int classification);
+    public void EnsureDependency(MethodKey contextMethod, MethodSignature dependencyMethodSignature, int classification);
+    public void EnsureDependencyForGenericLookup(MethodKey contextMethod, GenericLookupResult lookupResult);
+}
+public class ILCompiler.HostedCompilationGroup : CompilationModuleGroup {
+    private List`1<EcmaModule> _compilationModuleSet;
+    public bool IsSingleFileCompilation { get; }
+    public bool CanHaveReferenceThroughImportTable { get; }
+    public List`1<EcmaModule> InputModules { get; }
+    public HostedCompilationGroup(TypeSystemContext context, IEnumerable`1<EcmaModule> compilationModuleSet);
+    public virtual bool get_IsSingleFileCompilation();
+    public virtual bool get_CanHaveReferenceThroughImportTable();
+    public virtual bool ContainsMethodBody(MethodDesc method, bool unboxingStub);
+    public virtual bool ContainsType(TypeDesc type);
+    public virtual bool ContainsTypeDictionary(TypeDesc type);
+    public virtual bool ContainsMethodDictionary(MethodDesc method);
+    public virtual bool ShouldProduceFullVTable(TypeDesc type);
+    public virtual bool ShouldPromoteToFullType(TypeDesc type);
+    public virtual bool PresenceOfEETypeImpliesAllMethodsOnType(TypeDesc type);
+    private bool IsModuleInCompilationGroup(EcmaModule module);
+    public virtual bool ShouldReferenceThroughImportTable(TypeDesc type);
+    public virtual bool ImportsType(TypeDesc type);
+    public virtual bool ImportsMethod(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportTypeForm(TypeDesc type);
+    public virtual ExportForm GetExportTypeFormDictionary(TypeDesc type);
+    public virtual ExportForm GetExportMethodForm(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportMethodDictionaryForm(MethodDesc method);
+    public List`1<EcmaModule> get_InputModules();
+}
+public enum ILCompiler.HostedCompilationType : Enum {
+    public int value__;
+    public static HostedCompilationType STSDependencyBased;
+    public static HostedCompilationType Scanner;
+    public static HostedCompilationType Compile;
+}
+public class ILCompiler.HostedCoreRTBasedMultifileCompilationGroup : HostedCompilationGroup {
+    private ImportExportOrdinals[] _importOrdinals;
+    private MultifilePolicy _policy;
+    private HashSet`1<string> _exportableThings;
+    private Dictionary`2<EcmaMethod, bool> _exportableMethods;
+    private Dictionary`2<EcmaType, bool> _exportableTypes;
+    private UniqueTypeNameFormatter _typeNameFormatter;
+    public MultifilePolicy Policy { get; }
+    public bool IsSingleFileCompilation { get; }
+    public bool CanHaveReferenceThroughImportTable { get; }
+    public HostedCoreRTBasedMultifileCompilationGroup(TypeSystemContext context, IEnumerable`1<EcmaModule> compilationModuleSet, ImportExportOrdinals[] importOrdinals, MultifilePolicy policy, List`1<EcmaAssembly> exportTocs);
+    public MultifilePolicy get_Policy();
+    public virtual bool get_IsSingleFileCompilation();
+    public virtual bool get_CanHaveReferenceThroughImportTable();
+    public virtual bool ContainsMethodBody(MethodDesc method, bool unboxingStub);
+    public virtual bool ContainsType(TypeDesc type);
+    public virtual bool ContainsTypeDictionary(TypeDesc type);
+    public virtual bool ContainsMethodDictionary(MethodDesc method);
+    private bool ImportsMethodDictionary(MethodDesc method);
+    public virtual bool ImportsType(TypeDesc type);
+    public virtual bool ImportsMethod(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportTypeForm(TypeDesc type);
+    private bool ExportTocDefinitionType(TypeDesc type);
+    private bool ExportTocDefinitionMethod(MethodDesc method);
+    private static DefType GetClosestDefTypeForExportability(TypeDesc type);
+    private bool ExportsOrImportsType(TypeDesc type);
+    public virtual ExportForm GetExportTypeFormDictionary(TypeDesc type);
+    public virtual ExportForm GetExportMethodForm(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportMethodDictionaryForm(MethodDesc method);
+    private string BuildComparableName(DefType type);
+    private string BuildComparableName(MethodDesc method);
+    public virtual bool ShouldPromoteToFullType(TypeDesc type);
+    public virtual bool PresenceOfEETypeImpliesAllMethodsOnType(TypeDesc type);
+}
+public class ILCompiler.HostedDependencyNodeComparer : object {
+    private CompilerComparer _comparer;
+    public HostedDependencyNodeComparer(CompilerComparer comparer);
+    public sealed virtual int Compare(DependencyNodeCore`1<NodeFactory> x1, DependencyNodeCore`1<NodeFactory> y1);
+}
+public class ILCompiler.HostedMultifleCompilationGroup : HostedCompilationGroup {
+    private ImportExportOrdinals _importOrdinals;
+    private ImportExportOrdinals _exportOrdinals;
+    public bool IsSingleFileCompilation { get; }
+    public bool CanHaveReferenceThroughImportTable { get; }
+    public HostedMultifleCompilationGroup(TypeSystemContext context, IEnumerable`1<EcmaModule> compilationModuleSet, ImportExportOrdinals importOrdinals, ImportExportOrdinals exportOrdinals);
+    public virtual bool get_IsSingleFileCompilation();
+    public virtual bool get_CanHaveReferenceThroughImportTable();
+    public virtual bool ContainsMethodBody(MethodDesc method, bool unboxingStub);
+    public virtual bool ContainsType(TypeDesc type);
+    public virtual bool ContainsMethodDictionary(MethodDesc method);
+    public virtual bool ImportsType(TypeDesc type);
+    public virtual bool ImportsMethod(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportTypeForm(TypeDesc type);
+    public virtual ExportForm GetExportTypeFormDictionary(TypeDesc type);
+    public virtual ExportForm GetExportMethodForm(MethodDesc method, bool unboxingStub);
+    public virtual ExportForm GetExportMethodDictionaryForm(MethodDesc method);
+}
+[GuidAttribute("38F8C5CF-A0E4-44E4-BB55-112677D567ED")]
+[InterfaceTypeAttribute("1")]
+public interface ILCompiler.IILCompilerHost {
+    public abstract virtual void GetTypeSystemBridgeProvider(int targetArchitecture, bool sharedGenericsEnabled, bool emitStackTraceMetadata, bool disableExceptionMessages, bool disableInvokeThunks, bool hasImport, bool hasExport, bool buildMRT, bool compilingClasslib, bool useFullSymbolNamesForDebugging, Object& typeSystemBridgeInterface);
+    public abstract virtual void AddAssemblyFile(string filename, bool compilationInput, Int32& moduleHandle, Int32& typedefTokenStart, Int32& typedefTokenEnd);
+    public abstract virtual void AddMetadataOnlyAssemblyFile(string filename);
+    public abstract virtual void AddTocModule(string filename, int tocType);
+    public abstract virtual void SetOutputFile(string filename);
+    public abstract virtual void SetOutputTocPath(string filename);
+    public abstract virtual void SetLogFile(string filename);
+    public abstract virtual void SetDGMLLogFile(string filename);
+    public abstract virtual void SetMetadataFile(string filename);
+    public abstract virtual void SetClassLibrary(string filename);
+    public abstract virtual void SetAssemblyRecordCsv(string filename);
+    public abstract virtual void AssembliesSpecified();
+    public abstract virtual void InitComplete();
+    public abstract virtual void RequireConstructedEEType(int tempTypeToken);
+    public abstract virtual void RequireNecessaryEEType(int tempTypeToken);
+    public abstract virtual void RequireRuntimeFieldHandle(int tempTypeToken);
+    public abstract virtual void RequireRuntimeMethodHandle(int tempMethodToken);
+    public abstract virtual void RequireUserString(int moduleHandle, int userStringToken);
+    public abstract virtual void RequireReadOnlyDataBlob(int tempFieldToken);
+    public abstract virtual void RequireCompiledMethod(int tempMethodToken);
+    public abstract virtual void RequireLibEntryforPInvokeMethod(int tempMethodToken);
+    public abstract virtual void GetMangledNameForType(int tempTypeToken, String& typeName);
+    public abstract virtual void GetMangledNameForBoxedType(int tempTypeToken, String& typeName);
+    public abstract virtual void GetLinkageSymbolId(int tempToken, LinkageTokenType tokenType, UInt32& symId);
+    public abstract virtual void GetLinkageSymbolIdForUserString(int moduleHandle, int userStringToken, UInt32& symId);
+    public abstract virtual void GetLinkageSymbolIdForInterfaceDispatchCell(int tempMethodToken, int callerTempMethodToken, UInt32 callId, UInt32& symId);
+    public abstract virtual void GetDebugLinkageNameForSymbolWithId(UInt32 symId, String& linkageName);
+    public abstract virtual void GetVirtualMethodSlot(int tempMethodToken, Int32& virtualMethodSlot);
+    public abstract virtual void GetGenericDictionaryOffset(int tempTypeToken, Int32& dictionaryOffset);
+    public abstract virtual void GetFieldOffset(int tempFieldToken, Int32& fieldOffset);
+    public abstract virtual void GetStaticFieldsSize(int tempTypeToken, int isGCStatic, Int32& fieldSize);
+    public abstract virtual void GetStaticFieldsGClayout(int tempTypeToken, Byte* gcLayout, Int32& numPtr);
+    public abstract virtual void GetClassConstructorContextSize(int tempTypeToken, Int32& size);
+    public abstract virtual void GetFixedDictionaryStartIndex(int tempMethodToken, Int32& slot);
+    public abstract virtual void GetFloatingDictionaryStartIndex(int tempMethodToken, Int32& slot);
+    public abstract virtual void GetFloatingDictionaryIndirectionCellIndex(int tempMethodToken, Int32& slot);
+    public abstract virtual void GetGenericLookupReferenceType(int tempMethodToken, int entryType, int queryTempToken, int queryTempToken2, Int32& lookupReferenceType);
+    public abstract virtual void GetMethodRuntimeExportName(int tempMethodToken, String& methodExportLinkageName);
+    public abstract virtual void IsTypeInCurrentModule(int tempTypeToken, Boolean& result);
+    public abstract virtual void IsMethodInCurrentModule(int tempMethodToken, Boolean& result);
+    public abstract virtual void IsMethodDictionaryInCurrentModule(int tempMethodToken, Boolean& result);
+    public abstract virtual void IsMethodImported(int tempMethodToken, Boolean& result);
+    public abstract virtual void IsTypeExported(int tempTypeToken, Boolean& result);
+    public abstract virtual void IsMethodExported(int tempMethodToken, Boolean& result);
+    public abstract virtual void IsMethodDictionaryExported(int tempMethodToken, Boolean& result);
+    public abstract virtual void IsFloatingLayoutAlwaysUpToDate(int tempMethodToken, Boolean& result);
+    public abstract virtual void MethodHasAssociatedData(int tempMethodToken, Boolean& result);
+    public abstract virtual void EnsureTypeDependency(int tempContextMethodToken, int tempDependencyTypeToken, int classification);
+    public abstract virtual void EnsureMethodDependency(int tempContextMethodToken, int tempDependencyMethodToken, int classification);
+    public abstract virtual void EnsureFieldDependency(int tempContextMethodToken, int tempDependencyFieldToken, int classification);
+    public abstract virtual void EnsureCallSiteSigDependency(int tempContextMethodToken, int tempDependencyMethodSigToken, int classification);
+    public abstract virtual void SendTlsIndexOrdinal(int tlsIndexOrdinal);
+    public abstract virtual void WriteOutputFile();
+    public abstract virtual void GetReferenceOrPrimitiveTypeIndex(int tempTypeToken, UInt32& typeIndex);
+    public abstract virtual void GetMethodTypeIndex(int tempMethodToken, UInt32& typeIndex);
+    public abstract virtual void GetThisTypeIndex(int tempTypeToken, UInt32& typeIndex);
+    public abstract virtual void GetDebugFunctionId(int tempMethodToken, UInt32& typeIndex);
+    public abstract virtual void SetFuncletCount(int tempMethodToken, UInt32 funcletCount);
+    public abstract virtual void EnableCoreRTDependencyAnalysis();
+    public abstract virtual void EnsureDictionarySlot(int tempContextToken, bool contextIsMethod, int entryType, int queryTempToken, int queryTempToken2);
+    public abstract virtual void ComputeDictionarySlot(int tempContextToken, bool contextIsMethod, int entryType, IntPtr queryTarget, int queryTempToken, int queryTempToken2, Int32& slotIndex, String& sigName, Int32& slotRefType, Int32& dictLayoutType);
+    public abstract virtual void EnsureEmptyStringDependency(int tempContextMethodToken);
+    public abstract virtual void EnsureUserStringDependency(int tempContextMethodToken, int moduleHandle, int userStringToken);
+    public abstract virtual void EnsureDataBlobDependency(int tempContextMethodToken, int tempFieldToken);
+    public abstract virtual void WasFunctionFoundInScannerTimeAnalysis(int tempMethodToken, Boolean& result);
+}
+internal class ILCompiler.ILCompilerHost : object {
+    private HostedCompilation _compilation;
+    private HostedCompilation _STSDependencyBasedCompilation;
+    private HostedCompilation _ScannerCompilation;
+    private HostedCompilation _CompileCompilation;
+    private LinkageNames _linkageNames;
+    private TypeSystemBridgeProvider _typeSystemBridge;
+    private Dictionary`2<string, string> _inputFilePaths;
+    private Dictionary`2<string, string> _referenceFilePaths;
+    private HashSet`1<string> _metadataOnlyAssembliesPaths;
+    private string _outputFile;
+    private string _classLibrary;
+    private string _logFile;
+    private string _dgmLogFile;
+    private string _metadataFile;
+    private string _outputTocPath;
+    private NetNativeCompilerContext _typeSystemContext;
+    private CompilationModuleGroup _moduleGroup;
+    private List`1<EcmaModule> _inputModules;
+    private List`1<EcmaModule> _inputMetadataOnlyAssemblies;
+    private bool _hasImport;
+    private bool _hasExport;
+    private bool _emitStackTraceMetadata;
+    private bool _disableExceptionMessages;
+    private bool _disableInvokeThunks;
+    private int _tlsIndexOrdinal;
+    private TocData _tocData;
+    private string _mergedAssemblyCsv;
+    private MergedAssemblyRecords _mergedAssemblyRecords;
+    private bool _buildMRT;
+    private bool _buildingClasslib;
+    private bool _useSTSDependencyAnalysis;
+    private bool _useFullSymbolNamesForDebugging;
+    private Logger _logger;
+    private IComparer`1<DependencyNodeCore`1<NodeFactory>> _nodeComparer;
+    private KeyValuePair`2[] _importExportData;
+    private KeyValuePair`2[] _baselineImportExportData;
+    private TocReader _tocReader;
+    private HashSet`1<MethodKey> _methodsRequiredToBeInGraph;
+    private Dictionary`2<TocModuleKind, List`1<EcmaAssembly>> _tocModules;
+    private List`1<FloatingSlotToFixup> _slotsToFixup;
+    private Dictionary`2<ModuleDesc, int> moduleToTocOrdinal;
+    private Dictionary`2<ImportExportInfo, IExportableSymbolNode> _checkForDuplicateImportExportInfos;
+    private NetNativeCompilerContext TypeSystemContext { get; }
+    private NetNativeCompilerContext get_TypeSystemContext();
+    public static int Initialize(string fptrParam);
+    public static int Shutdown(string fptrParam);
+    public sealed virtual void GetTypeSystemBridgeProvider(int architecture, bool sharedGenericsEnabled, bool emitStackTraceMetadata, bool disableExceptionMessages, bool disableInvokeThunks, bool hasImport, bool hasExport, bool buildMRT, bool buildingClasslib, bool useFullSymbolNamesForDebugging, Object& typeSystemBridgeInterface);
+    public sealed virtual void AddAssemblyFile(string filename, bool compilationInput, Int32& moduleHandle, Int32& typedefTokenStart, Int32& typedefTokenEnd);
+    public sealed virtual void AddMetadataOnlyAssemblyFile(string filename);
+    public sealed virtual void AddTocModule(string filename, int tocType);
+    public sealed virtual void SetOutputFile(string filename);
+    public sealed virtual void SetLogFile(string filename);
+    public sealed virtual void SetOutputTocPath(string path);
+    public sealed virtual void SetDGMLLogFile(string filename);
+    public sealed virtual void SetMetadataFile(string filename);
+    public sealed virtual void SetClassLibrary(string filename);
+    public sealed virtual void SetAssemblyRecordCsv(string filename);
+    public sealed virtual void AssembliesSpecified();
+    public sealed virtual void InitComplete();
+    private void CreateCompilation(UTCNameMangler nameMangler);
+    private string AppendPrefixExtensionToFileNameInPathIfExists(string path, string appendExtension);
+    private HostedCompilation CreateHostedCompilation(UTCNameMangler nameMangler, HostedCompilationType compilationType, DictionaryLayoutProvider dictionaryLayoutProvider, ScannerOutcome scannerOutcome);
+    private void CreateSingleFileCompilation();
+    private void CreateMultifileCompilation(ImportExportOrdinals imports, ImportExportOrdinals exports);
+    private void CreateCoreRTAnalysisMultifileCompilation();
+    public IntPtr GetTypeSystemBridgeProvider();
+    public sealed virtual void RequireConstructedEEType(int tempTypeToken);
+    public sealed virtual void RequireNecessaryEEType(int tempTypeToken);
+    public sealed virtual void RequireRuntimeFieldHandle(int tempFieldToken);
+    public sealed virtual void RequireRuntimeMethodHandle(int tempMethodToken);
+    public sealed virtual void RequireUserString(int moduleHandle, int userStringToken);
+    public sealed virtual void RequireReadOnlyDataBlob(int tempFieldToken);
+    public TypeSystemEntity GetQueryEntity(int entryType, int queryTempToken);
+    public sealed virtual void EnsureDictionarySlot(int tempContextToken, bool contextIsMethod, int entryType, int queryTempToken, int queryTempToken2);
+    public sealed virtual void ComputeDictionarySlot(int tempContextToken, bool contextIsMethod, int entryType, IntPtr queryTarget, int queryTempToken, int queryTempToken2, Int32& slotIndex, String& slotName, Int32& slotRefType, Int32& dictLayoutType);
+    private static int SendFloatingSlotFixup(int tempContextToken, bool contextIsMethod, int entryType, IntPtr queryTarget, int slotIndex);
+    private void SendFloatingSlotIndicesToUtc();
+    public sealed virtual void RequireCompiledMethod(int tempMethodToken);
+    public sealed virtual void RequireLibEntryforPInvokeMethod(int tempMethodToken);
+    public sealed virtual void GetVirtualMethodSlot(int tempMethodToken, Int32& virtualMethodSlot);
+    public sealed virtual void GetGenericDictionaryOffset(int tempTypeToken, Int32& dictionaryOffset);
+    public sealed virtual void GetGenericLookupReferenceType(int tempMethodToken, int entryType, int queryTempToken, int queryTempToken2, Int32& lookupReferenceType);
+    public sealed virtual void GetFloatingDictionaryIndirectionCellIndex(int tempMethodToken, Int32& slot);
+    public sealed virtual void GetFixedDictionaryStartIndex(int tempMethodToken, Int32& slot);
+    public sealed virtual void GetFloatingDictionaryStartIndex(int tempMethodToken, Int32& slot);
+    public sealed virtual void GetMangledNameForType(int tempTypeToken, String& typeName);
+    public sealed virtual void GetMangledNameForBoxedType(int tempTypeToken, String& typeName);
+    public sealed virtual void GetLinkageSymbolId(int tempToken, LinkageTokenType tokenType, UInt32& symId);
+    public sealed virtual void GetLinkageSymbolIdForUserString(int moduleHandle, int userStringToken, UInt32& symId);
+    public sealed virtual void GetLinkageSymbolIdForInterfaceDispatchCell(int tempMethodToken, int callerTempMethodToken, UInt32 callId, UInt32& symId);
+    public sealed virtual void GetDebugLinkageNameForSymbolWithId(UInt32 symId, String& linkageName);
+    public sealed virtual void GetFieldOffset(int tempFieldToken, Int32& fieldOffset);
+    public sealed virtual void GetStaticFieldsSize(int tempTypeToken, int isGCStatic, Int32& fieldSize);
+    public sealed virtual void GetStaticFieldsGClayout(int tempTypeToken, Byte* gcLayout, Int32& numberOfPointers);
+    public sealed virtual void GetClassConstructorContextSize(int tempTypeToken, Int32& size);
+    public sealed virtual void GetMethodRuntimeExportName(int tempMethodToken, String& methodExportLinkageName);
+    public sealed virtual void IsTypeInCurrentModule(int tempTypeToken, Boolean& result);
+    public sealed virtual void IsMethodInCurrentModule(int tempMethodToken, Boolean& result);
+    public sealed virtual void IsMethodDictionaryInCurrentModule(int tempMethodToken, Boolean& result);
+    public sealed virtual void IsMethodImported(int tempMethodToken, Boolean& result);
+    public sealed virtual void IsTypeExported(int tempTypeToken, Boolean& result);
+    public sealed virtual void IsMethodExported(int tempMethodToken, Boolean& result);
+    public sealed virtual void IsMethodDictionaryExported(int tempMethodToken, Boolean& result);
+    public sealed virtual void IsFloatingLayoutAlwaysUpToDate(int tempMethodToken, Boolean& result);
+    public sealed virtual void EnsureMethodDependency(int tempContextMethodToken, int tempDependencyMethodToken, int classification);
+    public sealed virtual void EnsureTypeDependency(int tempContextMethodToken, int tempDependencyTypeToken, int classification);
+    public sealed virtual void EnsureFieldDependency(int tempContextMethodToken, int tempDependencyFieldToken, int classification);
+    public sealed virtual void EnsureCallSiteSigDependency(int tempContextMethodToken, int tempDependencyMethodSigToken, int classification);
+    public sealed virtual void MethodHasAssociatedData(int tempMethodToken, Boolean& result);
+    public sealed virtual void SendTlsIndexOrdinal(int tlsIndexOrdinal);
+    public sealed virtual void WriteOutputFile();
+    public sealed virtual void GetReferenceOrPrimitiveTypeIndex(int tempTypeToken, UInt32& typeIndex);
+    public sealed virtual void GetMethodTypeIndex(int tempMethodToken, UInt32& typeIndex);
+    public sealed virtual void GetThisTypeIndex(int tempTypeToken, UInt32& typeIndex);
+    public sealed virtual void GetDebugFunctionId(int tempMethodToken, UInt32& typeIndex);
+    public sealed virtual void SetFuncletCount(int tempMethodToken, UInt32 funcletCount);
+    public sealed virtual void EnableCoreRTDependencyAnalysis();
+    public sealed virtual void EnsureEmptyStringDependency(int tempContextMethodToken);
+    public sealed virtual void EnsureUserStringDependency(int tempContextMethodToken, int moduleHandle, int userStringToken);
+    public sealed virtual void EnsureDataBlobDependency(int tempContextMethodToken, int tempFieldToken);
+    public sealed virtual void WasFunctionFoundInScannerTimeAnalysis(int tempMethodToken, Boolean& result);
+    private int GetModuleIndexInToc(ModuleDesc module);
+    private int GetModuleIndexInToc(MetadataType type);
+    private int GetModuleIndexInToc(TypeDesc type);
+    private UInt32 GetInitialExportOrdinal();
+    private UInt32 ReportExportedItem(UInt32 ordinal, IExportableSymbolNode exportedNode);
+}
+public interface ILCompiler.ISTSTokenProvider {
+    public abstract virtual int GetTokenForMethod(MethodDesc method);
+    public abstract virtual int GetTokenForUnboxingStub(MethodDesc method);
+}
+public class ILCompiler.LinkageNames : object {
+    private Dictionary`2<ISymbolNode, SymbolIdentifier> _symbolIdMap;
+    private Dictionary`2<MethodDesc, UInt32> _methodIdMap;
+    private object _symIdlockObj;
+    [CompilerGeneratedAttribute]
+private UTCNameMangler <NameMangler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UtcNodeFactory <NodeFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TypeSystemContext <TypeSystemContext>k__BackingField;
+    private Action`2<MethodDesc, string> _requireInterfaceDispatchCell;
+    private Action`2<MethodKey, InterfaceDispatchCellNode> _ensureInterfaceDispatchCell;
+    private SHA256 _sha256;
+    private int _maximumUTF8NameLength;
+    public UTCNameMangler NameMangler { get; }
+    public UtcNodeFactory NodeFactory { get; }
+    private TypeSystemContext TypeSystemContext { get; }
+    public Dictionary`2<ISymbolNode, SymbolIdentifier> SymbolIdMap { get; }
+    public Dictionary`2<MethodDesc, UInt32> MethodIdMap { get; }
+    public LinkageNames(UtcNodeFactory linkageNameNodeFactory, Action`2<MethodDesc, string> requireInterfaceDispatchCell, Action`2<MethodKey, InterfaceDispatchCellNode> ensureInterfaceDispatchCell);
+    [CompilerGeneratedAttribute]
+public UTCNameMangler get_NameMangler();
+    [CompilerGeneratedAttribute]
+public UtcNodeFactory get_NodeFactory();
+    [CompilerGeneratedAttribute]
+private TypeSystemContext get_TypeSystemContext();
+    public Dictionary`2<ISymbolNode, SymbolIdentifier> get_SymbolIdMap();
+    public Dictionary`2<MethodDesc, UInt32> get_MethodIdMap();
+    public static LinkageNames CreateLinkageNamesFromHostedCompilation(HostedCompilation hostedCompilation);
+    private static Byte[] GetBytesFromString(string literal);
+    private string TruncateName(string origName);
+    private void TruncateName(Utf8StringBuilder origName, int start);
+    public string GetMangledNameForType(TypeDesc type);
+    public string GetMangledNameForBoxedType(TypeDesc type);
+    private SymbolIdentifier GetSymbolIdentifer(ISymbolNode sym);
+    public SymbolIdentifier GetSymbolIdentifer(ISymbolNode sym, Boolean& newSym);
+    public UInt32 GetStringTableIndexForMethodWithNoSymbol(MethodDesc method);
+    public int GetUtf8LinkageName(ISymbolNode symbolNode, Utf8StringBuilder sb, bool encodeName);
+    public string GetMangledNameForSymbol(ISymbolNode symNode);
+    public string GetMangledNameForMethodWithNoSymbolNode(MethodDesc method);
+    public SymbolIdentifier GetSymbolIdForType(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForRuntimeFieldHandle(FieldDesc field);
+    public SymbolIdentifier GetSymbolIdForRuntimeMethodHandle(MethodDesc method);
+    public SymbolIdentifier GetSymbolIdForNonGcStaticBase(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForGcStaticBase(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForTlsBase(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForTlsBaseOffset(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForTlsIndex(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForLoopHijackFlag();
+    public SymbolIdentifier GetSymbolIdForDataBlob(FieldDesc field);
+    public SymbolIdentifier GetSymbolIdForGenericMethodDictionary(MethodDesc method);
+    public SymbolIdentifier GetSymbolIdForFatFunctionPointer(MethodKey methodKey);
+    public SymbolIdentifier GetSymbolIdForMethodAssociatedData(MethodKey methodKey);
+    public SymbolIdentifier GetSymbolIdForForUserString(string userString);
+    public SymbolIdentifier GetSymbolIdForMethod(MethodKey methodKey);
+    public SymbolIdentifier GetSymbolIdForRuntimeLookupSignature(TypeDesc type);
+    public SymbolIdentifier GetSymbolIdForRuntimeLookupSignature(MethodDesc method);
+    public SymbolIdentifier GetSymbolIdForInterfaceDispatchCell(MethodDesc method, MethodDesc caller, UInt32 callId);
+    public string GetDebugLinkageNameForSymbolWithId(UInt32 symbolId);
+}
+public enum ILCompiler.LinkageTokenType : Enum {
+    public int value__;
+    public static LinkageTokenType Type;
+    public static LinkageTokenType Method;
+    public static LinkageTokenType RuntimeFieldHandle;
+    public static LinkageTokenType RuntimeMethodHandle;
+    public static LinkageTokenType NonGcStaticBase;
+    public static LinkageTokenType GcStaticBase;
+    public static LinkageTokenType TlsBase;
+    public static LinkageTokenType TlsBaseOffset;
+    public static LinkageTokenType TlsIndex;
+    public static LinkageTokenType LoopHijackFlag;
+    public static LinkageTokenType DataBlob;
+    public static LinkageTokenType GenericMethodDictionary;
+    public static LinkageTokenType FatFunctionPointer;
+    public static LinkageTokenType MethodAssociatedData;
+    public static LinkageTokenType TypeRuntimeLookupSignature;
+    public static LinkageTokenType MethodRuntimeLookupSignature;
+}
+public static class ILCompiler.MergedAssemblyRecordParser : object {
+    private static UInt32 AdjustIndex(UInt32 assemblyIndex, UInt32 corLibIndex);
+    public static MergedAssemblyRecords Parse(TextReader csvStream, Dictionary`2<EcmaAssembly, int> assemblyToIndex, int corLibIndex);
+}
+public class ILCompiler.MethodKey : ValueType {
+    public MethodDesc Method;
+    public bool IsUnboxingStub;
+    public MethodKey(MethodDesc method, bool isUnboxingStub);
+    public sealed virtual bool Equals(MethodKey other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public enum ILCompiler.MultifilePolicy : Enum {
+    public int value__;
+    public static MultifilePolicy SharedLibraryMultifile;
+    public static MultifilePolicy AppWithSharedLibrary;
+    public static MultifilePolicy Incremental;
+}
+public class ILCompiler.NetNativeCompilerContext : CompilerTypeSystemContext {
+    private MetadataFieldLayoutAlgorithm _metadataFieldLayoutAlgorithm;
+    private RuntimeDeterminedFieldLayoutAlgorithm _runtimeDeterminedFieldLayoutAlgorithm;
+    private DelegateVirtualMethodAlgorithm _delegateVirtualMethodAlgorithm;
+    private ModuleDesc _canonTypesModuleDesc;
+    protected ModuleDesc CanonTypesModule { get; }
+    public bool SupportsUniversalCanon { get; }
+    public NetNativeCompilerContext(TargetDetails details, SharedGenericsMode sharedGenericsMode);
+    public void SetCanonModule(ModuleDesc canonModule);
+    protected virtual ModuleDesc get_CanonTypesModule();
+    protected virtual bool ComputeHasGCStaticBase(FieldDesc field);
+    public virtual FieldLayoutAlgorithm GetLayoutAlgorithmForType(DefType type);
+    [IteratorStateMachineAttribute("ILCompiler.NetNativeCompilerContext/<GetAllMethodsForDelegate>d__11")]
+protected virtual IEnumerable`1<MethodDesc> GetAllMethodsForDelegate(TypeDesc type);
+    protected virtual IEnumerable`1<MethodDesc> GetAllMethodsForEnum(TypeDesc enumType);
+    protected virtual IEnumerable`1<MethodDesc> GetAllMethodsForValueType(TypeDesc valueType);
+    public virtual VirtualMethodAlgorithm GetVirtualMethodAlgorithmForType(TypeDesc type);
+    public virtual bool get_SupportsUniversalCanon();
+}
+internal class ILCompiler.NetNativeFieldLayoutAlgorithm : MetadataFieldLayoutAlgorithm {
+    protected virtual void PrepareRuntimeSpecificStaticFieldLayout(TypeSystemContext context, ComputedStaticFieldLayout& layout);
+}
+internal class ILCompiler.RootingServiceProvider : object {
+    private DependencyAnalyzerBase`1<NodeFactory> _graph;
+    private UtcNodeFactory _factory;
+    public RootingServiceProvider(DependencyAnalyzerBase`1<NodeFactory> graph, UtcNodeFactory factory);
+    public sealed virtual void AddCompilationRoot(MethodDesc method, string reason, string exportName);
+    public sealed virtual void AddCompilationRoot(TypeDesc type, string reason);
+    public sealed virtual void RootThreadStaticBaseForType(TypeDesc type, string reason);
+    public sealed virtual void RootGCStaticBaseForType(TypeDesc type, string reason);
+    public sealed virtual void RootNonGCStaticBaseForType(TypeDesc type, string reason);
+    public sealed virtual void RootVirtualMethodForReflection(MethodDesc method, string reason);
+    public sealed virtual void RootModuleMetadata(ModuleDesc module, string reason);
+    public sealed virtual void RootReadOnlyDataBlob(Byte[] data, int alignment, string reason, string exportName);
+}
+public class ILCompiler.ScannerOutcome : object {
+    [CompilerGeneratedAttribute]
+private Dictionary`2<TypeSystemEntity, DictionaryLayoutNode> <GenericDictionaryLayouts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<MethodKey> <RequiredCompiledMethods>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<MethodKey> <RequiredImportedMethods>k__BackingField;
+    public Dictionary`2<TypeSystemEntity, DictionaryLayoutNode> GenericDictionaryLayouts { get; }
+    public HashSet`1<MethodKey> RequiredCompiledMethods { get; }
+    public HashSet`1<MethodKey> RequiredImportedMethods { get; }
+    [CompilerGeneratedAttribute]
+public Dictionary`2<TypeSystemEntity, DictionaryLayoutNode> get_GenericDictionaryLayouts();
+    [CompilerGeneratedAttribute]
+public HashSet`1<MethodKey> get_RequiredCompiledMethods();
+    [CompilerGeneratedAttribute]
+public HashSet`1<MethodKey> get_RequiredImportedMethods();
+}
+public class ILCompiler.SymbolIdentifier : ValueType {
+    public UInt32 id;
+    private static int _unknownId;
+    public static SymbolIdentifier UnknownId;
+    public static Dictionary`2<string, UInt32> predefinedSymbols;
+    public SymbolIdentifier(UInt32 id);
+    public SymbolIdentifier(string name);
+    private static SymbolIdentifier();
+}
+public class ILCompiler.SystemPrivateCanonModuleDesc : ModuleDesc {
+    public SystemPrivateCanonModuleDesc(TypeSystemContext context);
+    public virtual MetadataType GetType(string nameSpace, string name, bool throwIfNotFound);
+    public virtual MetadataType GetGlobalModuleType();
+    public virtual IEnumerable`1<MetadataType> GetAllTypes();
+    public sealed virtual AssemblyName GetName();
+}
+public class ILCompiler.Toc.ElementsToExport : object {
+    private HashSet`1<TypeSystemEntity> _exports;
+    public void AddExport(TypeSystemEntity export);
+    public bool ShouldExport(TypeDesc type);
+    public bool ShouldExport(MethodDesc method);
+}
+public class ILCompiler.Toc.ImportExportInfo : object {
+    public MethodKey MethodKey;
+    public TypeDesc Type;
+    public NativeImportExportKind ImportExportKind;
+    public int Module;
+    public int Ordinal;
+}
+public enum ILCompiler.Toc.NativeImportExportKind : Enum {
+    public int value__;
+    public static NativeImportExportKind ModuleTlsIndex;
+    public static NativeImportExportKind MethodCode;
+    public static NativeImportExportKind MethodDict;
+    public static NativeImportExportKind TypeMethodTable;
+    public static NativeImportExportKind TypeDict;
+    public static NativeImportExportKind TypeGcStatics;
+    public static NativeImportExportKind TypeNonGcStatics;
+    public static NativeImportExportKind TypeTlsStatics;
+}
+public class ILCompiler.Toc.TocData : object {
+    public List`1<ImportExportInfo> ImportExports;
+    public List`1<string> Modules;
+    public ElementsToExport ElementsToExport;
+    public static int InvalidOrdinal;
+}
+public class ILCompiler.Toc.TocEmitter : ManagedBinaryEmitter {
+    private static string TocAsmNameSuffix;
+    private NodeFactory _nodeFactory;
+    private string _tocAssemblyName;
+    private TocData _tocData;
+    private TocOutputFlags _tocFlags;
+    private HostedCompilationGroup _inputModuleGroup;
+    private TypeSystemContext _typeSystemContext;
+    private MethodSignature _tocMethodSignature;
+    private EmittedTypeDefinition _dgdumpType;
+    public TocEmitter(NodeFactory factory, string tocAssemblyName, TocOutputFlags tocFlags, TocData tocData, TypeSystemContext typeSystemContext, HostedCompilationGroup inputModuleGroup);
+    public void GenerateOutputFile(string tocOutputPath);
+    private void BuildMethodForLdTokenImportExportDump();
+    private void OutputVirtualSlots(TypeDesc implType, TypeDesc declType, List`1<MethodDesc> vtableMethods);
+    private void BuildMethodForTypeLayout();
+    private void BuildMethodForTypeDictionaryLayout();
+    private void BuildMethodForMethodDictionaryLayout();
+    private void EmitDictionaryLayoutForMethod(MethodDesc method, bool emitFixed, EmittedMethodDefinition tocMethod, string moduleName);
+    private void EmitDictionaryLayoutForType(TypeDesc type, bool emitFixed, EmittedMethodDefinition tocMethod, string moduleName);
+    private void EmitLdTokenImportExportMethod(MethodKey methodKey, EmittedMethodDefinition tocMethod, string moduleName, int ordinal, NativeImportExportKind importExportKind);
+    private void EmitLdTokenImportExportType(TypeDesc type, EmittedMethodDefinition tocMethod, string moduleName, int ordinal, NativeImportExportKind importExportKind);
+    private void EmitDictionaryLayout(TypeSystemEntity owner, DictionaryLayoutNode dictionaryLayout, bool emitFixed, EmittedMethodDefinition tocMethod);
+    private void EmitDictionaryLayout(TypeSystemEntity owner, UtcVersionedDictionaryLayoutNode dictionaryLayout, bool emitFixed, EmittedMethodDefinition tocMethod);
+    private void EmitImportExport(EmittedMethodDefinition tocMethod, string moduleName, int ordinal);
+}
+[FlagsAttribute]
+public enum ILCompiler.Toc.TocOutputFlags : Enum {
+    public int value__;
+    public static TocOutputFlags EmitSharedDictionaryLayout;
+    public static TocOutputFlags EmitStableGenericLayout;
+}
+public class ILCompiler.Toc.TocReader : object {
+    private IEnumerable`1<EcmaAssembly> _tocAssemblies;
+    private bool _isBaselineTocReader;
+    public TocReader(IEnumerable`1<EcmaAssembly> tocAssemblies, bool isBaselineTocReader);
+    public KeyValuePair`2[] ReadImportExports();
+    private void ReadImportInformation(MethodIL importInformationMethod, ImportExportOrdinalsBuilder discoveredOrdinals);
+    public Dictionary`2<TypeSystemEntity, PrecomputedDictionaryLayoutNode> ReadDictionaryLayouts(NodeFactory factory);
+    private void ReadDictionaryLayoutTocFunction_AcrossAllTocs(NodeFactory factory, string functionName, Dictionary`2<TypeSystemEntity, List`1<GenericLookupResult>> lookups);
+    private void ReadDictionaryLayoutTocFunction(NodeFactory factory, MethodIL tocMethod, Dictionary`2<TypeSystemEntity, List`1<GenericLookupResult>> lookups);
+    private GenericLookupResult ReadGenericLookupResult(ILStreamReader& il, NodeFactory factory, Instantiation typeInstantiation, Instantiation methodInstantiation);
+    private void SkipGenericLookupResultEntries(ILStreamReader& il);
+}
+public enum ILCompiler.TocModuleKind : Enum {
+    public int value__;
+    public static TocModuleKind Toc;
+    public static TocModuleKind TagToc;
+    public static TocModuleKind ExportIlToc;
+    public static TocModuleKind BaselineToc;
+    public static TocModuleKind IlToc;
+}
+internal class ILCompiler.TypeSystemContextModuleProviderAdapter : object {
+    private CompilerTypeSystemContext _typeSystemContext;
+    public TypeSystemContextModuleProviderAdapter(CompilerTypeSystemContext typeSystemContext);
+    public sealed virtual EcmaModule GetModuleFromPath(string filePath);
+}
+internal class Internal.CommandLine.CommandLineException : Exception {
+    public CommandLineException(string message);
+}
+internal class Internal.CommandLine.Helpers : object {
+    public static void AppendExpandedPaths(Dictionary`2<string, string> dictionary, string pattern, bool strict);
+}
+public class Internal.TypeSystem.Bridge.ComposerModule : object {
+    public string FileName;
+    public FileStream FileStream;
+    public EcmaModule EcmaModule;
+    public int TypedefMinToken;
+    public int TypedefMaxToken;
+    public int MinMergedToken;
+    public int MaxMergedToken;
+    public int TokenOffset;
+}
+internal class Internal.TypeSystem.Bridge.ComposerTemporaryTokenMap`1 : object {
+    private ConcurrentDictionary`2<T, int> _objectToToken;
+    private List`1<T> _indexToObject;
+    private TokenType _tokenType;
+    public int Count { get; }
+    public ComposerTemporaryTokenMap`1(TokenType tokenType);
+    public int EnsureTokenFor(T newObject, Boolean& allocatedNewToken);
+    public int EnsureTokenFor(T newObject);
+    public T LookupToken(int token);
+    public TT LookupTokenAs(int token);
+    public int get_Count();
+    public IEnumerable`1<T> EnumerateObjects();
+    public IEnumerable`1<KeyValuePair`2<T, int>> EnumerateObjectTokenMap();
+}
+internal class Internal.TypeSystem.Bridge.ComposerTokenResolver : ValueType {
+    private TypeSystemContext _context;
+    private List`1<ComposerModule> _modules;
+    private TypeDesc modreq(System.Runtime.CompilerServices.IsVolatile) _classLibCanon;
+    private TypeDesc _classLibUniversalCanon;
+    private TypeDesc ClassLibCanon { get; }
+    private TypeDesc ClassLibUniversalCanon { get; }
+    public TypeSystemContext Context { get; }
+    public ComposerTokenResolver(List`1<ComposerModule> modules, TypeSystemContext context);
+    private TypeDesc get_ClassLibCanon();
+    private TypeDesc get_ClassLibUniversalCanon();
+    public sealed virtual TypeSystemContext get_Context();
+    public sealed virtual TypeDesc ResolveTypeHandle(EntityHandle entityHandle);
+    public sealed virtual EntityHandle GetTypeDefOrRefHandleForTypeDesc(TypeDesc type);
+}
+internal class Internal.TypeSystem.Bridge.ComposerTypeSystemContext : MetadataTypeSystemContext {
+    private static string SystemNamespaceName;
+    private static string PlainObjectTypeName;
+    private List`1<ComposerModule> _modules;
+    private static String[] s_wellKnownTypeNames;
+    private MetadataType[] _wellKnownTypes;
+    public bool SupportsUniversalCanon { get; }
+    public bool SupportsCanon { get; }
+    public ComposerTypeSystemContext(List`1<ComposerModule> modules);
+    private static ComposerTypeSystemContext();
+    public virtual ModuleDesc ResolveAssembly(AssemblyName name, bool throwErrorIfNotFound);
+    public virtual DefType GetWellKnownType(WellKnownType wellKnownType, bool throwIfNotFound);
+    public void LocateWellKnownTypes();
+    private ComposerModule LocateCoreModule();
+    public virtual bool get_SupportsUniversalCanon();
+    public virtual bool get_SupportsCanon();
+}
+internal class Internal.TypeSystem.Bridge.DummyGenericContext : object {
+}
+public interface Internal.TypeSystem.Bridge.IEcmaModuleProvider {
+    public abstract virtual EcmaModule GetModuleFromPath(string filePath);
+}
+public interface Internal.TypeSystem.Bridge.IEcmaTokenResolver {
+    public TypeSystemContext Context { get; }
+    public abstract virtual TypeSystemContext get_Context();
+    public abstract virtual TypeDesc ResolveTypeHandle(EntityHandle entityHandle);
+}
+[GuidAttribute("53B671F1-9E6A-49C9-A293-84AD342723A1")]
+[InterfaceTypeAttribute("1")]
+public interface Internal.TypeSystem.Bridge.IReverseTypeSystemBridgeProvider {
+    public abstract virtual void NotifyNewTypeToken(int tempToken, Byte[] signature, int signatureLength);
+    public abstract virtual void NotifyNewInstantiatedMethodToken(int tempToken, int uninstantiatedMethodToken, Byte[] signature, int signatureLength);
+    public abstract virtual void NotifyNewMethodTokenFromTempTypeTokenAndECMAMethodToken(int token, int typeToken, int ECMAMethodToken);
+    public abstract virtual void NotifyNewUnboxingMethodToken(int tempToken, int nonUnboxingMethodToken);
+}
+[GuidAttribute("78256DDE-A13B-405E-BEFD-5A1FD5C376FF")]
+[InterfaceTypeAttribute("1")]
+public interface Internal.TypeSystem.Bridge.ITypeSystemBridgeProvider {
+    public abstract virtual void AddAssemblyFile(string filename, Int32& moduleHandle, Int32& typedefTokenStart, Int32& typedefTokenEnd);
+    public abstract virtual void AssembliesSpecified();
+    public abstract virtual void GetTokenForTypeSignature(int typeSigSize, Byte* typeSig, Int32& tempTypeToken);
+    public abstract virtual void GetTokenForMethod(int tempTypeToken, string methodName, int methodSigSize, Byte* methodSig, Int32& tempMethodToken);
+    public abstract virtual void GetTokenForUnboxingStub(int tempNonboxingMethodToken, Int32& tempMethodToken);
+    public abstract virtual void GetTokenForInstantiatedMethod(int tempMethodToken, int methodSpecSigSize, Byte* methodSpecSig, Int32& tempInstantiatedMethodToken);
+    public abstract virtual void GetTokenForField(int tempTypeToken, string fieldName, int fieldSigSize, Byte* fieldSig, Int32& tempFieldToken);
+    public abstract virtual void GetTokenForStandaloneSig(int sigSize, Byte* sig, Int32& tempStandaloneSigToken);
+    public abstract virtual void GetTokenForRuntimeDeterminedType(int tempTokenCanonicalType, Int32& tempTokenRuntimeDeterminedType);
+    public abstract virtual void GetTokenForRuntimeDeterminedTypeSignatureGivenRDTContextType(int typeSigSize, Byte* typeSig, int tempRDTContextType, Int32& tempTypeToken);
+    public abstract virtual void GetTokenForRuntimeDeterminedMethodSpecSignatureGivenRDTContextType(int tempGenericMethodToken, int methodSpecSigSize, Byte* methodSpecSig, int tempRDTContextType, Int32& tempMethodToken);
+    public abstract virtual void GetTokenForRuntimeDeterminedMethodBeingCompiled(int tempTokenCanonicalMethodBeingCompiled, Int32& tempTokenRuntimeDeterminedMethod);
+    public abstract virtual void GetTokenForRuntimeDeterminedTypeSignatureGivenRDTMethodBeingCompiled(int typeSigSize, Byte* typeSig, int tempRDTMethodBeingCompiled, Int32& tempTypeToken);
+    public abstract virtual void GetTokenForRuntimeDeterminedMethodSpecSignatureGivenRDTMethodBeingCompiled(int tempGenericMethodToken, int methodSpecSigSize, Byte* methodSpecSig, int tempRDTMethodBeingCompiled, Int32& tempMethodToken);
+    public abstract virtual void AttachReverseTypeSystemBridge(IReverseTypeSystemBridgeProvider reverseBridge);
+}
+public class Internal.TypeSystem.Bridge.MetadataComposer : object {
+    private List`1<ComposerModule> _modules;
+    private TypeSystemContext _typeSystemContext;
+    private ComposerTokenResolver _tokenResolver;
+    private SignatureDecoder`2<TypeDesc, DummyGenericContext> _signatureDecoder;
+    private ComposerTemporaryTokenMap`1<TypeDesc> _typeTokenMap;
+    private ComposerTemporaryTokenMap`1<MethodKey> _methodTokenMap;
+    private ComposerTemporaryTokenMap`1<FieldDesc> _fieldTokenMap;
+    private ComposerTemporaryTokenMap`1<MethodSignature> _methodSigTokenMap;
+    private IEcmaModuleProvider _moduleProvider;
+    private EcmaSignatureEncoder`1<ComposerTokenResolver> _sigEncoder;
+    private IReverseTypeSystemBridgeProvider _nativeTypeSystemBridge;
+    public MetadataComposer(TypeSystemContext typeSystemContext, IEcmaModuleProvider moduleProvider);
+    public void AttachReverseTypeSystemBridge(IReverseTypeSystemBridgeProvider nativeTypeSystemBridge);
+    public void AddFile(string ilPath, Int32& moduleHandle, Int32& typedefTokenStart, Int32& typedefTokenEnd);
+    public void InitializeMetadataComposition();
+    public sealed virtual void Dispose();
+    private void GetTypeTokenRange(EcmaModule module, Int32& typedefMinToken, Int32& typedefMaxToken);
+    public TypeDesc ParseMergedTypeSignature(BlobReader signatureBlobReader);
+    private MethodDesc ParseMergedMethodSignature(DefType owningType, string methodName, BlobReader signatureBlobReader);
+    private FieldDesc ParseMergedFieldSignature(DefType owningType, string fieldName, BlobReader signatureBlobReader);
+    public MethodDesc ParseMergedMethodInstantiationSignature(MethodDesc uninstantiatedMethod, BlobReader methodInstantiation);
+    public int GetTokenForTypeSignature(BlobReader signature, bool pushNewTokensToNative);
+    private Byte[] EncodeTypeSignature(TypeDesc type);
+    private Byte[] EncodeMethodInstantiation(InstantiatedMethod method);
+    public int GetTokenForType(TypeDesc type, bool pushNewTokensToNative);
+    public int GetTokenForMethod(int tempTypeToken, string methodName, BlobReader methodSignature);
+    private sealed virtual override int ILCompiler.ISTSTokenProvider.GetTokenForMethod(MethodDesc method);
+    private sealed virtual override int ILCompiler.ISTSTokenProvider.GetTokenForUnboxingStub(MethodDesc method);
+    public int GetTokenForMethod(MethodDesc method, bool pushNewTokensToNative);
+    public int GetTokenForUnboxingStub(MethodDesc method, bool pushNewTokensToNative);
+    public int GetTokenForMethodInstantiation(int tempMethodToken, BlobReader methodInstantiation);
+    public int GetTokenForMethodSignature(BlobReader methodSignature);
+    public int GetTokenForField(int tempTypeToken, string fieldName, BlobReader fieldSignature);
+    public string TempTokenToString(int tempToken);
+    public EcmaModule ModuleHandleToModule(int moduleHandle);
+    public TypeDesc GetTypeFromToken(int tempTypeToken);
+    public MethodKey GetMethodFromToken(int tempMethodToken);
+    public FieldDesc GetFieldFromToken(int tempFieldToken);
+    public MethodSignature GetMethodSignatureFromToken(int tempSigToken);
+    [ConditionalAttribute("TYPE_LOADER_TRACE")]
+public static void Log(string formatString, Object[] args);
+    [ConditionalAttribute("TYPE_LOADER_TRACE_VERBOSE")]
+public static void LogVerbose(string formatString, Object[] args);
+}
+[ExtensionAttribute]
+public static class Internal.TypeSystem.Bridge.SignatureExtensions : object {
+    [ExtensionAttribute]
+public static MethodSignature GetTypeSystemMethodSignature(MethodSignature`1<TypeDesc> signature);
+}
+internal class Internal.TypeSystem.Bridge.SignatureTypeProvider`1 : ValueType {
+    private T _tokenResolver;
+    public SignatureTypeProvider`1(T tokenResolver);
+    public sealed virtual TypeDesc GetArrayType(TypeDesc elementType, ArrayShape shape);
+    public sealed virtual TypeDesc GetByReferenceType(TypeDesc elementType);
+    public sealed virtual TypeDesc GetFunctionPointerType(MethodSignature`1<TypeDesc> signature);
+    public sealed virtual TypeDesc GetGenericInstantiation(TypeDesc genericType, ImmutableArray`1<TypeDesc> typeArguments);
+    public sealed virtual TypeDesc GetGenericMethodParameter(DummyGenericContext inst, int index);
+    public sealed virtual TypeDesc GetGenericTypeParameter(DummyGenericContext inst, int index);
+    public sealed virtual TypeDesc GetModifiedType(TypeDesc modifier, TypeDesc unmodifiedType, bool isRequired);
+    public sealed virtual TypeDesc GetPinnedType(TypeDesc elementType);
+    public sealed virtual TypeDesc GetPointerType(TypeDesc elementType);
+    public sealed virtual TypeDesc GetPrimitiveType(PrimitiveTypeCode typeCode);
+    public sealed virtual TypeDesc GetSZArrayType(TypeDesc elementType);
+    public sealed virtual TypeDesc GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte code);
+    public sealed virtual TypeDesc GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte code);
+    public sealed virtual TypeDesc GetTypeFromSpecification(MetadataReader reader, DummyGenericContext inst, TypeSpecificationHandle handle, byte code);
+}
+public class Internal.TypeSystem.Bridge.TempToPermanentMapping : ValueType {
+    public int TempToken;
+    public int PermanentToken;
+}
+[FlagsAttribute]
+internal enum Internal.TypeSystem.Bridge.TokenType : Enum {
+    public int value__;
+    public static TokenType Type;
+    public static TokenType Field;
+    public static TokenType Method;
+    public static TokenType MethodSignature;
+    public static TokenType Mask;
+}
+public class Internal.TypeSystem.Bridge.TypeSystemBridgeProvider : object {
+    private MetadataComposer _composer;
+    private NetNativeCompilerContext _typeSystemContext;
+    public ISTSTokenProvider STSTokenProvider { get; }
+    public TypeSystemBridgeProvider(NetNativeCompilerContext typeSystemContext, IEcmaModuleProvider moduleProvider);
+    public sealed virtual void AddAssemblyFile(string filename, Int32& moduleHandle, Int32& typedefTokenStart, Int32& typedefTokenEnd);
+    public sealed virtual void AssembliesSpecified();
+    public sealed virtual void GetTokenForTypeSignature(int typeSigSize, Byte* typeSig, Int32& tempTypeToken);
+    public sealed virtual void GetTokenForRuntimeDeterminedType(int tempTokenCanonicalType, Int32& tempTokenRuntimeDeterminedType);
+    public sealed virtual void GetTokenForRuntimeDeterminedTypeSignatureGivenRDTContextType(int typeSigSize, Byte* typeSig, int tempRDTContextType, Int32& tempTypeToken);
+    public sealed virtual void GetTokenForRuntimeDeterminedMethodSpecSignatureGivenRDTContextType(int tempGenericMethodToken, int methodSpecSigSize, Byte* methodSpecSig, int tempRDTContextType, Int32& tempMethodToken);
+    public sealed virtual void GetTokenForRuntimeDeterminedMethodBeingCompiled(int tempTokenCanonicalMethodBeingCompiled, Int32& tempTokenRuntimeDeterminedMethod);
+    public sealed virtual void GetTokenForRuntimeDeterminedTypeSignatureGivenRDTMethodBeingCompiled(int typeSigSize, Byte* typeSig, int tempRDTMethodBeingCompiled, Int32& tempTypeToken);
+    public sealed virtual void GetTokenForMethod(int tempTypeToken, string methodName, int methodSigSize, Byte* methodSig, Int32& tempMethodToken);
+    public sealed virtual void GetTokenForUnboxingStub(int tempNonboxingMethodToken, Int32& tempMethodToken);
+    public sealed virtual void GetTokenForInstantiatedMethod(int tempMethodToken, int methodSpecSigSize, Byte* methodSpecSig, Int32& tempInstantiatedMethodToken);
+    public sealed virtual void GetTokenForRuntimeDeterminedMethodSpecSignatureGivenRDTMethodBeingCompiled(int tempGenericMethodToken, int methodSpecSigSize, Byte* methodSpecSig, int tempRDTMethodBeingCompiled, Int32& tempMethodToken);
+    public sealed virtual void GetTokenForField(int tempTypeToken, string fieldName, int fieldSigSize, Byte* fieldSig, Int32& tempFieldToken);
+    public sealed virtual void GetTokenForStandaloneSig(int sigSize, Byte* sig, Int32& tempStandaloneSigToken);
+    public TypeDesc GetTypeFromToken(int tempTypeToken);
+    public MethodKey GetMethodFromToken(int tempMethodToken);
+    public FieldDesc GetFieldFromToken(int tempFieldToken);
+    public MethodSignature GetMethodSignatureFromToken(int tempSigToken);
+    public string GetUserStringFromModuleAndToken(int moduleHandle, int userStringToken);
+    public sealed virtual void AttachReverseTypeSystemBridge(IReverseTypeSystemBridgeProvider reverseBridge);
+    public ISTSTokenProvider get_STSTokenProvider();
+}
+internal class Microsoft.NetNative.ErrorTraceListener : DefaultTraceListener {
+    public static void ReplaceDefaulTraceListener();
+    public virtual void Fail(string message, string detailMessage);
+}
+[DefaultMemberAttribute("Item")]
+internal class System.Collections.Generic.ArrayBuilder`1 : ValueType {
+    private T[] _items;
+    private int _count;
+    public int Count { get; }
+    public T Item { get; public set; }
+    public T[] ToArray();
+    public void Add(T item);
+    public void Append(T[] newItems);
+    public void Append(T[] newItems, int offset, int length);
+    public void Append(ArrayBuilder`1<T> newItems);
+    public void ZeroExtend(int numItems);
+    public void EnsureCapacity(int requestedCapacity);
+    public int get_Count();
+    public T get_Item(int index);
+    public void set_Item(int index, T value);
+    public bool Contains(T t);
+}

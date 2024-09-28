@@ -1,0 +1,1386 @@
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class MessagePack.BufferWriter : ValueType {
+    private IBufferWriter`1<byte> _output;
+    private Span`1<byte> _span;
+    private ArraySegment`1<byte> _segment;
+    private int _buffered;
+    private long _bytesCommitted;
+    private SequencePool _sequencePool;
+    private Rental _rental;
+    public Span`1<byte> Span { get; }
+    public long BytesCommitted { get; }
+    internal IBufferWriter`1<byte> UnderlyingWriter { get; }
+    internal Rental SequenceRental { get; }
+    public BufferWriter(IBufferWriter`1<byte> output);
+    internal BufferWriter(SequencePool sequencePool, Byte[] array);
+    public Span`1<byte> get_Span();
+    public long get_BytesCommitted();
+    internal IBufferWriter`1<byte> get_UnderlyingWriter();
+    internal Rental get_SequenceRental();
+    public Span`1<byte> GetSpan(int sizeHint);
+    public Byte& GetPointer(int sizeHint);
+    public void Commit();
+    public void Advance(int count);
+    public void Write(ReadOnlySpan`1<byte> source);
+    public void Ensure(int count);
+    internal bool TryGetUncommittedSpan(ReadOnlySpan`1& span);
+    private void EnsureMore(int count);
+    private void WriteMultiBuffer(ReadOnlySpan`1<byte> source);
+    private void MigrateToSequence();
+}
+internal class MessagePack.ExtensionHeader : ValueType {
+    [CompilerGeneratedAttribute]
+private sbyte <TypeCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <Length>k__BackingField;
+    public sbyte TypeCode { get; private set; }
+    public UInt32 Length { get; private set; }
+    public ExtensionHeader(sbyte typeCode, UInt32 length);
+    public ExtensionHeader(sbyte typeCode, int length);
+    [CompilerGeneratedAttribute]
+[IsReadOnlyAttribute]
+public sbyte get_TypeCode();
+    [CompilerGeneratedAttribute]
+private void set_TypeCode(sbyte value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public UInt32 get_Length();
+    [CompilerGeneratedAttribute]
+private void set_Length(UInt32 value);
+}
+internal class MessagePack.ExtensionResult : ValueType {
+    [CompilerGeneratedAttribute]
+private sbyte <TypeCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ReadOnlySequence`1<byte> <Data>k__BackingField;
+    public sbyte TypeCode { get; private set; }
+    public ReadOnlySequence`1<byte> Data { get; private set; }
+    public ExtensionHeader Header { get; }
+    public ExtensionResult(sbyte typeCode, Memory`1<byte> data);
+    public ExtensionResult(sbyte typeCode, ReadOnlySequence`1<byte> data);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sbyte get_TypeCode();
+    [CompilerGeneratedAttribute]
+private void set_TypeCode(sbyte value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public ReadOnlySequence`1<byte> get_Data();
+    [CompilerGeneratedAttribute]
+private void set_Data(ReadOnlySequence`1<byte> value);
+    public ExtensionHeader get_Header();
+}
+internal class MessagePack.Float32Bits : ValueType {
+    public float Value;
+    public byte Byte0;
+    public byte Byte1;
+    public byte Byte2;
+    public byte Byte3;
+    public Float32Bits(float value);
+    public Float32Bits(ReadOnlySpan`1<byte> bigEndianBytes);
+}
+internal class MessagePack.Float64Bits : ValueType {
+    public double Value;
+    public byte Byte0;
+    public byte Byte1;
+    public byte Byte2;
+    public byte Byte3;
+    public byte Byte4;
+    public byte Byte5;
+    public byte Byte6;
+    public byte Byte7;
+    public Float64Bits(double value);
+    public Float64Bits(ReadOnlySpan`1<byte> bigEndianBytes);
+}
+internal static class MessagePack.Internal.DateTimeConstants : object {
+    internal static DateTime UnixEpoch;
+    internal static long BclSecondsAtUnixEpoch;
+    internal static int NanosecondsPerTick;
+    private static DateTimeConstants();
+}
+internal static class MessagePack.MessagePackCode : object {
+    public static byte MinFixInt;
+    public static byte MaxFixInt;
+    public static byte MinFixMap;
+    public static byte MaxFixMap;
+    public static byte MinFixArray;
+    public static byte MaxFixArray;
+    public static byte MinFixStr;
+    public static byte MaxFixStr;
+    public static byte Nil;
+    public static byte NeverUsed;
+    public static byte False;
+    public static byte True;
+    public static byte Bin8;
+    public static byte Bin16;
+    public static byte Bin32;
+    public static byte Ext8;
+    public static byte Ext16;
+    public static byte Ext32;
+    public static byte Float32;
+    public static byte Float64;
+    public static byte UInt8;
+    public static byte UInt16;
+    public static byte UInt32;
+    public static byte UInt64;
+    public static byte Int8;
+    public static byte Int16;
+    public static byte Int32;
+    public static byte Int64;
+    public static byte FixExt1;
+    public static byte FixExt2;
+    public static byte FixExt4;
+    public static byte FixExt8;
+    public static byte FixExt16;
+    public static byte Str8;
+    public static byte Str16;
+    public static byte Str32;
+    public static byte Array16;
+    public static byte Array32;
+    public static byte Map16;
+    public static byte Map32;
+    public static byte MinNegativeFixInt;
+    public static byte MaxNegativeFixInt;
+    private static MessagePackType[] typeLookupTable;
+    private static String[] formatNameTable;
+    private static MessagePackCode();
+    public static MessagePackType ToMessagePackType(byte code);
+    public static string ToFormatName(byte code);
+    public static bool IsSignedInteger(byte code);
+}
+internal static class MessagePack.MessagePackRange : object {
+    public static int MinFixNegativeInt;
+    public static int MaxFixNegativeInt;
+    public static int MaxFixPositiveInt;
+    public static int MinFixStringLength;
+    public static int MaxFixStringLength;
+    public static int MaxFixMapCount;
+    public static int MaxFixArrayCount;
+}
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+[IsByRefLikeAttribute]
+internal class MessagePack.MessagePackReader : ValueType {
+    private SequenceReader`1<byte> reader;
+    public ReadOnlySequence`1<byte> Sequence { get; }
+    public SequencePosition Position { get; }
+    public long Consumed { get; }
+    public bool End { get; }
+    public bool IsNil { get; }
+    public MessagePackType NextMessagePackType { get; }
+    public byte NextCode { get; }
+    public MessagePackReader(ReadOnlyMemory`1<byte> memory);
+    public MessagePackReader(ReadOnlySequence`1<byte> readOnlySequence);
+    public ReadOnlySequence`1<byte> get_Sequence();
+    public SequencePosition get_Position();
+    public long get_Consumed();
+    public bool get_End();
+    public bool get_IsNil();
+    public MessagePackType get_NextMessagePackType();
+    public byte get_NextCode();
+    public MessagePackReader Clone(ReadOnlySequence`1<byte> readOnlySequence);
+    public MessagePackReader CreatePeekReader();
+    public void Skip();
+    public Nil ReadNil();
+    public bool TryReadNil();
+    public ReadOnlySequence`1<byte> ReadRaw(long length);
+    public int ReadArrayHeader();
+    public int ReadMapHeader();
+    public bool ReadBoolean();
+    public char ReadChar();
+    public float ReadSingle();
+    public double ReadDouble();
+    public DateTime ReadDateTime();
+    internal DateTime ReadDateTime(ExtensionHeader header);
+    public ReadOnlySequence`1<byte> ReadBytes();
+    public ReadOnlySequence`1<byte> ReadStringSegment();
+    public string ReadString();
+    public ExtensionHeader ReadExtensionFormatHeader();
+    public ExtensionResult ReadExtensionFormat();
+    private static Exception ThrowInvalidCode(byte code);
+    private static void ThrowInsufficientBufferUnless(bool condition);
+    private int GetBytesLength();
+    private int GetStringLengthInBytes();
+    private int GetStringLengthInBytesSlow(byte code);
+    private string ReadStringSlow(int byteLength);
+    private void ReadNextArray();
+    private void ReadNextMap();
+    public byte ReadByte();
+    public ushort ReadUInt16();
+    public UInt32 ReadUInt32();
+    public ulong ReadUInt64();
+    public sbyte ReadSByte();
+    public short ReadInt16();
+    public int ReadInt32();
+    public long ReadInt64();
+}
+internal enum MessagePack.MessagePackType : Enum {
+    public byte value__;
+    public static MessagePackType Unknown;
+    public static MessagePackType Integer;
+    public static MessagePackType Nil;
+    public static MessagePackType Boolean;
+    public static MessagePackType Float;
+    public static MessagePackType String;
+    public static MessagePackType Binary;
+    public static MessagePackType Array;
+    public static MessagePackType Map;
+    public static MessagePackType Extension;
+}
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+[IsByRefLikeAttribute]
+internal class MessagePack.MessagePackWriter : ValueType {
+    private BufferWriter writer;
+    [CompilerGeneratedAttribute]
+private bool <OldSpec>k__BackingField;
+    public bool OldSpec { get; public set; }
+    public MessagePackWriter(IBufferWriter`1<byte> writer);
+    internal MessagePackWriter(SequencePool sequencePool, Byte[] array);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public bool get_OldSpec();
+    [CompilerGeneratedAttribute]
+public void set_OldSpec(bool value);
+    public MessagePackWriter Clone(IBufferWriter`1<byte> writer);
+    public void Flush();
+    public void WriteNil();
+    public void WriteRaw(ReadOnlySpan`1<byte> rawMessagePackBlock);
+    public void WriteRaw(ReadOnlySequence`1<byte> rawMessagePackBlock);
+    public void WriteArrayHeader(int count);
+    public void WriteArrayHeader(UInt32 count);
+    [EditorBrowsableAttribute("1")]
+public void WriteFixedArrayHeaderUnsafe(UInt32 count);
+    public void WriteMapHeader(int count);
+    public void WriteMapHeader(UInt32 count);
+    public void Write(byte value);
+    public void WriteUInt8(byte value);
+    public void Write(sbyte value);
+    public void WriteInt8(sbyte value);
+    public void Write(ushort value);
+    public void WriteUInt16(ushort value);
+    public void Write(short value);
+    public void WriteInt16(short value);
+    public void Write(UInt32 value);
+    public void WriteUInt32(UInt32 value);
+    public void Write(int value);
+    public void WriteInt32(int value);
+    public void Write(ulong value);
+    public void WriteUInt64(ulong value);
+    public void Write(long value);
+    public void WriteInt64(long value);
+    public void Write(bool value);
+    public void Write(char value);
+    public void Write(float value);
+    public void Write(double value);
+    public void Write(DateTime dateTime);
+    public void Write(ReadOnlySpan`1<byte> src);
+    public void Write(ReadOnlySequence`1<byte> src);
+    public void WriteString(ReadOnlySequence`1<byte> utf8stringBytes);
+    public void WriteString(ReadOnlySpan`1<byte> utf8stringBytes);
+    public void Write(string value);
+    public void Write(ReadOnlySpan`1<char> value);
+    public void WriteExtensionFormatHeader(ExtensionHeader extensionHeader);
+    public void WriteExtensionFormat(ExtensionResult extensionData);
+    internal void WriteBigEndian(ushort value);
+    internal void WriteBigEndian(UInt32 value);
+    internal void WriteBigEndian(ulong value);
+    internal Span`1<byte> GetSpan(int length);
+    internal void Advance(int length);
+    internal Byte[] FlushAndGetArray();
+    private static void WriteBigEndian(short value, Span`1<byte> span);
+    private static void WriteBigEndian(int value, Span`1<byte> span);
+    private static void WriteBigEndian(long value, Span`1<byte> span);
+    private static void WriteBigEndian(ushort value, Span`1<byte> span);
+    private static void WriteBigEndian(ushort value, Byte* span);
+    private static void WriteBigEndian(UInt32 value, Span`1<byte> span);
+    private static void WriteBigEndian(UInt32 value, Byte* span);
+    private static void WriteBigEndian(ulong value, Span`1<byte> span);
+    private static void ThrowArgumentNullException(string parameterName);
+    private Byte& WriteString_PrepareSpan(int characterLength, Int32& bufferSize, Int32& encodedBytesOffset);
+    private void WriteString_PostEncoding(Byte* pBuffer, int estimatedOffset, int byteCount);
+}
+internal class MessagePack.Nil : ValueType {
+    public static Nil Default;
+    private static Nil();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(Nil other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+internal static class MessagePack.ReservedMessagePackExtensionTypeCode : object {
+    public static sbyte DateTime;
+}
+internal class MessagePack.SequencePool : object {
+    private int maxSize;
+    private Stack`1<Sequence`1<byte>> pool;
+    internal SequencePool(int maxSize);
+    internal Rental Rent();
+    private void Return(Sequence`1<byte> value);
+}
+[ExtensionAttribute]
+internal static class MessagePack.StringEncoding : object {
+    internal static Encoding UTF8;
+    private static StringEncoding();
+    [ExtensionAttribute]
+internal static string GetString(Encoding encoding, ReadOnlySpan`1<byte> bytes);
+}
+public class Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder : object {
+    private IEndpointConventionBuilder _hubEndpoint;
+    private IEndpointConventionBuilder _disconnectEndpoint;
+    internal ComponentEndpointConventionBuilder(IEndpointConventionBuilder hubEndpoint, IEndpointConventionBuilder disconnectEndpoint);
+    public sealed virtual void Add(Action`1<EndpointBuilder> convention);
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions : object {
+    [ExtensionAttribute]
+public static ComponentEndpointConventionBuilder MapBlazorHub(IEndpointRouteBuilder endpoints);
+    [ExtensionAttribute]
+public static ComponentEndpointConventionBuilder MapBlazorHub(IEndpointRouteBuilder endpoints, string path);
+    [ExtensionAttribute]
+public static ComponentEndpointConventionBuilder MapBlazorHub(IEndpointRouteBuilder endpoints, Action`1<HttpConnectionDispatcherOptions> configureOptions);
+    [ExtensionAttribute]
+public static ComponentEndpointConventionBuilder MapBlazorHub(IEndpointRouteBuilder endpoints, string path, Action`1<HttpConnectionDispatcherOptions> configureOptions);
+}
+internal class Microsoft.AspNetCore.Components.ComponentParameter : ValueType {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Assembly>k__BackingField;
+    public string Name { get; public set; }
+    public string TypeName { get; public set; }
+    public string Assembly { get; public set; }
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+[IsReadOnlyAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+public void set_TypeName(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_Assembly();
+    [CompilerGeneratedAttribute]
+public void set_Assembly(string value);
+    public static ValueTuple`2<IList`1<ComponentParameter>, IList`1<object>> FromParameterView(ParameterView parameters);
+}
+internal class Microsoft.AspNetCore.Components.ComponentParametersTypeCache : object {
+    private ConcurrentDictionary`2<Key, Type> _typeToKeyLookUp;
+    public Type GetParameterType(string assembly, string type);
+    private static Type ResolveType(Key key, Assembly[] assemblies);
+}
+internal class Microsoft.AspNetCore.Components.ElementReferenceJsonConverter : JsonConverter`1<ElementReference> {
+    private static JsonEncodedText IdProperty;
+    private static ElementReferenceJsonConverter();
+    public virtual ElementReference Read(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options);
+    public virtual void Write(Utf8JsonWriter writer, ElementReference value, JsonSerializerOptions options);
+}
+internal static class Microsoft.AspNetCore.Components.JsonSerializerOptionsProvider : object {
+    public static JsonSerializerOptions Options;
+    private static JsonSerializerOptionsProvider();
+}
+internal class Microsoft.AspNetCore.Components.Server.BlazorPack.ArrayBufferWriter`1 : object {
+    private T[] _rentedBuffer;
+    private int _index;
+    private static int MinimumBufferSize;
+    public ReadOnlyMemory`1<T> WrittenMemory { get; }
+    public int WrittenCount { get; }
+    public int Capacity { get; }
+    public int FreeCapacity { get; }
+    public ArrayBufferWriter`1(int initialCapacity);
+    public ReadOnlyMemory`1<T> get_WrittenMemory();
+    public int get_WrittenCount();
+    public int get_Capacity();
+    public int get_FreeCapacity();
+    public void Clear();
+    private void ClearHelper();
+    public sealed virtual void Dispose();
+    private void CheckIfDisposed();
+    private static void ThrowObjectDisposedException();
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<T> GetMemory(int sizeHint);
+    public sealed virtual Span`1<T> GetSpan(int sizeHint);
+    private void CheckAndResizeBuffer(int sizeHint);
+    private static void ThrowInvalidOperationException(int capacity);
+}
+[NonDefaultHubProtocolAttribute]
+internal class Microsoft.AspNetCore.Components.Server.BlazorPack.BlazorPackHubProtocol : object {
+    internal static string ProtocolName;
+    private static int ErrorResult;
+    private static int VoidResult;
+    private static int NonVoidResult;
+    private static int ProtocolVersion;
+    public string Name { get; }
+    public int Version { get; }
+    public TransferFormat TransferFormat { get; }
+    private static BlazorPackHubProtocol();
+    public sealed virtual string get_Name();
+    public sealed virtual int get_Version();
+    public sealed virtual TransferFormat get_TransferFormat();
+    public sealed virtual bool IsVersionSupported(int version);
+    public sealed virtual bool TryParseMessage(ReadOnlySequence`1& input, IInvocationBinder binder, HubMessage& message);
+    private static HubMessage CreateInvocationMessage(MessagePackReader& reader, IInvocationBinder binder, int itemCount);
+    private static HubMessage CreateStreamInvocationMessage(MessagePackReader& reader, IInvocationBinder binder, int itemCount);
+    private static StreamItemMessage CreateStreamItemMessage(MessagePackReader& reader, IInvocationBinder binder);
+    private static CompletionMessage CreateCompletionMessage(MessagePackReader& reader, IInvocationBinder binder);
+    private static CancelInvocationMessage CreateCancelInvocationMessage(MessagePackReader& reader);
+    private static CloseMessage CreateCloseMessage(MessagePackReader& reader, int itemCount);
+    private static Dictionary`2<string, string> ReadHeaders(MessagePackReader& reader);
+    private static String[] ReadStreamIds(MessagePackReader& reader);
+    private static Object[] BindArguments(MessagePackReader& reader, IReadOnlyList`1<Type> parameterTypes);
+    public sealed virtual void WriteMessage(HubMessage message, IBufferWriter`1<byte> output);
+    public sealed virtual ReadOnlyMemory`1<byte> GetMessageBytes(HubMessage message);
+    private void WriteMessageCore(HubMessage message, IBufferWriter`1<byte> bufferWriter);
+    private void WriteInvocationMessage(InvocationMessage message, MessagePackWriter& writer);
+    private void WriteStreamInvocationMessage(StreamInvocationMessage message, MessagePackWriter& writer);
+    private void WriteStreamingItemMessage(StreamItemMessage message, MessagePackWriter& writer);
+    private void SerializeArgument(MessagePackWriter& writer, object argument);
+    private static object DeserializeObject(MessagePackReader& reader, Type type, string field);
+    private void WriteStreamIds(String[] streamIds, MessagePackWriter& writer);
+    private void WriteCompletionMessage(CompletionMessage message, MessagePackWriter& writer);
+    private void WriteCancelInvocationMessage(CancelInvocationMessage message, MessagePackWriter& writer);
+    private void WriteCloseMessage(CloseMessage message, MessagePackWriter& writer);
+    private void WritePingMessage(PingMessage _, MessagePackWriter& writer);
+    private void PackHeaders(MessagePackWriter& writer, IDictionary`2<string, string> headers);
+    private static T ApplyHeaders(IDictionary`2<string, string> source, T destination);
+    private static bool ReadBoolean(MessagePackReader& reader, string field);
+    private static int ReadInt32(MessagePackReader& reader, string field);
+    private static string ReadString(MessagePackReader& reader, string field);
+    private static int ReadArrayHeader(MessagePackReader& reader, string field);
+    private static int ReadMapHeader(MessagePackReader& reader, string field);
+    private static void ThrowInvalidDataException(string field, string targetType);
+    private static void ThrowInvalidCollectionLengthException(string field, string collection);
+}
+internal class Microsoft.AspNetCore.Components.Server.CircuitDisconnectMiddleware : object {
+    private static string CircuitIdKey;
+    [CompilerGeneratedAttribute]
+private ILogger`1<CircuitDisconnectMiddleware> <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CircuitRegistry <Registry>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CircuitIdFactory <CircuitIdFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RequestDelegate <Next>k__BackingField;
+    public ILogger`1<CircuitDisconnectMiddleware> Logger { get; }
+    public CircuitRegistry Registry { get; }
+    public CircuitIdFactory CircuitIdFactory { get; }
+    public RequestDelegate Next { get; }
+    public CircuitDisconnectMiddleware(ILogger`1<CircuitDisconnectMiddleware> logger, CircuitRegistry registry, CircuitIdFactory circuitIdFactory, RequestDelegate next);
+    [CompilerGeneratedAttribute]
+public ILogger`1<CircuitDisconnectMiddleware> get_Logger();
+    [CompilerGeneratedAttribute]
+public CircuitRegistry get_Registry();
+    [CompilerGeneratedAttribute]
+public CircuitIdFactory get_CircuitIdFactory();
+    [CompilerGeneratedAttribute]
+public RequestDelegate get_Next();
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.CircuitDisconnectMiddleware/<Invoke>d__14")]
+public Task Invoke(HttpContext context);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.CircuitDisconnectMiddleware/<GetCircuitIdAsync>d__15")]
+private Task`1<Nullable`1<CircuitId>> GetCircuitIdAsync(HttpContext context);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.CircuitDisconnectMiddleware/<TerminateCircuitGracefully>d__16")]
+private Task TerminateCircuitGracefully(CircuitId circuitId);
+}
+public class Microsoft.AspNetCore.Components.Server.CircuitOptions : object {
+    [CompilerGeneratedAttribute]
+private int <DisconnectedCircuitMaxRetained>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <DisconnectedCircuitRetentionPeriod>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DetailedErrors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <JSInteropDefaultCallTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxBufferedUnacknowledgedRenderBatches>k__BackingField;
+    public int DisconnectedCircuitMaxRetained { get; public set; }
+    public TimeSpan DisconnectedCircuitRetentionPeriod { get; public set; }
+    public bool DetailedErrors { get; public set; }
+    public TimeSpan JSInteropDefaultCallTimeout { get; public set; }
+    public int MaxBufferedUnacknowledgedRenderBatches { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_DisconnectedCircuitMaxRetained();
+    [CompilerGeneratedAttribute]
+public void set_DisconnectedCircuitMaxRetained(int value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_DisconnectedCircuitRetentionPeriod();
+    [CompilerGeneratedAttribute]
+public void set_DisconnectedCircuitRetentionPeriod(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_DetailedErrors();
+    [CompilerGeneratedAttribute]
+public void set_DetailedErrors(bool value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_JSInteropDefaultCallTimeout();
+    [CompilerGeneratedAttribute]
+public void set_JSInteropDefaultCallTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public int get_MaxBufferedUnacknowledgedRenderBatches();
+    [CompilerGeneratedAttribute]
+public void set_MaxBufferedUnacknowledgedRenderBatches(int value);
+}
+internal class Microsoft.AspNetCore.Components.Server.CircuitOptionsJSInteropDetailedErrorsConfiguration : object {
+    [CompilerGeneratedAttribute]
+private IConfiguration <Configuration>k__BackingField;
+    public IConfiguration Configuration { get; }
+    public CircuitOptionsJSInteropDetailedErrorsConfiguration(IConfiguration configuration);
+    [CompilerGeneratedAttribute]
+public IConfiguration get_Configuration();
+    public sealed virtual void Configure(CircuitOptions options);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.ArrayBuilder`1 : object {
+    private T[] _items;
+    private int _itemsInUse;
+    private static T[] Empty;
+    private ArrayPool`1<T> _arrayPool;
+    private int _minCapacity;
+    private bool _disposed;
+    public int Count { get; }
+    public T[] Buffer { get; }
+    public ArrayBuilder`1(int minCapacity, ArrayPool`1<T> arrayPool);
+    private static ArrayBuilder`1();
+    public int get_Count();
+    public T[] get_Buffer();
+    public int Append(T& item);
+    internal int Append(T[] source, int startIndex, int length);
+    public void Overwrite(int index, T& value);
+    public void RemoveLast();
+    public void InsertExpensive(int index, T value);
+    public void Clear();
+    private void GrowBuffer(int desiredCapacity);
+    private void ReturnBuffer();
+    public sealed virtual void Dispose();
+    private static void ThrowIndexOutOfBoundsException();
+    private static void ThrowObjectDisposedException();
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.ArrayBuilderMemoryStream : Stream {
+    [CompilerGeneratedAttribute]
+private ArrayBuilder`1<byte> <ArrayBuilder>k__BackingField;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public ArrayBuilder`1<byte> ArrayBuilder { get; }
+    public ArrayBuilderMemoryStream(ArrayBuilder`1<byte> arrayBuilder);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    [CompilerGeneratedAttribute]
+public ArrayBuilder`1<byte> get_ArrayBuilder();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual void SetLength(long value);
+    protected virtual void Dispose(bool disposing);
+    public virtual ValueTask DisposeAsync();
+    private static void ValidateArguments(Byte[] buffer, int offset, int count);
+}
+public class Microsoft.AspNetCore.Components.Server.Circuits.Circuit : object {
+    private CircuitHost _circuitHost;
+    public string Id { get; }
+    internal Circuit(CircuitHost circuitHost);
+    public string get_Id();
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitClientProxy : object {
+    [CompilerGeneratedAttribute]
+private bool <Connected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IClientProxy <Client>k__BackingField;
+    public bool Connected { get; private set; }
+    public string ConnectionId { get; private set; }
+    public IClientProxy Client { get; private set; }
+    public CircuitClientProxy(IClientProxy clientProxy, string connectionId);
+    [CompilerGeneratedAttribute]
+public bool get_Connected();
+    [CompilerGeneratedAttribute]
+private void set_Connected(bool value);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+private void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public IClientProxy get_Client();
+    [CompilerGeneratedAttribute]
+private void set_Client(IClientProxy value);
+    public void Transfer(IClientProxy clientProxy, string connectionId);
+    public void SetDisconnected();
+    public sealed virtual Task SendCoreAsync(string method, Object[] args, CancellationToken cancellationToken);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitFactory : object {
+    private IServiceScopeFactory _scopeFactory;
+    private ILoggerFactory _loggerFactory;
+    private CircuitIdFactory _circuitIdFactory;
+    private CircuitOptions _options;
+    private ILogger _logger;
+    public CircuitFactory(IServiceScopeFactory scopeFactory, ILoggerFactory loggerFactory, CircuitIdFactory circuitIdFactory, IOptions`1<CircuitOptions> options);
+    public CircuitHost CreateCircuitHost(IReadOnlyList`1<ComponentDescriptor> components, CircuitClientProxy client, string baseUri, string uri, ClaimsPrincipal user);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandle : object {
+    [CompilerGeneratedAttribute]
+private CircuitHost <CircuitHost>k__BackingField;
+    public CircuitHost CircuitHost { get; public set; }
+    [CompilerGeneratedAttribute]
+public CircuitHost get_CircuitHost();
+    [CompilerGeneratedAttribute]
+public void set_CircuitHost(CircuitHost value);
+}
+public abstract class Microsoft.AspNetCore.Components.Server.Circuits.CircuitHandler : object {
+    public int Order { get; }
+    public virtual int get_Order();
+    public virtual Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken);
+    public virtual Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken);
+    public virtual Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken);
+    public virtual Task OnCircuitClosedAsync(Circuit circuit, CancellationToken cancellationToken);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost : object {
+    private IServiceScope _scope;
+    private CircuitOptions _options;
+    private CircuitHandler[] _circuitHandlers;
+    private ILogger _logger;
+    private bool _initialized;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private UnhandledExceptionEventHandler UnhandledException;
+    [CompilerGeneratedAttribute]
+private CircuitHandle <Handle>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CircuitId <CircuitId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Circuit <Circuit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CircuitClientProxy <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RemoteJSRuntime <JSRuntime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RemoteRenderer <Renderer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<ComponentDescriptor> <Descriptors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IServiceProvider <Services>k__BackingField;
+    public CircuitHandle Handle { get; }
+    public CircuitId CircuitId { get; }
+    public Circuit Circuit { get; }
+    public CircuitClientProxy Client { get; public set; }
+    public RemoteJSRuntime JSRuntime { get; }
+    public RemoteRenderer Renderer { get; }
+    public IReadOnlyList`1<ComponentDescriptor> Descriptors { get; }
+    public IServiceProvider Services { get; }
+    public CircuitHost(CircuitId circuitId, IServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList`1<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, CircuitHandler[] circuitHandlers, ILogger logger);
+    [CompilerGeneratedAttribute]
+public void add_UnhandledException(UnhandledExceptionEventHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_UnhandledException(UnhandledExceptionEventHandler value);
+    [CompilerGeneratedAttribute]
+public CircuitHandle get_Handle();
+    [CompilerGeneratedAttribute]
+public CircuitId get_CircuitId();
+    [CompilerGeneratedAttribute]
+public Circuit get_Circuit();
+    [CompilerGeneratedAttribute]
+public CircuitClientProxy get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(CircuitClientProxy value);
+    [CompilerGeneratedAttribute]
+public RemoteJSRuntime get_JSRuntime();
+    [CompilerGeneratedAttribute]
+public RemoteRenderer get_Renderer();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<ComponentDescriptor> get_Descriptors();
+    [CompilerGeneratedAttribute]
+public IServiceProvider get_Services();
+    public Task InitializeAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<DisposeAsync>d__36")]
+public sealed virtual ValueTask DisposeAsync();
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnCircuitOpenedAsync>d__37")]
+private Task OnCircuitOpenedAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnConnectionUpAsync>d__38")]
+public Task OnConnectionUpAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnConnectionDownAsync>d__39")]
+public Task OnConnectionDownAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnCircuitDownAsync>d__40")]
+private Task OnCircuitDownAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnRenderCompletedAsync>d__41")]
+public Task OnRenderCompletedAsync(long renderId, string errorMessageOrNull);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<BeginInvokeDotNetFromJS>d__42")]
+public Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<EndInvokeJSFromDotNet>d__43")]
+public Task EndInvokeJSFromDotNet(long asyncCall, bool succeded, string arguments);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<DispatchEvent>d__44")]
+public Task DispatchEvent(string eventDescriptorJson, string eventArgsJson);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<OnLocationChangedAsync>d__45")]
+public Task OnLocationChangedAsync(string uri, bool intercepted);
+    public void SetCircuitUser(ClaimsPrincipal user);
+    public void SendPendingBatches();
+    private void AssertInitialized();
+    private void AssertNotDisposed();
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<Renderer_UnhandledException>d__50")]
+private void Renderer_UnhandledException(object sender, Exception e);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<SynchronizationContext_UnhandledException>d__51")]
+private void SynchronizationContext_UnhandledException(object sender, UnhandledExceptionEventArgs e);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<ReportUnhandledException>d__52")]
+private Task ReportUnhandledException(Exception exception);
+    private string GetClientErrorMessage(Exception exception, string additionalInformation);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<TryNotifyClientErrorAsync>d__54")]
+private Task TryNotifyClientErrorAsync(IClientProxy client, string error, Exception exception);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitHost/<<DisposeAsync>b__36_0>d")]
+[CompilerGeneratedAttribute]
+private Task <DisposeAsync>b__36_0();
+    [CompilerGeneratedAttribute]
+private Task <SendPendingBatches>b__47_0();
+}
+[IsReadOnlyAttribute]
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitId : ValueType {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Secret>k__BackingField;
+    public string Id { get; }
+    public string Secret { get; }
+    public CircuitId(string secret, string id);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public string get_Secret();
+    public sealed virtual bool Equals(CircuitId other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitIdFactory : object {
+    private static string CircuitIdProtectorPurpose;
+    private static int SecretLength;
+    private static int IdLength;
+    private RandomNumberGenerator _generator;
+    private IDataProtector _protector;
+    public CircuitIdFactory(IDataProtectionProvider provider);
+    public CircuitId CreateCircuitId();
+    public bool TryParseCircuitId(string text, CircuitId& circuitId);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.CircuitRegistry : object {
+    private object CircuitRegistryLock;
+    private CircuitOptions _options;
+    private ILogger _logger;
+    private CircuitIdFactory _circuitIdFactory;
+    private PostEvictionCallbackRegistration _postEvictionCallback;
+    [CompilerGeneratedAttribute]
+private ConcurrentDictionary`2<CircuitId, CircuitHost> <ConnectedCircuits>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MemoryCache <DisconnectedCircuits>k__BackingField;
+    internal ConcurrentDictionary`2<CircuitId, CircuitHost> ConnectedCircuits { get; }
+    internal MemoryCache DisconnectedCircuits { get; }
+    public CircuitRegistry(IOptions`1<CircuitOptions> options, ILogger`1<CircuitRegistry> logger, CircuitIdFactory CircuitHostFactory);
+    [CompilerGeneratedAttribute]
+internal ConcurrentDictionary`2<CircuitId, CircuitHost> get_ConnectedCircuits();
+    [CompilerGeneratedAttribute]
+internal MemoryCache get_DisconnectedCircuits();
+    public void Register(CircuitHost circuitHost);
+    public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId);
+    protected virtual bool DisconnectCore(CircuitHost circuitHost, string connectionId);
+    public void RegisterDisconnectedCircuit(CircuitHost circuitHost);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitRegistry/<ConnectAsync>d__16")]
+public virtual Task`1<CircuitHost> ConnectAsync(CircuitId circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken);
+    protected virtual ValueTuple`2<CircuitHost, bool> ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId);
+    protected virtual void OnEntryEvicted(object key, object value, EvictionReason reason, object state);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitRegistry/<DisposeCircuitEntry>d__19")]
+private Task DisposeCircuitEntry(DisconnectedCircuitEntry entry);
+    private void DisposeTokenSource(DisconnectedCircuitEntry entry);
+    public ValueTask TerminateAsync(CircuitId circuitId);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.CircuitRegistry/<CircuitHost_UnhandledException>d__22")]
+private void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.DefaultCircuitAccessor : object {
+    [CompilerGeneratedAttribute]
+private Circuit <Circuit>k__BackingField;
+    public Circuit Circuit { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual Circuit get_Circuit();
+    [CompilerGeneratedAttribute]
+public void set_Circuit(Circuit value);
+}
+internal interface Microsoft.AspNetCore.Components.Server.Circuits.ICircuitAccessor {
+    public Circuit Circuit { get; }
+    public abstract virtual Circuit get_Circuit();
+}
+[IsReadOnlyAttribute]
+internal class Microsoft.AspNetCore.Components.Server.Circuits.PendingRender : ValueType {
+    [CompilerGeneratedAttribute]
+private int <ComponentId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RenderFragment <RenderFragment>k__BackingField;
+    public int ComponentId { get; }
+    public RenderFragment RenderFragment { get; }
+    public PendingRender(int componentId, RenderFragment renderFragment);
+    [CompilerGeneratedAttribute]
+public int get_ComponentId();
+    [CompilerGeneratedAttribute]
+public RenderFragment get_RenderFragment();
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.RemoteJSRuntime : JSRuntime {
+    private CircuitOptions _options;
+    private ILogger`1<RemoteJSRuntime> _logger;
+    private CircuitClientProxy _clientProxy;
+    public RemoteJSRuntime(IOptions`1<CircuitOptions> options, ILogger`1<RemoteJSRuntime> logger);
+    internal void Initialize(CircuitClientProxy clientProxy);
+    protected virtual void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, DotNetInvocationResult& modreq(System.Runtime.InteropServices.InAttribute) invocationResult);
+    private void EndInvokeDotNetCore(string callId, bool success, object resultOrError);
+    protected virtual void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationInterception : object {
+    private IJSRuntime _jsRuntime;
+    public bool HasAttachedJSRuntime { get; }
+    public void AttachJSRuntime(IJSRuntime jsRuntime);
+    public bool get_HasAttachedJSRuntime();
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationInterception/<EnableNavigationInterceptionAsync>d__4")]
+public sealed virtual Task EnableNavigationInterceptionAsync();
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.RemoteNavigationManager : NavigationManager {
+    private ILogger`1<RemoteNavigationManager> _logger;
+    private IJSRuntime _jsRuntime;
+    public bool HasAttachedJSRuntime { get; }
+    public RemoteNavigationManager(ILogger`1<RemoteNavigationManager> logger);
+    public bool get_HasAttachedJSRuntime();
+    public sealed virtual void Initialize(string baseUri, string uri);
+    public void AttachJsRuntime(IJSRuntime jsRuntime);
+    public void NotifyLocationChanged(string uri, bool intercepted);
+    protected virtual void NavigateToCore(string uri, bool forceLoad);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.RemoteRenderer : Renderer {
+    private static Task CanceledTask;
+    private CircuitClientProxy _client;
+    private CircuitOptions _options;
+    private ILogger _logger;
+    internal ConcurrentQueue`1<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches;
+    private long _nextRenderId;
+    private bool _disposing;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<Exception> UnhandledException;
+    [CompilerGeneratedAttribute]
+private Dispatcher <Dispatcher>k__BackingField;
+    public Dispatcher Dispatcher { get; }
+    public RemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, ILogger logger);
+    private static RemoteRenderer();
+    [CompilerGeneratedAttribute]
+public void add_UnhandledException(EventHandler`1<Exception> value);
+    [CompilerGeneratedAttribute]
+public void remove_UnhandledException(EventHandler`1<Exception> value);
+    [CompilerGeneratedAttribute]
+public virtual Dispatcher get_Dispatcher();
+    public Task AddComponentAsync(Type componentType, string domElementSelector);
+    public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector);
+    protected virtual void ProcessPendingRender();
+    protected virtual void HandleException(Exception exception);
+    protected virtual void Dispose(bool disposing);
+    protected virtual Task UpdateDisplayAsync(RenderBatch& modreq(System.Runtime.InteropServices.InAttribute) batch);
+    public Task ProcessBufferedRenderBatches();
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.Circuits.RemoteRenderer/<WriteBatchBytesAsync>d__21")]
+private Task WriteBatchBytesAsync(UnacknowledgedRenderBatch pending);
+    public Task OnRenderCompletedAsync(long incomingBatchId, string errorMessageOrNull);
+    private void ProcessPendingBatch(string errorMessageOrNull, UnacknowledgedRenderBatch entry);
+    private void CompleteRender(TaskCompletionSource`1<object> pendingRenderInfo, string errorMessageOrNull);
+    private void CaptureAsyncExceptions(Task task);
+    [CompilerGeneratedAttribute]
+private Task <ProcessBufferedRenderBatches>b__20_0(UnacknowledgedRenderBatch b);
+    [CompilerGeneratedAttribute]
+private void <OnRenderCompletedAsync>b__22_0();
+    [CompilerGeneratedAttribute]
+private void <CaptureAsyncExceptions>b__26_0(Task t);
+}
+internal class Microsoft.AspNetCore.Components.Server.Circuits.RenderBatchWriter : object {
+    private ArrayBuilder`1<string> _strings;
+    private Dictionary`2<string, int> _deduplicatedStringIndices;
+    private BinaryWriter _binaryWriter;
+    public RenderBatchWriter(Stream output, bool leaveOpen);
+    public void Write(RenderBatch& renderBatch);
+    private int Write(ArrayRange`1& diffs);
+    private void Write(RenderTreeDiff& diff);
+    private void Write(RenderTreeEdit& edit);
+    private int Write(ArrayRange`1& frames);
+    private void Write(RenderTreeFrame& frame);
+    private int Write(ArrayRange`1& numbers);
+    private int Write(ArrayRange`1& numbers);
+    private void WriteString(string value, bool allowDeduplication);
+    private int WriteStringTable();
+    private static void WritePadding(BinaryWriter writer, int numBytes);
+    public sealed virtual void Dispose();
+}
+internal class Microsoft.AspNetCore.Components.Server.ComponentDescriptor : object {
+    [CompilerGeneratedAttribute]
+private Type <ComponentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ParameterView <Parameters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Sequence>k__BackingField;
+    public Type ComponentType { get; public set; }
+    public ParameterView Parameters { get; public set; }
+    public int Sequence { get; public set; }
+    [CompilerGeneratedAttribute]
+public Type get_ComponentType();
+    [CompilerGeneratedAttribute]
+public void set_ComponentType(Type value);
+    [CompilerGeneratedAttribute]
+public ParameterView get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(ParameterView value);
+    [CompilerGeneratedAttribute]
+public int get_Sequence();
+    [CompilerGeneratedAttribute]
+public void set_Sequence(int value);
+    public void Deconstruct(Type& componentType, ParameterView& parameters, Int32& sequence);
+}
+internal class Microsoft.AspNetCore.Components.Server.ComponentHub : Hub {
+    private static object CircuitKey;
+    private ServerComponentDeserializer _serverComponentSerializer;
+    private CircuitFactory _circuitFactory;
+    private CircuitIdFactory _circuitIdFactory;
+    private CircuitRegistry _circuitRegistry;
+    private ILogger _logger;
+    [CompilerGeneratedAttribute]
+private static PathString <DefaultPath>k__BackingField;
+    public static PathString DefaultPath { get; }
+    public ComponentHub(ServerComponentDeserializer serializer, CircuitFactory circuitFactory, CircuitIdFactory circuitIdFactory, CircuitRegistry circuitRegistry, ILogger`1<ComponentHub> logger);
+    private static ComponentHub();
+    [CompilerGeneratedAttribute]
+public static PathString get_DefaultPath();
+    public virtual Task OnDisconnectedAsync(Exception exception);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<StartCircuit>d__11")]
+public ValueTask`1<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<ConnectCircuit>d__12")]
+public ValueTask`1<bool> ConnectCircuit(string circuitIdSecret);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<BeginInvokeDotNetFromJS>d__13")]
+public ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<EndInvokeJSFromDotNet>d__14")]
+public ValueTask EndInvokeJSFromDotNet(long asyncHandle, bool succeeded, string arguments);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<DispatchBrowserEvent>d__15")]
+public ValueTask DispatchBrowserEvent(string eventDescriptor, string eventArgs);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<OnRenderCompleted>d__16")]
+public ValueTask OnRenderCompleted(long renderId, string errorMessageOrNull);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<OnLocationChanged>d__17")]
+public ValueTask OnLocationChanged(string uri, bool intercepted);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.ComponentHub/<GetActiveCircuitAsync>d__18")]
+private ValueTask`1<CircuitHost> GetActiveCircuitAsync(string callSite);
+    private CircuitHost GetCircuit();
+    private void SetCircuit(CircuitHost circuitHost);
+    private static Task NotifyClientError(IClientProxy client, string error);
+}
+internal class Microsoft.AspNetCore.Components.Server.ComponentParameterDeserializer : object {
+    private ILogger`1<ComponentParameterDeserializer> _logger;
+    private ComponentParametersTypeCache _parametersCache;
+    public ComponentParameterDeserializer(ILogger`1<ComponentParameterDeserializer> logger, ComponentParametersTypeCache parametersCache);
+    public bool TryDeserializeParameters(IList`1<ComponentParameter> parametersDefinitions, IList`1<object> parameterValues, ParameterView& parameters);
+    private ComponentParameter[] GetParameterDefinitions(string parametersDefinitions);
+    private JsonDocument GetParameterValues(string parameterValues);
+}
+internal class Microsoft.AspNetCore.Components.Server.ConfigureStaticFilesOptions : object {
+    [CompilerGeneratedAttribute]
+private IWebHostEnvironment <Environment>k__BackingField;
+    public IWebHostEnvironment Environment { get; }
+    public ConfigureStaticFilesOptions(IWebHostEnvironment environment);
+    [CompilerGeneratedAttribute]
+public IWebHostEnvironment get_Environment();
+    public sealed virtual void PostConfigure(string name, StaticFileOptions options);
+}
+public abstract class Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider : ServerAuthenticationStateProvider {
+    private ILogger _logger;
+    private CancellationTokenSource _loopCancellationTokenSource;
+    protected TimeSpan RevalidationInterval { get; }
+    public RevalidatingServerAuthenticationStateProvider(ILoggerFactory loggerFactory);
+    protected abstract virtual TimeSpan get_RevalidationInterval();
+    protected abstract virtual Task`1<bool> ValidateAuthenticationStateAsync(AuthenticationState authenticationState, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider/<RevalidationLoop>d__6")]
+private Task RevalidationLoop(Task`1<AuthenticationState> authenticationStateTask, CancellationToken cancellationToken);
+    private void ForceSignOut();
+    private sealed virtual override void System.IDisposable.Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__2_0(Task`1<AuthenticationState> authenticationStateTask);
+}
+public class Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider : AuthenticationStateProvider {
+    private Task`1<AuthenticationState> _authenticationStateTask;
+    public virtual Task`1<AuthenticationState> GetAuthenticationStateAsync();
+    public sealed virtual void SetAuthenticationState(Task`1<AuthenticationState> authenticationStateTask);
+}
+internal class Microsoft.AspNetCore.Components.Server.ServerComponentDeserializer : object {
+    private IDataProtector _dataProtector;
+    private ILogger`1<ServerComponentDeserializer> _logger;
+    private ServerComponentTypeCache _rootComponentTypeCache;
+    private ComponentParameterDeserializer _parametersDeserializer;
+    public ServerComponentDeserializer(IDataProtectionProvider dataProtectionProvider, ILogger`1<ServerComponentDeserializer> logger, ServerComponentTypeCache rootComponentTypeCache, ComponentParameterDeserializer parametersDeserializer);
+    public bool TryDeserializeComponentDescriptorCollection(string serializedComponentRecords, List`1& descriptors);
+    private ValueTuple`2<ComponentDescriptor, ServerComponent> DeserializeServerComponent(ServerComponentMarker record);
+}
+internal class Microsoft.AspNetCore.Components.ServerComponent : ValueType {
+    [CompilerGeneratedAttribute]
+private int <Sequence>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AssemblyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<ComponentParameter> <ParameterDefinitions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<object> <ParameterValues>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <InvocationId>k__BackingField;
+    public int Sequence { get; public set; }
+    public string AssemblyName { get; public set; }
+    public string TypeName { get; public set; }
+    public IList`1<ComponentParameter> ParameterDefinitions { get; public set; }
+    public IList`1<object> ParameterValues { get; public set; }
+    public Guid InvocationId { get; public set; }
+    public ServerComponent(int sequence, string assemblyName, string typeName, IList`1<ComponentParameter> parametersDefinitions, IList`1<object> parameterValues, Guid invocationId);
+    [CompilerGeneratedAttribute]
+[IsReadOnlyAttribute]
+public int get_Sequence();
+    [CompilerGeneratedAttribute]
+public void set_Sequence(int value);
+    [CompilerGeneratedAttribute]
+[IsReadOnlyAttribute]
+public string get_AssemblyName();
+    [CompilerGeneratedAttribute]
+public void set_AssemblyName(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+public void set_TypeName(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public IList`1<ComponentParameter> get_ParameterDefinitions();
+    [CompilerGeneratedAttribute]
+public void set_ParameterDefinitions(IList`1<ComponentParameter> value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public IList`1<object> get_ParameterValues();
+    [CompilerGeneratedAttribute]
+public void set_ParameterValues(IList`1<object> value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public Guid get_InvocationId();
+    [CompilerGeneratedAttribute]
+public void set_InvocationId(Guid value);
+}
+internal class Microsoft.AspNetCore.Components.ServerComponentMarker : ValueType {
+    public static string ServerMarkerType;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Sequence>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PrerenderId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Descriptor>k__BackingField;
+    public Nullable`1<int> Sequence { get; public set; }
+    public string Type { get; public set; }
+    public string PrerenderId { get; public set; }
+    public string Descriptor { get; public set; }
+    private ServerComponentMarker(string type, string descriptor, Nullable`1<int> sequence, string prerenderId);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public Nullable`1<int> get_Sequence();
+    [CompilerGeneratedAttribute]
+public void set_Sequence(Nullable`1<int> value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_PrerenderId();
+    [CompilerGeneratedAttribute]
+public void set_PrerenderId(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_Descriptor();
+    [CompilerGeneratedAttribute]
+public void set_Descriptor(string value);
+    public static ServerComponentMarker Prerendered(int sequence, string descriptor);
+    public static ServerComponentMarker NonPrerendered(int sequence, string descriptor);
+    public ServerComponentMarker GetEndRecord();
+}
+internal static class Microsoft.AspNetCore.Components.ServerComponentSerializationSettings : object {
+    public static string DataProtectionProviderPurpose;
+    public static JsonSerializerOptions JsonSerializationOptions;
+    public static TimeSpan DataExpiration;
+    private static ServerComponentSerializationSettings();
+}
+internal class Microsoft.AspNetCore.Components.ServerComponentTypeCache : object {
+    private ConcurrentDictionary`2<Key, Type> _typeToKeyLookUp;
+    public Type GetRootComponent(string assembly, string type);
+    private static Type ResolveType(Key key, Assembly[] assemblies);
+}
+internal static class Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop : object {
+    private static string Prefix;
+    public static string EnableNavigationInterception;
+    public static string GetLocationHref;
+    public static string GetBaseUri;
+    public static string NavigateTo;
+    private static BrowserNavigationManagerInterop();
+}
+internal class Microsoft.AspNetCore.Components.Web.WebEventData : object {
+    [CompilerGeneratedAttribute]
+private int <BrowserRendererId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <EventHandlerId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventFieldInfo <EventFieldInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventArgs <EventArgs>k__BackingField;
+    public int BrowserRendererId { get; }
+    public ulong EventHandlerId { get; }
+    public EventFieldInfo EventFieldInfo { get; }
+    public EventArgs EventArgs { get; }
+    private WebEventData(int browserRendererId, ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs);
+    public static WebEventData Parse(string eventDescriptorJson, string eventArgsJson);
+    public static WebEventData Parse(WebEventDescriptor eventDescriptor, string eventArgsJson);
+    [CompilerGeneratedAttribute]
+public int get_BrowserRendererId();
+    [CompilerGeneratedAttribute]
+public ulong get_EventHandlerId();
+    [CompilerGeneratedAttribute]
+public EventFieldInfo get_EventFieldInfo();
+    [CompilerGeneratedAttribute]
+public EventArgs get_EventArgs();
+    private static EventArgs ParseEventArgsJson(ulong eventHandlerId, string eventArgsType, string eventArgsJson);
+    private static T Deserialize(string json);
+    private static EventFieldInfo InterpretEventFieldInfo(EventFieldInfo fieldInfo);
+    private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson);
+}
+internal static class Microsoft.AspNetCore.Internal.BinaryMessageFormatter : object {
+    public static void WriteLengthPrefix(long length, IBufferWriter`1<byte> output);
+    public static int WriteLengthPrefix(long length, Span`1<byte> output);
+    public static int LengthPrefixLength(long length);
+}
+internal static class Microsoft.AspNetCore.Internal.BinaryMessageParser : object {
+    private static int MaxLengthPrefixSize;
+    public static bool TryParseMessage(ReadOnlySequence`1& buffer, ReadOnlySequence`1& payload);
+    private static ReadOnlySpan`1<byte> GetSpan(ReadOnlySequence`1& lengthPrefixBuffer);
+}
+internal class Microsoft.AspNetCore.Internal.MemoryBufferWriter : Stream {
+    [ThreadStaticAttribute]
+private static MemoryBufferWriter _cachedInstance;
+    private int _minimumSegmentSize;
+    private int _bytesWritten;
+    private List`1<CompletedBuffer> _completedSegments;
+    private Byte[] _currentSegment;
+    private int _position;
+    public long Length { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Position { get; public set; }
+    public MemoryBufferWriter(int minimumSegmentSize);
+    public virtual long get_Length();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public static MemoryBufferWriter Get();
+    public static void Return(MemoryBufferWriter writer);
+    public void Reset();
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<byte> GetMemory(int sizeHint);
+    public sealed virtual Span`1<byte> GetSpan(int sizeHint);
+    public void CopyTo(IBufferWriter`1<byte> destination);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    private void EnsureCapacity(int sizeHint);
+    private void AddSegment(int sizeHint);
+    [AsyncStateMachineAttribute("Microsoft.AspNetCore.Internal.MemoryBufferWriter/<CopyToSlowAsync>d__28")]
+private Task CopyToSlowAsync(Stream destination);
+    public Byte[] ToArray();
+    public void CopyTo(Span`1<byte> span);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void WriteByte(byte value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void Write(ReadOnlySpan`1<byte> span);
+    protected virtual void Dispose(bool disposing);
+}
+[AttributeUsageAttribute("4")]
+internal class Microsoft.AspNetCore.SignalR.Internal.NonDefaultHubProtocolAttribute : Attribute {
+}
+internal static class Microsoft.AspNetCore.StaticFiles.CacheHeaderSettings : object {
+    internal static void SetCacheHeaders(StaticFileResponseContext ctx);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[ExtensionAttribute]
+public static class Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions : object {
+    [ExtensionAttribute]
+public static IServerSideBlazorBuilder AddServerSideBlazor(IServiceCollection services, Action`1<CircuitOptions> configure);
+}
+public interface Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder {
+    public IServiceCollection Services { get; }
+    public abstract virtual IServiceCollection get_Services();
+}
+[ExtensionAttribute]
+public static class Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions : object {
+    [ExtensionAttribute]
+public static IServerSideBlazorBuilder AddCircuitOptions(IServerSideBlazorBuilder builder, Action`1<CircuitOptions> configure);
+    [ExtensionAttribute]
+public static IServerSideBlazorBuilder AddHubOptions(IServerSideBlazorBuilder builder, Action`1<HubOptions> configure);
+}
+internal class Microsoft.Extensions.Internal.ValueStopwatch : ValueType {
+    private static double TimestampToTicks;
+    private long _startTimestamp;
+    public bool IsActive { get; }
+    private ValueStopwatch(long startTimestamp);
+    private static ValueStopwatch();
+    public bool get_IsActive();
+    public static ValueStopwatch StartNew();
+    public TimeSpan GetElapsedTime();
+}
+internal static class Nerdbank.Streams.Requires : object {
+    internal static void NotNull(object arg, string paramName);
+    internal static void Argument(bool condition, string paramName, string message);
+    internal static void Range(bool condition, string paramName);
+}
+[DebuggerDisplayAttribute("{DebuggerDisplay,nq}")]
+internal class Nerdbank.Streams.Sequence`1 : object {
+    private static int DefaultLengthFromArrayPool;
+    private Stack`1<SequenceSegment<T>> segmentPool;
+    private MemoryPool`1<T> memoryPool;
+    private ArrayPool`1<T> arrayPool;
+    private SequenceSegment<T> first;
+    private SequenceSegment<T> last;
+    [CompilerGeneratedAttribute]
+private int <MinimumSpanLength>k__BackingField;
+    public int MinimumSpanLength { get; public set; }
+    public ReadOnlySequence`1<T> AsReadOnlySequence { get; }
+    public long Length { get; }
+    private string DebuggerDisplay { get; }
+    public Sequence`1(MemoryPool`1<T> memoryPool);
+    public Sequence`1(ArrayPool`1<T> arrayPool);
+    private static Sequence`1();
+    [CompilerGeneratedAttribute]
+public int get_MinimumSpanLength();
+    [CompilerGeneratedAttribute]
+public void set_MinimumSpanLength(int value);
+    public ReadOnlySequence`1<T> get_AsReadOnlySequence();
+    public long get_Length();
+    private string get_DebuggerDisplay();
+    public static ReadOnlySequence`1<T> op_Implicit(Sequence`1<T> sequence);
+    public void AdvanceTo(SequencePosition position);
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<T> GetMemory(int sizeHint);
+    public sealed virtual Span`1<T> GetSpan(int sizeHint);
+    [EditorBrowsableAttribute("1")]
+public sealed virtual void Dispose();
+    public void Reset();
+    private SequenceSegment<T> GetSegment(int sizeHint);
+    private void Append(SequenceSegment<T> segment);
+    private SequenceSegment<T> RecycleAndGetNext(SequenceSegment<T> segment);
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class System.Buffers.SequenceReader`1 : ValueType {
+    private bool _usingSequence;
+    private ReadOnlySequence`1<T> _sequence;
+    private SequencePosition _currentPosition;
+    private SequencePosition _nextPosition;
+    private ReadOnlyMemory`1<T> _memory;
+    private bool _moreData;
+    private long _length;
+    [CompilerGeneratedAttribute]
+private ReadOnlySpan`1<T> <CurrentSpan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <CurrentSpanIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Consumed>k__BackingField;
+    public bool End { get; }
+    public ReadOnlySequence`1<T> Sequence { get; }
+    public SequencePosition Position { get; }
+    public ReadOnlySpan`1<T> CurrentSpan { get; private set; }
+    public int CurrentSpanIndex { get; private set; }
+    public ReadOnlySpan`1<T> UnreadSpan { get; }
+    public long Consumed { get; private set; }
+    public long Remaining { get; }
+    public long Length { get; }
+    public SequenceReader`1(ReadOnlySequence`1<T> sequence);
+    public SequenceReader`1(ReadOnlyMemory`1<T> memory);
+    public bool get_End();
+    public ReadOnlySequence`1<T> get_Sequence();
+    public SequencePosition get_Position();
+    [CompilerGeneratedAttribute]
+[IsReadOnlyAttribute]
+public ReadOnlySpan`1<T> get_CurrentSpan();
+    [CompilerGeneratedAttribute]
+private void set_CurrentSpan(ReadOnlySpan`1<T> value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public int get_CurrentSpanIndex();
+    [CompilerGeneratedAttribute]
+private void set_CurrentSpanIndex(int value);
+    public ReadOnlySpan`1<T> get_UnreadSpan();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public long get_Consumed();
+    [CompilerGeneratedAttribute]
+private void set_Consumed(long value);
+    public long get_Remaining();
+    public long get_Length();
+    public bool TryPeek(T& value);
+    public bool TryRead(T& value);
+    public void Rewind(long count);
+    private void RetreatToPreviousSpan(long consumed);
+    private void ResetReader();
+    private void GetNextSpan();
+    public void Advance(long count);
+    internal void AdvanceCurrentSpan(long count);
+    internal void AdvanceWithinSpan(long count);
+    private void AdvanceToNextSpan(long count);
+    public bool TryCopyTo(Span`1<T> destination);
+    internal bool TryCopyMultisegment(Span`1<T> destination);
+}
+[ExtensionAttribute]
+internal static class System.Buffers.SequenceReaderExtensions : object {
+    [ExtensionAttribute]
+internal static bool TryRead(SequenceReader`1& reader, T& value);
+    private static bool TryReadMultisegment(SequenceReader`1& reader, T& value);
+    [ExtensionAttribute]
+public static bool TryRead(SequenceReader`1& reader, SByte& value);
+    [ExtensionAttribute]
+public static bool TryReadLittleEndian(SequenceReader`1& reader, Int16& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int16& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt16& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int16& value);
+    [ExtensionAttribute]
+public static bool TryReadLittleEndian(SequenceReader`1& reader, Int32& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int32& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt32& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int32& value);
+    [ExtensionAttribute]
+public static bool TryReadLittleEndian(SequenceReader`1& reader, Int64& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int64& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt64& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int64& value);
+}
+[EmbeddedAttribute]
+[CompilerGeneratedAttribute]
+internal class System.Runtime.CompilerServices.IsUnmanagedAttribute : Attribute {
+}

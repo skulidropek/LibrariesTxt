@@ -1,0 +1,977 @@
+internal static class FxResources.System.Security.Cryptography.Cng.SR : object {
+}
+internal static class Internal.Cryptography.AesBCryptModes : object {
+    private static SafeAlgorithmHandle s_hAlgCbc;
+    private static SafeAlgorithmHandle s_hAlgEcb;
+    private static AesBCryptModes();
+    internal static SafeAlgorithmHandle GetSharedHandle(CipherMode cipherMode);
+    private static SafeAlgorithmHandle OpenAesAlgorithm(string cipherMode);
+}
+internal abstract class Internal.Cryptography.BasicSymmetricCipher : object {
+    [CompilerGeneratedAttribute]
+private int <BlockSizeInBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Byte[] <IV>k__BackingField;
+    public int BlockSizeInBytes { get; private set; }
+    protected Byte[] IV { get; private set; }
+    protected BasicSymmetricCipher(Byte[] iv, int blockSizeInBytes);
+    public abstract virtual int Transform(Byte[] input, int inputOffset, int count, Byte[] output, int outputOffset);
+    public abstract virtual Byte[] TransformFinal(Byte[] input, int inputOffset, int count);
+    [CompilerGeneratedAttribute]
+public int get_BlockSizeInBytes();
+    [CompilerGeneratedAttribute]
+private void set_BlockSizeInBytes(int value);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+protected Byte[] get_IV();
+    [CompilerGeneratedAttribute]
+private void set_IV(Byte[] value);
+}
+internal class Internal.Cryptography.BasicSymmetricCipherBCrypt : BasicSymmetricCipher {
+    private bool _encrypting;
+    private SafeKeyHandle _hKey;
+    private Byte[] _currentIv;
+    public BasicSymmetricCipherBCrypt(SafeAlgorithmHandle algorithm, CipherMode cipherMode, int blockSizeInBytes, Byte[] key, Byte[] iv, bool encrypting);
+    protected virtual void Dispose(bool disposing);
+    public virtual int Transform(Byte[] input, int inputOffset, int count, Byte[] output, int outputOffset);
+    public virtual Byte[] TransformFinal(Byte[] input, int inputOffset, int count);
+    private void Reset();
+}
+internal class Internal.Cryptography.BasicSymmetricCipherNCrypt : BasicSymmetricCipher {
+    private CngKey _cngKey;
+    private bool _encrypting;
+    private static CngProperty s_ECBMode;
+    private static CngProperty s_CBCMode;
+    public BasicSymmetricCipherNCrypt(Func`1<CngKey> cngKeyFactory, CipherMode cipherMode, int blockSizeInBytes, Byte[] iv, bool encrypting);
+    private static BasicSymmetricCipherNCrypt();
+    public sealed virtual int Transform(Byte[] input, int inputOffset, int count, Byte[] output, int outputOffset);
+    public sealed virtual Byte[] TransformFinal(Byte[] input, int inputOffset, int count);
+    protected sealed virtual void Dispose(bool disposing);
+    private void Reset();
+    private static CngProperty CreateCngPropertyForCipherMode(string cipherMode);
+}
+internal class Internal.Cryptography.CngAlgorithmCore : ValueType {
+    private CngKey _lazyKey;
+    public bool IsKeyGenerated { get; }
+    public static CngKey Duplicate(CngKey key);
+    public bool get_IsKeyGenerated();
+    public bool IsKeyGeneratedNamedCurve();
+    public void DisposeKey();
+    public CngKey GetOrGenerateKey(int keySize, CngAlgorithm algorithm);
+    public void SetKey(CngKey key);
+    public void Dispose();
+}
+[ExtensionAttribute]
+internal static class Internal.Cryptography.CngCommon : object {
+    public static Byte[] HashData(Byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm);
+    public static Byte[] HashData(Stream data, HashAlgorithmName hashAlgorithm);
+    [ExtensionAttribute]
+public static Byte[] SignHash(SafeNCryptKeyHandle keyHandle, Byte[] hash, AsymmetricPaddingMode paddingMode, Void* pPaddingInfo, int estimatedSize);
+    [ExtensionAttribute]
+public static bool VerifyHash(SafeNCryptKeyHandle keyHandle, Byte[] hash, Byte[] signature, AsymmetricPaddingMode paddingMode, Void* pPaddingInfo);
+}
+internal class Internal.Cryptography.CngSymmetricAlgorithmCore : ValueType {
+    private ICngSymmetricAlgorithm _outer;
+    private string _keyName;
+    private CngProvider _provider;
+    private CngKeyOpenOptions _optionOptions;
+    private static int BitsPerByte;
+    private bool KeyInPlainText { get; }
+    public CngSymmetricAlgorithmCore(ICngSymmetricAlgorithm outer);
+    public CngSymmetricAlgorithmCore(ICngSymmetricAlgorithm outer, string keyName, CngProvider provider, CngKeyOpenOptions openOptions);
+    public Byte[] GetKeyIfExportable();
+    public void SetKey(Byte[] key);
+    public void SetKeySize(int keySize, ICngSymmetricAlgorithm outer);
+    public void GenerateKey();
+    public void GenerateIV();
+    public ICryptoTransform CreateEncryptor();
+    public ICryptoTransform CreateDecryptor();
+    public ICryptoTransform CreateEncryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public ICryptoTransform CreateDecryptor(Byte[] rgbKey, Byte[] rgbIV);
+    private ICryptoTransform CreateCryptoTransform(bool encrypting);
+    private ICryptoTransform CreateCryptoTransform(Byte[] rgbKey, Byte[] rgbIV, bool encrypting);
+    private ICryptoTransform CreateEphemeralCryptoTransformCore(Byte[] key, Byte[] iv, bool encrypting);
+    private ICryptoTransform CreatePersistedCryptoTransformCore(Func`1<CngKey> cngKeyFactory, Byte[] iv, bool encrypting);
+    private CngKey ProduceCngKey();
+    private bool get_KeyInPlainText();
+}
+[ExtensionAttribute]
+internal static class Internal.Cryptography.CryptoThrowHelper : object {
+    [ExtensionAttribute]
+public static CryptographicException ToCryptographicException(int hr);
+}
+[ExtensionAttribute]
+internal static class Internal.Cryptography.ErrorCodeHelper : object {
+    [ExtensionAttribute]
+public static CryptographicException ToCryptographicException(ErrorCode errorCode);
+}
+internal abstract class Internal.Cryptography.HashProvider : object {
+    public int HashSizeInBytes { get; }
+    public void AppendHashData(Byte[] data, int offset, int count);
+    public abstract virtual void AppendHashDataCore(Byte[] data, int offset, int count);
+    public abstract virtual Byte[] FinalizeHashAndReset();
+    public abstract virtual int get_HashSizeInBytes();
+    public sealed virtual void Dispose();
+    public abstract virtual void Dispose(bool disposing);
+}
+internal class Internal.Cryptography.HashProviderCng : HashProvider {
+    private SafeBCryptAlgorithmHandle _hAlgorithm;
+    private SafeBCryptHashHandle _hHash;
+    private Byte[] _key;
+    private bool _reusable;
+    private int _hashSize;
+    public int HashSizeInBytes { get; }
+    public HashProviderCng(string hashAlgId, Byte[] key);
+    public sealed virtual void AppendHashDataCore(Byte[] data, int offset, int count);
+    public sealed virtual Byte[] FinalizeHashAndReset();
+    public sealed virtual void Dispose(bool disposing);
+    public sealed virtual int get_HashSizeInBytes();
+    private void ResetHashObject();
+    private void DestroyHash();
+}
+[ExtensionAttribute]
+internal static class Internal.Cryptography.Helpers : object {
+    [ExtensionAttribute]
+public static Byte[] CloneByteArray(Byte[] src);
+    [ExtensionAttribute]
+public static bool UsesIv(CipherMode cipherMode);
+    [ExtensionAttribute]
+public static Byte[] GetCipherIv(CipherMode cipherMode, Byte[] iv);
+    [ExtensionAttribute]
+public static Byte[] MapZeroLengthArrayToNonNullPointer(Byte[] src);
+    [ExtensionAttribute]
+public static SafeNCryptProviderHandle OpenStorageProvider(CngProvider provider);
+    [ExtensionAttribute]
+public static Byte[] GetProperty(SafeNCryptHandle ncryptHandle, string propertyName, CngPropertyOptions options);
+    [ExtensionAttribute]
+public static string GetPropertyAsString(SafeNCryptHandle ncryptHandle, string propertyName, CngPropertyOptions options);
+    [ExtensionAttribute]
+public static int GetPropertyAsDword(SafeNCryptHandle ncryptHandle, string propertyName, CngPropertyOptions options);
+    [ExtensionAttribute]
+public static IntPtr GetPropertyAsIntPtr(SafeNCryptHandle ncryptHandle, string propertyName, CngPropertyOptions options);
+    [ExtensionAttribute]
+public static void SetExportPolicy(SafeNCryptKeyHandle keyHandle, CngExportPolicies exportPolicy);
+    [ExtensionAttribute]
+public static bool IsLegalSize(int size, KeySizes[] legalSizes);
+    [ExtensionAttribute]
+public static int BitSizeToByteSize(int bits);
+    public static Byte[] GenerateRandom(int count);
+}
+internal interface Internal.Cryptography.ICngSymmetricAlgorithm {
+    public int BlockSize { get; }
+    public CipherMode Mode { get; }
+    public PaddingMode Padding { get; }
+    public Byte[] IV { get; public set; }
+    public KeySizes[] LegalKeySizes { get; }
+    public Byte[] BaseKey { get; public set; }
+    public int BaseKeySize { get; public set; }
+    public abstract virtual int get_BlockSize();
+    public abstract virtual CipherMode get_Mode();
+    public abstract virtual PaddingMode get_Padding();
+    public abstract virtual Byte[] get_IV();
+    public abstract virtual void set_IV(Byte[] value);
+    public abstract virtual KeySizes[] get_LegalKeySizes();
+    public abstract virtual Byte[] get_BaseKey();
+    public abstract virtual void set_BaseKey(Byte[] value);
+    public abstract virtual int get_BaseKeySize();
+    public abstract virtual void set_BaseKeySize(int value);
+    public abstract virtual bool IsWeakKey(Byte[] key);
+    public abstract virtual SafeAlgorithmHandle GetEphemeralModeHandle();
+    public abstract virtual string GetNCryptAlgorithmIdentifier();
+}
+internal static class Internal.Cryptography.KeyPropertyName : object {
+    internal static string Algorithm;
+    internal static string AlgorithmGroup;
+    internal static string ECCCurveName;
+    internal static string ExportPolicy;
+    internal static string KeyType;
+    internal static string KeyUsage;
+    internal static string Length;
+    internal static string Name;
+    internal static string ParentWindowHandle;
+    internal static string PublicKeyLength;
+    internal static string ProviderHandle;
+    internal static string UIPolicy;
+    internal static string UniqueName;
+    internal static string UseContext;
+    internal static string ClrIsEphemeral;
+}
+internal static class Internal.Cryptography.ProviderPropertyName : object {
+    internal static string Name;
+}
+[ExtensionAttribute]
+internal static class Internal.Cryptography.SymmetricImportExportExtensions : object {
+    private static int SizeOf_NCRYPT_KEY_BLOB_HEADER_SIZE;
+    private static int SizeOf_BCRYPT_KEY_DATA_BLOB_HEADER;
+    private static CngKeyBlobFormat s_cipherKeyBlobFormat;
+    private static SymmetricImportExportExtensions();
+    [ExtensionAttribute]
+public static CngKey ToCngKey(Byte[] key, string algorithm);
+    [ExtensionAttribute]
+public static Byte[] GetSymmetricKeyDataIfExportable(CngKey cngKey, string algorithm);
+}
+internal static class Internal.Cryptography.TripleDesBCryptModes : object {
+    private static SafeAlgorithmHandle s_hAlgCbc;
+    private static SafeAlgorithmHandle s_hAlgEcb;
+    private static TripleDesBCryptModes();
+    internal static SafeAlgorithmHandle GetSharedHandle(CipherMode cipherMode);
+    private static SafeAlgorithmHandle Open3DesAlgorithm(string cipherMode);
+}
+internal class Internal.Cryptography.UniversalCryptoDecryptor : UniversalCryptoTransform {
+    private Byte[] _heldoverCipher;
+    private bool DepaddingRequired { get; }
+    public UniversalCryptoDecryptor(PaddingMode paddingMode, BasicSymmetricCipher basicSymmetricCipher);
+    protected sealed virtual int UncheckedTransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    protected sealed virtual Byte[] UncheckedTransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    protected sealed virtual void Dispose(bool disposing);
+    private void Reset();
+    private bool get_DepaddingRequired();
+    private Byte[] DepadBlock(Byte[] block, int offset, int count);
+}
+internal class Internal.Cryptography.UniversalCryptoEncryptor : UniversalCryptoTransform {
+    public UniversalCryptoEncryptor(PaddingMode paddingMode, BasicSymmetricCipher basicSymmetricCipher);
+    protected sealed virtual int UncheckedTransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    protected sealed virtual Byte[] UncheckedTransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    private Byte[] PadBlock(Byte[] block, int offset, int count);
+}
+internal abstract class Internal.Cryptography.UniversalCryptoTransform : object {
+    [CompilerGeneratedAttribute]
+private PaddingMode <PaddingMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BasicSymmetricCipher <BasicSymmetricCipher>k__BackingField;
+    public bool CanReuseTransform { get; }
+    public bool CanTransformMultipleBlocks { get; }
+    public int InputBlockSize { get; }
+    public int OutputBlockSize { get; }
+    protected PaddingMode PaddingMode { get; private set; }
+    protected BasicSymmetricCipher BasicSymmetricCipher { get; private set; }
+    protected UniversalCryptoTransform(PaddingMode paddingMode, BasicSymmetricCipher basicSymmetricCipher);
+    public static ICryptoTransform Create(PaddingMode paddingMode, BasicSymmetricCipher cipher, bool encrypting);
+    public sealed virtual bool get_CanReuseTransform();
+    public sealed virtual bool get_CanTransformMultipleBlocks();
+    public sealed virtual int get_InputBlockSize();
+    public sealed virtual int get_OutputBlockSize();
+    public sealed virtual void Dispose();
+    public sealed virtual int TransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    public sealed virtual Byte[] TransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    protected virtual void Dispose(bool disposing);
+    protected abstract virtual int UncheckedTransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    protected abstract virtual Byte[] UncheckedTransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    [CompilerGeneratedAttribute]
+protected PaddingMode get_PaddingMode();
+    [CompilerGeneratedAttribute]
+private void set_PaddingMode(PaddingMode value);
+    [CompilerGeneratedAttribute]
+protected BasicSymmetricCipher get_BasicSymmetricCipher();
+    [CompilerGeneratedAttribute]
+private void set_BasicSymmetricCipher(BasicSymmetricCipher value);
+}
+internal static class Internal.NativeCrypto.BCryptNative : object {
+}
+[ExtensionAttribute]
+internal static class Internal.NativeCrypto.Cng : object {
+    public static string BCRYPT_3DES_ALGORITHM;
+    public static string BCRYPT_AES_ALGORITHM;
+    public static string BCRYPT_CHAIN_MODE_CBC;
+    public static string BCRYPT_CHAIN_MODE_ECB;
+    public static SafeAlgorithmHandle BCryptOpenAlgorithmProvider(string pszAlgId, string pszImplementation, OpenAlgorithmProviderFlags dwFlags);
+    [ExtensionAttribute]
+public static SafeKeyHandle BCryptImportKey(SafeAlgorithmHandle hAlg, Byte[] key);
+    [ExtensionAttribute]
+public static void SetCipherMode(SafeAlgorithmHandle hAlg, string cipherMode);
+    [ExtensionAttribute]
+public static int BCryptEncrypt(SafeKeyHandle hKey, Byte[] input, int inputOffset, int inputCount, Byte[] iv, Byte[] output, int outputOffset, int outputCount);
+    [ExtensionAttribute]
+public static int BCryptDecrypt(SafeKeyHandle hKey, Byte[] input, int inputOffset, int inputCount, Byte[] iv, Byte[] output, int outputOffset, int outputCount);
+    public static string CryptFormatObject(string oidValue, Byte[] rawData, bool multiLine);
+    private static Exception CreateCryptographicException(NTSTATUS ntStatus);
+}
+internal class Internal.NativeCrypto.CRYPT_OID_INFO : ValueType {
+    public int cbSize;
+    public IntPtr pszOID;
+    public IntPtr pwszName;
+    public OidGroup dwGroupId;
+    public int AlgId;
+    public int cbData;
+    public IntPtr pbData;
+    public string OID { get; }
+    public string Name { get; }
+    public string get_OID();
+    public string get_Name();
+}
+internal enum Internal.NativeCrypto.CryptOidInfoKeyType : Enum {
+    public int value__;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_OID_KEY;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_NAME_KEY;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_ALGID_KEY;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_SIGN_KEY;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_CNG_ALGID_KEY;
+    public static CryptOidInfoKeyType CRYPT_OID_INFO_CNG_SIGN_KEY;
+}
+internal static class Internal.NativeCrypto.OidInfo : object {
+    private static string Capi2Dll;
+    public static CRYPT_OID_INFO FindOidInfo(CryptOidInfoKeyType keyType, string key, OidGroup group, bool fallBackToAllGroups);
+    private static bool OidGroupWillNotUseActiveDirectory(OidGroup group);
+    private static IntPtr CryptFindOIDInfo(CryptOidInfoKeyType dwKeyType, IntPtr pvKey, OidGroup group);
+}
+internal class Internal.NativeCrypto.SafeAlgorithmHandle : SafeBCryptHandle {
+    protected sealed virtual bool ReleaseHandle();
+    private static UInt32 BCryptCloseAlgorithmProvider(IntPtr hAlgorithm, int dwFlags);
+}
+internal abstract class Internal.NativeCrypto.SafeBCryptHandle : SafeHandle {
+    public bool IsInvalid { get; }
+    public sealed virtual bool get_IsInvalid();
+}
+internal class Internal.NativeCrypto.SafeHashHandle : SafeBCryptHandle {
+    protected sealed virtual bool ReleaseHandle();
+    private static UInt32 BCryptDestroyHash(IntPtr hHash);
+}
+internal class Internal.NativeCrypto.SafeKeyHandle : SafeBCryptHandle {
+    protected sealed virtual bool ReleaseHandle();
+    private static UInt32 BCryptDestroyKey(IntPtr hKey);
+}
+internal static class Interop : object {
+}
+internal class Microsoft.Win32.SafeHandles.SafeBCryptAlgorithmHandle : SafeBCryptHandle {
+    protected sealed virtual bool ReleaseHandle();
+}
+internal abstract class Microsoft.Win32.SafeHandles.SafeBCryptHandle : SafeHandle {
+    public bool IsInvalid { get; }
+    public sealed virtual bool get_IsInvalid();
+    protected abstract virtual bool ReleaseHandle();
+}
+internal class Microsoft.Win32.SafeHandles.SafeBCryptHashHandle : SafeBCryptHandle {
+    protected sealed virtual bool ReleaseHandle();
+}
+public abstract class Microsoft.Win32.SafeHandles.SafeNCryptHandle : SafeHandle {
+    private OwnershipState _ownershipState;
+    private SafeNCryptHandle _holder;
+    private SafeNCryptHandle Holder { get; private set; }
+    public bool IsInvalid { get; }
+    private SafeNCryptHandle get_Holder();
+    private void set_Holder(SafeNCryptHandle value);
+    internal T Duplicate();
+    private T DuplicateDuplicatedHandle();
+    private T DuplicateOwnerHandle();
+    public virtual bool get_IsInvalid();
+    protected virtual bool ReleaseHandle();
+    protected abstract virtual bool ReleaseNativeHandle();
+    internal bool ReleaseNativeWithNCryptFreeObject();
+}
+public class Microsoft.Win32.SafeHandles.SafeNCryptKeyHandle : SafeNCryptHandle {
+    internal SafeNCryptKeyHandle Duplicate();
+    protected virtual bool ReleaseNativeHandle();
+}
+public class Microsoft.Win32.SafeHandles.SafeNCryptProviderHandle : SafeNCryptHandle {
+    internal SafeNCryptProviderHandle Duplicate();
+    internal void SetHandleValue(IntPtr newHandleValue);
+    protected virtual bool ReleaseNativeHandle();
+}
+public class Microsoft.Win32.SafeHandles.SafeNCryptSecretHandle : SafeNCryptHandle {
+    protected virtual bool ReleaseNativeHandle();
+}
+internal class Microsoft.Win32.SafeHandles.SafeUnicodeStringHandle : SafeHandle {
+    public bool IsInvalid { get; }
+    public SafeUnicodeStringHandle(string s);
+    public sealed virtual bool get_IsInvalid();
+    protected sealed virtual bool ReleaseHandle();
+}
+internal class System.Runtime.CompilerServices.__BlockReflectionAttribute : Attribute {
+}
+public class System.Security.Cryptography.AesCng : Aes {
+    private CngSymmetricAlgorithmCore _core;
+    public Byte[] Key { get; public set; }
+    public int KeySize { get; public set; }
+    private Byte[] Internal.Cryptography.ICngSymmetricAlgorithm.BaseKey { get; private set; }
+    private int Internal.Cryptography.ICngSymmetricAlgorithm.BaseKeySize { get; private set; }
+    public AesCng(string keyName);
+    public AesCng(string keyName, CngProvider provider);
+    public AesCng(string keyName, CngProvider provider, CngKeyOpenOptions openOptions);
+    public virtual Byte[] get_Key();
+    public virtual void set_Key(Byte[] value);
+    public virtual int get_KeySize();
+    public virtual void set_KeySize(int value);
+    public virtual ICryptoTransform CreateDecryptor();
+    public virtual ICryptoTransform CreateDecryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public virtual ICryptoTransform CreateEncryptor();
+    public virtual ICryptoTransform CreateEncryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public virtual void GenerateKey();
+    public virtual void GenerateIV();
+    protected virtual void Dispose(bool disposing);
+    private sealed virtual override Byte[] Internal.Cryptography.ICngSymmetricAlgorithm.get_BaseKey();
+    private sealed virtual override void Internal.Cryptography.ICngSymmetricAlgorithm.set_BaseKey(Byte[] value);
+    private sealed virtual override int Internal.Cryptography.ICngSymmetricAlgorithm.get_BaseKeySize();
+    private sealed virtual override void Internal.Cryptography.ICngSymmetricAlgorithm.set_BaseKeySize(int value);
+    private sealed virtual override bool Internal.Cryptography.ICngSymmetricAlgorithm.IsWeakKey(Byte[] key);
+    private sealed virtual override SafeAlgorithmHandle Internal.Cryptography.ICngSymmetricAlgorithm.GetEphemeralModeHandle();
+    private sealed virtual override string Internal.Cryptography.ICngSymmetricAlgorithm.GetNCryptAlgorithmIdentifier();
+}
+public class System.Security.Cryptography.CngAlgorithm : object {
+    private static CngAlgorithm s_ecdh;
+    private static CngAlgorithm s_ecdhp256;
+    private static CngAlgorithm s_ecdhp384;
+    private static CngAlgorithm s_ecdhp521;
+    private static CngAlgorithm s_ecdsa;
+    private static CngAlgorithm s_ecdsap256;
+    private static CngAlgorithm s_ecdsap384;
+    private static CngAlgorithm s_ecdsap521;
+    private static CngAlgorithm s_md5;
+    private static CngAlgorithm s_sha1;
+    private static CngAlgorithm s_sha256;
+    private static CngAlgorithm s_sha384;
+    private static CngAlgorithm s_sha512;
+    private static CngAlgorithm s_rsa;
+    private string _algorithm;
+    public string Algorithm { get; }
+    public static CngAlgorithm Rsa { get; }
+    public static CngAlgorithm ECDiffieHellman { get; }
+    public static CngAlgorithm ECDiffieHellmanP256 { get; }
+    public static CngAlgorithm ECDiffieHellmanP384 { get; }
+    public static CngAlgorithm ECDiffieHellmanP521 { get; }
+    public static CngAlgorithm ECDsa { get; }
+    public static CngAlgorithm ECDsaP256 { get; }
+    public static CngAlgorithm ECDsaP384 { get; }
+    public static CngAlgorithm ECDsaP521 { get; }
+    public static CngAlgorithm MD5 { get; }
+    public static CngAlgorithm Sha1 { get; }
+    public static CngAlgorithm Sha256 { get; }
+    public static CngAlgorithm Sha384 { get; }
+    public static CngAlgorithm Sha512 { get; }
+    public CngAlgorithm(string algorithm);
+    public string get_Algorithm();
+    public static bool op_Equality(CngAlgorithm left, CngAlgorithm right);
+    public static bool op_Inequality(CngAlgorithm left, CngAlgorithm right);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CngAlgorithm other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public static CngAlgorithm get_Rsa();
+    public static CngAlgorithm get_ECDiffieHellman();
+    public static CngAlgorithm get_ECDiffieHellmanP256();
+    public static CngAlgorithm get_ECDiffieHellmanP384();
+    public static CngAlgorithm get_ECDiffieHellmanP521();
+    public static CngAlgorithm get_ECDsa();
+    public static CngAlgorithm get_ECDsaP256();
+    public static CngAlgorithm get_ECDsaP384();
+    public static CngAlgorithm get_ECDsaP521();
+    public static CngAlgorithm get_MD5();
+    public static CngAlgorithm get_Sha1();
+    public static CngAlgorithm get_Sha256();
+    public static CngAlgorithm get_Sha384();
+    public static CngAlgorithm get_Sha512();
+}
+public class System.Security.Cryptography.CngAlgorithmGroup : object {
+    private static CngAlgorithmGroup s_dh;
+    private static CngAlgorithmGroup s_dsa;
+    private static CngAlgorithmGroup s_ecdh;
+    private static CngAlgorithmGroup s_ecdsa;
+    private static CngAlgorithmGroup s_rsa;
+    private string _algorithmGroup;
+    public string AlgorithmGroup { get; }
+    public static CngAlgorithmGroup DiffieHellman { get; }
+    public static CngAlgorithmGroup Dsa { get; }
+    public static CngAlgorithmGroup ECDiffieHellman { get; }
+    public static CngAlgorithmGroup ECDsa { get; }
+    public static CngAlgorithmGroup Rsa { get; }
+    public CngAlgorithmGroup(string algorithmGroup);
+    public string get_AlgorithmGroup();
+    public static bool op_Equality(CngAlgorithmGroup left, CngAlgorithmGroup right);
+    public static bool op_Inequality(CngAlgorithmGroup left, CngAlgorithmGroup right);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CngAlgorithmGroup other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public static CngAlgorithmGroup get_DiffieHellman();
+    public static CngAlgorithmGroup get_Dsa();
+    public static CngAlgorithmGroup get_ECDiffieHellman();
+    public static CngAlgorithmGroup get_ECDsa();
+    public static CngAlgorithmGroup get_Rsa();
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngExportPolicies : Enum {
+    public int value__;
+    public static CngExportPolicies None;
+    public static CngExportPolicies AllowExport;
+    public static CngExportPolicies AllowPlaintextExport;
+    public static CngExportPolicies AllowArchiving;
+    public static CngExportPolicies AllowPlaintextArchiving;
+}
+public class System.Security.Cryptography.CngKey : object {
+    private SafeNCryptKeyHandle _keyHandle;
+    private SafeNCryptProviderHandle _providerHandle;
+    public CngAlgorithm Algorithm { get; }
+    public CngAlgorithmGroup AlgorithmGroup { get; }
+    public CngExportPolicies ExportPolicy { get; internal set; }
+    public SafeNCryptKeyHandle Handle { get; }
+    public bool IsEphemeral { get; private set; }
+    public bool IsMachineKey { get; }
+    public string KeyName { get; }
+    public int KeySize { get; }
+    public CngKeyUsages KeyUsage { get; }
+    public IntPtr ParentWindowHandle { get; public set; }
+    public CngProvider Provider { get; }
+    public SafeNCryptProviderHandle ProviderHandle { get; }
+    public CngUIPolicy UIPolicy { get; }
+    public string UniqueName { get; }
+    private CngKey(SafeNCryptProviderHandle providerHandle, SafeNCryptKeyHandle keyHandle);
+    public sealed virtual void Dispose();
+    public CngProperty GetProperty(string name, CngPropertyOptions options);
+    public bool HasProperty(string name, CngPropertyOptions options);
+    public void SetProperty(CngProperty property);
+    public CngAlgorithm get_Algorithm();
+    public CngAlgorithmGroup get_AlgorithmGroup();
+    public CngExportPolicies get_ExportPolicy();
+    internal void set_ExportPolicy(CngExportPolicies value);
+    public SafeNCryptKeyHandle get_Handle();
+    public bool get_IsEphemeral();
+    private void set_IsEphemeral(bool value);
+    public bool get_IsMachineKey();
+    public string get_KeyName();
+    public int get_KeySize();
+    public CngKeyUsages get_KeyUsage();
+    public IntPtr get_ParentWindowHandle();
+    public void set_ParentWindowHandle(IntPtr value);
+    public CngProvider get_Provider();
+    public SafeNCryptProviderHandle get_ProviderHandle();
+    public CngUIPolicy get_UIPolicy();
+    public string get_UniqueName();
+    public static CngKey Create(CngAlgorithm algorithm);
+    public static CngKey Create(CngAlgorithm algorithm, string keyName);
+    public static CngKey Create(CngAlgorithm algorithm, string keyName, CngKeyCreationParameters creationParameters);
+    private static void InitializeKeyProperties(SafeNCryptKeyHandle keyHandle, CngKeyCreationParameters creationParameters);
+    private static void InitializeKeyUiPolicyProperties(SafeNCryptKeyHandle keyHandle, CngUIPolicy uiPolicy);
+    internal bool IsEcc();
+    internal bool IsECNamedCurve();
+    internal static bool IsECNamedCurve(string algorithm);
+    internal string GetCurveName();
+    private string GetECSpecificCurveName();
+    internal static CngAlgorithm EcdsaCurveNameToAlgorithm(string name);
+    public static CngKey Import(Byte[] keyBlob, CngKeyBlobFormat format);
+    internal static CngKey Import(Byte[] keyBlob, string curveName, CngKeyBlobFormat format);
+    public static CngKey Import(Byte[] keyBlob, CngKeyBlobFormat format, CngProvider provider);
+    internal static CngKey Import(Byte[] keyBlob, string curveName, CngKeyBlobFormat format, CngProvider provider);
+    public Byte[] Export(CngKeyBlobFormat format);
+    public void Delete();
+    public static bool Exists(string keyName);
+    public static bool Exists(string keyName, CngProvider provider);
+    public static bool Exists(string keyName, CngProvider provider, CngKeyOpenOptions options);
+    public static CngKey Open(string keyName);
+    public static CngKey Open(string keyName, CngProvider provider);
+    public static CngKey Open(string keyName, CngProvider provider, CngKeyOpenOptions openOptions);
+    public static CngKey Open(SafeNCryptKeyHandle keyHandle, CngKeyHandleOpenOptions keyHandleOpenOptions);
+}
+public class System.Security.Cryptography.CngKeyBlobFormat : object {
+    private static CngKeyBlobFormat s_eccPrivate;
+    private static CngKeyBlobFormat s_eccPublic;
+    private static CngKeyBlobFormat s_eccFullPrivate;
+    private static CngKeyBlobFormat s_eccFullPublic;
+    private static CngKeyBlobFormat s_genericPrivate;
+    private static CngKeyBlobFormat s_genericPublic;
+    private static CngKeyBlobFormat s_opaqueTransport;
+    private static CngKeyBlobFormat s_pkcs8Private;
+    private string _format;
+    public string Format { get; }
+    public static CngKeyBlobFormat EccPrivateBlob { get; }
+    public static CngKeyBlobFormat EccPublicBlob { get; }
+    public static CngKeyBlobFormat EccFullPrivateBlob { get; }
+    public static CngKeyBlobFormat EccFullPublicBlob { get; }
+    public static CngKeyBlobFormat GenericPrivateBlob { get; }
+    public static CngKeyBlobFormat GenericPublicBlob { get; }
+    public static CngKeyBlobFormat OpaqueTransportBlob { get; }
+    public static CngKeyBlobFormat Pkcs8PrivateBlob { get; }
+    public CngKeyBlobFormat(string format);
+    public string get_Format();
+    public static bool op_Equality(CngKeyBlobFormat left, CngKeyBlobFormat right);
+    public static bool op_Inequality(CngKeyBlobFormat left, CngKeyBlobFormat right);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CngKeyBlobFormat other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public static CngKeyBlobFormat get_EccPrivateBlob();
+    public static CngKeyBlobFormat get_EccPublicBlob();
+    public static CngKeyBlobFormat get_EccFullPrivateBlob();
+    public static CngKeyBlobFormat get_EccFullPublicBlob();
+    public static CngKeyBlobFormat get_GenericPrivateBlob();
+    public static CngKeyBlobFormat get_GenericPublicBlob();
+    public static CngKeyBlobFormat get_OpaqueTransportBlob();
+    public static CngKeyBlobFormat get_Pkcs8PrivateBlob();
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngKeyCreationOptions : Enum {
+    public int value__;
+    public static CngKeyCreationOptions None;
+    public static CngKeyCreationOptions MachineKey;
+    public static CngKeyCreationOptions OverwriteExistingKey;
+}
+public class System.Security.Cryptography.CngKeyCreationParameters : object {
+    [CompilerGeneratedAttribute]
+private Nullable`1<CngExportPolicies> <ExportPolicy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CngKeyCreationOptions <KeyCreationOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<CngKeyUsages> <KeyUsage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CngPropertyCollection <Parameters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IntPtr <ParentWindowHandle>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CngUIPolicy <UIPolicy>k__BackingField;
+    private CngProvider _provider;
+    public Nullable`1<CngExportPolicies> ExportPolicy { get; public set; }
+    public CngKeyCreationOptions KeyCreationOptions { get; public set; }
+    public Nullable`1<CngKeyUsages> KeyUsage { get; public set; }
+    public CngPropertyCollection Parameters { get; private set; }
+    public IntPtr ParentWindowHandle { get; public set; }
+    public CngProvider Provider { get; public set; }
+    public CngUIPolicy UIPolicy { get; public set; }
+    [CompilerGeneratedAttribute]
+public Nullable`1<CngExportPolicies> get_ExportPolicy();
+    [CompilerGeneratedAttribute]
+public void set_ExportPolicy(Nullable`1<CngExportPolicies> value);
+    [CompilerGeneratedAttribute]
+public CngKeyCreationOptions get_KeyCreationOptions();
+    [CompilerGeneratedAttribute]
+public void set_KeyCreationOptions(CngKeyCreationOptions value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<CngKeyUsages> get_KeyUsage();
+    [CompilerGeneratedAttribute]
+public void set_KeyUsage(Nullable`1<CngKeyUsages> value);
+    [CompilerGeneratedAttribute]
+public CngPropertyCollection get_Parameters();
+    [CompilerGeneratedAttribute]
+private void set_Parameters(CngPropertyCollection value);
+    [CompilerGeneratedAttribute]
+public IntPtr get_ParentWindowHandle();
+    [CompilerGeneratedAttribute]
+public void set_ParentWindowHandle(IntPtr value);
+    public CngProvider get_Provider();
+    public void set_Provider(CngProvider value);
+    [CompilerGeneratedAttribute]
+public CngUIPolicy get_UIPolicy();
+    [CompilerGeneratedAttribute]
+public void set_UIPolicy(CngUIPolicy value);
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngKeyHandleOpenOptions : Enum {
+    public int value__;
+    public static CngKeyHandleOpenOptions None;
+    public static CngKeyHandleOpenOptions EphemeralKey;
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngKeyOpenOptions : Enum {
+    public int value__;
+    public static CngKeyOpenOptions None;
+    public static CngKeyOpenOptions UserKey;
+    public static CngKeyOpenOptions MachineKey;
+    public static CngKeyOpenOptions Silent;
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngKeyUsages : Enum {
+    public int value__;
+    public static CngKeyUsages None;
+    public static CngKeyUsages Decryption;
+    public static CngKeyUsages Signing;
+    public static CngKeyUsages KeyAgreement;
+    public static CngKeyUsages AllUsages;
+}
+public class System.Security.Cryptography.CngProperty : ValueType {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CngPropertyOptions <Options>k__BackingField;
+    private Byte[] _value;
+    private Nullable`1<int> _lazyHashCode;
+    public string Name { get; private set; }
+    public CngPropertyOptions Options { get; private set; }
+    public CngProperty(string name, Byte[] value, CngPropertyOptions options);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+private void set_Name(string value);
+    public Byte[] GetValue();
+    [CompilerGeneratedAttribute]
+public CngPropertyOptions get_Options();
+    [CompilerGeneratedAttribute]
+private void set_Options(CngPropertyOptions value);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CngProperty other);
+    public virtual int GetHashCode();
+    public static bool op_Equality(CngProperty left, CngProperty right);
+    public static bool op_Inequality(CngProperty left, CngProperty right);
+    internal Byte[] GetValueWithoutCopying();
+}
+public class System.Security.Cryptography.CngPropertyCollection : Collection`1<CngProperty> {
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngPropertyOptions : Enum {
+    public int value__;
+    public static CngPropertyOptions None;
+    public static CngPropertyOptions CustomProperty;
+    public static CngPropertyOptions Persist;
+}
+public class System.Security.Cryptography.CngProvider : object {
+    private static CngProvider s_msSmartCardKsp;
+    private static CngProvider s_msSoftwareKsp;
+    private string _provider;
+    public string Provider { get; }
+    public static CngProvider MicrosoftSmartCardKeyStorageProvider { get; }
+    public static CngProvider MicrosoftSoftwareKeyStorageProvider { get; }
+    public CngProvider(string provider);
+    public string get_Provider();
+    public static bool op_Equality(CngProvider left, CngProvider right);
+    public static bool op_Inequality(CngProvider left, CngProvider right);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CngProvider other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public static CngProvider get_MicrosoftSmartCardKeyStorageProvider();
+    public static CngProvider get_MicrosoftSoftwareKeyStorageProvider();
+}
+public class System.Security.Cryptography.CngUIPolicy : object {
+    [CompilerGeneratedAttribute]
+private CngUIProtectionLevels <ProtectionLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UseContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreationTitle>k__BackingField;
+    public CngUIProtectionLevels ProtectionLevel { get; private set; }
+    public string FriendlyName { get; private set; }
+    public string Description { get; private set; }
+    public string UseContext { get; private set; }
+    public string CreationTitle { get; private set; }
+    public CngUIPolicy(CngUIProtectionLevels protectionLevel);
+    public CngUIPolicy(CngUIProtectionLevels protectionLevel, string friendlyName);
+    public CngUIPolicy(CngUIProtectionLevels protectionLevel, string friendlyName, string description);
+    public CngUIPolicy(CngUIProtectionLevels protectionLevel, string friendlyName, string description, string useContext);
+    public CngUIPolicy(CngUIProtectionLevels protectionLevel, string friendlyName, string description, string useContext, string creationTitle);
+    [CompilerGeneratedAttribute]
+public CngUIProtectionLevels get_ProtectionLevel();
+    [CompilerGeneratedAttribute]
+private void set_ProtectionLevel(CngUIProtectionLevels value);
+    [CompilerGeneratedAttribute]
+public string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+private void set_Description(string value);
+    [CompilerGeneratedAttribute]
+public string get_UseContext();
+    [CompilerGeneratedAttribute]
+private void set_UseContext(string value);
+    [CompilerGeneratedAttribute]
+public string get_CreationTitle();
+    [CompilerGeneratedAttribute]
+private void set_CreationTitle(string value);
+}
+[FlagsAttribute]
+public enum System.Security.Cryptography.CngUIProtectionLevels : Enum {
+    public int value__;
+    public static CngUIProtectionLevels None;
+    public static CngUIProtectionLevels ProtectKey;
+    public static CngUIProtectionLevels ForceHighProtection;
+}
+internal static class System.Security.Cryptography.ECCng : object {
+    internal static ECC_CURVE_ALG_ID_ENUM GetHashAlgorithmId(Nullable`1<HashAlgorithmName> name);
+    internal static Nullable`1<HashAlgorithmName> GetHashAlgorithmName(ECC_CURVE_ALG_ID_ENUM hashId);
+}
+public class System.Security.Cryptography.ECDsaCng : ECDsa {
+    private CngAlgorithmCore _core;
+    private bool _skipKeySizeCheck;
+    public CngKey Key { get; private set; }
+    public int KeySize { get; public set; }
+    public KeySizes[] LegalKeySizes { get; }
+    public ECDsaCng(CngKey key);
+    public ECDsaCng(int keySize);
+    protected virtual void Dispose(bool disposing);
+    private void DisposeKey();
+    private static bool IsEccAlgorithmGroup(CngAlgorithmGroup algorithmGroup);
+    internal string GetCurveName();
+    private void ImportFullKeyBlob(Byte[] ecfullKeyBlob, bool includePrivateParameters);
+    private void ImportKeyBlob(Byte[] ecfullKeyBlob, string curveName, bool includePrivateParameters);
+    private Byte[] ExportKeyBlob(bool includePrivateParameters);
+    private Byte[] ExportFullKeyBlob(bool includePrivateParameters);
+    public CngKey get_Key();
+    private void set_Key(CngKey value);
+    private CngKey GetKey();
+    private SafeNCryptKeyHandle GetDuplicatedKeyHandle();
+    public virtual int get_KeySize();
+    public virtual void set_KeySize(int value);
+    private void ForceSetKeySize(int newKeySize);
+    public virtual KeySizes[] get_LegalKeySizes();
+    internal static bool IsECNamedCurve(string algorithm);
+    internal static string SpecialNistAlgorithmToCurveName(string algorithm);
+    protected virtual Byte[] HashData(Byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm);
+    protected virtual Byte[] HashData(Stream data, HashAlgorithmName hashAlgorithm);
+    public virtual Byte[] SignHash(Byte[] hash);
+    public virtual bool VerifyHash(Byte[] hash, Byte[] signature);
+}
+public class System.Security.Cryptography.RSACng : RSA {
+    private CngAlgorithmCore _core;
+    private static CngKeyBlobFormat s_rsaFullPrivateBlob;
+    private static CngKeyBlobFormat s_rsaPrivateBlob;
+    private static CngKeyBlobFormat s_rsaPublicBlob;
+    private bool _skipKeySizeCheck;
+    public CngKey Key { get; private set; }
+    public KeySizes[] LegalKeySizes { get; }
+    public RSACng(CngKey key);
+    public RSACng(int keySize);
+    private static RSACng();
+    protected virtual void Dispose(bool disposing);
+    private void ImportKeyBlob(Byte[] rsaBlob, bool includePrivate);
+    private Byte[] ExportKeyBlob(bool includePrivateParameters);
+    public CngKey get_Key();
+    private void set_Key(CngKey value);
+    private SafeNCryptKeyHandle GetDuplicatedKeyHandle();
+    public virtual KeySizes[] get_LegalKeySizes();
+    protected virtual Byte[] HashData(Byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm);
+    protected virtual Byte[] HashData(Stream data, HashAlgorithmName hashAlgorithm);
+    private void ForceSetKeySize(int newKeySize);
+    public virtual Byte[] Encrypt(Byte[] data, RSAEncryptionPadding padding);
+    public virtual Byte[] Decrypt(Byte[] data, RSAEncryptionPadding padding);
+    private Byte[] EncryptOrDecrypt(Byte[] data, RSAEncryptionPadding padding, EncryptOrDecryptAction encryptOrDecrypt);
+    private Byte[] EncryptOrDecrypt(SafeNCryptKeyHandle key, Byte[] input, AsymmetricPaddingMode paddingMode, Void* paddingInfo, EncryptOrDecryptAction encryptOrDecrypt);
+    public virtual void ImportParameters(RSAParameters parameters);
+    public virtual RSAParameters ExportParameters(bool includePrivateParameters);
+    private static void ExportParameters(RSAParameters& rsaParams, Byte[] rsaBlob, bool includePrivateParameters);
+    private static void CheckMagicValueOfKey(KeyBlobMagicNumber magic, bool includePrivateParameters);
+    public virtual Byte[] SignHash(Byte[] hash, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding);
+    public virtual bool VerifyHash(Byte[] hash, Byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding);
+    private static void SignOrVerify(RSASignaturePadding padding, HashAlgorithmName hashAlgorithm, Byte[] hash, SignOrVerifyAction signOrVerify);
+}
+public class System.Security.Cryptography.TripleDESCng : TripleDES {
+    private CngSymmetricAlgorithmCore _core;
+    public Byte[] Key { get; public set; }
+    public int KeySize { get; public set; }
+    public KeySizes[] LegalKeySizes { get; }
+    private Byte[] Internal.Cryptography.ICngSymmetricAlgorithm.BaseKey { get; private set; }
+    private int Internal.Cryptography.ICngSymmetricAlgorithm.BaseKeySize { get; private set; }
+    public TripleDESCng(string keyName);
+    public TripleDESCng(string keyName, CngProvider provider);
+    public TripleDESCng(string keyName, CngProvider provider, CngKeyOpenOptions openOptions);
+    public virtual Byte[] get_Key();
+    public virtual void set_Key(Byte[] value);
+    public virtual int get_KeySize();
+    public virtual void set_KeySize(int value);
+    public virtual ICryptoTransform CreateDecryptor();
+    public virtual ICryptoTransform CreateDecryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public virtual ICryptoTransform CreateEncryptor();
+    public virtual ICryptoTransform CreateEncryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public virtual void GenerateKey();
+    public virtual void GenerateIV();
+    public virtual KeySizes[] get_LegalKeySizes();
+    protected virtual void Dispose(bool disposing);
+    private sealed virtual override Byte[] Internal.Cryptography.ICngSymmetricAlgorithm.get_BaseKey();
+    private sealed virtual override void Internal.Cryptography.ICngSymmetricAlgorithm.set_BaseKey(Byte[] value);
+    private sealed virtual override int Internal.Cryptography.ICngSymmetricAlgorithm.get_BaseKeySize();
+    private sealed virtual override void Internal.Cryptography.ICngSymmetricAlgorithm.set_BaseKeySize(int value);
+    private sealed virtual override bool Internal.Cryptography.ICngSymmetricAlgorithm.IsWeakKey(Byte[] key);
+    private sealed virtual override SafeAlgorithmHandle Internal.Cryptography.ICngSymmetricAlgorithm.GetEphemeralModeHandle();
+    private sealed virtual override string Internal.Cryptography.ICngSymmetricAlgorithm.GetNCryptAlgorithmIdentifier();
+}
+internal static class System.SR : object {
+    private static ResourceManager s_resourceManager;
+    private static string s_resourcesName;
+    private static ResourceManager ResourceManager { get; }
+    internal static string ArgumentOutOfRange_NeedNonNegNum { get; }
+    internal static string Argument_InvalidOffLen { get; }
+    internal static string ArgumentNull_Buffer { get; }
+    internal static string Cryptography_ArgECDHKeySizeMismatch { get; }
+    internal static string Cryptography_ArgECDHRequiresECDHKey { get; }
+    internal static string Cryptography_ArgECDsaRequiresECDsaKey { get; }
+    internal static string Cryptography_ArgExpectedECDiffieHellmanCngPublicKey { get; }
+    internal static string Cryptography_ArgRSAaRequiresRSAKey { get; }
+    internal static string Cryptography_CngKeyWrongAlgorithm { get; }
+    internal static string Cryptography_ECXmlSerializationFormatRequired { get; }
+    internal static string Cryptography_HashAlgorithmNameNullOrEmpty { get; }
+    internal static string Cryptography_InvalidAlgorithmGroup { get; }
+    internal static string Cryptography_InvalidAlgorithmName { get; }
+    internal static string Cryptography_InvalidCipherMode { get; }
+    internal static string Cryptography_CurveNotSupported { get; }
+    internal static string Cryptography_InvalidCurveOid { get; }
+    internal static string Cryptography_InvalidIVSize { get; }
+    internal static string Cryptography_InvalidKeyBlobFormat { get; }
+    internal static string Cryptography_InvalidKeySize { get; }
+    internal static string Cryptography_InvalidPadding { get; }
+    internal static string Cryptography_InvalidProviderName { get; }
+    internal static string Cryptography_InvalidRsaParameters { get; }
+    internal static string Cryptography_InvalidSignatureAlgorithm { get; }
+    internal static string Cryptography_KeyBlobParsingError { get; }
+    internal static string Cryptography_OpenEphemeralKeyHandleWithoutEphemeralFlag { get; }
+    internal static string Cryptography_OpenInvalidHandle { get; }
+    internal static string NotSupported_Method { get; }
+    internal static string Cryptography_MissingIV { get; }
+    internal static string Cryptography_MustTransformWholeBlock { get; }
+    internal static string Cryptography_NotValidPrivateKey { get; }
+    internal static string Cryptography_NotValidPublicOrPrivateKey { get; }
+    internal static string Cryptography_NonCompliantFIPSAlgorithm { get; }
+    internal static string Cryptography_PartialBlock { get; }
+    internal static string Cryptography_RC2_EKSKS2 { get; }
+    internal static string Cryptography_TlsRequiresLabelAndSeed { get; }
+    internal static string Cryptography_UnsupportedPaddingMode { get; }
+    internal static string Cryptography_PlatformNotSupported { get; }
+    internal static string Cryptography_TransformBeyondEndOfBuffer { get; }
+    internal static string Cryptography_UnexpectedTransformTruncation { get; }
+    internal static string Cryptography_UnknownHashAlgorithm { get; }
+    internal static string Cryptography_UnknownPaddingMode { get; }
+    internal static string Cryptography_WeakKey { get; }
+    internal static string WorkInProgress_UnsupportedHash { get; }
+    internal static Type ResourceType { get; }
+    private static ResourceManager get_ResourceManager();
+    private static bool UsingResourceKeys();
+    internal static string GetResourceString(string resourceKey, string defaultString);
+    internal static string Format(string resourceFormat, Object[] args);
+    internal static string Format(string resourceFormat, object p1);
+    internal static string Format(string resourceFormat, object p1, object p2);
+    internal static string Format(string resourceFormat, object p1, object p2, object p3);
+    internal static string get_ArgumentOutOfRange_NeedNonNegNum();
+    internal static string get_Argument_InvalidOffLen();
+    internal static string get_ArgumentNull_Buffer();
+    internal static string get_Cryptography_ArgECDHKeySizeMismatch();
+    internal static string get_Cryptography_ArgECDHRequiresECDHKey();
+    internal static string get_Cryptography_ArgECDsaRequiresECDsaKey();
+    internal static string get_Cryptography_ArgExpectedECDiffieHellmanCngPublicKey();
+    internal static string get_Cryptography_ArgRSAaRequiresRSAKey();
+    internal static string get_Cryptography_CngKeyWrongAlgorithm();
+    internal static string get_Cryptography_ECXmlSerializationFormatRequired();
+    internal static string get_Cryptography_HashAlgorithmNameNullOrEmpty();
+    internal static string get_Cryptography_InvalidAlgorithmGroup();
+    internal static string get_Cryptography_InvalidAlgorithmName();
+    internal static string get_Cryptography_InvalidCipherMode();
+    internal static string get_Cryptography_CurveNotSupported();
+    internal static string get_Cryptography_InvalidCurveOid();
+    internal static string get_Cryptography_InvalidIVSize();
+    internal static string get_Cryptography_InvalidKeyBlobFormat();
+    internal static string get_Cryptography_InvalidKeySize();
+    internal static string get_Cryptography_InvalidPadding();
+    internal static string get_Cryptography_InvalidProviderName();
+    internal static string get_Cryptography_InvalidRsaParameters();
+    internal static string get_Cryptography_InvalidSignatureAlgorithm();
+    internal static string get_Cryptography_KeyBlobParsingError();
+    internal static string get_Cryptography_OpenEphemeralKeyHandleWithoutEphemeralFlag();
+    internal static string get_Cryptography_OpenInvalidHandle();
+    internal static string get_NotSupported_Method();
+    internal static string get_Cryptography_MissingIV();
+    internal static string get_Cryptography_MustTransformWholeBlock();
+    internal static string get_Cryptography_NotValidPrivateKey();
+    internal static string get_Cryptography_NotValidPublicOrPrivateKey();
+    internal static string get_Cryptography_NonCompliantFIPSAlgorithm();
+    internal static string get_Cryptography_PartialBlock();
+    internal static string get_Cryptography_RC2_EKSKS2();
+    internal static string get_Cryptography_TlsRequiresLabelAndSeed();
+    internal static string get_Cryptography_UnsupportedPaddingMode();
+    internal static string get_Cryptography_PlatformNotSupported();
+    internal static string get_Cryptography_TransformBeyondEndOfBuffer();
+    internal static string get_Cryptography_UnexpectedTransformTruncation();
+    internal static string get_Cryptography_UnknownHashAlgorithm();
+    internal static string get_Cryptography_UnknownPaddingMode();
+    internal static string get_Cryptography_WeakKey();
+    internal static string get_WorkInProgress_UnsupportedHash();
+    internal static Type get_ResourceType();
+}
