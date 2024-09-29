@@ -1,0 +1,1369 @@
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.AsyncCmdlet : PSCmdlet {
+    private static BindingFlags BindingFlags;
+    private ProgressTracker _activeProgressId;
+    protected AsyncCmdletState CmdletState;
+    protected CancellationTokenSource CancellationEvent;
+    private bool _consumedDynamicParameters;
+    private RuntimeDefinedParameterDictionary _dynamicParameters;
+    protected bool ErrorState;
+    private BlockingCollection`1<TaskCompletionSource`1<bool>> _heldMessages;
+    private BlockingCollection`1<TaskCompletionSource`1<bool>> _messages;
+    private int _nextProgressId;
+    private Stopwatch _stopwatch;
+    private Dictionary`2<string, object> _unboundArguments;
+    private SortedSet`1<string> _errors;
+    private List`1<ProgressTracker> _progressTrackers;
+    private SortedSet`1<string> _warnings;
+    private PipelineStoppedException _pipelineStopped;
+    [CompilerGeneratedAttribute]
+private static bool <IsInitialized>k__BackingField;
+    private ManualResetEvent ReentrantLock { get; }
+    protected bool IsReentrantLocked { get; protected set; }
+    protected bool Confirm { get; }
+    public bool WhatIf { get; }
+    protected static bool IsInitialized { get; protected set; }
+    protected bool IsInvocation { get; }
+    public bool IsCanceled { get; }
+    protected bool HasErrors { get; }
+    protected Dictionary`2<string, object> UnboundArguments { get; }
+    public RuntimeDefinedParameterDictionary DynamicParameterDictionary { get; }
+    protected bool IsProcessing { get; }
+    protected bool IsBeforeProcessing { get; }
+    protected bool IsAfterProcessing { get; }
+    private ManualResetEvent get_ReentrantLock();
+    protected bool get_IsReentrantLocked();
+    protected void set_IsReentrantLocked(bool value);
+    protected bool get_Confirm();
+    public bool get_WhatIf();
+    [CompilerGeneratedAttribute]
+protected static bool get_IsInitialized();
+    [CompilerGeneratedAttribute]
+protected static void set_IsInitialized(bool value);
+    protected bool get_IsInvocation();
+    public sealed virtual bool get_IsCanceled();
+    protected bool get_HasErrors();
+    protected Dictionary`2<string, object> get_UnboundArguments();
+    public sealed virtual void Dispose();
+    public virtual bool BeginProcessingAsync();
+    public virtual bool EndProcessingAsync();
+    public virtual bool StopProcessingAsync();
+    public virtual bool ProcessRecordAsync();
+    public string ResolveExistingFilePath(string filePath);
+    public string ResolveExistingFolderPath(string folderPath);
+    public string ResolveExistingFolderPath(string folderPath, bool isThrow);
+    public string ResolvePath(string path);
+    public string DropMsgPrefix(string messageText);
+    public sealed virtual bool Warning(string messageText);
+    internal bool Warning(ErrorMessage message);
+    internal bool Warning(ErrorMessage message, Object[] args);
+    public bool Warning(string messageText, Object[] args);
+    internal bool Error(ErrorMessage errorMessage);
+    internal bool Error(ErrorMessage errorMessage, Object[] args);
+    public sealed virtual bool Error(string id, string category, string targetObjectValue, string messageText);
+    public bool Error(string id, string category, string targetObjectValue, string messageText, Object[] args);
+    internal bool NonTerminatingError(ErrorMessage errorMessage);
+    internal bool NonTerminatingError(ErrorMessage errorMessage, Object[] args);
+    public bool NonTerminatingError(string id, string category, string targetObjectValue, string messageText);
+    public bool NonTerminatingError(string id, string category, string targetObjectValue, string messageText, Object[] args);
+    public sealed virtual bool Message(string messageText);
+    public bool Message(string messageText, Object[] args);
+    public sealed virtual bool Verbose(string messageText);
+    public bool Verbose(string messageText, Object[] args);
+    public sealed virtual bool Debug(string messageText);
+    public bool Debug(string messageText, Object[] args);
+    public sealed virtual int StartProgress(int parentActivityId, string message);
+    public int StartProgress(int parentActivityId, string message, Object[] args);
+    public sealed virtual bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed);
+    public sealed virtual bool Progress(int activityId, int progressPercentage, string messageText);
+    public bool Progress(int activityId, int progressPercentage, string messageText, Object[] args);
+    public sealed virtual bool CompleteProgress(int activityId, bool isSuccessful);
+    public virtual string GetMessageString(string messageText, string defaultText);
+    public string FormatMessageString(string messageText, Object[] args);
+    protected virtual void Init();
+    protected virtual void Dispose(bool disposing);
+    public virtual RuntimeDefinedParameterDictionary get_DynamicParameterDictionary();
+    public sealed virtual object GetDynamicParameters();
+    protected T GetDynamicParameterValue(string parameterName);
+    public virtual bool GenerateDynamicParameters();
+    public virtual bool ConsumeDynamicParameters();
+    private void ProcessHeldMessages();
+    private void AsyncRun(Func`1<bool> asyncAction);
+    private bool IsOverridden(string functionName);
+    protected sealed virtual void BeginProcessing();
+    protected sealed virtual void ProcessRecord();
+    protected sealed virtual void EndProcessing();
+    protected sealed virtual void StopProcessing();
+    public void Cancel();
+    public Task`1<bool> WriteProgress(ProgressRecord progressRecord);
+    public Task`1<bool> AllProgressComplete();
+    protected bool get_IsProcessing();
+    protected bool get_IsBeforeProcessing();
+    protected bool get_IsAfterProcessing();
+    private void InvokeMessage(TaskCompletionSource`1<bool> message);
+    private void QueueHeldMessage(TaskCompletionSource`1<bool> message);
+    protected void QueueHeldMessage(Func`1<bool> action);
+    private Task`1<bool> QueueMessage(TaskCompletionSource`1<bool> message);
+    private Task`1<bool> QueueMessage(Func`1<bool> action);
+    private Task`1<bool> QueueMessage(Action action);
+    public Task`1<bool> ExecuteOnMainThread(Func`1<bool> onMainThreadDelegate);
+    public Task`1<bool> WriteObject(object obj);
+    public Task`1<bool> WriteObject(object sendToPipeline, bool enumerateCollection);
+    public Task`1<bool> WriteWarning(string text);
+    public Task`1<bool> WriteDebug(string text);
+    public Task`1<bool> WriteError(ErrorRecord errorRecord);
+    public Task`1<bool> WriteVerbose(string text);
+    public Task`1<bool> ShouldContinue(string query, string caption);
+    internal Task`1<ShouldContinueResult> ShouldContinue(string query, string caption, bool hasSecurityimpact);
+    public Task`1<bool> ShouldProcess(string target);
+    public Task`1<bool> ShouldProcess(string target, string action);
+    public Task`1<bool> ShouldProcess(string verboseDescription, string verboseWarning, string caption);
+    public Task`1<bool> ShouldProcess(string verboseDescription, string verboseWarning, string caption, ShouldProcessReason& shouldProcessReason);
+    protected object TryGetProperty(object instance, string fieldName);
+    protected bool TrySetProperty(object instance, string fieldName, object value);
+}
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletBase : AsyncCmdlet {
+    private static int _globalCallCount;
+    private static object _lockObject;
+    private bool _messageResolverNotResponding;
+    private int _callCount;
+    private Hashtable _dynamicOptions;
+    private string _bootstrapNuGet;
+    private static bool telemetryAPIInitialized;
+    private static Type TelemetryAPIType;
+    [ParameterAttribute]
+public SwitchParameter Force;
+    [ParameterAttribute]
+public SwitchParameter ForceBootstrap;
+    private GetMessageString _messageResolver;
+    [CompilerGeneratedAttribute]
+private bool <ShouldLogError>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ShouldSelectAllProviders>k__BackingField;
+    protected bool ShouldLogError { get; protected set; }
+    protected bool ShouldSelectAllProviders { get; protected set; }
+    protected IEnumerable`1<string> ParameterSets { get; }
+    protected bool IsPackageBySearch { get; }
+    protected bool IsPackageByObject { get; }
+    protected bool IsSourceByObject { get; }
+    protected internal IPackageManagementService PackageManagementService { get; }
+    protected int TimeOut { get; }
+    protected int Responsiveness { get; }
+    public GetMessageString MessageResolver { get; }
+    public Hashtable DynamicOptions { get; }
+    public IEnumerable`1<string> Sources { get; public set; }
+    public IEnumerable`1<string> OptionKeys { get; }
+    public IWebProxy WebProxy { get; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    public bool IsInteractive { get; }
+    public int CallCount { get; }
+    protected string BootstrapNuGet { get; protected set; }
+    protected IHostApi PackageManagementHost { get; }
+    private static CmdletBase();
+    protected bool IsRooted(string filePath);
+    protected void ValidateVersion(string version);
+    [CompilerGeneratedAttribute]
+protected bool get_ShouldLogError();
+    [CompilerGeneratedAttribute]
+protected void set_ShouldLogError(bool value);
+    [CompilerGeneratedAttribute]
+protected bool get_ShouldSelectAllProviders();
+    [CompilerGeneratedAttribute]
+protected void set_ShouldSelectAllProviders(bool value);
+    protected bool WaitForActivity(IEnumerable`1<IAsyncEnumerable`1<T>> enumerables);
+    protected abstract virtual IEnumerable`1<string> get_ParameterSets();
+    protected bool get_IsPackageBySearch();
+    protected bool get_IsPackageByObject();
+    protected bool get_IsSourceByObject();
+    protected internal IPackageManagementService get_PackageManagementService();
+    protected int get_TimeOut();
+    protected int get_Responsiveness();
+    public GetMessageString get_MessageResolver();
+    public Hashtable get_DynamicOptions();
+    public virtual IEnumerable`1<string> get_Sources();
+    public virtual void set_Sources(IEnumerable`1<string> value);
+    public virtual IEnumerable`1<string> get_OptionKeys();
+    protected bool GenerateCommonDynamicParameters();
+    public virtual string GetMessageString(string messageText, string defaultText);
+    public virtual bool AskPermission(string permission);
+    public virtual IEnumerable`1<string> GetOptionValues(string key);
+    public virtual IWebProxy get_WebProxy();
+    public virtual string get_CredentialUsername();
+    public virtual SecureString get_CredentialPassword();
+    public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
+    private sealed virtual override bool Microsoft.PackageManagement.Internal.Api.IHostApi.ShouldContinue(string query, string caption, Boolean& yesToAll, Boolean& noToAll);
+    private sealed virtual override bool Microsoft.PackageManagement.Internal.Api.IHostApi.ShouldContinue(string query, string caption);
+    public virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
+    public virtual bool get_IsInteractive();
+    public virtual int get_CallCount();
+    protected virtual void Init();
+    protected virtual string get_BootstrapNuGet();
+    protected virtual void set_BootstrapNuGet(string value);
+    protected virtual IHostApi get_PackageManagementHost();
+    protected IEnumerable`1<PackageProvider> SelectProviders(String[] names);
+    protected IEnumerable`1<PackageProvider> SelectProviders(string name);
+    public virtual bool ConsumeDynamicParameters();
+    private void TraceMessageHelper(string message, SoftwareIdentity swidObject);
+    protected void TraceMessage(string message, SoftwareIdentity swidObject);
+    protected void LogEvent(EventTask task, EventId id, string context, string name, string version, string providerName, string source, string status, string destinationPath);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <get_PackageManagementHost>b__69_0(string key);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<PackageProvider> <SelectProviders>b__70_1(string each);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<PackageProvider> <SelectProviders>b__70_2(string each);
+    [CompilerGeneratedAttribute]
+private RuntimeDefinedParameter <ConsumeDynamicParameters>b__72_0(string d);
+}
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithProvider : CmdletBase {
+    private OptionCategory[] _optionCategories;
+    private String[] _providerName;
+    private bool _initializedTypeName;
+    private string _softwareIdentityTypeName;
+    private bool _isDisplayCulture;
+    private bool _initializedCulture;
+    private bool _isUserSpecifyOneProviderName;
+    private bool _hasTypeNameChanged;
+    private bool _useDefaultSourceFormat;
+    private bool _initializedSource;
+    private IEnumerable`1<PackageSource> _resolvedUserSpecifiedSource;
+    protected bool IsFailingEarly;
+    protected Dictionary`2<string, string> UserSpecifiedSourcesList;
+    public String[] ProviderName { get; public set; }
+    protected IEnumerable`1<PackageProvider> SelectedProviders { get; }
+    protected PackageProvider[] CachedSelectedProviders { get; }
+    protected DynamicOption[] CachedDynamicOptions { get; }
+    protected Dictionary`2<string, ParameterMetadata> CachedStaticParameters { get; }
+    protected bool IsDisplayCulture { get; }
+    protected bool UseDefaultSourceFormat { get; }
+    protected CmdletWithProvider(OptionCategory[] categories);
+    public String[] get_ProviderName();
+    public void set_ProviderName(String[] value);
+    protected virtual IEnumerable`1<PackageProvider> get_SelectedProviders();
+    [IteratorStateMachineAttribute("Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithProvider/<FilterProvidersUsingDynamicParameters>d__19")]
+private IEnumerable`1<PackageProvider> FilterProvidersUsingDynamicParameters(MutableEnumerable`1<PackageProvider> providers, IEnumerable`1<PackageSource> userSpecifiedRegisteredSources, bool didUserSpecifyProviders, bool didUserSpecifySources);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    protected bool ActualGenerateDynamicParameters(Dictionary`2<string, object> unboundArguments);
+    protected PackageProvider[] get_CachedSelectedProviders();
+    protected virtual DynamicOption[] get_CachedDynamicOptions();
+    protected Dictionary`2<string, ParameterMetadata> get_CachedStaticParameters();
+    public virtual bool GenerateDynamicParameters();
+    protected bool get_IsDisplayCulture();
+    protected virtual bool get_UseDefaultSourceFormat();
+    private string GetSoftwareIdentityTypeName(SoftwareIdentity package);
+    protected object AddPropertyToSoftwareIdentity(SoftwareIdentity package);
+    [CompilerGeneratedAttribute]
+private PackageProvider[] <get_CachedSelectedProviders>b__23_0();
+    [CompilerGeneratedAttribute]
+private DynamicOption[] <get_CachedDynamicOptions>b__25_0();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<DynamicOption> <get_CachedDynamicOptions>b__25_1(PackageProvider provider);
+}
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithSearch : CmdletWithProvider {
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <AllVersions>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter AllVersions { get; public set; }
+    protected CmdletWithSearch(OptionCategory[] categories);
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MaximumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual SwitchParameter get_AllVersions();
+    [CompilerGeneratedAttribute]
+public virtual void set_AllVersions(SwitchParameter value);
+}
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithSearchAndSource : CmdletWithSearch {
+    internal OrderedDictionary`2<string, List`1<SoftwareIdentity>> _resultsPerName;
+    protected List`1<PackageProvider> _providersNotFindingAnything;
+    internal static String[] ProviderFilters;
+    protected static string Bootstrap;
+    protected static string PowerShellGet;
+    internal static String[] RequiredProviders;
+    private HashSet`1<string> _sourcesTrusted;
+    private HashSet`1<string> _sourcesDeniedTrust;
+    private bool _yesToAll;
+    private bool _noToAll;
+    private String[] _sources;
+    [CompilerGeneratedAttribute]
+private PSCredential <Credential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <ProxyCredential>k__BackingField;
+    private List`1<Uri> _uris;
+    private Dictionary`2<string, Tuple`2<List`1<string>, Byte[]>> _files;
+    private IEnumerable`1<string> _names;
+    [ParameterAttribute]
+public String[] Source { get; public set; }
+    [ParameterAttribute]
+public PSCredential Credential { get; public set; }
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public Uri Proxy { get; public set; }
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public PSCredential ProxyCredential { get; public set; }
+    public IEnumerable`1<string> Sources { get; }
+    public IWebProxy WebProxy { get; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    protected bool SpecifiedMinimumOrMaximum { get; }
+    protected string BootstrapNuGet { get; }
+    protected CmdletWithSearchAndSource(OptionCategory[] categories);
+    private static CmdletWithSearchAndSource();
+    public virtual String[] get_Source();
+    public virtual void set_Source(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual PSCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public virtual void set_Credential(PSCredential value);
+    [CompilerGeneratedAttribute]
+public Uri get_Proxy();
+    [CompilerGeneratedAttribute]
+public void set_Proxy(Uri value);
+    [CompilerGeneratedAttribute]
+public PSCredential get_ProxyCredential();
+    [CompilerGeneratedAttribute]
+public void set_ProxyCredential(PSCredential value);
+    public virtual IEnumerable`1<string> get_Sources();
+    public virtual IWebProxy get_WebProxy();
+    public virtual string get_CredentialUsername();
+    public virtual SecureString get_CredentialPassword();
+    public virtual bool ProcessRecordAsync();
+    private MutableEnumerable`1<string> FindFiles(string path);
+    protected bool get_SpecifiedMinimumOrMaximum();
+    private bool IsUri(string name);
+    private bool IsFile(string name);
+    protected virtual IHostApi GetProviderSpecificOption(PackageProvider pv);
+    protected virtual bool EnsurePackageIsProvider(SoftwareIdentity package);
+    protected virtual string get_BootstrapNuGet();
+    protected bool ValidatePackageProvider(SoftwareIdentity package);
+    private void ProcessRequests(PackageProvider[] providers);
+    protected virtual void SearchForPackages();
+    protected virtual void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package);
+    protected bool CheckUnmatchedPackages();
+    [IteratorStateMachineAttribute("Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithSearchAndSource/<CheckMatchedDuplicates>d__53")]
+protected IEnumerable`1<SoftwareIdentity> CheckMatchedDuplicates();
+    private string GetPackageSourceNameOrLocation(SoftwareIdentity package);
+    protected bool InstallPackages(SoftwareIdentity[] packagesToInstall);
+    protected bool ShouldProcessPackageInstall(string packageName, string version, string source);
+    public virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<<>f__AnonymousType1`3<List`1<string>, PackageProvider, IAsyncEnumerable`1<SoftwareIdentity>>> <ProcessRequests>b__49_0(PackageProvider pv);
+    [CompilerGeneratedAttribute]
+private bool <SearchForPackages>b__50_0(string each);
+    [CompilerGeneratedAttribute]
+private bool <CheckUnmatchedPackages>b__52_0(string each);
+}
+public abstract class Microsoft.PowerShell.PackageManagement.Cmdlets.CmdletWithSource : CmdletWithProvider {
+    [CompilerGeneratedAttribute]
+private PackageSource[] <InputObject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <Credential>k__BackingField;
+    [ParameterAttribute]
+public PackageSource[] InputObject { get; public set; }
+    [ParameterAttribute]
+public PSCredential Credential { get; public set; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    protected CmdletWithSource(OptionCategory[] categories);
+    [CompilerGeneratedAttribute]
+public PackageSource[] get_InputObject();
+    [CompilerGeneratedAttribute]
+public void set_InputObject(PackageSource[] value);
+    [CompilerGeneratedAttribute]
+public PSCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public void set_Credential(PSCredential value);
+    public virtual string get_CredentialUsername();
+    public virtual SecureString get_CredentialPassword();
+}
+[CmdletAttribute("Find", "Package")]
+[OutputTypeAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackage : CmdletWithSearchAndSource {
+    [CompilerGeneratedAttribute]
+private SwitchParameter <IncludeDependencies>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <AllVersions>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public SwitchParameter IncludeDependencies { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter AllVersions { get; public set; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public SwitchParameter get_IncludeDependencies();
+    [CompilerGeneratedAttribute]
+public void set_IncludeDependencies(SwitchParameter value);
+    [CompilerGeneratedAttribute]
+public virtual SwitchParameter get_AllVersions();
+    [CompilerGeneratedAttribute]
+public virtual void set_AllVersions(SwitchParameter value);
+    public virtual bool BeginProcessingAsync();
+    protected virtual void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package);
+    private void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package, HashSet`1<string> processedDependencies);
+    public virtual bool EndProcessingAsync();
+}
+[CmdletAttribute("Find", "PackageProvider")]
+[OutputTypeAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.FindPackageProvider : CmdletWithSearchAndSource {
+    private static string FilterOnTag;
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <AllVersions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <IncludeDependencies>k__BackingField;
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter AllVersions { get; public set; }
+    [ParameterAttribute]
+public String[] Source { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter IncludeDependencies { get; public set; }
+    protected DynamicOption[] CachedDynamicOptions { get; }
+    protected IEnumerable`1<PackageProvider> SelectedProviders { get; }
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual SwitchParameter get_AllVersions();
+    [CompilerGeneratedAttribute]
+public virtual void set_AllVersions(SwitchParameter value);
+    public virtual String[] get_Source();
+    public virtual void set_Source(String[] value);
+    [CompilerGeneratedAttribute]
+public SwitchParameter get_IncludeDependencies();
+    [CompilerGeneratedAttribute]
+public void set_IncludeDependencies(SwitchParameter value);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    protected virtual DynamicOption[] get_CachedDynamicOptions();
+    public virtual bool ProcessRecordAsync();
+    protected virtual IEnumerable`1<PackageProvider> get_SelectedProviders();
+    protected virtual IHostApi GetProviderSpecificOption(PackageProvider pv);
+    protected virtual bool EnsurePackageIsProvider(SoftwareIdentity package);
+    protected virtual void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package);
+    public virtual bool EndProcessingAsync();
+}
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.GetMessageString : MulticastDelegate {
+    public GetMessageString(object object, IntPtr method);
+    public virtual string Invoke(string messageId, string defaultText);
+    public virtual IAsyncResult BeginInvoke(string messageId, string defaultText, AsyncCallback callback, object object);
+    public virtual string EndInvoke(IAsyncResult result);
+}
+[CmdletAttribute("Get", "Package")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackage : CmdletWithSearch {
+    private Dictionary`2<string, bool> _namesProcessed;
+    private string _newSoftwareIdentityTypeName;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    protected IEnumerable`1<string> UnprocessedNames { get; }
+    protected bool UseDefaultSourceFormat { get; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    protected IEnumerable`1<string> get_UnprocessedNames();
+    protected bool IsPackageInVersionRange(SoftwareIdentity pkg);
+    protected bool IsDuplicate(SoftwareIdentity package);
+    public virtual bool ProcessRecordAsync();
+    protected virtual void ProcessPackage(SoftwareIdentity package);
+    public virtual bool EndProcessingAsync();
+    protected virtual bool get_UseDefaultSourceFormat();
+    [CompilerGeneratedAttribute]
+private bool <get_UnprocessedNames>b__6_0(string each);
+    [CompilerGeneratedAttribute]
+private <>f__AnonymousType3`2<string, IAsyncEnumerable`1<SoftwareIdentity>> <ProcessRecordAsync>b__9_0(PackageProvider pv);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<<>f__AnonymousType3`2<string, IAsyncEnumerable`1<SoftwareIdentity>>> <ProcessRecordAsync>b__9_1(PackageProvider pv);
+}
+[CmdletAttribute("Get", "PackageProvider")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageProvider : CmdletBase {
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <ListAvailable>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter ListAvailable { get; public set; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public String[] get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public SwitchParameter get_ListAvailable();
+    [CompilerGeneratedAttribute]
+public void set_ListAvailable(SwitchParameter value);
+    public virtual bool ProcessRecordAsync();
+    private void ProcessProvidersFilteredByName();
+}
+[CmdletAttribute("Get", "PackageSource")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageSource : CmdletWithProvider {
+    private List`1<PackageSource> _unregistered;
+    private bool _found;
+    private bool _noLocation;
+    private bool _noName;
+    private string _name;
+    private string _originalName;
+    [CompilerGeneratedAttribute]
+private string <Location>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public string Name { get; public set; }
+    [ParameterAttribute]
+public string Location { get; public set; }
+    private IEnumerable`1<string> _sources { get; }
+    public IEnumerable`1<string> Sources { get; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    public string get_Name();
+    public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Location();
+    [CompilerGeneratedAttribute]
+public void set_Location(string value);
+    [IteratorStateMachineAttribute("Microsoft.PowerShell.PackageManagement.Cmdlets.GetPackageSource/<get__sources>d__17")]
+private IEnumerable`1<string> get__sources();
+    public virtual IEnumerable`1<string> get_Sources();
+    private bool WriteSources(IEnumerable`1<PackageSource> sources);
+    public virtual bool ProcessRecordAsync();
+    public virtual bool EndProcessingAsync();
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__21_0(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__21_2(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__21_3(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__21_4(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <EndProcessingAsync>b__22_0(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <EndProcessingAsync>b__22_1(PackageSource each);
+    [CompilerGeneratedAttribute]
+private bool <EndProcessingAsync>b__22_2(PackageSource each);
+}
+[CmdletAttribute("Import", "PackageProvider")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.ImportPackageProvider : CmdletBase {
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public String[] get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public void set_MaximumVersion(string value);
+    public virtual bool BeginProcessingAsync();
+    public virtual bool ProcessRecordAsync();
+    public virtual bool EndProcessingAsync();
+}
+[CmdletAttribute("Install", "Package")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackage : CmdletWithSearchAndSource {
+    [CompilerGeneratedAttribute]
+private SoftwareIdentity[] <InputObject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public SoftwareIdentity[] InputObject { get; public set; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    [ParameterAttribute]
+public String[] Source { get; public set; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public SoftwareIdentity[] get_InputObject();
+    [CompilerGeneratedAttribute]
+public void set_InputObject(SoftwareIdentity[] value);
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MaximumVersion(string value);
+    public virtual String[] get_Source();
+    public virtual void set_Source(String[] value);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    public virtual bool BeginProcessingAsync();
+    public virtual bool ProcessRecordAsync();
+    public virtual bool EndProcessingAsync();
+    protected virtual void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package);
+    private IEnumerable`1<SoftwareIdentity> GetDependenciesToInstall(SoftwareIdentity package, Boolean& hasDependencyLoop);
+    internal bool DepthFirstVisit(SoftwareIdentity packageItem, HashSet`1<SoftwareIdentity> temporarilyMarked, HashSet`1<SoftwareIdentity> permanentlyMarked, List`1<SoftwareIdentity> dependencyToBeInstalled);
+}
+[CmdletAttribute("Install", "PackageProvider")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.InstallPackageProvider : CmdletWithSearchAndSource {
+    private static string FilterOnTag;
+    private string _scope;
+    private List`1<string> _sourcesFromPipeline;
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <Credential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SoftwareIdentity[] <InputObject>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    [ParameterAttribute]
+public PSCredential Credential { get; public set; }
+    [ValidateSetAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ParameterAttribute]
+[ParameterAttribute]
+public string Scope { get; public set; }
+    [ParameterAttribute]
+public String[] Source { get; public set; }
+    [ParameterAttribute]
+public SoftwareIdentity[] InputObject { get; public set; }
+    protected DynamicOption[] CachedDynamicOptions { get; }
+    protected string BootstrapNuGet { get; }
+    private bool InstallingNugetProvider { get; }
+    protected IEnumerable`1<PackageProvider> SelectedProviders { get; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MaximumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual PSCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public virtual void set_Credential(PSCredential value);
+    public string get_Scope();
+    public void set_Scope(string value);
+    public virtual String[] get_Source();
+    public virtual void set_Source(String[] value);
+    [CompilerGeneratedAttribute]
+public SoftwareIdentity[] get_InputObject();
+    [CompilerGeneratedAttribute]
+public void set_InputObject(SoftwareIdentity[] value);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    protected virtual DynamicOption[] get_CachedDynamicOptions();
+    protected virtual string get_BootstrapNuGet();
+    private bool get_InstallingNugetProvider();
+    public virtual bool ProcessRecordAsync();
+    protected virtual IEnumerable`1<PackageProvider> get_SelectedProviders();
+    protected virtual IHostApi GetProviderSpecificOption(PackageProvider pv);
+    protected virtual void ProcessPackage(PackageProvider provider, IEnumerable`1<string> searchKey, SoftwareIdentity package);
+    protected virtual bool EnsurePackageIsProvider(SoftwareIdentity package);
+    public virtual bool EndProcessingAsync();
+    private bool ImportProvider(SoftwareIdentity[] list);
+    private List`1<SoftwareIdentity> ProcessMatchedDuplicates();
+    [CompilerGeneratedAttribute]
+private bool <EndProcessingAsync>b__49_0(string each);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<PackageProvider> <ImportProvider>b__50_0(SoftwareIdentity each);
+}
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.OnMainThread : MulticastDelegate {
+    public OnMainThread(object object, IntPtr method);
+    public virtual bool Invoke(Func`1<bool> onMainThreadDelegate);
+    public virtual IAsyncResult BeginInvoke(Func`1<bool> onMainThreadDelegate, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+[CmdletAttribute("Register", "PackageSource")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.RegisterPackageSource : CmdletWithProvider {
+    [CompilerGeneratedAttribute]
+private Uri <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <ProxyCredential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Location>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <Credential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <Trusted>k__BackingField;
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public Uri Proxy { get; public set; }
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public PSCredential ProxyCredential { get; public set; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    public IWebProxy WebProxy { get; }
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public string Name { get; public set; }
+    [ParameterAttribute]
+public string Location { get; public set; }
+    [ParameterAttribute]
+public PSCredential Credential { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter Trusted { get; public set; }
+    [CompilerGeneratedAttribute]
+public Uri get_Proxy();
+    [CompilerGeneratedAttribute]
+public void set_Proxy(Uri value);
+    [CompilerGeneratedAttribute]
+public PSCredential get_ProxyCredential();
+    [CompilerGeneratedAttribute]
+public void set_ProxyCredential(PSCredential value);
+    public virtual string get_CredentialUsername();
+    public virtual SecureString get_CredentialPassword();
+    public virtual IWebProxy get_WebProxy();
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Location();
+    [CompilerGeneratedAttribute]
+public void set_Location(string value);
+    [CompilerGeneratedAttribute]
+public PSCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public void set_Credential(PSCredential value);
+    [CompilerGeneratedAttribute]
+public SwitchParameter get_Trusted();
+    [CompilerGeneratedAttribute]
+public void set_Trusted(SwitchParameter value);
+    public virtual bool ProcessRecordAsync();
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__34_2(PackageSource each);
+}
+[CmdletAttribute("Save", "Package")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.SavePackage : CmdletWithSearchAndSource {
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LiteralPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SoftwareIdentity <InputObject>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    [ParameterAttribute]
+public String[] Source { get; public set; }
+    [ParameterAttribute]
+public string Path { get; public set; }
+    [ParameterAttribute]
+public string LiteralPath { get; public set; }
+    [ParameterAttribute]
+public SoftwareIdentity InputObject { get; public set; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MaximumVersion(string value);
+    public virtual String[] get_Source();
+    public virtual void set_Source(String[] value);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public string get_LiteralPath();
+    [CompilerGeneratedAttribute]
+public void set_LiteralPath(string value);
+    [CompilerGeneratedAttribute]
+public SoftwareIdentity get_InputObject();
+    [CompilerGeneratedAttribute]
+public void set_InputObject(SoftwareIdentity value);
+    private string SaveFileName(string packageName);
+    public virtual bool ProcessRecordAsync();
+    public virtual bool EndProcessingAsync();
+    private bool DownloadPackage(SoftwareIdentity[] packagesToSave);
+}
+[CmdletAttribute("Set", "PackageSource")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.SetPackageSource : CmdletWithProvider {
+    [ParameterAttribute]
+public PackageSource InputObject;
+    [CompilerGeneratedAttribute]
+private Uri <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <ProxyCredential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PSCredential <Credential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Location>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <NewLocation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <NewName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SwitchParameter <Trusted>k__BackingField;
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public Uri Proxy { get; public set; }
+    [ParameterAttribute]
+[ValidateNotNullAttribute]
+public PSCredential ProxyCredential { get; public set; }
+    public IWebProxy WebProxy { get; }
+    [ParameterAttribute]
+public PSCredential Credential { get; public set; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [AliasAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ParameterAttribute]
+public string Name { get; public set; }
+    [ParameterAttribute]
+public string Location { get; public set; }
+    [ParameterAttribute]
+public string NewLocation { get; public set; }
+    [ParameterAttribute]
+public string NewName { get; public set; }
+    [ParameterAttribute]
+public SwitchParameter Trusted { get; public set; }
+    public IEnumerable`1<string> Sources { get; }
+    private IHostApi UpdatePackageSourceRequest { get; }
+    [CompilerGeneratedAttribute]
+public Uri get_Proxy();
+    [CompilerGeneratedAttribute]
+public void set_Proxy(Uri value);
+    [CompilerGeneratedAttribute]
+public PSCredential get_ProxyCredential();
+    [CompilerGeneratedAttribute]
+public void set_ProxyCredential(PSCredential value);
+    public virtual IWebProxy get_WebProxy();
+    [CompilerGeneratedAttribute]
+public PSCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public void set_Credential(PSCredential value);
+    public virtual string get_CredentialUsername();
+    public virtual SecureString get_CredentialPassword();
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Location();
+    [CompilerGeneratedAttribute]
+public void set_Location(string value);
+    [CompilerGeneratedAttribute]
+public string get_NewLocation();
+    [CompilerGeneratedAttribute]
+public void set_NewLocation(string value);
+    [CompilerGeneratedAttribute]
+public string get_NewName();
+    [CompilerGeneratedAttribute]
+public void set_NewName(string value);
+    [CompilerGeneratedAttribute]
+public SwitchParameter get_Trusted();
+    [CompilerGeneratedAttribute]
+public void set_Trusted(SwitchParameter value);
+    public virtual IEnumerable`1<string> get_Sources();
+    private IHostApi get_UpdatePackageSourceRequest();
+    private void UpdatePackageSource(PackageSource source);
+    public virtual bool ProcessRecordAsync();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <get_UpdatePackageSourceRequest>b__46_0();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <get_UpdatePackageSourceRequest>b__46_1(string key);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<PackageSource> <ProcessRecordAsync>b__48_0(PackageProvider each);
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__48_2(PackageSource source);
+}
+[CmdletAttribute("Uninstall", "Package")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.UninstallPackage : GetPackage {
+    private Dictionary`2<string, List`1<SoftwareIdentity>> _resultsPerName;
+    [CompilerGeneratedAttribute]
+private SoftwareIdentity[] <InputObject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequiredVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinimumVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaximumVersion>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [ParameterAttribute]
+public SoftwareIdentity[] InputObject { get; public set; }
+    [ParameterAttribute]
+public String[] Name { get; public set; }
+    [ParameterAttribute]
+public string RequiredVersion { get; public set; }
+    [ParameterAttribute]
+public string MinimumVersion { get; public set; }
+    [ParameterAttribute]
+public string MaximumVersion { get; public set; }
+    protected string BootstrapNuGet { get; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    [CompilerGeneratedAttribute]
+public SoftwareIdentity[] get_InputObject();
+    [CompilerGeneratedAttribute]
+public void set_InputObject(SoftwareIdentity[] value);
+    [CompilerGeneratedAttribute]
+public virtual String[] get_Name();
+    [CompilerGeneratedAttribute]
+public virtual void set_Name(String[] value);
+    [CompilerGeneratedAttribute]
+public virtual string get_RequiredVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_RequiredVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MinimumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MinimumVersion(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_MaximumVersion();
+    [CompilerGeneratedAttribute]
+public virtual void set_MaximumVersion(string value);
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    protected virtual string get_BootstrapNuGet();
+    public virtual bool ProcessRecordAsync();
+    protected virtual void ProcessPackage(SoftwareIdentity package);
+    public virtual bool EndProcessingAsync();
+    private bool UninstallPackages(IEnumerable`1<SoftwareIdentity> packagesToUnInstall);
+    public bool ShouldProcessPackageUninstall(string packageName, string version);
+}
+[CmdletAttribute("Unregister", "PackageSource")]
+public class Microsoft.PowerShell.PackageManagement.Cmdlets.UnregisterPackageSource : CmdletWithSource {
+    [CompilerGeneratedAttribute]
+private string <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Location>k__BackingField;
+    protected IEnumerable`1<string> ParameterSets { get; }
+    [AliasAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ParameterAttribute]
+public string Source { get; public set; }
+    [ParameterAttribute]
+public string Location { get; public set; }
+    public IEnumerable`1<string> Sources { get; }
+    protected virtual IEnumerable`1<string> get_ParameterSets();
+    protected virtual void GenerateCmdletSpecificParameters(Dictionary`2<string, object> unboundArguments);
+    [CompilerGeneratedAttribute]
+public string get_Source();
+    [CompilerGeneratedAttribute]
+public void set_Source(string value);
+    [CompilerGeneratedAttribute]
+public string get_Location();
+    [CompilerGeneratedAttribute]
+public void set_Location(string value);
+    public virtual IEnumerable`1<string> get_Sources();
+    public virtual bool ProcessRecordAsync();
+    public bool Unregister(PackageSource source);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<PackageSource> <ProcessRecordAsync>b__14_0(PackageProvider each);
+    [CompilerGeneratedAttribute]
+private bool <ProcessRecordAsync>b__14_2(PackageSource source);
+}
+internal static class Microsoft.PowerShell.PackageManagement.Constants : object {
+    internal static int DefaultTimeout;
+    internal static int DefaultResponsiveness;
+    internal static string AssemblyProviderType;
+    internal static Object[] NoParameters;
+    internal static string InstallPackageTrace;
+    internal static string UnInstallPackageTrace;
+    internal static string SavePackageTrace;
+    internal static string PowerShellProviderName;
+    internal static string NewWinEvent;
+    private static Constants();
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.PowerShell.PackageManagement.Resources.Messages : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string QueryContinueInstallingAfterFailing { get; }
+    internal static string QueryContinueUninstallingAfterFailing { get; }
+    internal static string DestinationPathInvalid { get; }
+    internal static string DisambiguateForInstall { get; }
+    internal static string DisambiguateForUninstall { get; }
+    internal static string SourceFoundInMultipleProviders { get; }
+    internal static string SkippedProviderMissingRequiredOption { get; }
+    internal static string InstallationFailure { get; }
+    internal static string CaptionPackageNotTrusted { get; }
+    internal static string CaptionSourceNotTrusted { get; }
+    internal static string ActionInstallPackage { get; }
+    internal static string MatchesMultiplePackages { get; }
+    internal static string TargetPackageSource { get; }
+    internal static string NoMatchFound { get; }
+    internal static string NoMatchFoundForCriteria { get; }
+    internal static string NoPackagesFoundForProvider { get; }
+    internal static string CaptionPackageContainsInstallationScript { get; }
+    internal static string CaptionPackageContainsUninstallationScript { get; }
+    internal static string FileNotRecognized { get; }
+    internal static string CaptionPackageInstallFailure { get; }
+    internal static string CaptionPackageUninstallFailure { get; }
+    internal static string QueryShouldThePackageScriptAtBeProcessed { get; }
+    internal static string QueryShouldThePackageUninstallScriptAtBeProcessed { get; }
+    internal static string SourceNotFound { get; }
+    internal static string QueryInstallUntrustedPackage { get; }
+    internal static string UninstallationFailure { get; }
+    internal static string ActionUninstallPackage { get; }
+    internal static string UnknownProvider { get; }
+    internal static string BootstrapManualAssembly { get; }
+    internal static string BootstrapManualInstall { get; }
+    internal static string BootstrapProvider { get; }
+    internal static string BootstrapProviderProviderRequested { get; }
+    internal static string BootstrapProviderUserRequested { get; }
+    internal static string QueryBootstrap { get; }
+    internal static string TargetPackage { get; }
+    internal static string TargetPackageVersion { get; }
+    internal static string ActionRegisterPackageSource { get; }
+    internal static string ActionReplacePackageSource { get; }
+    internal static string ActionUnregisterPackageSource { get; }
+    internal static string NotImplemmented { get; }
+    internal static string OverwritingPackageSource { get; }
+    internal static string PackageInstallRequiresOption { get; }
+    internal static string PackageSourceExists { get; }
+    internal static string SourceNotFoundForLocation { get; }
+    internal static string SourceNotFoundForNameAndLocation { get; }
+    internal static string SourceNotFoundNoCriteria { get; }
+    internal static string UnableToFindProviderForSource { get; }
+    internal static string DestinationOrLiteralPathRequired { get; }
+    internal static string MatchesMultipleProviders { get; }
+    internal static string ProviderNameNotSpecified { get; }
+    internal static string NameOrLocationRequired { get; }
+    internal static string NoMatchesForWildcard { get; }
+    internal static string NoMatchForProvidersAndSources { get; }
+    internal static string SavePackage { get; }
+    internal static string ShouldContinueWithUntrustedPackageSource { get; }
+    internal static string UserDeclinedUntrustedPackageInstall { get; }
+    internal static string UnknownProviders { get; }
+    internal static string PackageFileExists { get; }
+    internal static string UnableToOverwrite { get; }
+    internal static string FilePathMustBeFileSystemPath { get; }
+    internal static string SavePackageError { get; }
+    internal static string ProviderSwidtagUnavailable { get; }
+    internal static string MustSpecifyCriteria { get; }
+    internal static string UnableToFindDependencyPackage { get; }
+    internal static string NetworkNotAvailable { get; }
+    internal static string InstalledPackageMultiple { get; }
+    internal static string InstallingPackageMultiple { get; }
+    internal static string InstallingPackagesCount { get; }
+    internal static string SkippedInstalledPackage { get; }
+    internal static string SkippedInstalledPackageMultiple { get; }
+    internal static string VersionRangeAndRequiredVersionCannotBeSpecifiedTogether { get; }
+    internal static string SpecifiedProviderMissingRequiredOption { get; }
+    internal static string FileNotFound { get; }
+    internal static string MoreThanOneFileMatched { get; }
+    internal static string MoreThanOneFolderMatched { get; }
+    internal static string UnhandledException { get; }
+    internal static string MinimumVersionMustBeLessThanMaximumVersion { get; }
+    internal static string MultipleNamesWithVersionNotAllowed { get; }
+    internal static string RequiredWithMaxOrMinimumVersionNotAllowed { get; }
+    internal static string FullProviderFilePathVersionNotAllowed { get; }
+    internal static string UnknownProviderFromActivatedList { get; }
+    internal static string AllVersionsCannotBeUsedWithOtherVersionParameters { get; }
+    internal static string NoMatchFoundForProvider { get; }
+    internal static string DisambiguateForInstall_SpecifyName { get; }
+    internal static string DisambiguateForInstall_SpecifySource { get; }
+    internal static string RegisterPackageSourceRequired { get; }
+    internal static string InvalidVersion { get; }
+    internal static string SelectedProviders { get; }
+    internal static string ProviderFailToDownloadFile { get; }
+    internal static string FolderNotFound { get; }
+    internal static string WildCardCharsAreNotSupported { get; }
+    internal static string SuggestRequiredVersion { get; }
+    internal static string SuggestSingleProviderName { get; }
+    internal static string SuggestSingleSource { get; }
+    internal static string MethodNotImplemented { get; }
+    internal static string InstallRequiresCurrentUserScopeParameterForNonAdminUser { get; }
+    internal static string TooManyPackages { get; }
+    internal static string PackageInstalled { get; }
+    internal static string PackageSaved { get; }
+    internal static string PackageUnInstalled { get; }
+    internal static string SavePackageWhatIfDescription { get; }
+    internal static string ProviderImported { get; }
+    internal static string ProviderNameDifferentFromPackageName { get; }
+    internal static string Completed { get; }
+    internal static string Processing { get; }
+    internal static string WhitespacesAreNotSupported { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_QueryContinueInstallingAfterFailing();
+    internal static string get_QueryContinueUninstallingAfterFailing();
+    internal static string get_DestinationPathInvalid();
+    internal static string get_DisambiguateForInstall();
+    internal static string get_DisambiguateForUninstall();
+    internal static string get_SourceFoundInMultipleProviders();
+    internal static string get_SkippedProviderMissingRequiredOption();
+    internal static string get_InstallationFailure();
+    internal static string get_CaptionPackageNotTrusted();
+    internal static string get_CaptionSourceNotTrusted();
+    internal static string get_ActionInstallPackage();
+    internal static string get_MatchesMultiplePackages();
+    internal static string get_TargetPackageSource();
+    internal static string get_NoMatchFound();
+    internal static string get_NoMatchFoundForCriteria();
+    internal static string get_NoPackagesFoundForProvider();
+    internal static string get_CaptionPackageContainsInstallationScript();
+    internal static string get_CaptionPackageContainsUninstallationScript();
+    internal static string get_FileNotRecognized();
+    internal static string get_CaptionPackageInstallFailure();
+    internal static string get_CaptionPackageUninstallFailure();
+    internal static string get_QueryShouldThePackageScriptAtBeProcessed();
+    internal static string get_QueryShouldThePackageUninstallScriptAtBeProcessed();
+    internal static string get_SourceNotFound();
+    internal static string get_QueryInstallUntrustedPackage();
+    internal static string get_UninstallationFailure();
+    internal static string get_ActionUninstallPackage();
+    internal static string get_UnknownProvider();
+    internal static string get_BootstrapManualAssembly();
+    internal static string get_BootstrapManualInstall();
+    internal static string get_BootstrapProvider();
+    internal static string get_BootstrapProviderProviderRequested();
+    internal static string get_BootstrapProviderUserRequested();
+    internal static string get_QueryBootstrap();
+    internal static string get_TargetPackage();
+    internal static string get_TargetPackageVersion();
+    internal static string get_ActionRegisterPackageSource();
+    internal static string get_ActionReplacePackageSource();
+    internal static string get_ActionUnregisterPackageSource();
+    internal static string get_NotImplemmented();
+    internal static string get_OverwritingPackageSource();
+    internal static string get_PackageInstallRequiresOption();
+    internal static string get_PackageSourceExists();
+    internal static string get_SourceNotFoundForLocation();
+    internal static string get_SourceNotFoundForNameAndLocation();
+    internal static string get_SourceNotFoundNoCriteria();
+    internal static string get_UnableToFindProviderForSource();
+    internal static string get_DestinationOrLiteralPathRequired();
+    internal static string get_MatchesMultipleProviders();
+    internal static string get_ProviderNameNotSpecified();
+    internal static string get_NameOrLocationRequired();
+    internal static string get_NoMatchesForWildcard();
+    internal static string get_NoMatchForProvidersAndSources();
+    internal static string get_SavePackage();
+    internal static string get_ShouldContinueWithUntrustedPackageSource();
+    internal static string get_UserDeclinedUntrustedPackageInstall();
+    internal static string get_UnknownProviders();
+    internal static string get_PackageFileExists();
+    internal static string get_UnableToOverwrite();
+    internal static string get_FilePathMustBeFileSystemPath();
+    internal static string get_SavePackageError();
+    internal static string get_ProviderSwidtagUnavailable();
+    internal static string get_MustSpecifyCriteria();
+    internal static string get_UnableToFindDependencyPackage();
+    internal static string get_NetworkNotAvailable();
+    internal static string get_InstalledPackageMultiple();
+    internal static string get_InstallingPackageMultiple();
+    internal static string get_InstallingPackagesCount();
+    internal static string get_SkippedInstalledPackage();
+    internal static string get_SkippedInstalledPackageMultiple();
+    internal static string get_VersionRangeAndRequiredVersionCannotBeSpecifiedTogether();
+    internal static string get_SpecifiedProviderMissingRequiredOption();
+    internal static string get_FileNotFound();
+    internal static string get_MoreThanOneFileMatched();
+    internal static string get_MoreThanOneFolderMatched();
+    internal static string get_UnhandledException();
+    internal static string get_MinimumVersionMustBeLessThanMaximumVersion();
+    internal static string get_MultipleNamesWithVersionNotAllowed();
+    internal static string get_RequiredWithMaxOrMinimumVersionNotAllowed();
+    internal static string get_FullProviderFilePathVersionNotAllowed();
+    internal static string get_UnknownProviderFromActivatedList();
+    internal static string get_AllVersionsCannotBeUsedWithOtherVersionParameters();
+    internal static string get_NoMatchFoundForProvider();
+    internal static string get_DisambiguateForInstall_SpecifyName();
+    internal static string get_DisambiguateForInstall_SpecifySource();
+    internal static string get_RegisterPackageSourceRequired();
+    internal static string get_InvalidVersion();
+    internal static string get_SelectedProviders();
+    internal static string get_ProviderFailToDownloadFile();
+    internal static string get_FolderNotFound();
+    internal static string get_WildCardCharsAreNotSupported();
+    internal static string get_SuggestRequiredVersion();
+    internal static string get_SuggestSingleProviderName();
+    internal static string get_SuggestSingleSource();
+    internal static string get_MethodNotImplemented();
+    internal static string get_InstallRequiresCurrentUserScopeParameterForNonAdminUser();
+    internal static string get_TooManyPackages();
+    internal static string get_PackageInstalled();
+    internal static string get_PackageSaved();
+    internal static string get_PackageUnInstalled();
+    internal static string get_SavePackageWhatIfDescription();
+    internal static string get_ProviderImported();
+    internal static string get_ProviderNameDifferentFromPackageName();
+    internal static string get_Completed();
+    internal static string get_Processing();
+    internal static string get_WhitespacesAreNotSupported();
+}
+internal class Microsoft.PowerShell.PackageManagement.Utility.CustomRuntimeDefinedParameter : RuntimeDefinedParameter {
+    internal HashSet`1<DynamicOption> Options;
+    public CustomRuntimeDefinedParameter(DynamicOption option, bool isInvocation, IEnumerable`1<string> parameterSets);
+    public void IncludeInParameterSet(DynamicOption option, bool isInvocation, IEnumerable`1<string> parameterSets);
+    internal bool IsRequiredForProvider(string name);
+    internal IEnumerable`1<string> GetValues(AsyncCmdlet cmdlet);
+    private static Type ActualParameterType(OptionType optionType);
+}
+internal class Microsoft.PowerShell.PackageManagement.Utility.ErrorMessage : object {
+    public ErrorCategory Category;
+    public string Resource;
+    public ErrorMessage(string resource, ErrorCategory category);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PowerShell.PackageManagement.Utility.HostApiExtensions : object {
+    [ExtensionAttribute]
+internal static IHostApi ProviderSpecific(IHostApi parent, PackageProvider provider);
+    [ExtensionAttribute]
+internal static IHostApi SuppressErrorsAndWarnings(IHostApi parent, bool isProcessing);
+    [ExtensionAttribute]
+internal static IHostApi SuprressBootstrapping(IHostApi parent, bool isProcessing);
+}
+internal class Microsoft.PowerShell.PackageManagement.Utility.InternalWebProxy : object {
+    private Uri _proxyUri;
+    private ICredentials _credentials;
+    public ICredentials Credentials { get; public set; }
+    public InternalWebProxy(Uri uri, ICredentials credentials);
+    public sealed virtual ICredentials get_Credentials();
+    public sealed virtual void set_Credentials(ICredentials value);
+    public sealed virtual Uri GetProxy(Uri destination);
+    public sealed virtual bool IsBypassed(Uri host);
+}
+internal class Microsoft.PowerShell.PackageManagement.Utility.ProgressTracker : object {
+    internal string Activity;
+    internal List`1<ProgressTracker> Children;
+    internal int Id;
+    internal ProgressTracker Parent;
+}
+[AttributeUsageAttribute("384")]
+public class Microsoft.PowerShell.PackageManagement.Utility.ValidateListAttribute : ValidateEnumeratedArgumentsAttribute {
+    private List`1<string> _validValues;
+    private bool ignoreCase;
+    public bool IgnoreCase { get; public set; }
+    public IList`1<string> ValidValues { get; }
+    public ValidateListAttribute(String[] validValues);
+    public bool get_IgnoreCase();
+    public void set_IgnoreCase(bool value);
+    public IList`1<string> get_ValidValues();
+    public static ValidateSetAttribute op_Implicit(ValidateListAttribute vla);
+    protected virtual void ValidateElement(object element);
+}

@@ -1,0 +1,366 @@
+internal class Microsoft.VisualStudio.Coverage.Interprocess.ClientConnectedEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private PipeConnection <Server>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PipeClient <Client>k__BackingField;
+    public PipeConnection Server { get; public set; }
+    public PipeClient Client { get; public set; }
+    [CompilerGeneratedAttribute]
+public PipeConnection get_Server();
+    [CompilerGeneratedAttribute]
+public void set_Server(PipeConnection value);
+    [CompilerGeneratedAttribute]
+public PipeClient get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(PipeClient value);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.EqtTraceWrapper : object {
+    private TraceLevel _traceLevel;
+    public EqtTraceWrapper(string traceLevel);
+    public sealed virtual void Error(Exception exceptionToTrace);
+    public sealed virtual void Error(string message);
+    public sealed virtual void Info(string message);
+    public sealed virtual void Verbose(string message);
+}
+internal static class Microsoft.VisualStudio.Coverage.Interprocess.Helper : object {
+    public static string ManagedPrefix;
+    public static string UnmanagedPrefix;
+    public static string EntrypointPrefix;
+    private static Nullable`1<OSPlatform> CurrentOSPlatform;
+    public static OSPlatform CurrentPlatform { get; }
+    public static OSPlatform get_CurrentPlatform();
+    public static string GetModulePath(string uri, bool getPath);
+    public static long GetModuleWriteTimestamp(string path);
+    public static ValueTuple`2<string, Guid> GetStreamKey(CreateStreamMessage message);
+    public static ValueTuple`2<string, Guid> GetStreamKey(string prefix, Guid key);
+    public static UInt32 GetBlockSize(AssemblyMetadata assemblyMetadata);
+}
+public interface Microsoft.VisualStudio.Coverage.Interprocess.IEqtTraceWrapper {
+    public abstract virtual void Info(string message);
+    public abstract virtual void Error(Exception exceptionToTrace);
+    public abstract virtual void Error(string message);
+    public abstract virtual void Verbose(string message);
+}
+internal interface Microsoft.VisualStudio.Coverage.Interprocess.IMessage {
+    public bool Complete { get; }
+    public abstract virtual void SetLastReadCount(int count);
+    public abstract virtual Byte[] GetNextReadBuffer();
+    public abstract virtual Byte[] GetData();
+    public abstract virtual bool get_Complete();
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.LinuxMessage : Message {
+    private Byte[] _messageSizeBuffer;
+    private int _expectedMessageSize;
+    public bool Complete { get; }
+    public virtual void SetLastReadCount(int count);
+    public virtual Byte[] GetNextReadBuffer();
+    public virtual bool get_Complete();
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.LocalMemoryStream : LogStreamBase {
+    private List`1<byte> _bytes;
+    public LocalMemoryStream(UInt32 streamId, Guid streamType, Guid identifier, bool autoClose);
+    public virtual void WriteMessage(Byte[] data);
+    public virtual ValueTuple`2<StreamHeader, Byte[]> GetModuleBuffer();
+}
+public class Microsoft.VisualStudio.Coverage.Interprocess.LoggerBase : object {
+    private ManualResetEvent _testHostEvent;
+    private int _testHostProcessId;
+    private static string BufferHeader;
+    private IDictionary`2<string, string> _modulesPathIdMap;
+    private IDictionary`2<string, ModuleCoverageContainer> _loadedModules;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private IDictionary`2<ValueTuple`2<string, Guid>, LogStreamBase> _sharedModuleCoverageBuffers;
+    private IList`1<ValueTuple`2<string, Guid>> _moduleBuffers;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private IList`1<ValueTuple`2<StreamHeader, Byte[]>> _streamBuffers;
+    private UInt32 _streamsCount;
+    private object _lock;
+    private string _sessionName;
+    private string _pipeName;
+    private string _coverageFilePath;
+    private string _configurationFilePath;
+    private CodeCoverageConfig _codeCoverageConfig;
+    private IList`1<PipeConnection> _pipeConnections;
+    private IEqtTraceWrapper _traceWrapper;
+    private bool _canCreatePipeConnection;
+    private bool _shuttingDown;
+    private bool _disposed;
+    public int TestHostProcessId { get; public set; }
+    public LoggerBase(string sessionName, string pipePath, string coverageFilePath, string configurationFilePath, DataCollectorConfiguration dataCollectorConfiguration);
+    public LoggerBase(string sessionName, string pipePath, string coverageFilePath, string configurationFilePath, DataCollectorConfiguration dataCollectorConfiguration, IEqtTraceWrapper traceWrapper);
+    public int get_TestHostProcessId();
+    public void set_TestHostProcessId(int value);
+    private void RegisterClient(PipeClient client, RegisterClientMessage message);
+    private void RegisterClient(PipeClient client, InitializeClientMessage message);
+    private void HandleClientShutdown(PipeClient client);
+    private void HandleClientError(PipeClient client, ClientErrorMessage message);
+    private void UnregisterClient(PipeClient client);
+    private void LoadModuleData(PipeClient client, LoadModuleDataMessage message);
+    private void PreloadModuleData(PipeClient client, PreloadModuleDataMessage message);
+    private void CreateStream(PipeClient client, CreateStreamMessage message);
+    private void WriteStream(PipeClient client, WriteStreamMessage message, Byte[] buffer, long offset);
+    private void CloseStream(PipeClient client, CloseStreamMessage message);
+    private void WriteStreamBuffers(PipeClient client, WriteStreamBuffersMessage message);
+    private void WriteCoverageData(GetCoverageDataMessage message);
+    protected virtual void OnClientConnected(UInt32 processId);
+    protected virtual void OnClientDisconnected(UInt32 processId, UInt32 errorCode);
+    protected virtual void OnCreateStream(UInt32 processId, UInt32 streamId, Guid streamType, UInt32 bufferSize, string bufferHeader, string bufferName, string prefix);
+    protected virtual void OnWriteStream(UInt32 processId, UInt32 streamId, Guid streamType, Byte[] buffer, long bufferSize);
+    protected virtual void OnCloseStream(UInt32 processId, UInt32 streamId, int streamSize);
+    protected virtual void OnFatalException(Exception exception);
+    protected virtual void OnShutdown(UInt32 processId);
+    protected virtual void OnClientError(UInt32 processId, string message);
+    protected virtual void OnWriteStreamBuffers(UInt32 processId, Guid streamType, string bufferHeader, bool resetBuffers);
+    public void Run();
+    public void Shutdown();
+    private void OnMessageReceivedEvent(object sender, MessageReceivedEventArgs e);
+    private void OnClientConnectedEvent(object sender, ClientConnectedEventArgs e);
+    private void WriteCoverageFile();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal abstract class Microsoft.VisualStudio.Coverage.Interprocess.LogStreamBase : object {
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private Guid <Identifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <StreamId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <StreamType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Discard>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AutoClose>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <BufferName>k__BackingField;
+    public Guid Identifier { get; }
+    public UInt32 StreamId { get; }
+    public Guid StreamType { get; }
+    public bool Discard { get; public set; }
+    public bool AutoClose { get; }
+    public string BufferName { get; public set; }
+    protected LogStreamBase(UInt32 streamId, Guid streamType, Guid identifier, bool autoClose);
+    [CompilerGeneratedAttribute]
+public Guid get_Identifier();
+    [CompilerGeneratedAttribute]
+public UInt32 get_StreamId();
+    [CompilerGeneratedAttribute]
+public Guid get_StreamType();
+    [CompilerGeneratedAttribute]
+public bool get_Discard();
+    [CompilerGeneratedAttribute]
+public void set_Discard(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AutoClose();
+    [CompilerGeneratedAttribute]
+public string get_BufferName();
+    [CompilerGeneratedAttribute]
+public void set_BufferName(string value);
+    public abstract virtual ValueTuple`2<StreamHeader, Byte[]> GetModuleBuffer();
+    public abstract virtual void WriteMessage(Byte[] data);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.Message : object {
+    private static int BufferSize;
+    private IList`1<int> _buffersCount;
+    [CompilerGeneratedAttribute]
+private IList`1<Byte[]> <Buffers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MessageSize>k__BackingField;
+    protected IList`1<Byte[]> Buffers { get; private set; }
+    protected int MessageSize { get; protected set; }
+    public bool Complete { get; }
+    [CompilerGeneratedAttribute]
+protected IList`1<Byte[]> get_Buffers();
+    [CompilerGeneratedAttribute]
+private void set_Buffers(IList`1<Byte[]> value);
+    [CompilerGeneratedAttribute]
+protected int get_MessageSize();
+    [CompilerGeneratedAttribute]
+protected void set_MessageSize(int value);
+    public virtual void SetLastReadCount(int count);
+    public virtual Byte[] GetNextReadBuffer();
+    public sealed virtual Byte[] GetData();
+    public virtual bool get_Complete();
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.MessageReceivedEventArgs : ClientConnectedEventArgs {
+    [CompilerGeneratedAttribute]
+private Byte[] <Buffer>k__BackingField;
+    public Byte[] Buffer { get; public set; }
+    [CompilerGeneratedAttribute]
+public Byte[] get_Buffer();
+    [CompilerGeneratedAttribute]
+public void set_Buffer(Byte[] value);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.ModuleCoverageContainer : object {
+    private IDictionary`2<string, UInt32> _sourceFilesMap;
+    private IEqtTraceWrapper _traceWrapper;
+    private ModuleSkippedMessage _moduleSkippedMessage;
+    private ModuleInstrumentedMessage _moduleInstrumentedMessage;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private ValueTuple`2<string, Guid> <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <BlockSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<InstrumentedFunctionMessage> <InstrumentedFunctionMessages>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SharedMemoryStream <CoverageDataStream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LocalMemoryStream <ModuleDataStream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LocalMemoryStream <ModuleSkippedStream>k__BackingField;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ValueTuple`2<string, Guid> Key { get; private set; }
+    public UInt32 BlockSize { get; private set; }
+    public IList`1<InstrumentedFunctionMessage> InstrumentedFunctionMessages { get; private set; }
+    public SharedMemoryStream CoverageDataStream { get; public set; }
+    public LocalMemoryStream ModuleDataStream { get; public set; }
+    public LocalMemoryStream ModuleSkippedStream { get; public set; }
+    public ModuleCoverageContainer(Guid identifier, IEqtTraceWrapper traceWrapper, UInt32 blockSize);
+    [CompilerGeneratedAttribute]
+public ValueTuple`2<string, Guid> get_Key();
+    [CompilerGeneratedAttribute]
+private Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_Key(ValueTuple`2<string, Guid> value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_BlockSize();
+    [CompilerGeneratedAttribute]
+private Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_BlockSize(UInt32 value);
+    [CompilerGeneratedAttribute]
+public IList`1<InstrumentedFunctionMessage> get_InstrumentedFunctionMessages();
+    [CompilerGeneratedAttribute]
+private Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_InstrumentedFunctionMessages(IList`1<InstrumentedFunctionMessage> value);
+    [CompilerGeneratedAttribute]
+public SharedMemoryStream get_CoverageDataStream();
+    [CompilerGeneratedAttribute]
+public void set_CoverageDataStream(SharedMemoryStream value);
+    [CompilerGeneratedAttribute]
+public LocalMemoryStream get_ModuleDataStream();
+    [CompilerGeneratedAttribute]
+public void set_ModuleDataStream(LocalMemoryStream value);
+    [CompilerGeneratedAttribute]
+public LocalMemoryStream get_ModuleSkippedStream();
+    [CompilerGeneratedAttribute]
+public void set_ModuleSkippedStream(LocalMemoryStream value);
+    public void AddInstrumentedMethodsMessages(AssemblyMetadata assemblyMetadata);
+    public void AddSkippedModuleMessage(AssemblyMetadata assemblyMetadata);
+    private void AddModuleInstrumentedMessage(AssemblyMetadata assemblyMetadata, BinaryWriter writer);
+    private void ParseModuleMethod(AssemblyMetadata assemblyMetadata, BinaryWriter writer);
+    private InstrumentedFunctionMessage GetInstrumentedFunctionMessage(MethodMetadata method, UInt32 offset);
+    private void AddFunctionInstrumentedMessage(MethodMetadata method, UInt32 offset, BinaryWriter writer);
+    private UInt32 AddSourceFileDataMessage(BinaryWriter writer, SequencePointMetadata sequencePoint);
+    private void AddSkippedFunctionMessage(MethodMetadata method, BinaryWriter writer);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.PipeClient : object {
+    private PipeConnection _server;
+    private IEqtTraceWrapper _traceWrapper;
+    private Dictionary`2<UInt32, LogStreamBase> _streams;
+    private bool _isWindows;
+    private UInt32 _nextStreamId;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private UInt32 <SchemaVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <ProcessId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProcessOwnerSid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ParentProcessId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsCodeCoverageEnabled>k__BackingField;
+    public UInt32 SchemaVersion { get; public set; }
+    public UInt32 ProcessId { get; public set; }
+    public string ProcessOwnerSid { get; public set; }
+    public string ParentProcessId { get; public set; }
+    public bool IsCodeCoverageEnabled { get; public set; }
+    public PipeClient(PipeConnection server, IEqtTraceWrapper traceWrapper);
+    [CompilerGeneratedAttribute]
+public UInt32 get_SchemaVersion();
+    [CompilerGeneratedAttribute]
+public void set_SchemaVersion(UInt32 value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_ProcessId();
+    [CompilerGeneratedAttribute]
+public void set_ProcessId(UInt32 value);
+    [CompilerGeneratedAttribute]
+public string get_ProcessOwnerSid();
+    [CompilerGeneratedAttribute]
+public void set_ProcessOwnerSid(string value);
+    [CompilerGeneratedAttribute]
+public string get_ParentProcessId();
+    [CompilerGeneratedAttribute]
+public void set_ParentProcessId(string value);
+    [CompilerGeneratedAttribute]
+public bool get_IsCodeCoverageEnabled();
+    [CompilerGeneratedAttribute]
+public void set_IsCodeCoverageEnabled(bool value);
+    public void UpdateClient(RegisterClientMessage message);
+    public void UpdateClient(InitializeClientMessage message, bool codeCoverageEnabled);
+    internal void SendConfiguration(string configurationFilePath);
+    internal void SendInitializeClientResponse();
+    internal LogStreamBase GetStream(UInt32 streamId);
+    internal LogStreamBase CloseStream(UInt32 streamId);
+    internal IEnumerable`1<LogStreamBase> GetStreams();
+    public LogStreamBase CreateStream(string sessionName, Guid streamType, Guid identifier, bool autoClose, string bufferName, UInt32 bufferSize, string bufferHeader);
+    public void SendCreateStreamResponse(LogStreamBase stream, bool streamExists);
+    public void SendInstrumentedModule(SharedMemoryStream stream);
+    public void SendInstrumentedFunction(InstrumentedFunctionMessage message);
+    public void SendPreloadModuleDataResponse(PreloadModuleDataResponseMessage message);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.PipeConnection : object {
+    private static int MaxNumberOfServerInstances;
+    private string _pipeName;
+    private IEqtTraceWrapper _traceWrapper;
+    private bool _disposed;
+    private bool _isRunning;
+    private NamedPipeServerStream _server;
+    private PipeClient _client;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<MessageReceivedEventArgs> MessageReceivedEvent;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ClientConnectedEventArgs> ClientConnectedEvent;
+    [CompilerGeneratedAttribute]
+private PipeClient <Client>k__BackingField;
+    public PipeClient Client { get; }
+    public PipeConnection(string pipeName, IEqtTraceWrapper traceWrapper);
+    [CompilerGeneratedAttribute]
+public void add_MessageReceivedEvent(EventHandler`1<MessageReceivedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_MessageReceivedEvent(EventHandler`1<MessageReceivedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void add_ClientConnectedEvent(EventHandler`1<ClientConnectedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_ClientConnectedEvent(EventHandler`1<ClientConnectedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public PipeClient get_Client();
+    public void Start();
+    public void Stop();
+    private void OnClientConnected(IAsyncResult result);
+    private void BeginRead(IMessage message);
+    private void EndReadCallBack(IAsyncResult result);
+    private void OnMessageReceived(IMessage message);
+    internal void Write(MemoryStream stream);
+    internal void Write(Byte[] buffer);
+    private IMessage CreateNewMessage();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Microsoft.VisualStudio.Coverage.Interprocess.SharedMemoryStream : LogStreamBase {
+    private string _bufferHeader;
+    private MemoryMappedFile _file;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private UInt32 <BufferSize>k__BackingField;
+    public UInt32 BufferSize { get; }
+    public SharedMemoryStream(UInt32 streamId, Guid streamType, Guid identifier, bool autoClose, string bufferName, string bufferHeader, UInt32 bufferSize);
+    [CompilerGeneratedAttribute]
+public UInt32 get_BufferSize();
+    public virtual void WriteMessage(Byte[] data);
+    public virtual ValueTuple`2<StreamHeader, Byte[]> GetModuleBuffer();
+    protected virtual void Dispose(bool disposing);
+}
+internal static class System.Runtime.CompilerServices.IsExternalInit : object {
+}

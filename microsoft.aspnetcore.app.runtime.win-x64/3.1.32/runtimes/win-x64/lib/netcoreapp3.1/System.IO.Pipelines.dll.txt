@@ -1,0 +1,704 @@
+internal static class FxResources.System.IO.Pipelines.SR : object {
+}
+[EmbeddedAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+internal class System.IO.Pipelines.BufferSegment : ReadOnlySequenceSegment`1<byte> {
+    private object _memoryOwner;
+    private BufferSegment _next;
+    private int _end;
+    [CompilerGeneratedAttribute]
+private Memory`1<byte> <AvailableMemory>k__BackingField;
+    public int End { get; public set; }
+    public BufferSegment NextSegment { get; public set; }
+    internal object MemoryOwner { get; }
+    public Memory`1<byte> AvailableMemory { get; private set; }
+    public int Length { get; }
+    public int WritableBytes { get; }
+    public int get_End();
+    public void set_End(int value);
+    public BufferSegment get_NextSegment();
+    public void set_NextSegment(BufferSegment value);
+    public void SetOwnedMemory(IMemoryOwner`1<byte> memoryOwner);
+    public void SetOwnedMemory(Byte[] arrayPoolBuffer);
+    public void SetUnownedMemory(Memory`1<byte> memory);
+    public void ResetMemory();
+    internal object get_MemoryOwner();
+    [CompilerGeneratedAttribute]
+public Memory`1<byte> get_AvailableMemory();
+    [CompilerGeneratedAttribute]
+private void set_AvailableMemory(Memory`1<byte> value);
+    public int get_Length();
+    public int get_WritableBytes();
+    public void SetNext(BufferSegment segment);
+    internal static long GetLength(BufferSegment startSegment, int startIndex, BufferSegment endSegment, int endIndex);
+    internal static long GetLength(long startPosition, BufferSegment endSegment, int endIndex);
+}
+internal class System.IO.Pipelines.BufferSegmentStack : ValueType {
+    private SegmentAsValueType[] _array;
+    private int _size;
+    public int Count { get; }
+    public BufferSegmentStack(int size);
+    public int get_Count();
+    public bool TryPop(BufferSegment& result);
+    public void Push(BufferSegment item);
+    private void PushWithResize(BufferSegment item);
+}
+[IsReadOnlyAttribute]
+internal class System.IO.Pipelines.CompletionData : ValueType {
+    [CompilerGeneratedAttribute]
+private Action`1<object> <Completion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <CompletionState>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ExecutionContext <ExecutionContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SynchronizationContext <SynchronizationContext>k__BackingField;
+    public Action`1<object> Completion { get; }
+    public object CompletionState { get; }
+    public ExecutionContext ExecutionContext { get; }
+    public SynchronizationContext SynchronizationContext { get; }
+    public CompletionData(Action`1<object> completion, object completionState, ExecutionContext executionContext, SynchronizationContext synchronizationContext);
+    [CompilerGeneratedAttribute]
+public Action`1<object> get_Completion();
+    [CompilerGeneratedAttribute]
+public object get_CompletionState();
+    [CompilerGeneratedAttribute]
+public ExecutionContext get_ExecutionContext();
+    [CompilerGeneratedAttribute]
+public SynchronizationContext get_SynchronizationContext();
+}
+internal enum System.IO.Pipelines.ExceptionArgument : Enum {
+    public int value__;
+    public static ExceptionArgument minimumSize;
+    public static ExceptionArgument bytes;
+    public static ExceptionArgument callback;
+    public static ExceptionArgument options;
+    public static ExceptionArgument pauseWriterThreshold;
+    public static ExceptionArgument resumeWriterThreshold;
+    public static ExceptionArgument sizeHint;
+}
+public class System.IO.Pipelines.FlushResult : ValueType {
+    internal ResultFlags _resultFlags;
+    public bool IsCanceled { get; }
+    public bool IsCompleted { get; }
+    public FlushResult(bool isCanceled, bool isCompleted);
+    public bool get_IsCanceled();
+    public bool get_IsCompleted();
+}
+public interface System.IO.Pipelines.IDuplexPipe {
+    public PipeReader Input { get; }
+    public PipeWriter Output { get; }
+    public abstract virtual PipeReader get_Input();
+    public abstract virtual PipeWriter get_Output();
+}
+internal class System.IO.Pipelines.InlineScheduler : PipeScheduler {
+    public virtual void Schedule(Action`1<object> action, object state);
+    internal virtual void UnsafeSchedule(Action`1<object> action, object state);
+}
+public class System.IO.Pipelines.Pipe : object {
+    internal static int InitialSegmentPoolSize;
+    internal static int MaxSegmentPoolSize;
+    private static Action`1<object> s_signalReaderAwaitable;
+    private static Action`1<object> s_signalWriterAwaitable;
+    private static Action`1<object> s_invokeCompletionCallbacks;
+    private static ContextCallback s_executionContextRawCallback;
+    private static SendOrPostCallback s_syncContextExecutionContextCallback;
+    private static SendOrPostCallback s_syncContextExecuteWithoutExecutionContextCallback;
+    private static Action`1<object> s_scheduleWithExecutionContextCallback;
+    private object _sync;
+    private MemoryPool`1<byte> _pool;
+    private int _minimumSegmentSize;
+    private long _pauseWriterThreshold;
+    private long _resumeWriterThreshold;
+    private PipeScheduler _readerScheduler;
+    private PipeScheduler _writerScheduler;
+    private BufferSegmentStack _bufferSegmentPool;
+    private DefaultPipeReader _reader;
+    private DefaultPipeWriter _writer;
+    private bool _useSynchronizationContext;
+    private long _unconsumedBytes;
+    private long _unflushedBytes;
+    private PipeAwaitable _readerAwaitable;
+    private PipeAwaitable _writerAwaitable;
+    private PipeCompletion _writerCompletion;
+    private PipeCompletion _readerCompletion;
+    private long _lastExaminedIndex;
+    private BufferSegment _readHead;
+    private int _readHeadIndex;
+    private BufferSegment _readTail;
+    private int _readTailIndex;
+    private BufferSegment _writingHead;
+    private Memory`1<byte> _writingHeadMemory;
+    private int _writingHeadBytesBuffered;
+    private PipeOperationState _operationState;
+    private bool _disposed;
+    internal long Length { get; }
+    public PipeReader Reader { get; }
+    public PipeWriter Writer { get; }
+    public Pipe(PipeOptions options);
+    private static Pipe();
+    internal long get_Length();
+    private void ResetState();
+    internal Memory`1<byte> GetMemory(int sizeHint);
+    internal Span`1<byte> GetSpan(int sizeHint);
+    private void AllocateWriteHeadIfNeeded(int sizeHint);
+    private void AllocateWriteHeadSynchronized(int sizeHint);
+    private BufferSegment AllocateSegment(int sizeHint);
+    private int GetSegmentSize(int sizeHint, int maxBufferSize);
+    private BufferSegment CreateSegmentUnsynchronized();
+    private void ReturnSegmentUnsynchronized(BufferSegment segment);
+    internal bool CommitUnsynchronized();
+    internal void Advance(int bytes);
+    private void AdvanceCore(int bytesWritten);
+    internal ValueTask`1<FlushResult> FlushAsync(CancellationToken cancellationToken);
+    private void PrepareFlush(CompletionData& completionData, ValueTask`1& result, CancellationToken cancellationToken);
+    internal void CompleteWriter(Exception exception);
+    internal void AdvanceReader(SequencePosition& consumed);
+    internal void AdvanceReader(SequencePosition& consumed, SequencePosition& examined);
+    private void AdvanceReader(BufferSegment consumedSegment, int consumedIndex, BufferSegment examinedSegment, int examinedIndex);
+    internal void CompleteReader(Exception exception);
+    internal void OnWriterCompleted(Action`2<Exception, object> callback, object state);
+    internal void CancelPendingRead();
+    internal void CancelPendingFlush();
+    internal void OnReaderCompleted(Action`2<Exception, object> callback, object state);
+    internal ValueTask`1<ReadResult> ReadAsync(CancellationToken token);
+    internal bool TryRead(ReadResult& result);
+    private static void ScheduleCallbacks(PipeScheduler scheduler, PipeCompletionCallbacks completionCallbacks);
+    private static void TrySchedule(PipeScheduler scheduler, CompletionData& completionData);
+    private static void ScheduleWithContext(PipeScheduler scheduler, CompletionData& completionData);
+    private static void ExecuteWithoutExecutionContext(object state);
+    private static void ExecuteWithExecutionContext(object state);
+    private void CompletePipe();
+    internal ValueTaskSourceStatus GetReadAsyncStatus();
+    internal void OnReadAsyncCompleted(Action`1<object> continuation, object state, ValueTaskSourceOnCompletedFlags flags);
+    internal ReadResult GetReadAsyncResult();
+    private void GetReadResult(ReadResult& result);
+    internal ValueTaskSourceStatus GetFlushAsyncStatus();
+    internal FlushResult GetFlushAsyncResult();
+    private void GetFlushResult(FlushResult& result);
+    internal ValueTask`1<FlushResult> WriteAsync(ReadOnlyMemory`1<byte> source, CancellationToken cancellationToken);
+    private void WriteMultiSegment(ReadOnlySpan`1<byte> source);
+    internal void OnFlushAsyncCompleted(Action`1<object> continuation, object state, ValueTaskSourceOnCompletedFlags flags);
+    private void ReaderCancellationRequested();
+    private void WriterCancellationRequested();
+    public PipeReader get_Reader();
+    public PipeWriter get_Writer();
+    public void Reset();
+    [CompilerGeneratedAttribute]
+private void <AdvanceReader>g__MoveReturnEndToNextBlock|59_0(<>c__DisplayClass59_0& );
+}
+[DebuggerDisplayAttribute("CanceledState: {_awaitableState}, IsCompleted: {IsCompleted}")]
+internal class System.IO.Pipelines.PipeAwaitable : ValueType {
+    private AwaitableState _awaitableState;
+    private Action`1<object> _completion;
+    private object _completionState;
+    private CancellationTokenRegistration _cancellationTokenRegistration;
+    private SynchronizationContext _synchronizationContext;
+    private ExecutionContext _executionContext;
+    private CancellationToken CancellationToken { get; }
+    public bool IsCompleted { get; }
+    public bool IsRunning { get; }
+    public PipeAwaitable(bool completed, bool useSynchronizationContext);
+    private CancellationToken get_CancellationToken();
+    public bool get_IsCompleted();
+    public bool get_IsRunning();
+    public void BeginOperation(CancellationToken cancellationToken, Action`1<object> callback, object state);
+    public void Complete(CompletionData& completionData);
+    private void ExtractCompletion(CompletionData& completionData);
+    public void SetUncompleted();
+    public void OnCompleted(Action`1<object> continuation, object state, ValueTaskSourceOnCompletedFlags flags, CompletionData& completionData, Boolean& doubleCompletion);
+    public void Cancel(CompletionData& completionData);
+    public void CancellationTokenFired(CompletionData& completionData);
+    public bool ObserveCancellation();
+    public CancellationTokenRegistration ReleaseCancellationTokenRegistration(CancellationToken& cancellationToken);
+}
+[DebuggerDisplayAttribute("IsCompleted: {IsCompleted}")]
+internal class System.IO.Pipelines.PipeCompletion : ValueType {
+    private static ArrayPool`1<PipeCompletionCallback> s_completionCallbackPool;
+    private static int InitialCallbacksSize;
+    private bool _isCompleted;
+    private ExceptionDispatchInfo _exceptionInfo;
+    private PipeCompletionCallback _firstCallback;
+    private PipeCompletionCallback[] _callbacks;
+    private int _callbackCount;
+    public bool IsCompleted { get; }
+    public bool IsFaulted { get; }
+    private static PipeCompletion();
+    public bool get_IsCompleted();
+    public bool get_IsFaulted();
+    public PipeCompletionCallbacks TryComplete(Exception exception);
+    public PipeCompletionCallbacks AddCallback(Action`2<Exception, object> callback, object state);
+    private void EnsureSpace();
+    public bool IsCompletedOrThrow();
+    private PipeCompletionCallbacks GetCallbacks();
+    public void Reset();
+    private void ThrowLatchedException();
+    public virtual string ToString();
+}
+internal class System.IO.Pipelines.PipeCompletionCallback : ValueType {
+    public Action`2<Exception, object> Callback;
+    public object State;
+    public PipeCompletionCallback(Action`2<Exception, object> callback, object state);
+}
+internal class System.IO.Pipelines.PipeCompletionCallbacks : object {
+    private ArrayPool`1<PipeCompletionCallback> _pool;
+    private int _count;
+    private Exception _exception;
+    private PipeCompletionCallback _firstCallback;
+    private PipeCompletionCallback[] _callbacks;
+    public PipeCompletionCallbacks(ArrayPool`1<PipeCompletionCallback> pool, int count, Exception exception, PipeCompletionCallback firstCallback, PipeCompletionCallback[] callbacks);
+    public void Execute();
+    private void Execute(PipeCompletionCallback callback, List`1& exceptions);
+}
+[DebuggerDisplayAttribute("State: {_state}")]
+internal class System.IO.Pipelines.PipeOperationState : ValueType {
+    private State _state;
+    public bool IsWritingActive { get; }
+    public bool IsReadingActive { get; }
+    public void BeginRead();
+    public void BeginReadTentative();
+    public void EndRead();
+    public void BeginWrite();
+    public void EndWrite();
+    public bool get_IsWritingActive();
+    public bool get_IsReadingActive();
+}
+public class System.IO.Pipelines.PipeOptions : object {
+    private static int DefaultMinimumSegmentSize;
+    private static int DefaultResumeWriterThreshold;
+    private static int DefaultPauseWriterThreshold;
+    [CompilerGeneratedAttribute]
+private static PipeOptions <Default>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseSynchronizationContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <PauseWriterThreshold>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <ResumeWriterThreshold>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MinimumSegmentSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PipeScheduler <WriterScheduler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PipeScheduler <ReaderScheduler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MemoryPool`1<byte> <Pool>k__BackingField;
+    public static PipeOptions Default { get; }
+    public bool UseSynchronizationContext { get; }
+    public long PauseWriterThreshold { get; }
+    public long ResumeWriterThreshold { get; }
+    public int MinimumSegmentSize { get; }
+    public PipeScheduler WriterScheduler { get; }
+    public PipeScheduler ReaderScheduler { get; }
+    public MemoryPool`1<byte> Pool { get; }
+    public PipeOptions(MemoryPool`1<byte> pool, PipeScheduler readerScheduler, PipeScheduler writerScheduler, long pauseWriterThreshold, long resumeWriterThreshold, int minimumSegmentSize, bool useSynchronizationContext);
+    private static PipeOptions();
+    [CompilerGeneratedAttribute]
+public static PipeOptions get_Default();
+    [CompilerGeneratedAttribute]
+public bool get_UseSynchronizationContext();
+    [CompilerGeneratedAttribute]
+public long get_PauseWriterThreshold();
+    [CompilerGeneratedAttribute]
+public long get_ResumeWriterThreshold();
+    [CompilerGeneratedAttribute]
+public int get_MinimumSegmentSize();
+    [CompilerGeneratedAttribute]
+public PipeScheduler get_WriterScheduler();
+    [CompilerGeneratedAttribute]
+public PipeScheduler get_ReaderScheduler();
+    [CompilerGeneratedAttribute]
+public MemoryPool`1<byte> get_Pool();
+}
+public abstract class System.IO.Pipelines.PipeReader : object {
+    private PipeReaderStream _stream;
+    public abstract virtual bool TryRead(ReadResult& result);
+    public abstract virtual ValueTask`1<ReadResult> ReadAsync(CancellationToken cancellationToken);
+    public abstract virtual void AdvanceTo(SequencePosition consumed);
+    public abstract virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined);
+    public virtual Stream AsStream(bool leaveOpen);
+    public abstract virtual void CancelPendingRead();
+    public abstract virtual void Complete(Exception exception);
+    public virtual ValueTask CompleteAsync(Exception exception);
+    [ObsoleteAttribute("OnWriterCompleted may not be invoked on all implementations of PipeReader. This will be removed in a future release.")]
+public virtual void OnWriterCompleted(Action`2<Exception, object> callback, object state);
+    public static PipeReader Create(Stream stream, StreamPipeReaderOptions readerOptions);
+    public virtual Task CopyToAsync(PipeWriter destination, CancellationToken cancellationToken);
+    public virtual Task CopyToAsync(Stream destination, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.PipeReader/<CopyToAsyncCore>d__13`1")]
+private Task CopyToAsyncCore(TStream destination, Func`4<TStream, ReadOnlyMemory`1<byte>, CancellationToken, ValueTask> writeAsync, CancellationToken cancellationToken);
+}
+internal class System.IO.Pipelines.PipeReaderStream : Stream {
+    private PipeReader _pipeReader;
+    [CompilerGeneratedAttribute]
+private bool <LeaveOpen>k__BackingField;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    internal bool LeaveOpen { get; internal set; }
+    public PipeReaderStream(PipeReader pipeReader, bool leaveOpen);
+    protected virtual void Dispose(bool disposing);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    [CompilerGeneratedAttribute]
+internal bool get_LeaveOpen();
+    [CompilerGeneratedAttribute]
+internal void set_LeaveOpen(bool value);
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public sealed virtual IAsyncResult BeginRead(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public sealed virtual int EndRead(IAsyncResult asyncResult);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.PipeReaderStream/<ReadAsyncInternal>d__27")]
+private ValueTask`1<int> ReadAsyncInternal(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+}
+public abstract class System.IO.Pipelines.PipeScheduler : object {
+    private static ThreadPoolScheduler s_threadPoolScheduler;
+    private static InlineScheduler s_inlineScheduler;
+    public static PipeScheduler ThreadPool { get; }
+    public static PipeScheduler Inline { get; }
+    private static PipeScheduler();
+    public static PipeScheduler get_ThreadPool();
+    public static PipeScheduler get_Inline();
+    public abstract virtual void Schedule(Action`1<object> action, object state);
+    internal virtual void UnsafeSchedule(Action`1<object> action, object state);
+}
+public abstract class System.IO.Pipelines.PipeWriter : object {
+    private PipeWriterStream _stream;
+    public abstract virtual void Complete(Exception exception);
+    public virtual ValueTask CompleteAsync(Exception exception);
+    public abstract virtual void CancelPendingFlush();
+    [ObsoleteAttribute("OnReaderCompleted may not be invoked on all implementations of PipeWriter. This will be removed in a future release.")]
+public virtual void OnReaderCompleted(Action`2<Exception, object> callback, object state);
+    public abstract virtual ValueTask`1<FlushResult> FlushAsync(CancellationToken cancellationToken);
+    public abstract virtual void Advance(int bytes);
+    public abstract virtual Memory`1<byte> GetMemory(int sizeHint);
+    public abstract virtual Span`1<byte> GetSpan(int sizeHint);
+    public virtual Stream AsStream(bool leaveOpen);
+    public static PipeWriter Create(Stream stream, StreamPipeWriterOptions writerOptions);
+    public virtual ValueTask`1<FlushResult> WriteAsync(ReadOnlyMemory`1<byte> source, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.PipeWriter/<CopyFromAsync>d__12")]
+protected internal virtual Task CopyFromAsync(Stream source, CancellationToken cancellationToken);
+}
+internal class System.IO.Pipelines.PipeWriterStream : Stream {
+    private PipeWriter _pipeWriter;
+    [CompilerGeneratedAttribute]
+private bool <LeaveOpen>k__BackingField;
+    internal bool LeaveOpen { get; internal set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public PipeWriterStream(PipeWriter pipeWriter, bool leaveOpen);
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+internal bool get_LeaveOpen();
+    [CompilerGeneratedAttribute]
+internal void set_LeaveOpen(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public sealed virtual IAsyncResult BeginWrite(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public sealed virtual void EndWrite(IAsyncResult asyncResult);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    private static Task GetFlushResultAsTask(ValueTask`1<FlushResult> valueTask);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.PipeWriterStream/<<GetFlushResultAsTask>g__AwaitTask|28_0>d")]
+[CompilerGeneratedAttribute]
+internal static Task <GetFlushResultAsTask>g__AwaitTask|28_0(ValueTask`1<FlushResult> valueTask);
+}
+[IsReadOnlyAttribute]
+public class System.IO.Pipelines.ReadResult : ValueType {
+    internal ReadOnlySequence`1<byte> _resultBuffer;
+    internal ResultFlags _resultFlags;
+    public ReadOnlySequence`1<byte> Buffer { get; }
+    public bool IsCanceled { get; }
+    public bool IsCompleted { get; }
+    public ReadResult(ReadOnlySequence`1<byte> buffer, bool isCanceled, bool isCompleted);
+    public ReadOnlySequence`1<byte> get_Buffer();
+    public bool get_IsCanceled();
+    public bool get_IsCompleted();
+}
+[FlagsAttribute]
+internal enum System.IO.Pipelines.ResultFlags : Enum {
+    public byte value__;
+    public static ResultFlags None;
+    public static ResultFlags Canceled;
+    public static ResultFlags Completed;
+}
+[ExtensionAttribute]
+public static class System.IO.Pipelines.StreamPipeExtensions : object {
+    [ExtensionAttribute]
+public static Task CopyToAsync(Stream source, PipeWriter destination, CancellationToken cancellationToken);
+}
+internal class System.IO.Pipelines.StreamPipeReader : PipeReader {
+    internal static int InitialSegmentPoolSize;
+    internal static int MaxSegmentPoolSize;
+    private int _bufferSize;
+    private int _minimumReadThreshold;
+    private MemoryPool`1<byte> _pool;
+    private CancellationTokenSource _internalTokenSource;
+    private bool _isReaderCompleted;
+    private bool _isStreamCompleted;
+    private BufferSegment _readHead;
+    private int _readIndex;
+    private BufferSegment _readTail;
+    private long _bufferedBytes;
+    private bool _examinedEverything;
+    private object _lock;
+    private BufferSegmentStack _bufferSegmentPool;
+    private bool _leaveOpen;
+    [CompilerGeneratedAttribute]
+private Stream <InnerStream>k__BackingField;
+    public Stream InnerStream { get; }
+    private CancellationTokenSource InternalTokenSource { get; }
+    public StreamPipeReader(Stream readingStream, StreamPipeReaderOptions options);
+    [CompilerGeneratedAttribute]
+public Stream get_InnerStream();
+    public virtual void AdvanceTo(SequencePosition consumed);
+    private CancellationTokenSource get_InternalTokenSource();
+    public virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined);
+    private void AdvanceTo(BufferSegment consumedSegment, int consumedIndex, BufferSegment examinedSegment, int examinedIndex);
+    public virtual void CancelPendingRead();
+    public virtual void Complete(Exception exception);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.StreamPipeReader/<ReadAsync>d__27")]
+public virtual ValueTask`1<ReadResult> ReadAsync(CancellationToken cancellationToken);
+    private void ClearCancellationToken();
+    private void ThrowIfCompleted();
+    public virtual bool TryRead(ReadResult& result);
+    private bool TryReadInternal(CancellationTokenSource source, ReadResult& result);
+    private ReadOnlySequence`1<byte> GetCurrentReadOnlySequence();
+    private void AllocateReadTail();
+    private BufferSegment AllocateSegment();
+    private BufferSegment CreateSegmentUnsynchronized();
+    private void ReturnSegmentUnsynchronized(BufferSegment segment);
+    private void Cancel();
+}
+public class System.IO.Pipelines.StreamPipeReaderOptions : object {
+    private static int DefaultBufferSize;
+    private static int DefaultMinimumReadSize;
+    internal static StreamPipeReaderOptions s_default;
+    [CompilerGeneratedAttribute]
+private int <BufferSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MinimumReadSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MemoryPool`1<byte> <Pool>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <LeaveOpen>k__BackingField;
+    public int BufferSize { get; }
+    public int MinimumReadSize { get; }
+    public MemoryPool`1<byte> Pool { get; }
+    public bool LeaveOpen { get; }
+    public StreamPipeReaderOptions(MemoryPool`1<byte> pool, int bufferSize, int minimumReadSize, bool leaveOpen);
+    private static StreamPipeReaderOptions();
+    [CompilerGeneratedAttribute]
+public int get_BufferSize();
+    [CompilerGeneratedAttribute]
+public int get_MinimumReadSize();
+    [CompilerGeneratedAttribute]
+public MemoryPool`1<byte> get_Pool();
+    [CompilerGeneratedAttribute]
+public bool get_LeaveOpen();
+}
+internal class System.IO.Pipelines.StreamPipeWriter : PipeWriter {
+    internal static int InitialSegmentPoolSize;
+    internal static int MaxSegmentPoolSize;
+    private int _minimumBufferSize;
+    private BufferSegment _head;
+    private BufferSegment _tail;
+    private Memory`1<byte> _tailMemory;
+    private int _tailBytesBuffered;
+    private int _bytesBuffered;
+    private MemoryPool`1<byte> _pool;
+    private CancellationTokenSource _internalTokenSource;
+    private bool _isCompleted;
+    private object _lockObject;
+    private BufferSegmentStack _bufferSegmentPool;
+    private bool _leaveOpen;
+    [CompilerGeneratedAttribute]
+private Stream <InnerStream>k__BackingField;
+    private CancellationTokenSource InternalTokenSource { get; }
+    public Stream InnerStream { get; }
+    public StreamPipeWriter(Stream writingStream, StreamPipeWriterOptions options);
+    private CancellationTokenSource get_InternalTokenSource();
+    [CompilerGeneratedAttribute]
+public Stream get_InnerStream();
+    public virtual void Advance(int bytes);
+    public virtual Memory`1<byte> GetMemory(int sizeHint);
+    public virtual Span`1<byte> GetSpan(int sizeHint);
+    private void AllocateMemory(int sizeHint);
+    private BufferSegment AllocateSegment(int sizeHint);
+    private int GetSegmentSize(int sizeHint, int maxBufferSize);
+    private BufferSegment CreateSegmentUnsynchronized();
+    private void ReturnSegmentUnsynchronized(BufferSegment segment);
+    public virtual void CancelPendingFlush();
+    public virtual void Complete(Exception exception);
+    [AsyncStateMachineAttribute("System.IO.Pipelines.StreamPipeWriter/<CompleteAsync>d__30")]
+public virtual ValueTask CompleteAsync(Exception exception);
+    public virtual ValueTask`1<FlushResult> FlushAsync(CancellationToken cancellationToken);
+    private void Cancel();
+    [AsyncStateMachineAttribute("System.IO.Pipelines.StreamPipeWriter/<FlushAsyncInternal>d__33")]
+private ValueTask`1<FlushResult> FlushAsyncInternal(CancellationToken cancellationToken);
+    private void FlushInternal();
+}
+public class System.IO.Pipelines.StreamPipeWriterOptions : object {
+    private static int DefaultMinimumBufferSize;
+    internal static StreamPipeWriterOptions s_default;
+    [CompilerGeneratedAttribute]
+private int <MinimumBufferSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MemoryPool`1<byte> <Pool>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <LeaveOpen>k__BackingField;
+    public int MinimumBufferSize { get; }
+    public MemoryPool`1<byte> Pool { get; }
+    public bool LeaveOpen { get; }
+    public StreamPipeWriterOptions(MemoryPool`1<byte> pool, int minimumBufferSize, bool leaveOpen);
+    private static StreamPipeWriterOptions();
+    [CompilerGeneratedAttribute]
+public int get_MinimumBufferSize();
+    [CompilerGeneratedAttribute]
+public MemoryPool`1<byte> get_Pool();
+    [CompilerGeneratedAttribute]
+public bool get_LeaveOpen();
+}
+internal class System.IO.Pipelines.ThreadPoolScheduler : PipeScheduler {
+    public virtual void Schedule(Action`1<object> action, object state);
+    internal virtual void UnsafeSchedule(Action`1<object> action, object state);
+}
+internal static class System.IO.Pipelines.ThrowHelper : object {
+    internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument);
+    private static Exception CreateArgumentOutOfRangeException(ExceptionArgument argument);
+    internal static void ThrowArgumentNullException(ExceptionArgument argument);
+    private static Exception CreateArgumentNullException(ExceptionArgument argument);
+    public static void ThrowInvalidOperationException_AlreadyReading();
+    public static Exception CreateInvalidOperationException_AlreadyReading();
+    public static void ThrowInvalidOperationException_NoReadToComplete();
+    public static Exception CreateInvalidOperationException_NoReadToComplete();
+    public static void ThrowInvalidOperationException_NoConcurrentOperation();
+    public static Exception CreateInvalidOperationException_NoConcurrentOperation();
+    public static void ThrowInvalidOperationException_GetResultNotCompleted();
+    public static Exception CreateInvalidOperationException_GetResultNotCompleted();
+    public static void ThrowInvalidOperationException_NoWritingAllowed();
+    public static Exception CreateInvalidOperationException_NoWritingAllowed();
+    public static void ThrowInvalidOperationException_NoReadingAllowed();
+    public static Exception CreateInvalidOperationException_NoReadingAllowed();
+    public static void ThrowInvalidOperationException_InvalidExaminedPosition();
+    public static Exception CreateInvalidOperationException_InvalidExaminedPosition();
+    public static void ThrowInvalidOperationException_InvalidExaminedOrConsumedPosition();
+    public static Exception CreateInvalidOperationException_InvalidExaminedOrConsumedPosition();
+    public static void ThrowInvalidOperationException_AdvanceToInvalidCursor();
+    public static Exception CreateInvalidOperationException_AdvanceToInvalidCursor();
+    public static void ThrowInvalidOperationException_ResetIncompleteReaderWriter();
+    public static Exception CreateInvalidOperationException_ResetIncompleteReaderWriter();
+    public static void ThrowOperationCanceledException_ReadCanceled();
+    public static Exception CreateOperationCanceledException_ReadCanceled();
+    public static void ThrowOperationCanceledException_FlushCanceled();
+    public static Exception CreateOperationCanceledException_FlushCanceled();
+    public static void ThrowInvalidOperationException_InvalidZeroByteRead();
+    public static Exception CreateInvalidOperationException_InvalidZeroByteRead();
+}
+[AttributeUsageAttribute("27524")]
+[EmbeddedAttribute]
+[CompilerGeneratedAttribute]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5198")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.NullablePublicOnlyAttribute : Attribute {
+    public bool IncludesInternals;
+    public NullablePublicOnlyAttribute(bool );
+}
+internal static class System.SR : object {
+    private static ResourceManager s_resourceManager;
+    internal static ResourceManager ResourceManager { get; }
+    internal static string AdvanceToInvalidCursor { get; }
+    internal static string ConcurrentOperationsNotSupported { get; }
+    internal static string FlushCanceledOnPipeWriter { get; }
+    internal static string GetResultBeforeCompleted { get; }
+    internal static string InvalidExaminedOrConsumedPosition { get; }
+    internal static string InvalidExaminedPosition { get; }
+    internal static string InvalidZeroByteRead { get; }
+    internal static string NoReadingOperationToComplete { get; }
+    internal static string ReadCanceledOnPipeReader { get; }
+    internal static string ReaderAndWriterHasToBeCompleted { get; }
+    internal static string ReadingAfterCompleted { get; }
+    internal static string ReadingIsInProgress { get; }
+    internal static string WritingAfterCompleted { get; }
+    private static bool UsingResourceKeys();
+    [NullableContextAttribute("1")]
+internal static string GetResourceString(string resourceKey, string defaultString);
+    [NullableContextAttribute("1")]
+internal static string Format(string resourceFormat, object p1);
+    [NullableContextAttribute("1")]
+internal static string Format(string resourceFormat, object p1, object p2);
+    [NullableContextAttribute("2")]
+internal static string Format(string resourceFormat, object p1, object p2, object p3);
+    [NullableContextAttribute("1")]
+internal static string Format(string resourceFormat, Object[] args);
+    [NullableContextAttribute("1")]
+internal static string Format(IFormatProvider provider, string resourceFormat, object p1);
+    [NullableContextAttribute("2")]
+internal static string Format(IFormatProvider provider, string resourceFormat, object p1, object p2);
+    [NullableContextAttribute("2")]
+internal static string Format(IFormatProvider provider, string resourceFormat, object p1, object p2, object p3);
+    [NullableContextAttribute("1")]
+internal static string Format(IFormatProvider provider, string resourceFormat, Object[] args);
+    internal static ResourceManager get_ResourceManager();
+    internal static string get_AdvanceToInvalidCursor();
+    internal static string get_ConcurrentOperationsNotSupported();
+    internal static string get_FlushCanceledOnPipeWriter();
+    internal static string get_GetResultBeforeCompleted();
+    internal static string get_InvalidExaminedOrConsumedPosition();
+    internal static string get_InvalidExaminedPosition();
+    internal static string get_InvalidZeroByteRead();
+    internal static string get_NoReadingOperationToComplete();
+    internal static string get_ReadCanceledOnPipeReader();
+    internal static string get_ReaderAndWriterHasToBeCompleted();
+    internal static string get_ReadingAfterCompleted();
+    internal static string get_ReadingIsInProgress();
+    internal static string get_WritingAfterCompleted();
+}
+[NullableAttribute("0")]
+[NullableContextAttribute("1")]
+internal static class System.Threading.Tasks.TaskToApm : object {
+    public static IAsyncResult Begin(Task task, AsyncCallback callback, object state);
+    public static void End(IAsyncResult asyncResult);
+    public static TResult End(IAsyncResult asyncResult);
+    private static void InvokeCallbackWhenTaskCompletes(Task antecedent, AsyncCallback callback, IAsyncResult asyncResult);
+}

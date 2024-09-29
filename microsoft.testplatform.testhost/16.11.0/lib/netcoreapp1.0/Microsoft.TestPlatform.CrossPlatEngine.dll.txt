@@ -1,0 +1,1329 @@
+public class Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.TestRequestHandler : object {
+    private int protocolVersion;
+    private int highestSupportedVersion;
+    private IDataSerializer dataSerializer;
+    private ITestHostManagerFactory testHostManagerFactory;
+    private ICommunicationEndPoint communicationEndPoint;
+    private ICommunicationEndpointFactory communicationEndpointFactory;
+    private ICommunicationChannel channel;
+    private JobQueue`1<Action> jobQueue;
+    private ManualResetEventSlim requestSenderConnected;
+    private ManualResetEventSlim testHostManagerFactoryReady;
+    private ManualResetEventSlim sessionCompleted;
+    private Action`1<Message> onLaunchAdapterProcessWithDebuggerAttachedAckReceived;
+    private Action`1<Message> onAttachDebuggerAckRecieved;
+    private Exception messageProcessingUnrecoverableError;
+    [CompilerGeneratedAttribute]
+private TestHostConnectionInfo <ConnectionInfo>k__BackingField;
+    public TestHostConnectionInfo ConnectionInfo { get; public set; }
+    protected TestRequestHandler(TestHostConnectionInfo connectionInfo, ICommunicationEndpointFactory communicationEndpointFactory, IDataSerializer dataSerializer, JobQueue`1<Action> jobQueue, Action`1<Message> onLaunchAdapterProcessWithDebuggerAttachedAckReceived, Action`1<Message> onAttachDebuggerAckRecieved);
+    protected TestRequestHandler(IDataSerializer dataSerializer, ICommunicationEndpointFactory communicationEndpointFactory);
+    [CompilerGeneratedAttribute]
+public sealed virtual TestHostConnectionInfo get_ConnectionInfo();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ConnectionInfo(TestHostConnectionInfo value);
+    public virtual void InitializeCommunication();
+    public sealed virtual bool WaitForRequestSenderConnection(int connectionTimeout);
+    public sealed virtual void ProcessRequests(ITestHostManagerFactory testHostManagerFactory);
+    public sealed virtual void Dispose();
+    public sealed virtual void Close();
+    public sealed virtual void SendTestCases(IEnumerable`1<TestCase> discoveredTestCases);
+    public sealed virtual void SendTestRunStatistics(TestRunChangedEventArgs testRunChangedArgs);
+    public sealed virtual void SendLog(TestMessageLevel messageLevel, string message);
+    public sealed virtual void SendExecutionComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    public sealed virtual void DiscoveryComplete(DiscoveryCompleteEventArgs discoveryCompleteEventArgs, IEnumerable`1<TestCase> lastChunk);
+    public sealed virtual int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo);
+    public sealed virtual bool AttachDebuggerToProcess(int pid);
+    public void OnMessageReceived(object sender, MessageReceivedEventArgs messageReceivedArgs);
+    private ITestCaseEventsHandler GetTestCaseEventsHandler(string runSettings);
+    private void SendData(string data);
+    [CompilerGeneratedAttribute]
+private void <InitializeCommunication>b__21_0(object sender, ConnectedEventArgs connectedArgs);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Adapter.FrameworkHandle : TestExecutionRecorder {
+    private bool enableShutdownAfterTestRun;
+    private TestExecutionContext testExecutionContext;
+    private ITestRunEventsHandler testRunEventsHandler;
+    private bool isDisposed;
+    public bool EnableShutdownAfterTestRun { get; public set; }
+    public FrameworkHandle(ITestCaseEventsHandler testCaseEventsHandler, ITestRunCache testRunCache, TestExecutionContext testExecutionContext, ITestRunEventsHandler testRunEventsHandler);
+    public sealed virtual bool get_EnableShutdownAfterTestRun();
+    public sealed virtual void set_EnableShutdownAfterTestRun(bool value);
+    public sealed virtual int LaunchProcessWithDebuggerAttached(string filePath, string workingDirectory, string arguments, IDictionary`2<string, string> environmentVariables);
+    public sealed virtual bool AttachDebuggerToProcess(int pid);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Adapter.RunContext : DiscoveryContext {
+    [CompilerGeneratedAttribute]
+private bool <KeepAlive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <InIsolation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDataCollectionEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsBeingDebugged>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TestRunDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SolutionDirectory>k__BackingField;
+    public bool KeepAlive { get; internal set; }
+    public bool InIsolation { get; internal set; }
+    public bool IsDataCollectionEnabled { get; internal set; }
+    public bool IsBeingDebugged { get; internal set; }
+    public string TestRunDirectory { get; internal set; }
+    public string SolutionDirectory { get; internal set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_KeepAlive();
+    [CompilerGeneratedAttribute]
+internal void set_KeepAlive(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_InIsolation();
+    [CompilerGeneratedAttribute]
+internal void set_InIsolation(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsDataCollectionEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_IsDataCollectionEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsBeingDebugged();
+    [CompilerGeneratedAttribute]
+internal void set_IsBeingDebugged(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TestRunDirectory();
+    [CompilerGeneratedAttribute]
+internal void set_TestRunDirectory(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SolutionDirectory();
+    [CompilerGeneratedAttribute]
+internal void set_SolutionDirectory(string value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Adapter.TestExecutionRecorder : TestSessionMessageLogger {
+    private List`1<AttachmentSet> attachmentSets;
+    private ITestRunCache testRunCache;
+    private ITestCaseEventsHandler testCaseEventsHandler;
+    private HashSet`1<Guid> testCaseInProgressMap;
+    private object testCaseInProgressSyncObject;
+    internal Collection`1<AttachmentSet> Attachments { get; }
+    public TestExecutionRecorder(ITestCaseEventsHandler testCaseEventsHandler, ITestRunCache testRunCache);
+    internal Collection`1<AttachmentSet> get_Attachments();
+    public sealed virtual void RecordStart(TestCase testCase);
+    public sealed virtual void RecordResult(TestResult testResult);
+    public sealed virtual void RecordEnd(TestCase testCase, TestOutcome outcome);
+    private void SendTestCaseEnd(TestCase testCase, TestOutcome outcome);
+    public sealed virtual void RecordAttachments(IList`1<AttachmentSet> attachments);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.DataCollectionRunEventsHandler : object {
+    [CompilerGeneratedAttribute]
+private List`1<Tuple`2<TestMessageLevel, string>> <Messages>k__BackingField;
+    public List`1<Tuple`2<TestMessageLevel, string>> Messages { get; private set; }
+    [CompilerGeneratedAttribute]
+public List`1<Tuple`2<TestMessageLevel, string>> get_Messages();
+    [CompilerGeneratedAttribute]
+private void set_Messages(List`1<Tuple`2<TestMessageLevel, string>> value);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+}
+[ExtensionAttribute]
+internal static class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.DiscoveryCriteriaExtensions : object {
+    [ExtensionAttribute]
+public static void UpdateDiscoveryCriteria(DiscoveryCriteria discoveryCriteria, ITestRuntimeProvider testRuntimeProvider);
+    private static void UpdateTestSources(IEnumerable`1<string> sources, Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.InProcessProxyDiscoveryManager : object {
+    private ITestHostManagerFactory testHostManagerFactory;
+    private IDiscoveryManager discoveryManager;
+    private ITestRuntimeProvider testHostManager;
+    [CompilerGeneratedAttribute]
+private bool <IsInitialized>k__BackingField;
+    public bool IsInitialized { get; private set; }
+    public InProcessProxyDiscoveryManager(ITestRuntimeProvider testHostManager, ITestHostManagerFactory testHostManagerFactory);
+    [CompilerGeneratedAttribute]
+public bool get_IsInitialized();
+    [CompilerGeneratedAttribute]
+private void set_IsInitialized(bool value);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public sealed virtual void Close();
+    public sealed virtual void Abort();
+    private void InitializeExtensions(IEnumerable`1<string> sources);
+    [CompilerGeneratedAttribute]
+private void <Abort>b__11_0();
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.InProcessProxyExecutionManager : object {
+    private ITestHostManagerFactory testHostManagerFactory;
+    private IExecutionManager executionManager;
+    private ITestRuntimeProvider testHostManager;
+    [CompilerGeneratedAttribute]
+private bool <IsInitialized>k__BackingField;
+    public bool IsInitialized { get; private set; }
+    public InProcessProxyExecutionManager(ITestRuntimeProvider testHostManager, ITestHostManagerFactory testHostManagerFactory);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsInitialized();
+    [CompilerGeneratedAttribute]
+private void set_IsInitialized(bool value);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual int StartTestRun(TestRunCriteria testRunCriteria, ITestRunEventsHandler eventHandler);
+    public sealed virtual void Abort(ITestRunEventsHandler eventHandler);
+    public sealed virtual void Cancel(ITestRunEventsHandler eventHandler);
+    public sealed virtual void Close();
+    private void InitializeExtensions(IEnumerable`1<string> sources);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.LoggerNameValueConfigurationManager : object {
+    private Dictionary`2<string, string> nameValuePairs;
+    public Dictionary`2<string, string> NameValuePairs { get; }
+    public LoggerNameValueConfigurationManager(XmlElement configurationElement);
+    public Dictionary`2<string, string> get_NameValuePairs();
+    private void Initialize(XmlElement configurationElement);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelDiscoveryDataAggregator : object {
+    private object dataUpdateSyncObject;
+    private ConcurrentDictionary`2<string, object> metricsAggregator;
+    [CompilerGeneratedAttribute]
+private bool <IsAborted>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <TotalTests>k__BackingField;
+    public bool IsAborted { get; private set; }
+    public long TotalTests { get; private set; }
+    [CompilerGeneratedAttribute]
+public bool get_IsAborted();
+    [CompilerGeneratedAttribute]
+private void set_IsAborted(bool value);
+    [CompilerGeneratedAttribute]
+public long get_TotalTests();
+    [CompilerGeneratedAttribute]
+private void set_TotalTests(long value);
+    public IDictionary`2<string, object> GetAggregatedDiscoveryDataMetrics();
+    public void Aggregate(long totalTests, bool isAborted);
+    public void AggregateDiscoveryDataMetrics(IDictionary`2<string, object> metrics);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelDiscoveryEventsHandler : object {
+    private IProxyDiscoveryManager proxyDiscoveryManager;
+    private ITestDiscoveryEventsHandler2 actualDiscoveryEventsHandler;
+    private IParallelProxyDiscoveryManager parallelProxyDiscoveryManager;
+    private ParallelDiscoveryDataAggregator discoveryDataAggregator;
+    private IDataSerializer dataSerializer;
+    private IRequestData requestData;
+    public ParallelDiscoveryEventsHandler(IRequestData requestData, IProxyDiscoveryManager proxyDiscoveryManager, ITestDiscoveryEventsHandler2 actualDiscoveryEventsHandler, IParallelProxyDiscoveryManager parallelProxyDiscoveryManager, ParallelDiscoveryDataAggregator discoveryDataAggregator);
+    internal ParallelDiscoveryEventsHandler(IRequestData requestData, IProxyDiscoveryManager proxyDiscoveryManager, ITestDiscoveryEventsHandler2 actualDiscoveryEventsHandler, IParallelProxyDiscoveryManager parallelProxyDiscoveryManager, ParallelDiscoveryDataAggregator discoveryDataAggregator, IDataSerializer dataSerializer);
+    public sealed virtual void HandleDiscoveryComplete(DiscoveryCompleteEventArgs discoveryCompleteEventArgs, IEnumerable`1<TestCase> lastChunk);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+    public sealed virtual void HandleDiscoveredTests(IEnumerable`1<TestCase> discoveredTestCases);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    private void ConvertToRawMessageAndSend(string messageType, object payload);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelProxyDiscoveryManager : ParallelOperationManager`2<IProxyDiscoveryManager, ITestDiscoveryEventsHandler2> {
+    private IDataSerializer dataSerializer;
+    private int discoveryCompletedClients;
+    private int availableTestSources;
+    private DiscoveryCriteria actualDiscoveryCriteria;
+    private IEnumerator`1<string> sourceEnumerator;
+    private ITestDiscoveryEventsHandler2 currentDiscoveryEventsHandler;
+    private ParallelDiscoveryDataAggregator currentDiscoveryDataAggregator;
+    private IRequestData requestData;
+    private bool discoveryAbortRequested;
+    private object discoveryStatusLockObject;
+    public ParallelProxyDiscoveryManager(IRequestData requestData, Func`1<IProxyDiscoveryManager> actualProxyManagerCreator, int parallelLevel, bool sharedHosts);
+    internal ParallelProxyDiscoveryManager(IRequestData requestData, Func`1<IProxyDiscoveryManager> actualProxyManagerCreator, IDataSerializer dataSerializer, int parallelLevel, bool sharedHosts);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public sealed virtual void Abort();
+    public sealed virtual void Close();
+    public sealed virtual bool HandlePartialDiscoveryComplete(IProxyDiscoveryManager proxyDiscoveryManager, long totalTests, IEnumerable`1<TestCase> lastChunk, bool isAborted);
+    private void DiscoverTestsPrivate(ITestDiscoveryEventsHandler2 discoveryEventsHandler);
+    private void DiscoverTestsOnConcurrentManager(IProxyDiscoveryManager proxyDiscoveryManager);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelProxyExecutionManager : ParallelOperationManager`2<IProxyExecutionManager, ITestRunEventsHandler> {
+    private IDataSerializer dataSerializer;
+    private bool abortRequested;
+    private int runCompletedClients;
+    private int runStartedClients;
+    private int availableTestSources;
+    private TestRunCriteria actualTestRunCriteria;
+    private IEnumerator`1<string> sourceEnumerator;
+    private IEnumerator testCaseListEnumerator;
+    private bool hasSpecificTestsRun;
+    private ITestRunEventsHandler currentRunEventsHandler;
+    private ParallelRunDataAggregator currentRunDataAggregator;
+    private IRequestData requestData;
+    private bool skipDefaultAdapters;
+    [CompilerGeneratedAttribute]
+private bool <IsInitialized>k__BackingField;
+    private object executionStatusLockObject;
+    public bool IsInitialized { get; private set; }
+    public ParallelProxyExecutionManager(IRequestData requestData, Func`1<IProxyExecutionManager> actualProxyManagerCreator, int parallelLevel);
+    public ParallelProxyExecutionManager(IRequestData requestData, Func`1<IProxyExecutionManager> actualProxyManagerCreator, int parallelLevel, bool sharedHosts);
+    internal ParallelProxyExecutionManager(IRequestData requestData, Func`1<IProxyExecutionManager> actualProxyManagerCreator, IDataSerializer dataSerializer, int parallelLevel, bool sharedHosts);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsInitialized();
+    [CompilerGeneratedAttribute]
+private void set_IsInitialized(bool value);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual int StartTestRun(TestRunCriteria testRunCriteria, ITestRunEventsHandler eventHandler);
+    public sealed virtual void Abort(ITestRunEventsHandler runEventsHandler);
+    public sealed virtual void Cancel(ITestRunEventsHandler runEventsHandler);
+    public sealed virtual void Close();
+    public sealed virtual bool HandlePartialRunComplete(IProxyExecutionManager proxyExecutionManager, TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    private int StartTestRunPrivate(ITestRunEventsHandler runEventsHandler);
+    private ParallelRunEventsHandler GetEventsHandler(IProxyExecutionManager concurrentManager);
+    private void StartTestRunOnConcurrentManager(IProxyExecutionManager proxyExecutionManager);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelRunDataAggregator : object {
+    private List`1<string> executorUris;
+    private List`1<ITestRunStatistics> testRunStatsList;
+    private ConcurrentDictionary`2<string, object> metricsAggregator;
+    private object dataUpdateSyncObject;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ElapsedTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Collection`1<AttachmentSet> <RunContextAttachments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<AttachmentSet> <RunCompleteArgsAttachments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<Exception> <Exceptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsAborted>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsCanceled>k__BackingField;
+    public TimeSpan ElapsedTime { get; public set; }
+    public Collection`1<AttachmentSet> RunContextAttachments { get; public set; }
+    public List`1<AttachmentSet> RunCompleteArgsAttachments { get; }
+    public List`1<Exception> Exceptions { get; }
+    public HashSet`1<string> ExecutorUris { get; }
+    public bool IsAborted { get; private set; }
+    public bool IsCanceled { get; private set; }
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ElapsedTime();
+    [CompilerGeneratedAttribute]
+public void set_ElapsedTime(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public Collection`1<AttachmentSet> get_RunContextAttachments();
+    [CompilerGeneratedAttribute]
+public void set_RunContextAttachments(Collection`1<AttachmentSet> value);
+    [CompilerGeneratedAttribute]
+public List`1<AttachmentSet> get_RunCompleteArgsAttachments();
+    [CompilerGeneratedAttribute]
+public List`1<Exception> get_Exceptions();
+    public HashSet`1<string> get_ExecutorUris();
+    [CompilerGeneratedAttribute]
+public bool get_IsAborted();
+    [CompilerGeneratedAttribute]
+private void set_IsAborted(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsCanceled();
+    [CompilerGeneratedAttribute]
+private void set_IsCanceled(bool value);
+    public ITestRunStatistics GetAggregatedRunStats();
+    public IDictionary`2<string, object> GetAggregatedRunDataMetrics();
+    public Exception GetAggregatedException();
+    public void Aggregate(ITestRunStatistics testRunStats, ICollection`1<string> executorUris, Exception exception, TimeSpan elapsedTime, bool isAborted, bool isCanceled, ICollection`1<AttachmentSet> runContextAttachments, Collection`1<AttachmentSet> runCompleteArgsAttachments);
+    public void AggregateRunDataMetrics(IDictionary`2<string, object> metrics);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelRunEventsHandler : object {
+    private IProxyExecutionManager proxyExecutionManager;
+    private ITestRunEventsHandler actualRunEventsHandler;
+    private IParallelProxyExecutionManager parallelProxyExecutionManager;
+    private ParallelRunDataAggregator runDataAggregator;
+    private IDataSerializer dataSerializer;
+    protected IRequestData requestData;
+    public ParallelRunEventsHandler(IRequestData requestData, IProxyExecutionManager proxyExecutionManager, ITestRunEventsHandler actualRunEventsHandler, IParallelProxyExecutionManager parallelProxyExecutionManager, ParallelRunDataAggregator runDataAggregator);
+    internal ParallelRunEventsHandler(IRequestData requestData, IProxyExecutionManager proxyExecutionManager, ITestRunEventsHandler actualRunEventsHandler, IParallelProxyExecutionManager parallelProxyExecutionManager, ParallelRunDataAggregator runDataAggregator, IDataSerializer dataSerializer);
+    public virtual void HandleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    protected bool HandleSingleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    protected void HandleParallelTestRunComplete(TestRunCompleteEventArgs completedArgs);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+    public sealed virtual void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    public sealed virtual int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo);
+    public sealed virtual bool AttachDebuggerToProcess(int pid);
+    private void ConvertToRawMessageAndSend(string messageType, object payload);
+}
+internal abstract class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ParallelOperationManager`2 : object {
+    [CompilerGeneratedAttribute]
+private Func`1<T> <CreateNewConcurrentManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SharedHosts>k__BackingField;
+    private IDictionary`2<T, U> concurrentManagerHandlerMap;
+    protected static T instance;
+    private int currentParallelLevel;
+    protected object sourceEnumeratorLockObject;
+    protected Func`1<T> CreateNewConcurrentManager { get; protected set; }
+    protected bool SharedHosts { get; private set; }
+    protected ParallelOperationManager`2(Func`1<T> createNewManager, int parallelLevel, bool sharedHosts);
+    [CompilerGeneratedAttribute]
+protected Func`1<T> get_CreateNewConcurrentManager();
+    [CompilerGeneratedAttribute]
+protected void set_CreateNewConcurrentManager(Func`1<T> value);
+    [CompilerGeneratedAttribute]
+protected bool get_SharedHosts();
+    [CompilerGeneratedAttribute]
+private void set_SharedHosts(bool value);
+    public void RemoveManager(T manager);
+    public void AddManager(T manager, U handler);
+    public void UpdateHandlerForManager(T manager, U handler);
+    public U GetHandlerForGivenManager(T manager);
+    public int GetConcurrentManagersCount();
+    public IEnumerable`1<T> GetConcurrentManagerInstances();
+    public sealed virtual void UpdateParallelLevel(int newParallelLevel);
+    public sealed virtual void Dispose();
+    protected void DoActionOnAllManagers(Action`1<T> action, bool doActionsInParallel);
+    private void DoManagerAction(Action action);
+    protected bool TryFetchNextSource(IEnumerator enumerator, Y& source);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyDiscoveryManager : object {
+    private ProxyOperationManager proxyOperationManager;
+    private ITestRuntimeProvider testHostManager;
+    private IDataSerializer dataSerializer;
+    private bool isCommunicationEstablished;
+    private IRequestData requestData;
+    private ITestDiscoveryEventsHandler2 baseTestDiscoveryEventsHandler;
+    private bool skipDefaultAdapters;
+    private IFileHelper fileHelper;
+    public ProxyDiscoveryManager(IRequestData requestData, ITestRequestSender testRequestSender, ITestRuntimeProvider testHostManager);
+    internal ProxyDiscoveryManager(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager, IDataSerializer dataSerializer, IFileHelper fileHelper);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public sealed virtual void Abort();
+    public sealed virtual void Close();
+    public sealed virtual void HandleDiscoveryComplete(DiscoveryCompleteEventArgs discoveryCompleteEventArgs, IEnumerable`1<TestCase> lastChunk);
+    public sealed virtual void HandleDiscoveredTests(IEnumerable`1<TestCase> discoveredTestCases);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo);
+    private void InitializeExtensions(IEnumerable`1<string> sources);
+    private void LogMessage(TestMessageLevel testMessageLevel, string message);
+    [CompilerGeneratedAttribute]
+private bool <InitializeExtensions>b__19_0(string extension);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyExecutionManager : object {
+    private ITestRuntimeProvider testHostManager;
+    private IFileHelper fileHelper;
+    private bool isCommunicationEstablished;
+    private bool skipDefaultAdapters;
+    private IDataSerializer dataSerializer;
+    private IRequestData requestData;
+    private ITestRunEventsHandler baseTestRunEventsHandler;
+    private TestSessionInfo testSessionInfo;
+    private bool debugEnabledForTestSession;
+    [CompilerGeneratedAttribute]
+private bool <IsInitialized>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProxyOperationManager <ProxyOperationManager>k__BackingField;
+    public bool IsInitialized { get; private set; }
+    public CancellationTokenSource CancellationTokenSource { get; public set; }
+    protected ProxyOperationManager ProxyOperationManager { get; protected set; }
+    public ProxyExecutionManager(TestSessionInfo testSessionInfo, bool debugEnabledForTestSession);
+    public ProxyExecutionManager(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager);
+    internal ProxyExecutionManager(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager, IDataSerializer dataSerializer, IFileHelper fileHelper);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsInitialized();
+    [CompilerGeneratedAttribute]
+private void set_IsInitialized(bool value);
+    public CancellationTokenSource get_CancellationTokenSource();
+    public void set_CancellationTokenSource(CancellationTokenSource value);
+    [CompilerGeneratedAttribute]
+protected ProxyOperationManager get_ProxyOperationManager();
+    [CompilerGeneratedAttribute]
+protected void set_ProxyOperationManager(ProxyOperationManager value);
+    public virtual void Initialize(bool skipDefaultAdapters);
+    public virtual int StartTestRun(TestRunCriteria testRunCriteria, ITestRunEventsHandler eventHandler);
+    public virtual void Cancel(ITestRunEventsHandler eventHandler);
+    public sealed virtual void Abort(ITestRunEventsHandler eventHandler);
+    public sealed virtual void Close();
+    public virtual int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo);
+    public sealed virtual bool AttachDebuggerToProcess(int pid);
+    public sealed virtual void HandleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    public sealed virtual void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo);
+    public virtual bool SetupChannel(IEnumerable`1<string> sources, string runSettings);
+    private void LogMessage(TestMessageLevel testMessageLevel, string message);
+    private void InitializeExtensions(IEnumerable`1<string> sources);
+    [CompilerGeneratedAttribute]
+private void <StartTestRun>b__24_2(TestMessageLevel testMessageLevel, string message);
+    [CompilerGeneratedAttribute]
+private bool <InitializeExtensions>b__37_0(string extension);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyExecutionManagerWithDataCollection : ProxyExecutionManager {
+    private IDictionary`2<string, string> dataCollectionEnvironmentVariables;
+    private int dataCollectionPort;
+    private IRequestData requestData;
+    [CompilerGeneratedAttribute]
+private DataCollectionRunEventsHandler <DataCollectionRunEventsHandler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProxyDataCollectionManager <ProxyDataCollectionManager>k__BackingField;
+    internal DataCollectionRunEventsHandler DataCollectionRunEventsHandler { get; private set; }
+    internal IProxyDataCollectionManager ProxyDataCollectionManager { get; private set; }
+    internal CancellationToken CancellationToken { get; }
+    public ProxyExecutionManagerWithDataCollection(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager, IProxyDataCollectionManager proxyDataCollectionManager);
+    private void TestHostLaunchedHandler(object sender, HostProviderEventArgs e);
+    [CompilerGeneratedAttribute]
+internal DataCollectionRunEventsHandler get_DataCollectionRunEventsHandler();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectionRunEventsHandler(DataCollectionRunEventsHandler value);
+    [CompilerGeneratedAttribute]
+internal IProxyDataCollectionManager get_ProxyDataCollectionManager();
+    [CompilerGeneratedAttribute]
+private void set_ProxyDataCollectionManager(IProxyDataCollectionManager value);
+    internal CancellationToken get_CancellationToken();
+    public virtual void Initialize(bool skipDefaultAdapters);
+    public virtual int StartTestRun(TestRunCriteria testRunCriteria, ITestRunEventsHandler eventHandler);
+    public virtual int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo);
+    public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyOperationManager : object {
+    private string versionCheckPropertyName;
+    private string makeRunsettingsCompatiblePropertyName;
+    private Guid id;
+    private ManualResetEventSlim testHostExited;
+    private IProcessHelper processHelper;
+    private IBaseProxy baseProxy;
+    private bool versionCheckRequired;
+    private bool makeRunsettingsCompatible;
+    private bool makeRunsettingsCompatibleSet;
+    private bool initialized;
+    private bool testHostLaunched;
+    private int testHostProcessId;
+    private string testHostProcessStdError;
+    [CompilerGeneratedAttribute]
+private IRequestData <RequestData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITestRequestSender <RequestSender>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITestRuntimeProvider <TestHostManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CancellationTokenSource <CancellationTokenSource>k__BackingField;
+    public IRequestData RequestData { get; public set; }
+    public ITestRequestSender RequestSender { get; public set; }
+    public ITestRuntimeProvider TestHostManager { get; public set; }
+    public Guid Id { get; }
+    public CancellationTokenSource CancellationTokenSource { get; public set; }
+    public ProxyOperationManager(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager);
+    public ProxyOperationManager(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager, IBaseProxy baseProxy);
+    [CompilerGeneratedAttribute]
+public IRequestData get_RequestData();
+    [CompilerGeneratedAttribute]
+public void set_RequestData(IRequestData value);
+    [CompilerGeneratedAttribute]
+public ITestRequestSender get_RequestSender();
+    [CompilerGeneratedAttribute]
+public void set_RequestSender(ITestRequestSender value);
+    [CompilerGeneratedAttribute]
+public ITestRuntimeProvider get_TestHostManager();
+    [CompilerGeneratedAttribute]
+public void set_TestHostManager(ITestRuntimeProvider value);
+    public Guid get_Id();
+    [CompilerGeneratedAttribute]
+public CancellationTokenSource get_CancellationTokenSource();
+    [CompilerGeneratedAttribute]
+public void set_CancellationTokenSource(CancellationTokenSource value);
+    public virtual void Initialize(bool skipDefaultAdapters);
+    public virtual bool SetupChannel(IEnumerable`1<string> sources, string runSettings, ITestMessageEventHandler eventHandler);
+    public virtual bool SetupChannel(IEnumerable`1<string> sources, string runSettings);
+    public virtual void Close();
+    public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo);
+    public string RemoveNodesFromRunsettingsIfRequired(string runsettingsXml, Action`2<TestMessageLevel, string> logMessage);
+    private string GetTimestampedLogFile(string logFile);
+    private void CompatIssueWithVersionCheckAndRunsettings();
+    private void TestHostManagerHostLaunched(object sender, HostProviderEventArgs e);
+    private void TestHostManagerHostExited(object sender, HostProviderEventArgs e);
+    private void ThrowOnTestHostExited(bool testHostExited);
+    private void ThrowExceptionOnConnectionFailure(int connTimeout);
+    [CompilerGeneratedAttribute]
+private bool <CompatIssueWithVersionCheckAndRunsettings>b__40_0(PropertyInfo p);
+    [CompilerGeneratedAttribute]
+private bool <CompatIssueWithVersionCheckAndRunsettings>b__40_1(PropertyInfo p);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyOperationManagerWithDataCollection : ProxyOperationManager {
+    private IDictionary`2<string, string> dataCollectionEnvironmentVariables;
+    private IRequestData requestData;
+    private int dataCollectionPort;
+    [CompilerGeneratedAttribute]
+private DataCollectionRunEventsHandler <DataCollectionRunEventsHandler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProxyDataCollectionManager <ProxyDataCollectionManager>k__BackingField;
+    internal DataCollectionRunEventsHandler DataCollectionRunEventsHandler { get; private set; }
+    internal IProxyDataCollectionManager ProxyDataCollectionManager { get; private set; }
+    public ProxyOperationManagerWithDataCollection(IRequestData requestData, ITestRequestSender requestSender, ITestRuntimeProvider testHostManager, IProxyDataCollectionManager proxyDataCollectionManager);
+    public virtual void Initialize(bool skipDefaultAdapters);
+    public virtual TestProcessStartInfo UpdateTestProcessStartInfo(TestProcessStartInfo testProcessStartInfo);
+    public virtual bool SetupChannel(IEnumerable`1<string> sources, string runSettings, ITestMessageEventHandler eventHandler);
+    [CompilerGeneratedAttribute]
+internal DataCollectionRunEventsHandler get_DataCollectionRunEventsHandler();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectionRunEventsHandler(DataCollectionRunEventsHandler value);
+    [CompilerGeneratedAttribute]
+internal IProxyDataCollectionManager get_ProxyDataCollectionManager();
+    [CompilerGeneratedAttribute]
+private void set_ProxyDataCollectionManager(IProxyDataCollectionManager value);
+    private void TestHostLaunchedHandler(object sender, HostProviderEventArgs e);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.TestLoggerManager : object {
+    private bool isDisposed;
+    private HashSet`1<Type> initializedLoggers;
+    private string testRunDirectory;
+    private string targetFramework;
+    private bool treatNoTestsAsError;
+    private InternalTestLoggerEvents loggerEvents;
+    private IMessageLogger messageLogger;
+    private IRequestData requestData;
+    private TestLoggerExtensionManager testLoggerExtensionManager;
+    private IAssemblyLoadContext assemblyLoadContext;
+    public bool LoggersInitialized { get; }
+    private TestLoggerExtensionManager TestLoggerExtensionManager { get; }
+    public TestLoggerManager(IRequestData requestData, IMessageLogger messageLogger, InternalTestLoggerEvents loggerEvents);
+    internal TestLoggerManager(IRequestData requestData, IMessageLogger messageLogger, InternalTestLoggerEvents loggerEvents, IAssemblyLoadContext assemblyLoadContext);
+    public sealed virtual bool get_LoggersInitialized();
+    private TestLoggerExtensionManager get_TestLoggerExtensionManager();
+    public sealed virtual void Initialize(string runSettings);
+    public sealed virtual void HandleTestRunMessage(TestRunMessageEventArgs e);
+    public sealed virtual void HandleTestRunStatsChange(TestRunChangedEventArgs e);
+    public sealed virtual void HandleTestRunStart(TestRunStartEventArgs e);
+    public sealed virtual void HandleTestRunComplete(TestRunCompleteEventArgs e);
+    public sealed virtual void HandleDiscoveryMessage(TestRunMessageEventArgs e);
+    public sealed virtual void HandleDiscoveredTests(DiscoveredTestsEventArgs e);
+    public sealed virtual void HandleDiscoveryComplete(DiscoveryCompleteEventArgs e);
+    public sealed virtual void HandleDiscoveryStart(DiscoveryStartEventArgs e);
+    public sealed virtual void Dispose();
+    internal bool InitializeLoggerByUri(Uri uri, Dictionary`2<string, string> parameters);
+    internal bool TryGetUriFromFriendlyName(string friendlyName, Uri& loggerUri);
+    internal string GetResultsDirectory(string runSettings);
+    internal Framework GetTargetFramework(string runSettings);
+    internal bool GetTreatNoTestsAsError(string runSettings);
+    internal void EnableLogging();
+    internal virtual void Dispose(bool disposing);
+    private Dictionary`2<string, string> GetParametersFromConfigurationElement(XmlElement configuration);
+    private bool InitializeLoggerByType(string assemblyQualifiedName, string codeBase, Dictionary`2<string, string> parameters);
+    private bool InitializeLogger(object logger, string extensionUri, Dictionary`2<string, string> parameters);
+    private Dictionary`2<string, string> UpdateLoggerParameters(Dictionary`2<string, string> parameters);
+    private void CheckDisposed();
+}
+[ExtensionAttribute]
+internal static class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.TestRunCriteriaExtensions : object {
+    [ExtensionAttribute]
+public static TestRunCriteriaWithSources CreateTestRunCriteriaForSources(TestRunCriteria testRunCriteria, ITestRuntimeProvider testRuntimeProvider, string runSettings, TestExecutionContext executionContext, IEnumerable`1<string> inputPackages);
+    [ExtensionAttribute]
+public static TestRunCriteriaWithTests CreateTestRunCriteriaForTests(TestRunCriteria testRunCriteria, ITestRuntimeProvider testRuntimeProvider, string runSettings, TestExecutionContext executionContext, IEnumerable`1<string> inputPackages);
+    private static bool TryCheckTestSourceDifferFromPackage(ITestRuntimeProvider testRuntimeProvider, IEnumerable`1<string> inputPackages, IEnumerable`1& actualTestSources);
+    private static void UpdateTestSources(IEnumerable`1<string> sources, Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Constants : object {
+    internal static IList`1<string> DefaultAdapters;
+    internal static string DefaultAdapterLocation;
+    private static Constants();
+}
+internal static class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Constants : object {
+    public static string TestSessionStartMethodName;
+    public static string TestSessionEndMethodName;
+    public static string TestCaseStartMethodName;
+    public static string TestCaseEndMethodName;
+    public static string TestSourcesPropertyName;
+    public static string CoverletDataCollectorCodebase;
+    public static string CoverletDataCollectorTypeName;
+}
+internal abstract class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DataCollectionLauncher : object {
+    protected IProcessHelper processHelper;
+    protected IMessageLogger messageLogger;
+    protected StringBuilder processStdError;
+    [CompilerGeneratedAttribute]
+private int <DataCollectorProcessId>k__BackingField;
+    public int DataCollectorProcessId { get; protected set; }
+    protected Action`1<object> ExitCallBack { get; }
+    protected Action`2<object, string> ErrorReceivedCallback { get; }
+    public DataCollectionLauncher(IProcessHelper processHelper, IMessageLogger messageLogger);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_DataCollectorProcessId();
+    [CompilerGeneratedAttribute]
+protected void set_DataCollectorProcessId(int value);
+    protected Action`1<object> get_ExitCallBack();
+    protected Action`2<object, string> get_ErrorReceivedCallback();
+    public abstract virtual int LaunchDataCollector(IDictionary`2<string, string> environmentVariables, IList`1<string> commandLineArguments);
+    [CompilerGeneratedAttribute]
+private void <get_ExitCallBack>b__9_0(object process);
+    [CompilerGeneratedAttribute]
+private void <get_ErrorReceivedCallback>b__11_0(object process, string data);
+}
+internal static class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DataCollectionLauncherFactory : object {
+    internal static IDataCollectionLauncher GetDataCollectorLauncher(IProcessHelper processHelper, string settingsXml);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DataCollectionParameters : object {
+    [CompilerGeneratedAttribute]
+private bool <AreTestCaseLevelEventsRequired>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <EnvironmentVariables>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <DataCollectionEventsPort>k__BackingField;
+    public bool AreTestCaseLevelEventsRequired { get; private set; }
+    public IDictionary`2<string, string> EnvironmentVariables { get; private set; }
+    public int DataCollectionEventsPort { get; private set; }
+    public DataCollectionParameters(bool areTestCaseLevelEventsRequired, IDictionary`2<string, string> environmentVariables, int dataCollectionEventsPort);
+    [CompilerGeneratedAttribute]
+public bool get_AreTestCaseLevelEventsRequired();
+    [CompilerGeneratedAttribute]
+private void set_AreTestCaseLevelEventsRequired(bool value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_EnvironmentVariables();
+    [CompilerGeneratedAttribute]
+private void set_EnvironmentVariables(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public int get_DataCollectionEventsPort();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectionEventsPort(int value);
+    public static DataCollectionParameters CreateDefaultParameterInstance();
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DataCollectionTestRunEventsHandler : object {
+    private IProxyDataCollectionManager proxyDataCollectionManager;
+    private ITestRunEventsHandler testRunEventsHandler;
+    private CancellationToken cancellationToken;
+    private IDataSerializer dataSerializer;
+    private Collection`1<AttachmentSet> dataCollectionAttachmentSets;
+    public DataCollectionTestRunEventsHandler(ITestRunEventsHandler baseTestRunEventsHandler, IProxyDataCollectionManager proxyDataCollectionManager, CancellationToken cancellationToken);
+    public DataCollectionTestRunEventsHandler(ITestRunEventsHandler baseTestRunEventsHandler, IProxyDataCollectionManager proxyDataCollectionManager, IDataSerializer dataSerializer, CancellationToken cancellationToken);
+    public sealed virtual void HandleLogMessage(TestMessageLevel level, string message);
+    public sealed virtual void HandleRawMessage(string rawMessage);
+    public sealed virtual void HandleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+    public sealed virtual void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs);
+    public sealed virtual int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo);
+    public sealed virtual bool AttachDebuggerToProcess(int pid);
+    internal static ICollection`1<AttachmentSet> GetCombinedAttachmentSets(Collection`1<AttachmentSet> originalAttachmentSets, ICollection`1<AttachmentSet> newAttachments);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DefaultDataCollectionLauncher : DataCollectionLauncher {
+    private static string DataCollectorProcessName;
+    internal DefaultDataCollectionLauncher(IProcessHelper processHelper, IMessageLogger messageLogger);
+    public virtual int LaunchDataCollector(IDictionary`2<string, string> environmentVariables, IList`1<string> commandLineArguments);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.DotnetDataCollectionLauncher : DataCollectionLauncher {
+    private static string DataCollectorProcessName;
+    private IFileHelper fileHelper;
+    internal DotnetDataCollectionLauncher(IProcessHelper processHelper, IFileHelper fileHelper, IMessageLogger messageLogger);
+    public virtual int LaunchDataCollector(IDictionary`2<string, string> environmentVariables, IList`1<string> commandLineArguments);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.InProcDataCollectionExtensionManager : object {
+    internal IDictionary`2<string, IInProcDataCollector> InProcDataCollectors;
+    private IDataCollectionSink inProcDataCollectionSink;
+    private static string DataCollectorEndsWithPattern;
+    private string defaultCodeBase;
+    private List`1<string> codeBasePaths;
+    private IFileHelper fileHelper;
+    private IEnumerable`1<DataCollectorSettings> inProcDataCollectorSettingsCollection;
+    [CompilerGeneratedAttribute]
+private bool <IsInProcDataCollectionEnabled>k__BackingField;
+    public bool IsInProcDataCollectionEnabled { get; private set; }
+    public InProcDataCollectionExtensionManager(string runSettings, ITestEventsPublisher testEventsPublisher, string defaultCodeBase, TestPluginCache testPluginCache);
+    protected InProcDataCollectionExtensionManager(string runSettings, ITestEventsPublisher testEventsPublisher, string defaultCodeBase, TestPluginCache testPluginCache, IFileHelper fileHelper);
+    [CompilerGeneratedAttribute]
+public bool get_IsInProcDataCollectionEnabled();
+    [CompilerGeneratedAttribute]
+private void set_IsInProcDataCollectionEnabled(bool value);
+    protected virtual IInProcDataCollector CreateDataCollector(string assemblyQualifiedName, string codebase, XmlElement configuration, TypeInfo interfaceTypeInfo);
+    private void TriggerTestSessionStart(object sender, SessionStartEventArgs e);
+    private void TriggerTestSessionEnd(object sender, SessionEndEventArgs e);
+    private void TriggerTestCaseStart(object sender, TestCaseStartEventArgs e);
+    private void TriggerTestCaseEnd(object sender, TestCaseEndEventArgs e);
+    private void TriggerUpdateTestResult(object sender, TestResultEventArgs e);
+    private void InitializeInProcDataCollectors(string runSettings);
+    private string GetCodebase(string codeBase);
+    private IDictionary`2<string, object> GetSessionStartProperties(SessionStartEventArgs sessionStartEventArgs);
+    private void TriggerInProcDataCollectionMethods(string methodName, InProcDataCollectionArgs methodArg);
+    private void SetInProcDataCollectionDataInTestResult(TestResult testResult);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.InProcDataCollectionSink : object {
+    private IDictionary`2<Guid, TestCaseDataCollectionData> testCaseDataCollectionDataMap;
+    public sealed virtual void SendData(DataCollectionContext dataCollectionContext, string key, string value);
+    public IDictionary`2<string, string> GetDataCollectionDataSetForTestCase(Guid testCaseId);
+    private void AddKeyValuePairToDictionary(Guid testCaseId, string key, string value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.InProcDataCollector : object {
+    private Type dataCollectorType;
+    private object dataCollectorObject;
+    private string configXml;
+    private IAssemblyLoadContext assemblyLoadContext;
+    [CompilerGeneratedAttribute]
+private string <AssemblyQualifiedName>k__BackingField;
+    public string AssemblyQualifiedName { get; private set; }
+    public InProcDataCollector(string codeBase, string assemblyQualifiedName, TypeInfo interfaceTypeInfo, string configXml);
+    internal InProcDataCollector(string codeBase, string assemblyQualifiedName, TypeInfo interfaceTypeInfo, string configXml, IAssemblyLoadContext assemblyLoadContext, TestPluginCache testPluginCache);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_AssemblyQualifiedName();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyQualifiedName(string value);
+    public sealed virtual void LoadDataCollector(IDataCollectionSink inProcDataCollectionSink);
+    public sealed virtual void TriggerInProcDataCollectionMethod(string methodName, InProcDataCollectionArgs methodArg);
+    private void InitializeDataCollector(object obj, IDataCollectionSink inProcDataCollectionSink);
+    private static MethodInfo GetMethodInfoFromType(Type type, string funcName, Type[] argumentTypes);
+    private static object CreateObjectFromType(Type type);
+    private Assembly LoadInProcDataCollectorExtension(string codeBase);
+}
+internal interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Interfaces.IDataCollectionLauncher {
+    public int DataCollectorProcessId { get; }
+    public abstract virtual int get_DataCollectorProcessId();
+    public abstract virtual int LaunchDataCollector(IDictionary`2<string, string> environmentVariables, IList`1<string> commandLineArguments);
+}
+public interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Interfaces.IDataCollectorsSettingsProvider {
+    public DataCollectionRunSettings Settings { get; }
+    public abstract virtual DataCollectionRunSettings get_Settings();
+}
+internal interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Interfaces.IInProcDataCollector {
+    public string AssemblyQualifiedName { get; }
+    public abstract virtual string get_AssemblyQualifiedName();
+    public abstract virtual void LoadDataCollector(IDataCollectionSink inProcDataCollectionSink);
+    public abstract virtual void TriggerInProcDataCollectionMethod(string methodName, InProcDataCollectionArgs methodArg);
+}
+public interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Interfaces.IProxyDataCollectionManager {
+    public string SettingsXml { get; }
+    public IEnumerable`1<string> Sources { get; }
+    public abstract virtual void Initialize();
+    public abstract virtual string get_SettingsXml();
+    public abstract virtual IEnumerable`1<string> get_Sources();
+    public abstract virtual DataCollectionParameters BeforeTestRunStart(bool resetDataCollectors, bool isRunStartingNow, ITestMessageEventHandler runEventsHandler);
+    public abstract virtual Collection`1<AttachmentSet> AfterTestRunEnd(bool isCanceled, ITestMessageEventHandler runEventsHandler);
+    public abstract virtual void TestHostLaunched(int processId);
+}
+internal interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.Interfaces.ITestEventsPublisher {
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TestResult(EventHandler`1<TestResultEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TestResult(EventHandler`1<TestResultEventArgs> value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.ParallelDataCollectionEventsHandler : ParallelRunEventsHandler {
+    private ParallelRunDataAggregator runDataAggregator;
+    private ITestRunAttachmentsProcessingManager attachmentsProcessingManager;
+    private CancellationToken cancellationToken;
+    public ParallelDataCollectionEventsHandler(IRequestData requestData, IProxyExecutionManager proxyExecutionManager, ITestRunEventsHandler actualRunEventsHandler, IParallelProxyExecutionManager parallelProxyExecutionManager, ParallelRunDataAggregator runDataAggregator, ITestRunAttachmentsProcessingManager attachmentsProcessingManager, CancellationToken cancellationToken);
+    internal ParallelDataCollectionEventsHandler(IRequestData requestData, IProxyExecutionManager proxyExecutionManager, ITestRunEventsHandler actualRunEventsHandler, IParallelProxyExecutionManager parallelProxyExecutionManager, ParallelRunDataAggregator runDataAggregator, IDataSerializer dataSerializer);
+    public virtual void HandleTestRunComplete(TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.ProxyDataCollectionManager : object {
+    private static string PortOption;
+    private static string DiagOption;
+    private static string ParentProcessIdOption;
+    private static string TraceLevelOption;
+    public static string DebugEnvironmentVaribleName;
+    private IDataCollectionRequestSender dataCollectionRequestSender;
+    private IDataCollectionLauncher dataCollectionLauncher;
+    private IProcessHelper processHelper;
+    private IRequestData requestData;
+    private int dataCollectionPort;
+    private int dataCollectionProcessId;
+    [CompilerGeneratedAttribute]
+private string <SettingsXml>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <Sources>k__BackingField;
+    public string SettingsXml { get; }
+    public IEnumerable`1<string> Sources { get; }
+    public ProxyDataCollectionManager(IRequestData requestData, string settingsXml, IEnumerable`1<string> sources);
+    internal ProxyDataCollectionManager(IRequestData requestData, string settingsXml, IEnumerable`1<string> sources, IProcessHelper processHelper);
+    internal ProxyDataCollectionManager(IRequestData requestData, string settingsXml, IEnumerable`1<string> sources, IDataCollectionRequestSender dataCollectionRequestSender, IProcessHelper processHelper, IDataCollectionLauncher dataCollectionLauncher);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SettingsXml();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<string> get_Sources();
+    public sealed virtual Collection`1<AttachmentSet> AfterTestRunEnd(bool isCanceled, ITestMessageEventHandler runEventsHandler);
+    public sealed virtual DataCollectionParameters BeforeTestRunStart(bool resetDataCollectors, bool isRunStartingNow, ITestMessageEventHandler runEventsHandler);
+    public sealed virtual void TestHostLaunched(int processId);
+    public sealed virtual void Dispose();
+    public sealed virtual void Initialize();
+    private int GetConnectionTimeout(int processId);
+    private void InvokeDataCollectionServiceAction(Action action, ITestMessageEventHandler runEventsHandler);
+    private void HandleExceptionMessage(ITestMessageEventHandler runEventsHandler, Exception exception);
+    private IList`1<string> GetCommandLineArguments(int portNumber);
+    private string GetTimestampedLogFile(string logFile);
+    private static string UpdateExtensionsFolderInRunSettings(string settingsXml);
+    private void LogEnabledDataCollectors();
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.ProxyOutOfProcDataCollectionManager : object {
+    private IDataCollectionTestCaseEventSender dataCollectionTestCaseEventSender;
+    private ITestEventsPublisher testEventsPublisher;
+    private Dictionary`2<Guid, Collection`1<AttachmentSet>> attachmentsCache;
+    private object syncObject;
+    public ProxyOutOfProcDataCollectionManager(IDataCollectionTestCaseEventSender dataCollectionTestCaseEventSender, ITestEventsPublisher testEventsPublisher);
+    private void TriggerTestCaseStart(object sender, TestCaseStartEventArgs e);
+    private void TriggerTestCaseEnd(object sender, TestCaseEndEventArgs e);
+    private void TriggerSendTestResult(object sender, TestResultEventArgs e);
+    private void TriggerTestSessionEnd(object sender, SessionEndEventArgs e);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery.DiscovererEnumerator : object {
+    private DiscoveryResultCache discoveryResultCache;
+    private ITestPlatformEventSource testPlatformEventSource;
+    private IRequestData requestData;
+    private IAssemblyProperties assemblyProperties;
+    private CancellationToken cancellationToken;
+    public DiscovererEnumerator(IRequestData requestData, DiscoveryResultCache discoveryResultCache, CancellationToken token);
+    public DiscovererEnumerator(IRequestData requestData, DiscoveryResultCache discoveryResultCache, ITestPlatformEventSource testPlatformEventSource, CancellationToken token);
+    public DiscovererEnumerator(IRequestData requestData, DiscoveryResultCache discoveryResultCache, ITestPlatformEventSource testPlatformEventSource, IAssemblyProperties assemblyProperties, CancellationToken token);
+    public void LoadTests(IDictionary`2<string, IEnumerable`1<string>> testExtensionSourceMap, IRunSettings settings, string testCaseFilter, IMessageLogger logger);
+    private void LoadTestsFromAnExtension(string extensionAssembly, IEnumerable`1<string> sources, IRunSettings settings, string testCaseFilter, IMessageLogger logger);
+    private void LogTestsDiscoveryCancellation(IMessageLogger logger);
+    private void CollectTelemetryAtEnd(double totalTimeTakenByAdapters, double totalAdaptersUsed);
+    private void DiscoverTestsFromSingleDiscoverer(LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities> discoverer, Dictionary`2<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>, IEnumerable`1<string>> discovererToSourcesMap, DiscoveryContext context, TestCaseDiscoverySink discoverySink, IMessageLogger logger, Double& totalAdaptersUsed, Double& totalTimeTakenByAdapters);
+    private static bool TryToLoadDiscoverer(LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities> discoverer, IMessageLogger logger, Type& discovererType);
+    private static bool IsDiscovererFromDeprecatedLocations(LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities> discoverer);
+    private static void LogWarningOnNoTestsDiscovered(IEnumerable`1<string> sources, string testCaseFilter, IMessageLogger logger);
+    private void SetAdapterLoggingSettings(IMessageLogger messageLogger, IRunSettings runSettings);
+    internal static Dictionary`2<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>, IEnumerable`1<string>> GetDiscovererToSourcesMap(string extensionAssembly, IEnumerable`1<string> sources, IMessageLogger logger, IAssemblyProperties assemblyProperties);
+    private static IDictionary`2<AssemblyType, IList`1<string>> GetAssemblyTypeToSoucesMap(IEnumerable`1<string> sources, IAssemblyProperties assemblyProperties);
+    private static bool IsAssembly(string filePath);
+    private static IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> GetDiscoverers(string extensionAssembly, bool throwOnError);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery.DiscoveryContext : object {
+    [CompilerGeneratedAttribute]
+private IRunSettings <RunSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FilterExpressionWrapper <FilterExpressionWrapper>k__BackingField;
+    public IRunSettings RunSettings { get; internal set; }
+    internal FilterExpressionWrapper FilterExpressionWrapper { get; internal set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual IRunSettings get_RunSettings();
+    [CompilerGeneratedAttribute]
+internal void set_RunSettings(IRunSettings value);
+    public sealed virtual ITestCaseFilterExpression GetTestCaseFilter(IEnumerable`1<string> supportedProperties, Func`2<string, TestProperty> propertyProvider);
+    [CompilerGeneratedAttribute]
+internal FilterExpressionWrapper get_FilterExpressionWrapper();
+    [CompilerGeneratedAttribute]
+internal void set_FilterExpressionWrapper(FilterExpressionWrapper value);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery.DiscoveryManager : object {
+    private TestSessionMessageLogger sessionMessageLogger;
+    private ITestPlatformEventSource testPlatformEventSource;
+    private IRequestData requestData;
+    private ITestDiscoveryEventsHandler2 testDiscoveryEventsHandler;
+    private DiscoveryCriteria discoveryCriteria;
+    private CancellationTokenSource cancellationTokenSource;
+    public DiscoveryManager(IRequestData requestData);
+    protected DiscoveryManager(IRequestData requestData, ITestPlatformEventSource testPlatformEventSource);
+    public sealed virtual void Initialize(IEnumerable`1<string> pathToAdditionalExtensions, ITestDiscoveryEventsHandler2 eventHandler);
+    public sealed virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public sealed virtual void Abort();
+    private void OnReportTestCases(IEnumerable`1<TestCase> testCases);
+    internal static IEnumerable`1<string> GetValidSources(IEnumerable`1<string> sources, IMessageLogger logger, string package);
+    private void TestSessionMessageHandler(object sender, TestRunMessageEventArgs e);
+    private static void UpdateTestCases(IEnumerable`1<TestCase> testCases, string package);
+    [CompilerGeneratedAttribute]
+internal static void <GetValidSources>g__SendWarning|12_0(<>c__DisplayClass12_0& , <>c__DisplayClass12_1& );
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery.DiscoveryResultCache : object {
+    private OnReportTestCases onReportTestCases;
+    private long totalDiscoveredTests;
+    private long cacheSize;
+    private TimeSpan cacheTimeout;
+    private DateTime lastUpdate;
+    private List`1<TestCase> tests;
+    private object syncObject;
+    public IList`1<TestCase> Tests { get; }
+    public long TotalDiscoveredTests { get; }
+    public DiscoveryResultCache(long cacheSize, TimeSpan discoveredTestEventTimeout, OnReportTestCases onReportTestCases);
+    public IList`1<TestCase> get_Tests();
+    public long get_TotalDiscoveredTests();
+    public void AddTest(TestCase test);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Discovery.TestCaseDiscoverySink : object {
+    private DiscoveryResultCache discoveryRequestCache;
+    internal TestCaseDiscoverySink(DiscoveryResultCache discoveryRequestCache);
+    public sealed virtual void SendTestCase(TestCase discoveredTest);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.EventHandlers.TestCaseEventsHandler : object {
+    [CompilerGeneratedAttribute]
+private EventHandler`1<SessionStartEventArgs> SessionStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<SessionEndEventArgs> SessionEnd;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestCaseStartEventArgs> TestCaseStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestCaseEndEventArgs> TestCaseEnd;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestResultEventArgs> TestResult;
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_TestResult(EventHandler`1<TestResultEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_TestResult(EventHandler`1<TestResultEventArgs> value);
+    public sealed virtual void SendTestCaseStart(TestCase testCase);
+    public sealed virtual void SendTestCaseEnd(TestCase testCase, TestOutcome outcome);
+    public sealed virtual void SendTestResult(TestResult result);
+    public sealed virtual void SendSessionStart(IDictionary`2<string, object> properties);
+    public sealed virtual void SendSessionEnd();
+}
+internal abstract class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.BaseRunTests : object {
+    private string runSettings;
+    private TestExecutionContext testExecutionContext;
+    private ITestRunEventsHandler testRunEventsHandler;
+    private ITestEventsPublisher testEventsPublisher;
+    private ITestRunCache testRunCache;
+    private protected string package;
+    private IRequestData requestData;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) isCancellationRequested;
+    private ITestExecutor activeExecutor;
+    private ITestCaseEventsHandler testCaseEventsHandler;
+    private RunContext runContext;
+    private FrameworkHandle frameworkHandle;
+    private ICollection`1<string> executorUrisThatRanTests;
+    private ITestPlatformEventSource testPlatformEventSource;
+    private IThread platformThread;
+    private RunConfiguration runConfiguration;
+    private IDataSerializer dataSerializer;
+    protected string RunSettings { get; }
+    protected TestExecutionContext TestExecutionContext { get; }
+    protected ITestRunEventsHandler TestRunEventsHandler { get; }
+    protected ITestRunCache TestRunCache { get; }
+    protected bool IsCancellationRequested { get; }
+    protected RunContext RunContext { get; }
+    protected FrameworkHandle FrameworkHandle { get; }
+    protected ICollection`1<string> ExecutorUrisThatRanTests { get; }
+    protected BaseRunTests(IRequestData requestData, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler, ITestPlatformEventSource testPlatformEventSource);
+    protected BaseRunTests(IRequestData requestData, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler, ITestPlatformEventSource testPlatformEventSource, ITestEventsPublisher testEventsPublisher, IThread platformThread, IDataSerializer dataSerializer);
+    protected string get_RunSettings();
+    protected TestExecutionContext get_TestExecutionContext();
+    protected ITestRunEventsHandler get_TestRunEventsHandler();
+    protected ITestRunCache get_TestRunCache();
+    protected bool get_IsCancellationRequested();
+    protected RunContext get_RunContext();
+    protected FrameworkHandle get_FrameworkHandle();
+    protected ICollection`1<string> get_ExecutorUrisThatRanTests();
+    public void RunTests();
+    internal void Abort();
+    internal void Cancel();
+    protected abstract virtual void BeforeRaisingTestRunComplete(bool exceptionsHitDuringRunTests);
+    protected abstract virtual IEnumerable`1<Tuple`2<Uri, string>> GetExecutorUriExtensionMap(IFrameworkHandle testExecutorFrameworkHandle, RunContext runContext);
+    protected abstract virtual void InvokeExecutor(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUriExtensionTuple, RunContext runContext, IFrameworkHandle frameworkHandle);
+    protected abstract virtual bool ShouldAttachDebuggerToTestHost(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUriExtensionTuple, RunContext runContext);
+    protected abstract virtual void SendSessionStart();
+    protected abstract virtual void SendSessionEnd();
+    private void CancelTestRunInternal(ITestExecutor executor);
+    private void SetContext();
+    private void OnTestRunMessage(object sender, TestRunMessageEventArgs e);
+    private TimeSpan RunTestsInternal();
+    private bool RunTestInternalWithExecutors(IEnumerable`1<Tuple`2<Uri, string>> executorUriExtensionMap, long totalTests);
+    private bool NotRequiredSTAThread();
+    private TestExecutorExtensionManager GetExecutorExtensionManager(string extensionAssembly);
+    private void SetAdapterLoggingSettings();
+    private void RaiseTestRunComplete(Exception exception, bool canceled, bool aborted, bool adapterHintToShutdownAfterRun, TimeSpan elapsedTime);
+    private bool IsTestSourceIsPackage();
+    private void OnCacheHit(TestRunStatistics testRunStats, ICollection`1<TestResult> results, ICollection`1<TestCase> inProgressTestCases);
+    private bool TryToRunInSTAThread(Action action, bool waitForCompletion);
+    private void UpdateTestCaseSourceToPackage(ICollection`1<TestResult> testResults, ICollection`1<TestCase> inProgressTestCases, ICollection`1& updatedTestResults, ICollection`1& updatedInProgressTestCases);
+    private ICollection`1<TestResult> UpdateTestResults(ICollection`1<TestResult> testResults, string package);
+    private ICollection`1<TestCase> UpdateInProgressTests(ICollection`1<TestCase> inProgressTestCases, string package);
+    [CompilerGeneratedAttribute]
+private void <Cancel>b__37_0();
+    [CompilerGeneratedAttribute]
+private void <Cancel>b__37_1();
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.ExecutionManager : object {
+    private ITestPlatformEventSource testPlatformEventSource;
+    private BaseRunTests activeTestRun;
+    private IRequestData requestData;
+    private TestSessionMessageLogger sessionMessageLogger;
+    private ITestMessageEventHandler testMessageEventsHandler;
+    public ExecutionManager(IRequestData requestData);
+    protected ExecutionManager(ITestPlatformEventSource testPlatformEventSource, IRequestData requestData);
+    public sealed virtual void Initialize(IEnumerable`1<string> pathToAdditionalExtensions, ITestMessageEventHandler testMessageEventsHandler);
+    public sealed virtual void StartTestRun(Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler runEventsHandler);
+    public sealed virtual void StartTestRun(IEnumerable`1<TestCase> tests, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler runEventsHandler);
+    public sealed virtual void Cancel(ITestRunEventsHandler testRunEventsHandler);
+    public sealed virtual void Abort(ITestRunEventsHandler testRunEventsHandler);
+    private void LoadExtensions();
+    private void InitializeDataCollectors(string runSettings, ITestEventsPublisher testEventsPublisher, string defaultCodeBase);
+    private void TestSessionMessageHandler(object sender, TestRunMessageEventArgs e);
+}
+internal interface Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.ITestRunCache {
+    public ICollection`1<TestResult> TestResults { get; }
+    public ICollection`1<TestCase> InProgressTests { get; }
+    public long TotalExecutedTests { get; }
+    public TestRunStatistics TestRunStatistics { get; }
+    public IDictionary`2<string, int> AdapterTelemetry { get; }
+    public abstract virtual ICollection`1<TestResult> get_TestResults();
+    public abstract virtual ICollection`1<TestCase> get_InProgressTests();
+    public abstract virtual long get_TotalExecutedTests();
+    public abstract virtual TestRunStatistics get_TestRunStatistics();
+    public abstract virtual IDictionary`2<string, int> get_AdapterTelemetry();
+    public abstract virtual void OnTestStarted(TestCase testCase);
+    public abstract virtual void OnNewTestResult(TestResult testResult);
+    public abstract virtual bool OnTestCompletion(TestCase completedTest);
+    public abstract virtual ICollection`1<TestResult> GetLastChunk();
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.MSTestV1TelemetryHelper : object {
+    private static TestProperty testTypeProperty;
+    private static TestProperty extensionIdProperty;
+    internal static bool IsMSTestV1Adapter(Uri executorUri);
+    internal static bool IsMSTestV1Adapter(string executorUri);
+    internal static void AddTelemetry(TestResult testResult, IDictionary`2<string, int> adapterTelemetry);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.RunTestsWithSources : BaseRunTests {
+    private Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap;
+    private Dictionary`2<Tuple`2<Uri, string>, IEnumerable`1<string>> executorUriVsSourceList;
+    private ITestCaseEventsHandler testCaseEventsHandler;
+    public RunTestsWithSources(IRequestData requestData, Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler);
+    internal RunTestsWithSources(IRequestData requestData, Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler, Dictionary`2<Tuple`2<Uri, string>, IEnumerable`1<string>> executorUriVsSourceList);
+    protected virtual void BeforeRaisingTestRunComplete(bool exceptionsHitDuringRunTests);
+    private void LogWarningOnNoTestsExecuted();
+    protected virtual IEnumerable`1<Tuple`2<Uri, string>> GetExecutorUriExtensionMap(IFrameworkHandle testExecutorFrameworkHandle, RunContext runContext);
+    protected virtual void InvokeExecutor(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUriExtensionTuple, RunContext runContext, IFrameworkHandle frameworkHandle);
+    protected virtual bool ShouldAttachDebuggerToTestHost(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUriExtensionTuple, RunContext runContext);
+    private Dictionary`2<Tuple`2<Uri, string>, IEnumerable`1<string>> GetExecutorVsSourcesList(IMessageLogger logger);
+    private static string TestCaseFilterToShow(string testCaseFilter);
+    protected virtual void SendSessionEnd();
+    protected virtual void SendSessionStart();
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.RunTestsWithTests : BaseRunTests {
+    private IEnumerable`1<TestCase> testCases;
+    private Dictionary`2<Tuple`2<Uri, string>, List`1<TestCase>> executorUriVsTestList;
+    private ITestCaseEventsHandler testCaseEventsHandler;
+    public RunTestsWithTests(IRequestData requestData, IEnumerable`1<TestCase> testCases, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler);
+    internal RunTestsWithTests(IRequestData requestData, IEnumerable`1<TestCase> testCases, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEventsHandler, ITestRunEventsHandler testRunEventsHandler, Dictionary`2<Tuple`2<Uri, string>, List`1<TestCase>> executorUriVsTestList);
+    protected virtual void BeforeRaisingTestRunComplete(bool exceptionsHitDuringRunTests);
+    protected virtual IEnumerable`1<Tuple`2<Uri, string>> GetExecutorUriExtensionMap(IFrameworkHandle testExecutorFrameworkHandle, RunContext runContext);
+    protected virtual void InvokeExecutor(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUri, RunContext runContext, IFrameworkHandle frameworkHandle);
+    protected virtual bool ShouldAttachDebuggerToTestHost(LazyExtension`2<ITestExecutor, ITestExecutorCapabilities> executor, Tuple`2<Uri, string> executorUri, RunContext runContext);
+    protected virtual void SendSessionEnd();
+    protected virtual void SendSessionStart();
+    private Dictionary`2<Tuple`2<Uri, string>, List`1<TestCase>> GetExecutorVsTestCaseList(IEnumerable`1<TestCase> tests);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Execution.TestRunCache : object {
+    private bool isDisposed;
+    private Dictionary`2<TestOutcome, long> runStats;
+    private long totalExecutedTests;
+    private OnCacheHit onCacheHit;
+    private long cacheSize;
+    private TimeSpan cacheTimeout;
+    private Timer timer;
+    private DateTime lastUpdate;
+    private ICollection`1<TestCase> inProgressTests;
+    private ICollection`1<TestResult> testResults;
+    private object syncObject;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, int> <AdapterTelemetry>k__BackingField;
+    public ICollection`1<TestResult> TestResults { get; }
+    public ICollection`1<TestCase> InProgressTests { get; }
+    public long TotalExecutedTests { get; }
+    public TestRunStatistics TestRunStatistics { get; }
+    public IDictionary`2<string, int> AdapterTelemetry { get; public set; }
+    internal TestRunCache(long cacheSize, TimeSpan cacheTimeout, OnCacheHit onCacheHit);
+    public sealed virtual ICollection`1<TestResult> get_TestResults();
+    public sealed virtual ICollection`1<TestCase> get_InProgressTests();
+    public sealed virtual long get_TotalExecutedTests();
+    public sealed virtual TestRunStatistics get_TestRunStatistics();
+    [CompilerGeneratedAttribute]
+public sealed virtual IDictionary`2<string, int> get_AdapterTelemetry();
+    [CompilerGeneratedAttribute]
+public void set_AdapterTelemetry(IDictionary`2<string, int> value);
+    public sealed virtual void Dispose();
+    public sealed virtual void OnTestStarted(TestCase testCase);
+    public sealed virtual void OnNewTestResult(TestResult testResult);
+    public sealed virtual bool OnTestCompletion(TestCase completedTest);
+    public sealed virtual ICollection`1<TestResult> GetLastChunk();
+    protected virtual void Dispose(bool disposing);
+    private void CheckForCacheHit();
+    private void CheckForCacheHitOnTimer();
+    private void SendResults();
+    private void OnCacheTimeHit(object state);
+    private void RemoveInProgress(TestResult result);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.ProxyOperationManagerContainer : object {
+    [CompilerGeneratedAttribute]
+private ProxyOperationManager <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsAvailable>k__BackingField;
+    public ProxyOperationManager Proxy { get; public set; }
+    public bool IsAvailable { get; public set; }
+    public ProxyOperationManagerContainer(ProxyOperationManager proxy, bool available);
+    [CompilerGeneratedAttribute]
+public ProxyOperationManager get_Proxy();
+    [CompilerGeneratedAttribute]
+public void set_Proxy(ProxyOperationManager value);
+    [CompilerGeneratedAttribute]
+public bool get_IsAvailable();
+    [CompilerGeneratedAttribute]
+public void set_IsAvailable(bool value);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.ProxyTestSessionManager : object {
+    private object lockObject;
+    private int parallelLevel;
+    private bool skipDefaultAdapters;
+    private Func`1<ProxyOperationManager> proxyCreator;
+    private Queue`1<Guid> availableProxyQueue;
+    private IDictionary`2<Guid, ProxyOperationManagerContainer> proxyMap;
+    public ProxyTestSessionManager(int parallelLevel, Func`1<ProxyOperationManager> proxyCreator);
+    public sealed virtual void Initialize(bool skipDefaultAdapters);
+    public sealed virtual void StartSession(StartTestSessionCriteria criteria, ITestSessionEventsHandler eventsHandler);
+    public sealed virtual void StopSession();
+    public ProxyOperationManager DequeueProxy();
+    public void EnqueueProxy(Guid proxyId);
+    private ProxyOperationManager CreateProxy();
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Resources.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string AccessDenied { get; }
+    internal static string AttachDebuggerToDefaultTestHostFailure { get; }
+    internal static string DataCollectorDebuggerWarning { get; }
+    internal static string DeprecatedAdapterPath { get; }
+    internal static string DiscovererInstantiationException { get; }
+    internal static string DuplicateAdaptersFound { get; }
+    internal static string DuplicateSource { get; }
+    internal static string ExceptionFromLoadTests { get; }
+    internal static string ExceptionFromRunTests { get; }
+    internal static string ExecutionThreadApartmentStateNotSupportedForFramework { get; }
+    internal static string FailedToLaunchTestHost { get; }
+    internal static string FileNotFound { get; }
+    internal static string HostDebuggerWarning { get; }
+    internal static string IgnoringExecutorAsNoDefaultExecutorUriAttribute { get; }
+    internal static string InitializationFailed { get; }
+    internal static string LaunchDebugProcessNotAllowedForANonDebugRun { get; }
+    internal static string NoAvailableProxyForDeque { get; }
+    internal static string NoDotnetExeFound { get; }
+    internal static string NoMatchingExecutor { get; }
+    internal static string NonExistingExtensions { get; }
+    internal static string NoSuchProxyId { get; }
+    internal static string NoTestsAvailableForGivenTestCaseFilter { get; }
+    internal static string NoValidSourceFoundForDiscovery { get; }
+    internal static string OldTestHostIsGettingUsed { get; }
+    internal static string ProxyIsAlreadyAvailable { get; }
+    internal static string StringSeperator { get; }
+    internal static string TestDiscoveryCancelled { get; }
+    internal static string TesthostDiagLogOutputFile { get; }
+    internal static string TestHostExitedWithError { get; }
+    internal static string TestRunFailed_NoDiscovererFound_NoTestsAreAvailableInTheSources { get; }
+    internal static string UnsupportedPropertiesInTestCaseFilter { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_AccessDenied();
+    internal static string get_AttachDebuggerToDefaultTestHostFailure();
+    internal static string get_DataCollectorDebuggerWarning();
+    internal static string get_DeprecatedAdapterPath();
+    internal static string get_DiscovererInstantiationException();
+    internal static string get_DuplicateAdaptersFound();
+    internal static string get_DuplicateSource();
+    internal static string get_ExceptionFromLoadTests();
+    internal static string get_ExceptionFromRunTests();
+    internal static string get_ExecutionThreadApartmentStateNotSupportedForFramework();
+    internal static string get_FailedToLaunchTestHost();
+    internal static string get_FileNotFound();
+    internal static string get_HostDebuggerWarning();
+    internal static string get_IgnoringExecutorAsNoDefaultExecutorUriAttribute();
+    internal static string get_InitializationFailed();
+    internal static string get_LaunchDebugProcessNotAllowedForANonDebugRun();
+    internal static string get_NoAvailableProxyForDeque();
+    internal static string get_NoDotnetExeFound();
+    internal static string get_NoMatchingExecutor();
+    internal static string get_NonExistingExtensions();
+    internal static string get_NoSuchProxyId();
+    internal static string get_NoTestsAvailableForGivenTestCaseFilter();
+    internal static string get_NoValidSourceFoundForDiscovery();
+    internal static string get_OldTestHostIsGettingUsed();
+    internal static string get_ProxyIsAlreadyAvailable();
+    internal static string get_StringSeperator();
+    internal static string get_TestDiscoveryCancelled();
+    internal static string get_TesthostDiagLogOutputFile();
+    internal static string get_TestHostExitedWithError();
+    internal static string get_TestRunFailed_NoDiscovererFound_NoTestsAreAvailableInTheSources();
+    internal static string get_UnsupportedPropertiesInTestCaseFilter();
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestEngine : object {
+    private TestRuntimeProviderManager testHostProviderManager;
+    private ITestExtensionManager testExtensionManager;
+    private IProcessHelper processHelper;
+    protected TestEngine(TestRuntimeProviderManager testHostProviderManager, IProcessHelper processHelper);
+    public sealed virtual IProxyDiscoveryManager GetDiscoveryManager(IRequestData requestData, ITestRuntimeProvider testHostManager, DiscoveryCriteria discoveryCriteria);
+    public sealed virtual IProxyExecutionManager GetExecutionManager(IRequestData requestData, ITestRuntimeProvider testHostManager, TestRunCriteria testRunCriteria);
+    public sealed virtual IProxyTestSessionManager GetTestSessionManager(IRequestData requestData, ITestRuntimeProvider testHostManager, StartTestSessionCriteria testSessionCriteria);
+    public sealed virtual ITestExtensionManager GetExtensionManager();
+    public sealed virtual ITestLoggerManager GetLoggerManager(IRequestData requestData);
+    private static int GetDistinctNumberOfSources(TestRunCriteria testRunCriteria);
+    private int VerifyParallelSettingAndCalculateParallelLevel(int sourceCount, string runSettings);
+    private bool ShouldRunInNoIsolation(string runsettings, bool isParallelEnabled, bool isDataCollectorEnabled);
+    private IRequestData GetRequestData(bool isTelemetryOptedIn);
+    private IEnumerable`1<string> GetSourcesFromTestRunCriteria(TestRunCriteria testRunCriteria);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestExtensionManager : object {
+    public sealed virtual void ClearExtensions();
+    public sealed virtual void UseAdditionalExtensions(IEnumerable`1<string> pathToAdditionalExtensions, bool skipExtensionFilters);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestHostManagerFactory : object {
+    private IDiscoveryManager discoveryManager;
+    private IExecutionManager executionManager;
+    private IRequestData requestData;
+    public TestHostManagerFactory(IRequestData requestData);
+    public sealed virtual IDiscoveryManager GetDiscoveryManager();
+    public sealed virtual IExecutionManager GetExecutionManager();
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestRunAttachmentsProcessing.TestRunAttachmentsProcessingManager : object {
+    private static string AttachmentsProcessingCompleted;
+    private static string AttachmentsProcessingCanceled;
+    private static string AttachmentsProcessingFailed;
+    private ITestPlatformEventSource testPlatformEventSource;
+    private IDataCollectorAttachmentProcessor[] dataCollectorAttachmentsProcessors;
+    public TestRunAttachmentsProcessingManager(ITestPlatformEventSource testPlatformEventSource, IDataCollectorAttachmentProcessor[] dataCollectorAttachmentsProcessors);
+    private static TestRunAttachmentsProcessingManager();
+    [AsyncStateMachineAttribute("Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestRunAttachmentsProcessing.TestRunAttachmentsProcessingManager/<ProcessTestRunAttachmentsAsync>d__6")]
+public sealed virtual Task ProcessTestRunAttachmentsAsync(IRequestData requestData, IEnumerable`1<AttachmentSet> attachments, ITestRunAttachmentsProcessingEventsHandler eventHandler, CancellationToken cancellationToken);
+    public sealed virtual Task`1<Collection`1<AttachmentSet>> ProcessTestRunAttachmentsAsync(IRequestData requestData, IEnumerable`1<AttachmentSet> attachments, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestRunAttachmentsProcessing.TestRunAttachmentsProcessingManager/<InternalProcessTestRunAttachmentsAsync>d__8")]
+private Task`1<Collection`1<AttachmentSet>> InternalProcessTestRunAttachmentsAsync(IRequestData requestData, Collection`1<AttachmentSet> attachments, ITestRunAttachmentsProcessingEventsHandler eventHandler, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestRunAttachmentsProcessing.TestRunAttachmentsProcessingManager/<ProcessAttachmentsAsync>d__9")]
+private Task`1<Collection`1<AttachmentSet>> ProcessAttachmentsAsync(Collection`1<AttachmentSet> attachments, ITestRunAttachmentsProcessingEventsHandler eventsHandler, CancellationToken cancellationToken);
+    private Collection`1<AttachmentSet> FinalizeOperation(IRequestData requestData, TestRunAttachmentsProcessingCompleteEventArgs completeArgs, Collection`1<AttachmentSet> attachments, Stopwatch stopwatch, ITestRunAttachmentsProcessingEventsHandler eventHandler);
+    private IMessageLogger CreateMessageLogger(ITestRunAttachmentsProcessingEventsHandler eventsHandler);
+}
+public class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.TestSessionPool : object {
+    private static object instanceLockObject;
+    private static TestSessionPool modreq(System.Runtime.CompilerServices.IsVolatile) instance;
+    private object lockObject;
+    private Dictionary`2<TestSessionInfo, ProxyTestSessionManager> sessionPool;
+    public static TestSessionPool Instance { get; }
+    private static TestSessionPool();
+    public static TestSessionPool get_Instance();
+    public bool AddSession(TestSessionInfo testSessionInfo, ProxyTestSessionManager proxyManager);
+    public bool KillSession(TestSessionInfo testSessionInfo);
+    public ProxyOperationManager TakeProxy(TestSessionInfo testSessionInfo);
+    public void ReturnProxy(TestSessionInfo testSessionInfo, Guid proxyId);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Utilities.TestCaseFilterDeterminer : object {
+    private static int MaxLengthOfTestCaseFilterToShow;
+    internal static string ShortenTestCaseFilterIfRequired(string testCaseFilter);
+}
+internal class Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Utilities.TestSourcesUtility : object {
+    internal static IEnumerable`1<string> GetSources(Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap);
+    internal static IEnumerable`1<string> GetSources(IEnumerable`1<TestCase> tests);
+    internal static string GetDefaultCodebasePath(Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap);
+    internal static string GetDefaultCodebasePath(IEnumerable`1<TestCase> tests);
+}
