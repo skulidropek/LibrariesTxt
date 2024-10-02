@@ -1,0 +1,1323 @@
+internal class NetBox.Application.Ascii85 : object {
+    public string PrefixMark;
+    public string SuffixMark;
+    public int LineLength;
+    private static int _asciiOffset;
+    private Byte[] _encodedBlock;
+    private Byte[] _decodedBlock;
+    private UInt32 _tuple;
+    private int _linePos;
+    private UInt32[] pow85;
+    private static Ascii85 instance;
+    public static Ascii85 Instance { get; }
+    private static Ascii85();
+    public static Ascii85 get_Instance();
+    public Byte[] Decode(string s, bool enforceMarks);
+    public string Encode(Byte[] ba, bool enforceMarks);
+    private void EncodeBlock(StringBuilder sb);
+    private void EncodeBlock(int count, StringBuilder sb);
+    private void DecodeBlock();
+    private void DecodeBlock(int bytes);
+    private void AppendString(StringBuilder sb, string s);
+    private void AppendChar(StringBuilder sb, char c);
+}
+internal static class NetBox.Application.ByteFormat : object {
+    private static long Kb;
+    private static long KiB;
+    private static long Mb;
+    private static long MiB;
+    private static long Gb;
+    private static long GiB;
+    private static long Tb;
+    private static long TiB;
+    private static long Pb;
+    private static long PiB;
+    private static string ToString(long bytes, Standard st);
+    public static string ToString(long bytes, Standard st, string customFormat);
+    private static string BytesToPb(long bytes, string customFormat);
+    private static string BytesToPib(long bytes, string customFormat);
+    private static string BytesToTb(long bytes, string customFormat);
+    private static string BytesToTib(long bytes, string customFormat);
+    private static string BytesToGb(long bytes, string customFormat);
+    private static string BytesToGib(long bytes, string customFormat);
+    private static string BytesToMb(long bytes, string customFormat);
+    private static string BytesToMib(long bytes, string customFormat);
+    private static string BytesToKb(long bytes, string customFormat);
+    private static string BytesToKib(long bytes, string customFormat);
+}
+internal static class NetBox.Application.Compressor : object {
+    private static int ZipLeadBytes;
+    private static ushort GzipLeadBytes;
+    public static void Compress(Stream source, Stream destination);
+    public static void Decompress(Stream source, Stream destination);
+    public static Byte[] Compress(Byte[] source);
+    public static Byte[] Decompress(Byte[] source);
+    public static bool IsGzipped(Byte[] source);
+    public static bool IsPkZipped(Byte[] source);
+}
+internal class NetBox.Application.Cryptography.FullHashAlgorithm : object {
+    private HashAlgorithm _native;
+    public FullHashAlgorithm(HashType hashType, Byte[] salt);
+    private static HashAlgorithm CreateNative(HashType hashType, Byte[] salt);
+    public sealed virtual void Dispose();
+    public sealed virtual Byte[] ComputeHash(Byte[] buffer, Byte[] salt);
+    public sealed virtual Byte[] ComputeHash(Stream stream, Byte[] salt);
+}
+internal interface NetBox.Application.Cryptography.IHashAlgorithm {
+    public abstract virtual Byte[] ComputeHash(Byte[] buffer, Byte[] salt);
+    public abstract virtual Byte[] ComputeHash(Stream stream, Byte[] salt);
+}
+internal static class NetBox.Application.Hashing : object {
+    private static Dictionary`2<HashType, IHashAlgorithm> Hashers;
+    private static int BufferSize;
+    private static Hashing();
+    public static Byte[] GetHash(Byte[] input, HashType hashType, Byte[] salt);
+    public static Byte[] GetHash(Stream input, HashType hashType, Byte[] salt);
+    private static IHashAlgorithm GetHasher(HashType hashType, Byte[] salt);
+    private static IHashAlgorithm CreateHasher(HashType hashType, Byte[] salt);
+}
+internal static class NetBox.Application.HttpUtility.HtmlEncodingServices : object {
+    private static Dictionary`2<char, HtmlEntity> CharToEntityMap;
+    private static Dictionary`2<string, char> EntityToCharMap;
+    internal static char EntityStartChar;
+    internal static char EntityEndChar;
+    internal static char NumericEntityStartChar;
+    internal static char HexEntityStartChar1;
+    internal static char HexEntityStartChar2;
+    private static HtmlEncodingServices();
+    public static void Encode(string html, TextWriter writer);
+    public static void Decode(string html, TextWriter writer);
+    private static void RegisterEntity(char c, string entity, bool encode, bool writeAsDecimal);
+}
+internal class NetBox.Application.HttpUtility.HtmlEntity : object {
+    public string Entity;
+    public bool WriteAsDecimal;
+}
+internal class NetBox.Application.HttpUtility.HtmlEntityDecoder : object {
+    private string _html;
+    private IDictionary`2<string, char> _entityToCharMap;
+    public HtmlEntityDecoder(string html, IDictionary`2<string, char> entityToCharMap);
+    public void Decode(TextWriter writer);
+    private void WriteToken(Token token, TextWriter writer);
+    private static void WriteContent(string text, TextWriter writer);
+    private void WriteTextEntity(Token token, TextWriter writer);
+    private void WriteDecimalEntity(Token token, TextWriter writer);
+    private void WriteHexEntity(Token token, TextWriter writer);
+    private void WriteNumericEntity(Token token, TextWriter writer, NumberStyles styles);
+    private void WriteAsContext(Token token, TextWriter writer);
+}
+internal class NetBox.Application.HttpUtility.HtmlEntityEncoder : object {
+    private IDictionary`2<char, HtmlEntity> _charToEntityMap;
+    public HtmlEntityEncoder(IDictionary`2<char, HtmlEntity> charToEntityMap);
+    public void Encode(string html, TextWriter writer);
+    private static void WriteChar(char c, TextWriter writer);
+    private static void WriteEntity(char c, HtmlEntity entity, TextWriter writer);
+    private static void WriteDecimalEntity(char c, TextWriter writer);
+    private static void WriteTextEntity(HtmlEntity entity, TextWriter writer);
+}
+internal class NetBox.Application.HttpUtility.HtmlEntityTokenizer : object {
+    private string _html;
+    private StringBuilder _text;
+    private int _index;
+    private TokenType _type;
+    public HtmlEntityTokenizer(string html);
+    public Nullable`1<Token> Next();
+    private bool ParseNext();
+    private bool TryParseContent();
+    private bool TryParseEntity();
+    private void ParseTextEntity();
+    private bool ReadEntityBody();
+    private bool TryParseNumericEntity();
+    private bool TryParseHexEntity();
+    private void ParseDecimalEntity();
+    private Nullable`1<int> FindEndEntity();
+    private bool ReadWhile(Func`2<char, bool> predicate);
+    private Nullable`1<char> Peek(int lookAhead);
+    private bool Read();
+    private bool SkipIf(char symbol);
+    private void Skip();
+    private static bool IsEntityEnding(char c);
+}
+internal class NetBox.Application.HttpUtility.Token : ValueType {
+    public int StartIndex;
+    public int EndIndex;
+    public string Text;
+    public TokenType Type;
+}
+internal enum NetBox.Application.HttpUtility.TokenType : Enum {
+    public int value__;
+    public static TokenType Content;
+    public static TokenType DecimalEntity;
+    public static TokenType HexEntity;
+    public static TokenType TextEntity;
+}
+internal static class NetBox.Application.StringManipulation : object {
+    private static Char[] SpaceSeparator;
+    private static StringManipulation();
+    private static bool FindTextBetween(String& s, String& startToken, String& endToken, bool includeOuterTokens, Int32& startIdx, Int32& length);
+    public static string ExtractTextBetween(string s, string startToken, string endToken, bool includeOuterTokens);
+    public static string ReplaceTextBetween(string s, string startToken, string endToken, string replacementText, bool replaceOuterTokens);
+    public static string Capitalise(string s);
+    public static string SpacedToCamelCase(string s);
+}
+internal class NetBox.Application.TypeInferring : object {
+    private static List`1<Tag> SupportedTypes;
+    private static TypeInferring();
+    public static Type InferBestType(IEnumerable`1<string> data, bool createValues, IList& values);
+}
+internal static class NetBox.Application.WebUtility : object {
+    public static string UrlEncode(string value);
+    public static string UrlDecode(string encodedValue);
+    private static Byte[] UrlEncode(Byte[] bytes, int offset, int count, bool alwaysCreateNewReturnValue);
+    private static Byte[] UrlEncode(Byte[] bytes, int offset, int count);
+    private static bool ValidateUrlEncodingParameters(Byte[] bytes, int offset, int count);
+    private static bool IsUrlSafeChar(char ch);
+    private static char IntToHex(int n);
+    private static string UrlDecodeInternal(string value, Encoding encoding);
+    private static int HexToInt(char h);
+}
+public class NetBox.Async.AsyncLimiter : object {
+    private SemaphoreSlim _throttler;
+    public AsyncLimiter(int maxTasks);
+    [AsyncStateMachineAttribute("NetBox.Async.AsyncLimiter/<AcquireOneAsync>d__2")]
+public Task`1<IDisposable> AcquireOneAsync();
+    public sealed virtual void Dispose();
+}
+public class NetBox.Caching.LazyVar`1 : object {
+    private Func`1<Task`1<T>> _renewFuncAsync;
+    private Func`1<T> _renewFunc;
+    private DateTime _lastRenewed;
+    private TimeSpan _timeToLive;
+    private T _value;
+    public LazyVar`1(TimeSpan timeToLive, Func`1<Task`1<T>> renewFunc);
+    public LazyVar`1(TimeSpan timeToLive, Func`1<T> renewFunc);
+    [AsyncStateMachineAttribute("NetBox.Caching.LazyVar`1/<GetValueAsync>d__7")]
+public Task`1<T> GetValueAsync();
+    public T GetValue();
+}
+[DefaultMemberAttribute("Item")]
+public class NetBox.Collections.CallbackList`1 : object {
+    private List`1<T> _list;
+    [CompilerGeneratedAttribute]
+private Func`2<T, T> <OnAdd>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`3<int, T, T> <OnInsert>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<T> <OnRemove>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<int> <OnRemoveAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action <OnClear>k__BackingField;
+    public Func`2<T, T> OnAdd { get; public set; }
+    public Func`3<int, T, T> OnInsert { get; public set; }
+    public Action`1<T> OnRemove { get; public set; }
+    public Action`1<int> OnRemoveAt { get; public set; }
+    public Action OnClear { get; public set; }
+    public T Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public CallbackList`1(IEnumerable`1<T> collection);
+    public CallbackList`1(int capacity);
+    [CompilerGeneratedAttribute]
+public Func`2<T, T> get_OnAdd();
+    [CompilerGeneratedAttribute]
+public void set_OnAdd(Func`2<T, T> value);
+    [CompilerGeneratedAttribute]
+public Func`3<int, T, T> get_OnInsert();
+    [CompilerGeneratedAttribute]
+public void set_OnInsert(Func`3<int, T, T> value);
+    [CompilerGeneratedAttribute]
+public Action`1<T> get_OnRemove();
+    [CompilerGeneratedAttribute]
+public void set_OnRemove(Action`1<T> value);
+    [CompilerGeneratedAttribute]
+public Action`1<int> get_OnRemoveAt();
+    [CompilerGeneratedAttribute]
+public void set_OnRemoveAt(Action`1<int> value);
+    [CompilerGeneratedAttribute]
+public Action get_OnClear();
+    [CompilerGeneratedAttribute]
+public void set_OnClear(Action value);
+    public sealed virtual T get_Item(int index);
+    public sealed virtual void set_Item(int index, T value);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual void Add(T item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(T item);
+    public sealed virtual void CopyTo(T[] array, int arrayIndex);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    public sealed virtual int IndexOf(T item);
+    public sealed virtual void Insert(int index, T item);
+    public sealed virtual bool Remove(T item);
+    public sealed virtual void RemoveAt(int index);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class NetBox.Collections.ObjectPool`1 : object {
+    private static TimeSpan SleepInterval;
+    private Func`1<T> _createFunction;
+    private Action`1<T> _destroyFunction;
+    private int _capacity;
+    private TimeSpan _maxAge;
+    private object _dataLock;
+    private List`1<InstanceTag<T>> _tags;
+    private int _instanceCount;
+    private int _freeInstances;
+    private ManualResetEvent _instanceMayBeAvailable;
+    public bool HasFreeInstance { get; }
+    public int InstanceCount { get; }
+    public ObjectPool`1(Func`1<T> createFunction, Action`1<T> destroyFunction, int capacity, TimeSpan maxAge);
+    private static ObjectPool`1();
+    public T GetInstance();
+    public bool get_HasFreeInstance();
+    public int get_InstanceCount();
+    private T TryGetInstance();
+    private void CleanupInstances();
+    public void ReleaseInstance(T instance);
+    public sealed virtual void Dispose();
+}
+public class NetBox.Data.DynamicValue : object {
+    [CompilerGeneratedAttribute]
+private object <OriginalValue>k__BackingField;
+    public object OriginalValue { get; private set; }
+    public Type OriginalType { get; }
+    public DynamicValue(object value);
+    [CompilerGeneratedAttribute]
+public object get_OriginalValue();
+    [CompilerGeneratedAttribute]
+private void set_OriginalValue(object value);
+    public Type get_OriginalType();
+    public object GetValue(Type t);
+    public T GetValue();
+    private bool TryConvert(Type t, Object& result);
+    public static int op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(int v);
+    public static UInt32 op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(UInt32 v);
+    public static long op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(long v);
+    public static ulong op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(ulong v);
+    public static double op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(double v);
+    public static Guid op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(Guid v);
+    public static DateTime op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(DateTime v);
+    public static DateTimeOffset op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(DateTimeOffset v);
+    public static string op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(string v);
+    public static Byte[] op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(Byte[] v);
+    public static bool op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(bool v);
+    public static byte op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(byte v);
+    public static sbyte op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(sbyte v);
+    public static char op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(char v);
+    public static decimal op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(decimal v);
+    public static float op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(float v);
+    public static short op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(short v);
+    public static ushort op_Implicit(DynamicValue dv);
+    public static DynamicValue op_Implicit(ushort v);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.AssemblyExtensions : object {
+    [ExtensionAttribute]
+public static Version ProductVersion(Assembly asm);
+    [ExtensionAttribute]
+public static Stream GetSameFolderEmbeddedResourceFile(Assembly assembly, string fileName);
+    [ExtensionAttribute]
+public static string GetSameFolderEmbeddedResourceFileAsText(Assembly assembly, string fileName);
+    [ExtensionAttribute]
+public static String[] GetSameFolderEmbeddedResourceFileAsLines(Assembly assembly, string fileName);
+    [ExtensionAttribute]
+public static Version FileVersion(Assembly asm);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.ByteArrayExtensions : object {
+    private static Char[] LowerCaseHexAlphabet;
+    private static Char[] UpperCaseHexAlphabet;
+    private static ByteArrayExtensions();
+    [ExtensionAttribute]
+public static string ToHexString(Byte[] bytes);
+    [ExtensionAttribute]
+private static string ToHexString(Byte[] bytes, bool lowerCase);
+    [ExtensionAttribute]
+public static Byte[] GetHash(Byte[] bytes, HashType hashType, Byte[] salt);
+    [ExtensionAttribute]
+public static Byte[] Gzip(Byte[] data);
+    [ExtensionAttribute]
+public static Byte[] Ungzip(Byte[] data);
+    [ExtensionAttribute]
+public static bool IsGzipped(Byte[] data);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.DateTimeExtensions : object {
+    [ExtensionAttribute]
+public static DateTime RoundToDay(DateTime time);
+    [ExtensionAttribute]
+public static DateTime EndOfDay(DateTime time);
+    [ExtensionAttribute]
+public static DateTime RoundToMinute(DateTime time, int round, bool roundLeft);
+    [ExtensionAttribute]
+public static DateTime RoundToSecond(DateTime time);
+    [ExtensionAttribute]
+public static bool IsToday(DateTime time);
+    [ExtensionAttribute]
+public static bool IsTomorrow(DateTime time);
+    [ExtensionAttribute]
+public static string ToHourMinuteString(DateTime time);
+    [ExtensionAttribute]
+public static string ToIso8601DateString(DateTime time);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.DictionaryExtensions : object {
+    [ExtensionAttribute]
+public static void AddRange(IDictionary`2<TKey, TValue> target, IDictionary`2<TKey, TValue> source);
+    [ExtensionAttribute]
+public static void MergeRange(IDictionary`2<TKey, TValue> target, IDictionary`2<TKey, TValue> source);
+    [ExtensionAttribute]
+public static TValue GetOrAdd(IDictionary`2<TKey, TValue> target, TKey key, Func`1<TValue> createValue);
+    [ExtensionAttribute]
+public static string JsonSerialise(IDictionary`2<string, object> dictionary);
+}
+public static class NetBox.Extensions.EnumerableEx : object {
+    [IteratorStateMachineAttribute("NetBox.Extensions.EnumerableEx/<MultiIterate>d__0`2")]
+public static IEnumerable`1<Tuple`2<TFirst, TSecond>> MultiIterate(IEnumerable`1<TFirst> first, IEnumerable`1<TSecond> second);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.EnumerableExtensions : object {
+    [IteratorStateMachineAttribute("NetBox.Extensions.EnumerableExtensions/<Chunk>d__0`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<IEnumerable`1<T>> Chunk(IEnumerable`1<T> source, int chunkSize);
+    [IteratorStateMachineAttribute("NetBox.Extensions.EnumerableExtensions/<ForEach>d__1`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<T> ForEach(IEnumerable`1<T> source, Action`1<T> action);
+    [ExtensionAttribute]
+public static void AddRange(ICollection`1<T> collection, IEnumerable`1<T> source);
+    [ExtensionAttribute]
+public static Type InferType(String[] data);
+    [ExtensionAttribute]
+public static Type InferType(String[] data, IList& values);
+}
+public static class NetBox.Extensions.EnumExtensions : object {
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.GuidExtensions : object {
+    [ExtensionAttribute]
+public static string ToShortest(Guid g);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.IntExtensions : object {
+    [ExtensionAttribute]
+public static string ToFileSizeString(int number);
+    [ExtensionAttribute]
+public static string ToFileSizeUiString(int number);
+    [ExtensionAttribute]
+public static TimeSpan Seconds(int number);
+    [ExtensionAttribute]
+public static TimeSpan Minutes(int number);
+    [ExtensionAttribute]
+public static TimeSpan Hours(int number);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.ListExtensions : object {
+    [ExtensionAttribute]
+public static void AddRange(IList destination, IEnumerable source);
+    [ExtensionAttribute]
+public static void AddRange(IList destination, ICollection source);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.LongExtensions : object {
+    [ExtensionAttribute]
+public static string ToFileSizeString(long number);
+    [ExtensionAttribute]
+public static string ToFileSizeUiString(long number);
+}
+public static class NetBox.Extensions.NetFile : object {
+    public static void Gzip(string filePath, string targetPath);
+    public static void Ungzip(string filePath, string targetPath);
+}
+public static class NetBox.Extensions.NetPath : object {
+    private static bool _execDirTried;
+    private static string _execDir;
+    private static bool _execDirInfoTried;
+    private static DirectoryInfo _execDirInfo;
+    public static string ExecDir { get; }
+    public static DirectoryInfo ExecDirInfo { get; }
+    public static string get_ExecDir();
+    public static DirectoryInfo get_ExecDirInfo();
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.NetworkCredentialExtensions : object {
+    [ExtensionAttribute]
+public static string ToFriendlyString(NetworkCredential credential);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.ObjectExtensions : object {
+    [ExtensionAttribute]
+public static string JsonSerialise(object obj);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> AsEnumerable(T element);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.StreamExtensions : object {
+    [ExtensionAttribute]
+public static bool TryGetSize(Stream s, Int64& size);
+    [ExtensionAttribute]
+public static Nullable`1<long> TryGetSize(Stream s);
+    [ExtensionAttribute]
+public static Byte[] ReadUntil(Stream s, Byte[] stopSequence);
+    [ExtensionAttribute]
+public static Byte[] ToByteArray(Stream stream);
+    [ExtensionAttribute]
+public static string ToString(Stream stream, Encoding encoding);
+    [ExtensionAttribute]
+public static string GetHash(Stream stream, HashType hashType);
+    [ExtensionAttribute]
+public static Byte[] GetHashBytes(Stream stream, HashType hashType);
+    [ExtensionAttribute]
+public static void Gzip(Stream inputStream, Stream outputStream);
+    [ExtensionAttribute]
+public static void Ungzip(Stream inputStream, Stream outputStream);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.StringExtensions : object {
+    private static string HtmlStripPattern;
+    private static Char[] Invalid;
+    private static StringExtensions();
+    [ExtensionAttribute]
+public static Byte[] FromHexToBytes(string hex);
+    [ExtensionAttribute]
+public static string StripHtml(string s);
+    [ExtensionAttribute]
+public static string HtmlEncode(string value);
+    private static void HtmlEncode(string value, TextWriter output);
+    [ExtensionAttribute]
+public static string HtmlDecode(string value);
+    private static void HtmlDecode(string value, TextWriter output);
+    [ExtensionAttribute]
+public static string UrlEncode(string value);
+    [ExtensionAttribute]
+public static string UrlDecode(string value);
+    [ExtensionAttribute]
+public static T JsonDeserialise(string s);
+    [ExtensionAttribute]
+public static object JsonDeserialise(string s, Type t);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> JsonDeserialiseDictionary(string s);
+    [ExtensionAttribute]
+public static string Base64Encode(string s);
+    [ExtensionAttribute]
+public static string Base64Decode(string s);
+    [ExtensionAttribute]
+public static Byte[] Base64DecodeAsBytes(string s);
+    [ExtensionAttribute]
+public static Guid FromShortestGuid(string s);
+    [ExtensionAttribute]
+private static string GetHash(string s, Encoding encoding, HashType hashType, string salt);
+    [ExtensionAttribute]
+public static string GetHash(string s, HashType hashType, string salt);
+    [ExtensionAttribute]
+public static MemoryStream ToMemoryStream(string s, Encoding encoding);
+    [ExtensionAttribute]
+public static MemoryStream ToMemoryStream(string s);
+    [ExtensionAttribute]
+public static string SanitizePath(string path);
+    [ExtensionAttribute]
+public static string SanitizePath(string path, char replacement);
+    [ExtensionAttribute]
+public static bool MatchesWildcard(string s, string wildcard);
+    [ExtensionAttribute]
+public static Byte[] Gzip(string s, Encoding encoding);
+    [ExtensionAttribute]
+public static void Gzip(string s, Encoding encoding, Stream destinationStream);
+    [ExtensionAttribute]
+public static string FindTagged(string s, string startTag, string endTag, bool includeOuterTags);
+    [ExtensionAttribute]
+public static string ReplaceTagged(string s, string startTag, string endTag, string replacementText, bool replaceOuterTokens);
+    [ExtensionAttribute]
+public static string SpacedToCamelCase(string s);
+    [ExtensionAttribute]
+public static string Capitalize(string s);
+    [ExtensionAttribute]
+public static string Slice(string s, Nullable`1<int> start, Nullable`1<int> end);
+    [ExtensionAttribute]
+public static Tuple`2<string, string> SplitByDelimiter(string s, String[] delimiter);
+    [ExtensionAttribute]
+public static string RemoveLinesContaining(string input, string substring, StringComparison stringComparison);
+    [ExtensionAttribute]
+public static NetworkCredential ToNetworkCredential(string s);
+    [ExtensionAttribute]
+public static string ToEscapedJsonValueString(string s);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.TaskExtensions : object {
+    [ExtensionAttribute]
+public static void Forget(Task task);
+}
+[ExtensionAttribute]
+public static class NetBox.Extensions.TypeExtensions : object {
+    [ExtensionAttribute]
+public static bool IsEnum(Type t);
+    [ExtensionAttribute]
+public static bool IsSimple(Type t);
+    [ExtensionAttribute]
+public static bool IsNumber(Type t);
+    [ExtensionAttribute]
+public static object CreateDefaultValue(Type t);
+    [ExtensionAttribute]
+public static PropertyInfo[] GetHierarchyPublicProperties(Type type);
+    [ExtensionAttribute]
+public static Assembly GetAssembly(Type t);
+    [ExtensionAttribute]
+public static Version ProductVersion(Type t);
+    [ExtensionAttribute]
+public static Version FileVersion(Type t);
+    [ExtensionAttribute]
+public static Stream GetSameFolderEmbeddedResourceFile(Type type, string fileName);
+    [ExtensionAttribute]
+public static string GetSameFolderEmbeddedResourceFileAsText(Type type, string fileName);
+    [ExtensionAttribute]
+public static String[] GetSameFolderEmbeddedResourceFileAsLines(Type type, string fileName);
+}
+internal static class NetBox.FileFormats.CsvFormat : object {
+    public static char ValueSeparator;
+    public static char ValueQuote;
+    public static string ValueQuoteStr;
+    public static string ValueQuoteStrStr;
+    private static Char[] QuoteMark;
+    public static Char[] NewLine;
+    private static string ValueLeftBracket;
+    private static string ValueRightBracket;
+    private static string ValueEscapeFind;
+    private static string ValueEscapeValue;
+    private static CsvFormat();
+    public static string EscapeValue(string value);
+    public static string UnescapeValue(string value);
+}
+public class NetBox.FileFormats.CsvReader : object {
+    private StreamReader _reader;
+    private Char[] _buffer;
+    private static int BufferSize;
+    private int _pos;
+    private int _size;
+    private List`1<char> _chars;
+    private List`1<string> _row;
+    private ValueState _lastState;
+    public CsvReader(Stream stream, Encoding encoding);
+    public static Dictionary`2<string, List`1<string>> ReadAllFromContent(string content, bool hasColumns);
+    public String[] ReadNextRow();
+    private string Str();
+    private ValueState ReadNextValue();
+    private bool NextChars(Int32& curr, Int32& next);
+    private bool NextBlock();
+    private static bool IsLineEndChar(int ch);
+}
+public class NetBox.FileFormats.CsvWriter : object {
+    private Stream _destination;
+    private Encoding _encoding;
+    private Byte[] _newLine;
+    private Byte[] _separator;
+    private bool _firstRowWritten;
+    public CsvWriter(Stream destination);
+    public CsvWriter(string fileName);
+    public CsvWriter(Stream destination, Encoding encoding);
+    public void Write(String[] values);
+    public void Write(IEnumerable`1<string> values);
+}
+internal static class NetBox.G : object {
+    public static Encoding Enc;
+    public static CultureInfo C;
+    private static Assembly _thisAsm;
+    internal static Assembly ThisAssembly { get; }
+    private static G();
+    internal static Assembly get_ThisAssembly();
+}
+public static class NetBox.Generator.PasswordGenerator : object {
+    private static PasswordPolicy DefaultPolicy;
+    private static PasswordGenerator();
+    public static string Generate();
+    public static string Generate(PasswordPolicy policy);
+}
+public class NetBox.Generator.PasswordPolicy : object {
+    [CompilerGeneratedAttribute]
+private int <MinLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LowercaseCharacters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UppercaseCharacters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <NumericCharacters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SpecialCharacters>k__BackingField;
+    public int MinLength { get; }
+    public int MaxLength { get; }
+    public string LowercaseCharacters { get; public set; }
+    public string UppercaseCharacters { get; public set; }
+    public string NumericCharacters { get; public set; }
+    public string SpecialCharacters { get; public set; }
+    public PasswordPolicy(int minLength, int maxLength);
+    [CompilerGeneratedAttribute]
+public int get_MinLength();
+    [CompilerGeneratedAttribute]
+public int get_MaxLength();
+    [CompilerGeneratedAttribute]
+public string get_LowercaseCharacters();
+    [CompilerGeneratedAttribute]
+public void set_LowercaseCharacters(string value);
+    [CompilerGeneratedAttribute]
+public string get_UppercaseCharacters();
+    [CompilerGeneratedAttribute]
+public void set_UppercaseCharacters(string value);
+    [CompilerGeneratedAttribute]
+public string get_NumericCharacters();
+    [CompilerGeneratedAttribute]
+public void set_NumericCharacters(string value);
+    [CompilerGeneratedAttribute]
+public string get_SpecialCharacters();
+    [CompilerGeneratedAttribute]
+public void set_SpecialCharacters(string value);
+    internal Char[][] ToCharGroups();
+}
+public static class NetBox.Generator.RandomGenerator : object {
+    private static RandomNumberGenerator Rnd;
+    public static bool RandomBool { get; }
+    public static long RandomLong { get; }
+    public static int RandomInt { get; }
+    public static double RandomDouble { get; }
+    public static DateTime RandomDate { get; }
+    public static string RandomString { get; }
+    public static Uri RandomUri { get; }
+    private static RandomGenerator();
+    private static double NextCryptoDouble();
+    private static int NextCryptoInt();
+    public static bool get_RandomBool();
+    public static long get_RandomLong();
+    public static int get_RandomInt();
+    public static double get_RandomDouble();
+    public static int GetRandomInt(int max);
+    public static int GetRandomInt(int min, int max);
+    public static long GetRandomLong(long min, long max);
+    public static Enum RandomEnum(Type t);
+    public static DateTime GetRandomDate(DateTime minValue, DateTime maxValue);
+    public static DateTime get_RandomDate();
+    public static string get_RandomString();
+    public static string GetRandomString(int length, bool allowNulls);
+    public static Uri GetRandomUri(bool allowNulls);
+    public static Uri get_RandomUri();
+    public static Byte[] GetRandomBytes(int minSize, int maxSize);
+}
+public enum NetBox.HashType : Enum {
+    public int value__;
+    public static HashType Md5;
+    public static HashType Sha1;
+    public static HashType Sha256;
+    public static HashType Sha384;
+    public static HashType Sha512;
+    public static HashType HMACSHA256;
+}
+internal class NetBox.IO.BoundedStream : Stream {
+    private Stream _parent;
+    private long _windowStart;
+    private long _windowEnd;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public BoundedStream(Stream parent, long windowStart, long windowEnd);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+public class NetBox.IO.DelegatedStream : Stream {
+    private Stream _master;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public DelegatedStream(Stream master);
+    public virtual bool get_CanRead();
+    protected virtual bool GetCanRead();
+    public virtual bool get_CanSeek();
+    protected virtual bool GetCanSeek();
+    public virtual bool get_CanWrite();
+    protected virtual bool GetCanWrite();
+    public virtual long get_Length();
+    protected virtual long GetLength();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+public class NetBox.IO.NonCloseableStream : DelegatedStream {
+    public NonCloseableStream(Stream master);
+    protected virtual void Dispose(bool disposing);
+}
+internal class NetBox.IO.ReverseStream : Stream {
+    [CompilerGeneratedAttribute]
+private long <Length>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Position>k__BackingField;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    [CompilerGeneratedAttribute]
+public virtual long get_Length();
+    [CompilerGeneratedAttribute]
+public virtual long get_Position();
+    [CompilerGeneratedAttribute]
+public virtual void set_Position(long value);
+}
+[AttributeUsageAttribute("256")]
+public class NetBox.Model.EnumTagAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DisplayName>k__BackingField;
+    public string Id { get; public set; }
+    public string DisplayName { get; public set; }
+    public EnumTagAttribute(string id, string displayName);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_DisplayName();
+    [CompilerGeneratedAttribute]
+public void set_DisplayName(string value);
+}
+public class NetBox.Model.FileSearchOptions : object {
+    private List`1<string> _includePatterns;
+    public ICollection`1<string> IncludePatterns { get; }
+    public FileSearchOptions(string includePattern);
+    public ICollection`1<string> get_IncludePatterns();
+}
+public class NetBox.Performance.TimeMeasure : object {
+    private Stopwatch _sw;
+    public long ElapsedTicks { get; }
+    public long ElapsedMilliseconds { get; }
+    public TimeSpan Elapsed { get; }
+    public long get_ElapsedTicks();
+    public long get_ElapsedMilliseconds();
+    public TimeSpan get_Elapsed();
+    public sealed virtual void Dispose();
+}
+public class NetBox.Terminal.App.Application : object {
+    private Dictionary`2<string, Command> _commandNameToCommand;
+    private string _name;
+    private Func`3<Command, Exception, bool> _onErrorMethod;
+    private Func`3<Command, Exception, Task`1<bool>> _onErrorMethodAsync;
+    private Action`1<Command> _onBeforeExecuteCommand;
+    [CompilerGeneratedAttribute]
+private string <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICollection`1<LinePrimitive> <SharedOptions>k__BackingField;
+    public string Name { get; }
+    public string Version { get; }
+    internal ICollection`1<LinePrimitive> SharedOptions { get; }
+    public IReadOnlyCollection`1<Command> Commands { get; }
+    public Application(string name);
+    public Command Command(string commandName, Action`1<Command> init);
+    public string get_Name();
+    [CompilerGeneratedAttribute]
+public string get_Version();
+    [CompilerGeneratedAttribute]
+internal ICollection`1<LinePrimitive> get_SharedOptions();
+    public IReadOnlyCollection`1<Command> get_Commands();
+    public void OnError(Func`3<Command, Exception, bool> onErrorMethod);
+    public void OnBeforeExecuteCommand(Action`1<Command> onBeforeExecuteCommand);
+    public void OnError(Func`3<Command, Exception, Task`1<bool>> onErrorMethod);
+    public LinePrimitive`1<T> SharedOption(string spec, string description, T defaultValue);
+    public int Execute();
+    internal bool RaiseError(Command cmd, Exception ex);
+}
+internal class NetBox.Terminal.App.ArgValidationException : ArgumentException {
+    private string _message;
+    public string OriginalMessage { get; }
+    public ArgValidationException(string message, string parameterName);
+    public string get_OriginalMessage();
+}
+public class NetBox.Terminal.App.Command : object {
+    private Func`1<Task> _onExecuteAsyncMethod;
+    private Action _onExecuteMethod;
+    private ConsoleArguments _args;
+    private List`1<LinePrimitive> _arguments;
+    private List`1<LinePrimitive> _options;
+    private Application _app;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    public string Name { get; public set; }
+    public string Description { get; public set; }
+    public IReadOnlyCollection`1<LinePrimitive> Arguments { get; }
+    public IReadOnlyCollection`1<LinePrimitive> Options { get; }
+    internal Command(Application app, string name);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    public IReadOnlyCollection`1<LinePrimitive> get_Arguments();
+    public IReadOnlyCollection`1<LinePrimitive> get_Options();
+    public Command OnExecute(Func`1<Task> onExecuteMethod);
+    public Command OnExecute(Action onExecuteMethod);
+    public LinePrimitive`1<T> Argument(string name, string description, T defaultValue);
+    public LinePrimitive`1<T> Option(string spec, string description, T defaultValue);
+    internal void Add(LinePrimitive lp);
+    internal int Execute(ConsoleArguments arguments, Action`1<Command> onBeforeExecuteCommand);
+    internal string GetArgument(LinePrimitive argument);
+    internal string GetOption(LinePrimitive option, bool isSwitch);
+}
+internal class NetBox.Terminal.App.ConsoleArguments : object {
+    private List`1<string> _arguments;
+    public string CommandName { get; }
+    public int Count { get; }
+    public ConsoleArguments(IEnumerable`1<string> args);
+    public string get_CommandName();
+    public string GetArgument(int position);
+    public string GetOption(bool isSwitch, string specs);
+    public string GetArgument(string spec);
+    public int get_Count();
+    public bool HasOnlyHelpSwitch();
+    public ConsoleArguments WithoutCommand();
+}
+internal class NetBox.Terminal.App.Help.ConsoleHelpGenerator : object {
+    public sealed virtual void GenerateHelp(Application app);
+    private void WriteCommands(Application app);
+    private void WriteAppHeader(Application app);
+    public sealed virtual void GenerateHelp(Command cmd);
+    private void GenerateLinePrimitivesHelp(string header, IReadOnlyCollection`1<LinePrimitive> primitives);
+}
+public interface NetBox.Terminal.App.Help.IHelpGenerator {
+    public abstract virtual void GenerateHelp(Application app);
+    public abstract virtual void GenerateHelp(Command cmd);
+}
+public interface NetBox.Terminal.App.ILinePrimitiveValidator {
+    public abstract virtual bool IsValid(string primitiveName, string value, String& message);
+}
+public abstract class NetBox.Terminal.App.LinePrimitive : object {
+    private List`1<ILinePrimitiveValidator> _validators;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Command <Command>k__BackingField;
+    public string Name { get; }
+    public string Description { get; }
+    internal Command Command { get; internal set; }
+    public LinePrimitive(string name, string description);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+internal Command get_Command();
+    [CompilerGeneratedAttribute]
+internal void set_Command(Command value);
+    protected void Validate(string value);
+    protected LinePrimitive AddValidator(ILinePrimitiveValidator validator);
+}
+public class NetBox.Terminal.App.LinePrimitive`1 : LinePrimitive {
+    private bool _isOption;
+    private T _defaultValue;
+    public T Value { get; }
+    internal LinePrimitive`1(bool isOption, string name, string description, T defaultValue);
+    public LinePrimitive`1<T> AddValidator(ILinePrimitiveValidator validator);
+    private static bool IsSupported(Type t);
+    public T get_Value();
+    public static T op_Implicit(LinePrimitive`1<T> lp);
+    private string GetRawValue();
+}
+[ExtensionAttribute]
+public static class NetBox.Terminal.App.ValidatorExtensions : object {
+    [ExtensionAttribute]
+public static LinePrimitive`1<T> Required(LinePrimitive`1<T> arg);
+    [ExtensionAttribute]
+public static LinePrimitive`1<T> FileExists(LinePrimitive`1<T> arg);
+}
+internal class NetBox.Terminal.App.Validators.FileExistsValidator : object {
+    public sealed virtual bool IsValid(string primitiveName, string value, String& message);
+}
+internal class NetBox.Terminal.App.Validators.ValueRequiredValidator : object {
+    public sealed virtual bool IsValid(string primitiveName, string value, String& message);
+}
+internal class NetBox.Terminal.Core.CursorBookmark : object {
+    private int _left;
+    private int _top;
+    public void Mark();
+    public void GoTo();
+}
+internal class NetBox.Terminal.Core.CursorLock : object {
+    private int _left;
+    private int _top;
+    public sealed virtual void Dispose();
+}
+public class NetBox.Terminal.Core.StringTokenizer : object {
+    private static Char[] ParamTrims;
+    private static StringTokenizer();
+    public List`1<Token> Tokenise(string format);
+    private Token CreateToken(bool isParameter, string value, Int32& namedPos);
+}
+public class NetBox.Terminal.Core.Token : object {
+    [CompilerGeneratedAttribute]
+private TokenType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Position>k__BackingField;
+    public TokenType Type { get; }
+    public string Value { get; }
+    public int Position { get; }
+    public Token(TokenType type, int position, string value);
+    [CompilerGeneratedAttribute]
+public TokenType get_Type();
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    [CompilerGeneratedAttribute]
+public int get_Position();
+    public virtual string ToString();
+}
+public enum NetBox.Terminal.Core.TokenType : Enum {
+    public int value__;
+    public static TokenType Parameter;
+    public static TokenType String;
+}
+public static class NetBox.Terminal.PoshConsole : object {
+    private static ConsoleColor DefaultForeground;
+    private static object CLock;
+    private static TerminalTheme Theme;
+    [CompilerGeneratedAttribute]
+private static bool <CanMoveCursor>k__BackingField;
+    public static bool CanMoveCursor { get; }
+    public static TerminalTheme T { get; }
+    private static PoshConsole();
+    [CompilerGeneratedAttribute]
+public static bool get_CanMoveCursor();
+    public static TerminalTheme get_T();
+    public static void Write(object s, Nullable`1<ConsoleColor> color);
+    public static void Write(object s);
+    public static void WriteLine(object s, Nullable`1<ConsoleColor> color);
+    public static void WriteLine(object s);
+    private static void Write(object s, Nullable`1<ConsoleColor> color, bool newLine);
+    public static void WriteLine();
+    public static void PoshWriteLine(string format, Object[] parameters);
+    public static void PoshWrite(string format, Object[] parameters);
+    private static void PoshWrite(bool newLine, string format, Object[] parameters);
+    internal static void WriteInColumn(int left, int width, string text, bool padFirstLine, Nullable`1<ConsoleColor> color);
+    public static string AskInput(string fieldName, string hint);
+    public static string AskPasswordInput(string fieldName, string hint);
+    private static string LineInput(string fieldName, Nullable`1<char> replacementChar, string hint);
+    [CompilerGeneratedAttribute]
+internal static void <WriteInColumn>g__WriteColumnLine|18_0(bool pad, StringBuilder lsb, <>c__DisplayClass18_0& );
+    [CompilerGeneratedAttribute]
+internal static void <LineInput>g__Clear|21_0(<>c__DisplayClass21_0& );
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class NetBox.Terminal.Strings : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string Error_CommandHasNoExecute { get; }
+    internal static string Error_NoCommand { get; }
+    internal static string Error_NoCommands { get; }
+    internal static string Error_UnknownCommand { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_Error_CommandHasNoExecute();
+    internal static string get_Error_NoCommand();
+    internal static string get_Error_NoCommands();
+    internal static string get_Error_UnknownCommand();
+}
+public class NetBox.Terminal.Themes.TerminalTheme : object {
+    [CompilerGeneratedAttribute]
+private ConsoleColor <NormalTextColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <ActiveTextColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <InactiveTextColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <HeadingTextColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <SeparatorColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <ErrorTextColor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConsoleColor <WarningTextColor>k__BackingField;
+    public static TerminalTheme Default;
+    public ConsoleColor NormalTextColor { get; public set; }
+    public ConsoleColor ActiveTextColor { get; public set; }
+    public ConsoleColor InactiveTextColor { get; public set; }
+    public ConsoleColor HeadingTextColor { get; public set; }
+    public ConsoleColor SeparatorColor { get; public set; }
+    public ConsoleColor ErrorTextColor { get; public set; }
+    public ConsoleColor WarningTextColor { get; public set; }
+    private static TerminalTheme();
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_NormalTextColor();
+    [CompilerGeneratedAttribute]
+public void set_NormalTextColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_ActiveTextColor();
+    [CompilerGeneratedAttribute]
+public void set_ActiveTextColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_InactiveTextColor();
+    [CompilerGeneratedAttribute]
+public void set_InactiveTextColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_HeadingTextColor();
+    [CompilerGeneratedAttribute]
+public void set_HeadingTextColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_SeparatorColor();
+    [CompilerGeneratedAttribute]
+public void set_SeparatorColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_ErrorTextColor();
+    [CompilerGeneratedAttribute]
+public void set_ErrorTextColor(ConsoleColor value);
+    [CompilerGeneratedAttribute]
+public ConsoleColor get_WarningTextColor();
+    [CompilerGeneratedAttribute]
+public void set_WarningTextColor(ConsoleColor value);
+}
+public class NetBox.Terminal.Widgets.ProgressBar : object {
+    private bool _hasSubtitle;
+    private int _min;
+    private int _max;
+    private int _value;
+    private string _subtitle;
+    private CursorBookmark _fcb;
+    public int Value { get; public set; }
+    public int Max { get; public set; }
+    public string Subtitle { get; public set; }
+    public ProgressBar(bool hasSubtitle, int min, int max);
+    public int get_Value();
+    public void set_Value(int value);
+    public int get_Max();
+    public void set_Max(int value);
+    public string get_Subtitle();
+    public void set_Subtitle(string value);
+    private void Draw();
+    public sealed virtual void Dispose();
+}
+public class NetBox.Terminal.Widgets.ProgressMessage : object {
+    private CursorBookmark _fcb;
+    private string _message;
+    private bool _success;
+    public string Message { get; public set; }
+    public ProgressMessage(string message);
+    public void Fail(string message);
+    public string get_Message();
+    public void set_Message(string value);
+    public sealed virtual void Dispose();
+}
+public class NetBox.Terminal.Widgets.Table : object {
+    private String[] _columnNames;
+    private List`1<Object[]> _rows;
+    public Table(String[] columnNames);
+    public void AddRow(Object[] values);
+    public void Render(bool printColumnNames, int leftPad, ConsoleColor[] columnColors);
+}
+[GeneratedCodeAttribute("simple-json", "1.0.0")]
+internal interface SimpleJson.IJsonSerializerStrategy {
+    public abstract virtual bool TrySerializeNonPrimitiveObject(object input, Object& output);
+    public abstract virtual object DeserializeObject(object value, Type type);
+}
+[GeneratedCodeAttribute("simple-json", "1.0.0")]
+[EditorBrowsableAttribute("1")]
+internal class SimpleJson.JsonArray : List`1<object> {
+    public JsonArray(int capacity);
+    public virtual string ToString();
+}
+[DefaultMemberAttribute("Item")]
+[GeneratedCodeAttribute("simple-json", "1.0.0")]
+[EditorBrowsableAttribute("1")]
+internal class SimpleJson.JsonObject : object {
+    private Dictionary`2<string, object> _members;
+    public object Item { get; }
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<object> Values { get; }
+    public object Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public JsonObject(IEqualityComparer`1<string> comparer);
+    public object get_Item(int index);
+    internal static object GetAtIndex(IDictionary`2<string, object> obj, int index);
+    public sealed virtual void Add(string key, object value);
+    public sealed virtual bool ContainsKey(string key);
+    public sealed virtual ICollection`1<string> get_Keys();
+    public sealed virtual bool Remove(string key);
+    public sealed virtual bool TryGetValue(string key, Object& value);
+    public sealed virtual ICollection`1<object> get_Values();
+    public sealed virtual object get_Item(string key);
+    public sealed virtual void set_Item(string key, object value);
+    public sealed virtual void Add(KeyValuePair`2<string, object> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<string, object> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual bool Remove(KeyValuePair`2<string, object> item);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual string ToString();
+}
+[GeneratedCodeAttribute("simple-json", "1.0.0")]
+internal class SimpleJson.PocoJsonSerializerStrategy : object {
+    internal IDictionary`2<Type, ConstructorDelegate> ConstructorCache;
+    internal IDictionary`2<Type, IDictionary`2<string, GetDelegate>> GetCache;
+    internal IDictionary`2<Type, IDictionary`2<string, KeyValuePair`2<Type, SetDelegate>>> SetCache;
+    internal static Type[] EmptyTypes;
+    internal static Type[] ArrayConstructorParameterTypes;
+    private static String[] Iso8601Format;
+    private static PocoJsonSerializerStrategy();
+    protected virtual string MapClrMemberNameToJsonFieldName(string clrPropertyName);
+    internal virtual ConstructorDelegate ContructorDelegateFactory(Type key);
+    internal virtual IDictionary`2<string, GetDelegate> GetterValueFactory(Type type);
+    internal virtual IDictionary`2<string, KeyValuePair`2<Type, SetDelegate>> SetterValueFactory(Type type);
+    public virtual bool TrySerializeNonPrimitiveObject(object input, Object& output);
+    public virtual object DeserializeObject(object value, Type type);
+    protected virtual object SerializeEnum(Enum p);
+    protected virtual bool TrySerializeKnownTypes(object input, Object& output);
+    protected virtual bool TrySerializeUnknownTypes(object input, Object& output);
+}
+[GeneratedCodeAttribute("reflection-utils", "1.0.0")]
+internal class SimpleJson.Reflection.ReflectionUtils : object {
+    private static Object[] EmptyObjects;
+    private static ReflectionUtils();
+    public static TypeInfo GetTypeInfo(Type type);
+    public static Attribute GetAttribute(MemberInfo info, Type type);
+    public static Type GetGenericListElementType(Type type);
+    public static Attribute GetAttribute(Type objectType, Type attributeType);
+    public static Type[] GetGenericTypeArguments(Type type);
+    public static bool IsTypeGeneric(Type type);
+    public static bool IsTypeGenericeCollectionInterface(Type type);
+    public static bool IsAssignableFrom(Type type1, Type type2);
+    public static bool IsTypeDictionary(Type type);
+    public static bool IsNullableType(Type type);
+    public static object ToNullableType(object obj, Type nullableType);
+    public static bool IsValueType(Type type);
+    public static IEnumerable`1<ConstructorInfo> GetConstructors(Type type);
+    public static ConstructorInfo GetConstructorInfo(Type type, Type[] argsType);
+    public static IEnumerable`1<PropertyInfo> GetProperties(Type type);
+    public static IEnumerable`1<FieldInfo> GetFields(Type type);
+    public static MethodInfo GetGetterMethodInfo(PropertyInfo propertyInfo);
+    public static MethodInfo GetSetterMethodInfo(PropertyInfo propertyInfo);
+    public static ConstructorDelegate GetContructor(ConstructorInfo constructorInfo);
+    public static ConstructorDelegate GetContructor(Type type, Type[] argsType);
+    public static ConstructorDelegate GetConstructorByReflection(ConstructorInfo constructorInfo);
+    public static ConstructorDelegate GetConstructorByReflection(Type type, Type[] argsType);
+    public static ConstructorDelegate GetConstructorByExpression(ConstructorInfo constructorInfo);
+    public static ConstructorDelegate GetConstructorByExpression(Type type, Type[] argsType);
+    public static GetDelegate GetGetMethod(PropertyInfo propertyInfo);
+    public static GetDelegate GetGetMethod(FieldInfo fieldInfo);
+    public static GetDelegate GetGetMethodByReflection(PropertyInfo propertyInfo);
+    public static GetDelegate GetGetMethodByReflection(FieldInfo fieldInfo);
+    public static GetDelegate GetGetMethodByExpression(PropertyInfo propertyInfo);
+    public static GetDelegate GetGetMethodByExpression(FieldInfo fieldInfo);
+    public static SetDelegate GetSetMethod(PropertyInfo propertyInfo);
+    public static SetDelegate GetSetMethod(FieldInfo fieldInfo);
+    public static SetDelegate GetSetMethodByReflection(PropertyInfo propertyInfo);
+    public static SetDelegate GetSetMethodByReflection(FieldInfo fieldInfo);
+    public static SetDelegate GetSetMethodByExpression(PropertyInfo propertyInfo);
+    public static SetDelegate GetSetMethodByExpression(FieldInfo fieldInfo);
+    public static BinaryExpression Assign(Expression left, Expression right);
+}
+[GeneratedCodeAttribute("simple-json", "1.0.0")]
+internal static class SimpleJson.SimpleJson : object {
+    private static int TOKEN_NONE;
+    private static int TOKEN_CURLY_OPEN;
+    private static int TOKEN_CURLY_CLOSE;
+    private static int TOKEN_SQUARED_OPEN;
+    private static int TOKEN_SQUARED_CLOSE;
+    private static int TOKEN_COLON;
+    private static int TOKEN_COMMA;
+    private static int TOKEN_STRING;
+    private static int TOKEN_NUMBER;
+    private static int TOKEN_TRUE;
+    private static int TOKEN_FALSE;
+    private static int TOKEN_NULL;
+    private static int BUILDER_CAPACITY;
+    private static Char[] EscapeTable;
+    private static Char[] EscapeCharacters;
+    private static string EscapeCharactersString;
+    private static IJsonSerializerStrategy _currentJsonSerializerStrategy;
+    private static PocoJsonSerializerStrategy _pocoJsonSerializerStrategy;
+    public static IJsonSerializerStrategy CurrentJsonSerializerStrategy { get; public set; }
+    [EditorBrowsableAttribute("2")]
+public static PocoJsonSerializerStrategy PocoJsonSerializerStrategy { get; }
+    private static SimpleJson();
+    public static object DeserializeObject(string json);
+    public static bool TryDeserializeObject(string json, Object& obj);
+    public static object DeserializeObject(string json, Type type, IJsonSerializerStrategy jsonSerializerStrategy);
+    public static object DeserializeObject(string json, Type type);
+    public static T DeserializeObject(string json, IJsonSerializerStrategy jsonSerializerStrategy);
+    public static T DeserializeObject(string json);
+    public static string SerializeObject(object json, IJsonSerializerStrategy jsonSerializerStrategy);
+    public static string SerializeObject(object json);
+    public static string EscapeToJavascriptString(string jsonString);
+    private static IDictionary`2<string, object> ParseObject(Char[] json, Int32& index, Boolean& success);
+    private static JsonArray ParseArray(Char[] json, Int32& index, Boolean& success);
+    private static object ParseValue(Char[] json, Int32& index, Boolean& success);
+    private static string ParseString(Char[] json, Int32& index, Boolean& success);
+    private static string ConvertFromUtf32(int utf32);
+    private static object ParseNumber(Char[] json, Int32& index, Boolean& success);
+    private static int GetLastIndexOfNumber(Char[] json, int index);
+    private static void EatWhitespace(Char[] json, Int32& index);
+    private static int LookAhead(Char[] json, int index);
+    private static int NextToken(Char[] json, Int32& index);
+    private static bool SerializeValue(IJsonSerializerStrategy jsonSerializerStrategy, object value, StringBuilder builder);
+    private static bool SerializeObject(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable keys, IEnumerable values, StringBuilder builder);
+    private static bool SerializeArray(IJsonSerializerStrategy jsonSerializerStrategy, IEnumerable anArray, StringBuilder builder);
+    private static bool SerializeString(string aString, StringBuilder builder);
+    private static bool SerializeNumber(object number, StringBuilder builder);
+    private static bool IsNumeric(object value);
+    public static IJsonSerializerStrategy get_CurrentJsonSerializerStrategy();
+    public static void set_CurrentJsonSerializerStrategy(IJsonSerializerStrategy value);
+    public static PocoJsonSerializerStrategy get_PocoJsonSerializerStrategy();
+}
