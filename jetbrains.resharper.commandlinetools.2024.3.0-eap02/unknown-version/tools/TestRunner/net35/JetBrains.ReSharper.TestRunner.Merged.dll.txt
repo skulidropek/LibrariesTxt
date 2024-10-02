@@ -1,0 +1,131 @@
+internal class JetBrains.ReSharper.TestRunner.Application : LongLivedMarshalByRefObject {
+    private ILifetimeScope myScope;
+    private IApplicationOptions myOptions;
+    private ILogger myLogger;
+    public Application(ILifetimeScope scope, IApplicationOptions options);
+    public sealed virtual void Run();
+    private void RegisterApplicationParts(ContainerBuilder builder);
+}
+public static class JetBrains.ReSharper.TestRunner.EntryPoint : object {
+    public static int Run(String[] args);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.BatchingTestExecutionSink : RejectingCallContextObject {
+    private IMessageBroker myServer;
+    private ITestRunnerClientController myClientController;
+    private TimeSpan myProlongationPeriod;
+    private TimeSpan myNonProlongationPeriod;
+    private ILogger myLogger;
+    private CollectedResults modreq(System.Runtime.CompilerServices.IsVolatile) myCollectedResults;
+    public BatchingTestExecutionSink(IMessageBroker server, ITestRunnerClientController clientController, TimeSpan prolongationPeriod, TimeSpan nonProlongationPeriod, ILogger logger);
+    public sealed virtual void RunStarting();
+    public sealed virtual void RunFinished();
+    public virtual void TestStarting(RemoteTask task);
+    public virtual void TestException(RemoteTask task, ExceptionInfo[] exceptions);
+    public sealed virtual void TestFinished(RemoteTask task, TestOutcome outcome, string message, Nullable`1<TimeSpan> duration);
+    public virtual void TestOutput(RemoteTask task, string text, TestOutputType outputType);
+    public virtual void DynamicTestDiscovered(RemoteTask task);
+    private Task Flush();
+    private sealed virtual override void System.IDisposable.Dispose();
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.DefaultTestAdapterLoadContextFactory : object {
+    private TestAdapterInfo myInfo;
+    private ILifetimeScope myScope;
+    private IAssemblyResolver myAssemblyResolver;
+    private ILogger myLogger;
+    public DefaultTestAdapterLoadContextFactory(TestAdapterInfo info, ILifetimeScope scope, IAssemblyResolver assemblyResolver, ILogger logger);
+    public sealed virtual ITestAdapterLoadContext Initialize(TestRequest request);
+}
+public class JetBrains.ReSharper.TestRunner.Implementation.DummyClientController : object {
+    public sealed virtual void BeforeRunStarted();
+    public sealed virtual void AfterRunFinished();
+    public sealed virtual void BeforeTestStarted(RemoteTask task);
+    public sealed virtual void AfterTestFinished(RemoteTask remoteTask, String& message, TestOutcome& outcome);
+}
+internal interface JetBrains.ReSharper.TestRunner.Implementation.IExtendedTestExecutionSink {
+    public abstract virtual void RunStarting();
+    public abstract virtual void RunFinished();
+}
+public interface JetBrains.ReSharper.TestRunner.Implementation.ITestAdapterLoadContextFactoryFactory {
+    public abstract virtual void SetTestAdapterLoader(TestAdapterLoader testAdapterLoader);
+    public abstract virtual void RegisterDynamicScalars(ReflectionSerializersFacade facade);
+    public abstract virtual ITestAdapterLoadContext Initialize(TestRequest request);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestAdapterLoadContext : LoadContext {
+    public TestAdapterLoadContext(string name, TestRequest request, ILifetimeScope scope, ILoadContextTracker tracker, ILogger logger);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestAdapterLoadContextFactoryFactory : object {
+    private ILifetimeScope myScope;
+    private IAssemblyResolver myAssemblyResolver;
+    private ILogger myLogger;
+    private TestAdapterLoader myTestAdapterLoader;
+    public TestAdapterLoadContextFactoryFactory(ILifetimeScope scope, IAssemblyResolver assemblyResolver, ILogger logger);
+    public sealed virtual void SetTestAdapterLoader(TestAdapterLoader testAdapterLoader);
+    public sealed virtual void RegisterDynamicScalars(ReflectionSerializersFacade facade);
+    public sealed virtual ITestAdapterLoadContext Initialize(TestRequest request);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestAdapterLoadContextWrapper : TestAdapterLoadContextWrapperBase {
+    public TestAdapterLoadContextWrapper(IAssemblyResolver assemblyResolver, TestAdapterInfo testAdapterInfo, TestRequest request, ILoadContext ctx);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestAdapterLoadContextWrapperBase : object {
+    protected ILoadContext myCtx;
+    protected IAssemblyResolver myAssemblyResolver;
+    protected TestAdapterInfo myTestAdapterInfo;
+    protected ILogger myLogger;
+    protected IDisposable mySubscriptions;
+    public string Name { get; }
+    public bool IsCollectible { get; }
+    public IAssemblyResolver AssemblyResolver { get; }
+    public TestAdapterLoadContextWrapperBase(IAssemblyResolver assemblyResolver, TestAdapterInfo testAdapterInfo, TestRequest request, ILoadContext ctx);
+    public sealed virtual void Dispose();
+    public virtual ITestDiscoverer InitializeTestDiscoverer();
+    public virtual ITestExecutor InitializeTestExecutor();
+    public sealed virtual string get_Name();
+    public sealed virtual bool get_IsCollectible();
+    public sealed virtual IAssemblyResolver get_AssemblyResolver();
+    public sealed virtual object Create(Type type, T1 p1);
+    public sealed virtual object Create(Type type, T1 p1, T2 p2);
+    public sealed virtual object Create(Type type, T1 p1, T2 p2, T3 p3);
+    public sealed virtual object Create(Type type, Object[] args);
+    public sealed virtual void Unload();
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestDiscoverySink : RejectingCallContextObject {
+    private IMessageBroker myServer;
+    public TestDiscoverySink(IMessageBroker server);
+    public sealed virtual void TestsDiscovered(RemoteTask[] tasks);
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.TestExecutionSink : RejectingCallContextObject {
+    private IMessageBroker myServer;
+    private ITestRunnerClientController myClientController;
+    private ILogger myLogger;
+    internal IMessageBroker MessageBroker { get; }
+    public TestExecutionSink(IMessageBroker server, ITestRunnerClientController clientController);
+    internal IMessageBroker get_MessageBroker();
+    public sealed virtual void RunStarting();
+    public sealed virtual void RunFinished();
+    public virtual void TestStarting(RemoteTask task);
+    public virtual void TestException(RemoteTask task, ExceptionInfo[] exceptions);
+    public sealed virtual void TestFinished(RemoteTask task, TestOutcome outcome, string message, Nullable`1<TimeSpan> duration);
+    public virtual void TestOutput(RemoteTask task, string text, TestOutputType outputType);
+    public virtual void DynamicTestDiscovered(RemoteTask task);
+    private sealed virtual override void System.IDisposable.Dispose();
+}
+internal class JetBrains.ReSharper.TestRunner.Implementation.UnitTestRemoteAgent : object {
+    private ILifetimeScope myScope;
+    private IMessageBroker myServer;
+    private IFileSystemRoot myFileSystemRoot;
+    private IAssemblyResolver myAssemblyResolver;
+    private ITestAdapterLoadContextFactoryFactory myLoadContextFactory;
+    private ReflectionSerializersFacade mySerializersFacade;
+    private CancellationTokenSource myCts;
+    private ILogger myLogger;
+    private TaskCompletionSource`1<int> myShutdownTcs;
+    public UnitTestRemoteAgent(ILifetimeScope scope, IMessageBroker server, IFileSystemRoot fileSystemRoot, IAssemblyResolver assemblyResolver, ITestAdapterLoadContextFactoryFactory loadContextFactory, ReflectionSerializersFacade serializersFacade, ILogger logger);
+    public void HandshakeAndWaitForShutdown(IApplicationOptions options);
+    public sealed virtual void Execute(RemoteAgentInitializationRequest request);
+    public sealed virtual void Execute(TestRunRequest request);
+    private IExtendedTestExecutionSink GetExecutionSink(TestRunRequest request);
+    private ITestRunnerClientController InitializeClientController(ILifetimeScope scope, ClientControllerInfo info);
+    public sealed virtual void Execute(TestDiscoveryRequest request);
+    public sealed virtual void Execute(RequestAbortMessage message);
+    public sealed virtual void Execute(ShutdownMessage message);
+}

@@ -1,0 +1,1804 @@
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class MessagePack.BufferWriter : ValueType {
+    private IBufferWriter`1<byte> _output;
+    private Span`1<byte> _span;
+    private ArraySegment`1<byte> _segment;
+    private int _buffered;
+    private long _bytesCommitted;
+    private SequencePool _sequencePool;
+    private Rental _rental;
+    public Span`1<byte> Span { get; }
+    public long BytesCommitted { get; }
+    internal IBufferWriter`1<byte> UnderlyingWriter { get; }
+    internal Rental SequenceRental { get; }
+    public BufferWriter(IBufferWriter`1<byte> output);
+    internal BufferWriter(SequencePool sequencePool, Byte[] array);
+    public Span`1<byte> get_Span();
+    public long get_BytesCommitted();
+    internal IBufferWriter`1<byte> get_UnderlyingWriter();
+    internal Rental get_SequenceRental();
+    public Span`1<byte> GetSpan(int sizeHint);
+    public Byte& GetPointer(int sizeHint);
+    public void Commit();
+    public void Advance(int count);
+    public void Write(ReadOnlySpan`1<byte> source);
+    public void Ensure(int count);
+    internal bool TryGetUncommittedSpan(ReadOnlySpan`1& span);
+    private void EnsureMore(int count);
+    private void WriteMultiBuffer(ReadOnlySpan`1<byte> source);
+    private void MigrateToSequence();
+}
+internal class MessagePack.ExtensionHeader : ValueType {
+    [CompilerGeneratedAttribute]
+private sbyte <TypeCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <Length>k__BackingField;
+    public sbyte TypeCode { get; private set; }
+    public UInt32 Length { get; private set; }
+    public ExtensionHeader(sbyte typeCode, UInt32 length);
+    public ExtensionHeader(sbyte typeCode, int length);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sbyte get_TypeCode();
+    [CompilerGeneratedAttribute]
+private void set_TypeCode(sbyte value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public UInt32 get_Length();
+    [CompilerGeneratedAttribute]
+private void set_Length(UInt32 value);
+    public sealed virtual bool Equals(ExtensionHeader other);
+}
+internal class MessagePack.ExtensionResult : ValueType {
+    [CompilerGeneratedAttribute]
+private sbyte <TypeCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ReadOnlySequence`1<byte> <Data>k__BackingField;
+    public sbyte TypeCode { get; private set; }
+    public ReadOnlySequence`1<byte> Data { get; private set; }
+    public ExtensionHeader Header { get; }
+    public ExtensionResult(sbyte typeCode, Memory`1<byte> data);
+    public ExtensionResult(sbyte typeCode, ReadOnlySequence`1<byte> data);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sbyte get_TypeCode();
+    [CompilerGeneratedAttribute]
+private void set_TypeCode(sbyte value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public ReadOnlySequence`1<byte> get_Data();
+    [CompilerGeneratedAttribute]
+private void set_Data(ReadOnlySequence`1<byte> value);
+    public ExtensionHeader get_Header();
+}
+internal static class MessagePack.Internal.DateTimeConstants : object {
+    internal static long BclSecondsAtUnixEpoch;
+    internal static int NanosecondsPerTick;
+    internal static DateTime UnixEpoch;
+    private static DateTimeConstants();
+}
+internal static class MessagePack.MessagePackCode : object {
+    public static byte MinFixInt;
+    public static byte MaxFixInt;
+    public static byte MinFixMap;
+    public static byte MaxFixMap;
+    public static byte MinFixArray;
+    public static byte MaxFixArray;
+    public static byte MinFixStr;
+    public static byte MaxFixStr;
+    public static byte Nil;
+    public static byte NeverUsed;
+    public static byte False;
+    public static byte True;
+    public static byte Bin8;
+    public static byte Bin16;
+    public static byte Bin32;
+    public static byte Ext8;
+    public static byte Ext16;
+    public static byte Ext32;
+    public static byte Float32;
+    public static byte Float64;
+    public static byte UInt8;
+    public static byte UInt16;
+    public static byte UInt32;
+    public static byte UInt64;
+    public static byte Int8;
+    public static byte Int16;
+    public static byte Int32;
+    public static byte Int64;
+    public static byte FixExt1;
+    public static byte FixExt2;
+    public static byte FixExt4;
+    public static byte FixExt8;
+    public static byte FixExt16;
+    public static byte Str8;
+    public static byte Str16;
+    public static byte Str32;
+    public static byte Array16;
+    public static byte Array32;
+    public static byte Map16;
+    public static byte Map32;
+    public static byte MinNegativeFixInt;
+    public static byte MaxNegativeFixInt;
+    private static MessagePackType[] TypeLookupTable;
+    private static String[] FormatNameTable;
+    private static MessagePackCode();
+    public static MessagePackType ToMessagePackType(byte code);
+    public static string ToFormatName(byte code);
+    internal static bool IsSignedInteger(byte code);
+}
+internal static class MessagePack.MessagePackRange : object {
+    public static int MinFixNegativeInt;
+    public static int MaxFixNegativeInt;
+    public static int MaxFixPositiveInt;
+    public static int MinFixStringLength;
+    public static int MaxFixStringLength;
+    public static int MaxFixMapCount;
+    public static int MaxFixArrayCount;
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class MessagePack.MessagePackReader : ValueType {
+    private SequenceReader`1<byte> reader;
+    [CompilerGeneratedAttribute]
+private CancellationToken <CancellationToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Depth>k__BackingField;
+    public CancellationToken CancellationToken { get; public set; }
+    public int Depth { get; public set; }
+    public ReadOnlySequence`1<byte> Sequence { get; }
+    public SequencePosition Position { get; }
+    public long Consumed { get; }
+    public bool End { get; }
+    public bool IsNil { get; }
+    public MessagePackType NextMessagePackType { get; }
+    public byte NextCode { get; }
+    public MessagePackReader(ReadOnlyMemory`1<byte> memory);
+    public MessagePackReader(ReadOnlySequence`1& readOnlySequence);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public CancellationToken get_CancellationToken();
+    [CompilerGeneratedAttribute]
+public void set_CancellationToken(CancellationToken value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public int get_Depth();
+    [CompilerGeneratedAttribute]
+public void set_Depth(int value);
+    public ReadOnlySequence`1<byte> get_Sequence();
+    public SequencePosition get_Position();
+    public long get_Consumed();
+    public bool get_End();
+    public bool get_IsNil();
+    public MessagePackType get_NextMessagePackType();
+    public byte get_NextCode();
+    public MessagePackReader Clone(ReadOnlySequence`1& readOnlySequence);
+    public MessagePackReader CreatePeekReader();
+    public void Skip();
+    internal bool TrySkip();
+    public Nil ReadNil();
+    public bool TryReadNil();
+    public ReadOnlySequence`1<byte> ReadRaw(long length);
+    public ReadOnlySequence`1<byte> ReadRaw();
+    public int ReadArrayHeader();
+    public bool TryReadArrayHeader(Int32& count);
+    public int ReadMapHeader();
+    public bool TryReadMapHeader(Int32& count);
+    public bool ReadBoolean();
+    public char ReadChar();
+    public float ReadSingle();
+    public double ReadDouble();
+    public DateTime ReadDateTime();
+    public DateTime ReadDateTime(ExtensionHeader header);
+    public Nullable`1<ReadOnlySequence`1<byte>> ReadBytes();
+    public Nullable`1<ReadOnlySequence`1<byte>> ReadStringSequence();
+    public bool TryReadStringSpan(ReadOnlySpan`1& span);
+    public string ReadString();
+    public ExtensionHeader ReadExtensionFormatHeader();
+    public bool TryReadExtensionFormatHeader(ExtensionHeader& extensionHeader);
+    public ExtensionResult ReadExtensionFormat();
+    private static EndOfStreamException ThrowNotEnoughBytesException();
+    private static EndOfStreamException ThrowNotEnoughBytesException(Exception innerException);
+    private static Exception ThrowInvalidCode(byte code);
+    private static void ThrowInsufficientBufferUnless(bool condition);
+    private int GetBytesLength();
+    private int GetStringLengthInBytes();
+    private int GetStringLengthInBytesSlow(byte code);
+    private string ReadStringSlow(int byteLength);
+    private bool TrySkipNextArray();
+    private bool TrySkipNextMap();
+    private bool TrySkip(int count);
+    public byte ReadByte();
+    public ushort ReadUInt16();
+    public UInt32 ReadUInt32();
+    public ulong ReadUInt64();
+    public sbyte ReadSByte();
+    public short ReadInt16();
+    public int ReadInt32();
+    public long ReadInt64();
+}
+internal class MessagePack.MessagePackSerializationException : Exception {
+    public MessagePackSerializationException(string message);
+    public MessagePackSerializationException(string message, Exception inner);
+    protected MessagePackSerializationException(SerializationInfo info, StreamingContext context);
+}
+internal enum MessagePack.MessagePackType : Enum {
+    public byte value__;
+    public static MessagePackType Unknown;
+    public static MessagePackType Integer;
+    public static MessagePackType Nil;
+    public static MessagePackType Boolean;
+    public static MessagePackType Float;
+    public static MessagePackType String;
+    public static MessagePackType Binary;
+    public static MessagePackType Array;
+    public static MessagePackType Map;
+    public static MessagePackType Extension;
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class MessagePack.MessagePackWriter : ValueType {
+    private BufferWriter writer;
+    [CompilerGeneratedAttribute]
+private CancellationToken <CancellationToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <OldSpec>k__BackingField;
+    public CancellationToken CancellationToken { get; public set; }
+    public bool OldSpec { get; public set; }
+    public MessagePackWriter(IBufferWriter`1<byte> writer);
+    internal MessagePackWriter(SequencePool sequencePool, Byte[] array);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public CancellationToken get_CancellationToken();
+    [CompilerGeneratedAttribute]
+public void set_CancellationToken(CancellationToken value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public bool get_OldSpec();
+    [CompilerGeneratedAttribute]
+public void set_OldSpec(bool value);
+    public MessagePackWriter Clone(IBufferWriter`1<byte> writer);
+    public void Flush();
+    public void WriteNil();
+    public void WriteRaw(ReadOnlySpan`1<byte> rawMessagePackBlock);
+    public void WriteRaw(ReadOnlySequence`1& rawMessagePackBlock);
+    public void WriteArrayHeader(int count);
+    public void WriteArrayHeader(UInt32 count);
+    public void WriteMapHeader(int count);
+    public void WriteMapHeader(UInt32 count);
+    public void Write(byte value);
+    public void WriteUInt8(byte value);
+    public void Write(sbyte value);
+    public void WriteInt8(sbyte value);
+    public void Write(ushort value);
+    public void WriteUInt16(ushort value);
+    public void Write(short value);
+    public void WriteInt16(short value);
+    public void Write(UInt32 value);
+    public void WriteUInt32(UInt32 value);
+    public void Write(int value);
+    public void WriteInt32(int value);
+    public void Write(ulong value);
+    public void WriteUInt64(ulong value);
+    public void Write(long value);
+    public void WriteInt64(long value);
+    public void Write(bool value);
+    public void Write(char value);
+    public void Write(float value);
+    public void Write(double value);
+    public void Write(DateTime dateTime);
+    public void Write(Byte[] src);
+    public void Write(ReadOnlySpan`1<byte> src);
+    public void Write(ReadOnlySequence`1& src);
+    public void WriteBinHeader(int length);
+    public void WriteString(ReadOnlySequence`1& utf8stringBytes);
+    public void WriteString(ReadOnlySpan`1<byte> utf8stringBytes);
+    public void WriteStringHeader(int byteCount);
+    public void Write(string value);
+    public void Write(ReadOnlySpan`1<char> value);
+    public void WriteExtensionFormatHeader(ExtensionHeader extensionHeader);
+    public void WriteExtensionFormat(ExtensionResult extensionData);
+    public Span`1<byte> GetSpan(int length);
+    public void Advance(int length);
+    internal void WriteBigEndian(ushort value);
+    internal void WriteBigEndian(UInt32 value);
+    internal void WriteBigEndian(ulong value);
+    internal Byte[] FlushAndGetArray();
+    private static void WriteBigEndian(short value, Span`1<byte> span);
+    private static void WriteBigEndian(int value, Span`1<byte> span);
+    private static void WriteBigEndian(long value, Span`1<byte> span);
+    private static void WriteBigEndian(ushort value, Span`1<byte> span);
+    private static void WriteBigEndian(ushort value, Byte* span);
+    private static void WriteBigEndian(UInt32 value, Span`1<byte> span);
+    private static void WriteBigEndian(UInt32 value, Byte* span);
+    private static void WriteBigEndian(ulong value, Span`1<byte> span);
+    private static void WriteBigEndian(float value, Span`1<byte> span);
+    private static void WriteBigEndian(double value, Span`1<byte> span);
+    private Byte& WriteString_PrepareSpan(int characterLength, Int32& bufferSize, Int32& encodedBytesOffset);
+    private void WriteString_PostEncoding(Byte* pBuffer, int estimatedOffset, int byteCount);
+    private static void MemoryCopy(Void* source, Void* destination, long destinationSizeInBytes, long sourceBytesToCopy);
+}
+internal class MessagePack.Nil : ValueType {
+    public static Nil Default;
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(Nil other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+internal static class MessagePack.ReservedMessagePackExtensionTypeCode : object {
+    public static sbyte DateTime;
+}
+internal class MessagePack.SequencePool : object {
+    internal static SequencePool Shared;
+    private static int MinimumSpanLength;
+    private int maxSize;
+    private Stack`1<Sequence`1<byte>> pool;
+    private ArrayPool`1<byte> arrayPool;
+    internal SequencePool(int maxSize);
+    private static SequencePool();
+    internal Rental Rent();
+    private void Return(Sequence`1<byte> value);
+}
+[ExtensionAttribute]
+internal static class MessagePack.StringEncoding : object {
+    internal static Encoding UTF8;
+    private static StringEncoding();
+    [ExtensionAttribute]
+internal static string GetString(Encoding encoding, ReadOnlySpan`1<byte> bytes);
+}
+[ExtensionAttribute]
+internal static class MessagePack.Utilities : object {
+    internal static bool IsMono;
+    private static Utilities();
+    internal static Byte[] GetWriterBytes(TArg arg, GetWriterBytesAction`1<TArg> action);
+    [ExtensionAttribute]
+internal static Memory`1<T> GetMemoryCheckResult(IBufferWriter`1<T> bufferWriter, int size);
+}
+internal class Microsoft.Azure.SignalR.MemoryBufferWriter : Stream {
+    [ThreadStaticAttribute]
+private static MemoryBufferWriter _cachedInstance;
+    private int _minimumSegmentSize;
+    private int _bytesWritten;
+    private List`1<CompletedBuffer> _completedSegments;
+    private Byte[] _currentSegment;
+    private int _position;
+    public long Length { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Position { get; public set; }
+    public MemoryBufferWriter(int minimumSegmentSize);
+    public virtual long get_Length();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public static MemoryBufferWriter Get();
+    public static void Return(MemoryBufferWriter writer);
+    public void Reset();
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<byte> GetMemory(int sizeHint);
+    public sealed virtual Span`1<byte> GetSpan(int sizeHint);
+    public void CopyTo(IBufferWriter`1<byte> destination);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    private void EnsureCapacity(int sizeHint);
+    private void AddSegment(int sizeHint);
+    [AsyncStateMachineAttribute("Microsoft.Azure.SignalR.MemoryBufferWriter/<CopyToSlowAsync>d__28")]
+private Task CopyToSlowAsync(Stream destination);
+    public Byte[] ToArray();
+    public void CopyTo(Span`1<byte> span);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void WriteByte(byte value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.Azure.SignalR.Protocol.AccessKeyRequestMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <Token>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Kid>k__BackingField;
+    public string Token { get; public set; }
+    public string Kid { get; public set; }
+    public AccessKeyRequestMessage(string token);
+    [CompilerGeneratedAttribute]
+public string get_Token();
+    [CompilerGeneratedAttribute]
+public void set_Token(string value);
+    [CompilerGeneratedAttribute]
+public string get_Kid();
+    [CompilerGeneratedAttribute]
+public void set_Kid(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.AccessKeyResponseMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <Kid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AccessKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ErrorType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    public string Kid { get; public set; }
+    public string AccessKey { get; public set; }
+    public string ErrorType { get; public set; }
+    public string ErrorMessage { get; public set; }
+    public AccessKeyResponseMessage(string kid, string key);
+    public AccessKeyResponseMessage(Exception e);
+    [CompilerGeneratedAttribute]
+public string get_Kid();
+    [CompilerGeneratedAttribute]
+public void set_Kid(string value);
+    [CompilerGeneratedAttribute]
+public string get_AccessKey();
+    [CompilerGeneratedAttribute]
+public void set_AccessKey(string value);
+    [CompilerGeneratedAttribute]
+public string get_ErrorType();
+    [CompilerGeneratedAttribute]
+public void set_ErrorType(string value);
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_ErrorMessage(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.AckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    public int AckId { get; public set; }
+    public int Status { get; public set; }
+    public string Message { get; public set; }
+    public AckMessage(int ackId, int status);
+    public AckMessage(int ackId, int status, string message);
+    [CompilerGeneratedAttribute]
+public int get_AckId();
+    [CompilerGeneratedAttribute]
+public void set_AckId(int value);
+    [CompilerGeneratedAttribute]
+public int get_Status();
+    [CompilerGeneratedAttribute]
+public void set_Status(int value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[DefaultMemberAttribute("Item")]
+public class Microsoft.Azure.SignalR.Protocol.ArrayDictionary`2 : object {
+    public static ArrayDictionary`2<TKey, TValue> Empty;
+    private IEqualityComparer`1<TKey> _comparer;
+    private TKey[] _keys;
+    private TValue[] _values;
+    private int count;
+    public TValue Item { get; public set; }
+    private IEnumerable`1<TKey> System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Keys { get; }
+    private IEnumerable`1<TValue> System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values { get; }
+    private IEqualityComparer`1<TKey> KeyComparer { get; }
+    private IEqualityComparer`1<TValue> ValueComparer { get; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public ICollection`1<TKey> Keys { get; }
+    public ICollection`1<TValue> Values { get; }
+    public ArrayDictionary`2(int capacity, IEqualityComparer`1<TKey> comparer);
+    private static ArrayDictionary`2();
+    public sealed virtual TValue get_Item(TKey key);
+    public sealed virtual void set_Item(TKey key, TValue value);
+    private sealed virtual override IEnumerable`1<TKey> System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.get_Keys();
+    private sealed virtual override IEnumerable`1<TValue> System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.get_Values();
+    private IEqualityComparer`1<TKey> get_KeyComparer();
+    private IEqualityComparer`1<TValue> get_ValueComparer();
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual ICollection`1<TKey> get_Keys();
+    public sealed virtual ICollection`1<TValue> get_Values();
+    public sealed virtual void Add(TKey key, TValue value);
+    public sealed virtual void Add(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual bool ContainsKey(TKey key);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    [NullableContextAttribute("0")]
+public Enumerator<TKey, TValue> GetEnumerator();
+    private sealed virtual override IEnumerator`1<KeyValuePair`2<TKey, TValue>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey,TValue>>.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual bool Remove(TKey key);
+    public sealed virtual bool Remove(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual bool TryGetValue(TKey key, TValue& value);
+}
+internal static class Microsoft.Azure.SignalR.Protocol.BinaryMessageFormatter : object {
+    public static void WriteLengthPrefix(long length, IBufferWriter`1<byte> output);
+    public static int WriteLengthPrefix(long length, Span`1<byte> output);
+    public static int LengthPrefixLength(long length);
+}
+internal static class Microsoft.Azure.SignalR.Protocol.BinaryMessageParser : object {
+    private static int MaxLengthPrefixSize;
+    public static bool TryParseMessage(ReadOnlySequence`1& buffer, ReadOnlySequence`1& payload);
+    private static ReadOnlySpan`1<byte> GetSpan(ReadOnlySequence`1& lengthPrefixBuffer);
+}
+public class Microsoft.Azure.SignalR.Protocol.BroadcastDataMessage : MulticastDataMessage {
+    private static byte Key;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <ExcludedList>k__BackingField;
+    public IReadOnlyList`1<string> ExcludedList { get; public set; }
+    public byte PartitionKey { get; }
+    public BroadcastDataMessage(IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    public BroadcastDataMessage(IReadOnlyList`1<string> excludedList, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    private static BroadcastDataMessage();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_ExcludedList();
+    [CompilerGeneratedAttribute]
+public void set_ExcludedList(IReadOnlyList`1<string> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.CheckConnectionExistenceWithAckMessage : CheckWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public CheckConnectionExistenceWithAckMessage(string connectionId, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.CheckGroupExistenceWithAckMessage : CheckWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    public string GroupName { get; public set; }
+    public byte PartitionKey { get; }
+    public CheckGroupExistenceWithAckMessage(string groupName, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.CheckUserExistenceWithAckMessage : CheckWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    public string UserId { get; public set; }
+    public byte PartitionKey { get; }
+    public CheckUserExistenceWithAckMessage(string userId, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.CheckUserInGroupWithAckMessage : CheckWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    public string UserId { get; public set; }
+    public string GroupName { get; public set; }
+    public byte PartitionKey { get; }
+    public CheckUserInGroupWithAckMessage(string userId, string groupName, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.CheckWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public int AckId { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    protected CheckWithAckMessage(int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+}
+public class Microsoft.Azure.SignalR.Protocol.ClientCompletionMessage : ServiceCompletionMessage {
+    [CompilerGeneratedAttribute]
+private string <Protocol>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ReadOnlySequence`1<byte> <Payload>k__BackingField;
+    public string Protocol { get; public set; }
+    public ReadOnlySequence`1<byte> Payload { get; public set; }
+    public ClientCompletionMessage(string invocationId, string connectionId, string callerServerId, string protocol, ReadOnlyMemory`1<byte> payload, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Protocol();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Protocol(string value);
+    [CompilerGeneratedAttribute]
+public ReadOnlySequence`1<byte> get_Payload();
+    [CompilerGeneratedAttribute]
+public void set_Payload(ReadOnlySequence`1<byte> value);
+}
+public class Microsoft.Azure.SignalR.Protocol.ClientInvocationMessage : MultiPayloadDataMessage {
+    [CompilerGeneratedAttribute]
+private string <InvocationId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CallerServerId>k__BackingField;
+    public string InvocationId { get; public set; }
+    public string ConnectionId { get; public set; }
+    public string CallerServerId { get; public set; }
+    public byte PartitionKey { get; }
+    public ClientInvocationMessage(string invocationId, string connectionId, string callerServerId, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_InvocationId();
+    [CompilerGeneratedAttribute]
+public void set_InvocationId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_CallerServerId();
+    [CompilerGeneratedAttribute]
+public void set_CallerServerId(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.CloseConnectionMessage : ConnectionMessage {
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, StringValues> <Headers>k__BackingField;
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public string ErrorMessage { get; public set; }
+    public IDictionary`2<string, StringValues> Headers { get; public set; }
+    public CloseConnectionMessage(string connectionId, string errorMessage, IDictionary`2<string, StringValues> headers);
+    public CloseConnectionMessage(string connectionId);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_ErrorMessage(string value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, StringValues> get_Headers();
+    [CompilerGeneratedAttribute]
+public void set_Headers(IDictionary`2<string, StringValues> value);
+}
+[ObsoleteAttribute("Please use CloseConnectionMessage")]
+[EditorBrowsableAttribute("1")]
+[BrowsableAttribute("False")]
+public class Microsoft.Azure.SignalR.Protocol.CloseConnectionsWithAckMessage : CloseMultiConnectionsWithAckMessage {
+    public CloseConnectionsWithAckMessage(int ackId);
+}
+[ObsoleteAttribute("Please use CloseConnectionMessage")]
+[EditorBrowsableAttribute("1")]
+[BrowsableAttribute("False")]
+public class Microsoft.Azure.SignalR.Protocol.CloseConnectionWithAckMessage : CloseWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    public string ConnectionId { get; }
+    public CloseConnectionWithAckMessage(string connectionId, int ackId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+}
+public class Microsoft.Azure.SignalR.Protocol.CloseGroupConnectionsWithAckMessage : CloseMultiConnectionsWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    public string GroupName { get; public set; }
+    public byte PartitionKey { get; }
+    public CloseGroupConnectionsWithAckMessage(string groupName, int ackId);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.CloseMultiConnectionsWithAckMessage : CloseWithAckMessage {
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <ExcludedList>k__BackingField;
+    public IReadOnlyList`1<string> ExcludedList { get; public set; }
+    public CloseMultiConnectionsWithAckMessage(int ackId);
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_ExcludedList();
+    [CompilerGeneratedAttribute]
+public void set_ExcludedList(IReadOnlyList`1<string> value);
+}
+public class Microsoft.Azure.SignalR.Protocol.CloseUserConnectionsWithAckMessage : CloseMultiConnectionsWithAckMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    public string UserId { get; public set; }
+    public CloseUserConnectionsWithAckMessage(string userId, int ackId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.CloseWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Reason>k__BackingField;
+    public int AckId { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public string Reason { get; public set; }
+    public CloseWithAckMessage(int ackId);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public string get_Reason();
+    [CompilerGeneratedAttribute]
+public void set_Reason(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.ConnectionDataMessage : ConnectionMessage {
+    [CompilerGeneratedAttribute]
+private ReadOnlySequence`1<byte> <Payload>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataMessageType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsPartial>k__BackingField;
+    public ReadOnlySequence`1<byte> Payload { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public DataMessageType Type { get; public set; }
+    public bool IsPartial { get; public set; }
+    public byte PartitionKey { get; }
+    public ConnectionDataMessage(string connectionId, ReadOnlyMemory`1<byte> payload, Nullable`1<ulong> tracingId);
+    public ConnectionDataMessage(string connectionId, ReadOnlySequence`1<byte> payload, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public ReadOnlySequence`1<byte> get_Payload();
+    [CompilerGeneratedAttribute]
+public void set_Payload(ReadOnlySequence`1<byte> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DataMessageType get_Type();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Type(DataMessageType value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsPartial();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_IsPartial(bool value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.ConnectionFlowControlMessage : ConnectionMessage {
+    [CompilerGeneratedAttribute]
+private ConnectionFlowControlOperation <Operation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConnectionType <ConnectionType>k__BackingField;
+    public ConnectionFlowControlOperation Operation { get; }
+    public ConnectionType ConnectionType { get; }
+    public ConnectionFlowControlMessage(string connectionId, ConnectionFlowControlOperation op, ConnectionType type);
+    [CompilerGeneratedAttribute]
+public ConnectionFlowControlOperation get_Operation();
+    [CompilerGeneratedAttribute]
+public ConnectionType get_ConnectionType();
+}
+public enum Microsoft.Azure.SignalR.Protocol.ConnectionFlowControlOperation : Enum {
+    public int value__;
+    public static ConnectionFlowControlOperation Pause;
+    public static ConnectionFlowControlOperation PauseAck;
+    public static ConnectionFlowControlOperation Resume;
+    public static ConnectionFlowControlOperation Offline;
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.ConnectionMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    protected ConnectionMessage(string connectionId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.ConnectionReconnectMessage : ConnectionMessage {
+    public ConnectionReconnectMessage(string connectionId);
+}
+public enum Microsoft.Azure.SignalR.Protocol.ConnectionType : Enum {
+    public int value__;
+    public static ConnectionType Client;
+    public static ConnectionType Server;
+}
+public enum Microsoft.Azure.SignalR.Protocol.DataMessageType : Enum {
+    public int value__;
+    public static DataMessageType Unknown;
+    public static DataMessageType Handshake;
+    public static DataMessageType Invocation;
+    public static DataMessageType Other;
+    public static DataMessageType Close;
+}
+public class Microsoft.Azure.SignalR.Protocol.ErrorCompletionMessage : ServiceCompletionMessage {
+    [CompilerGeneratedAttribute]
+private string <Error>k__BackingField;
+    public string Error { get; public set; }
+    public ErrorCompletionMessage(string invocationId, string connectionId, string callerServerId, string error, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_Error();
+    [CompilerGeneratedAttribute]
+public void set_Error(string value);
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.ExtensibleServiceMessage : ServiceMessage {
+    private static int TracingId;
+    private static int Ttl;
+    private static int Protocol;
+    private static int Filter;
+    private static int DataMessageType;
+    private static int IsPartial;
+    internal void WriteExtensionMembers(MessagePackWriter& writer);
+    internal void ReadExtensionMembers(MessagePackReader& reader);
+}
+public class Microsoft.Azure.SignalR.Protocol.GroupBroadcastDataMessage : MulticastDataMessage {
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <ExcludedList>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <ExcludedUserList>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CallerUserId>k__BackingField;
+    public string GroupName { get; public set; }
+    public byte PartitionKey { get; }
+    public IReadOnlyList`1<string> ExcludedList { get; public set; }
+    public IReadOnlyList`1<string> ExcludedUserList { get; public set; }
+    public string CallerUserId { get; public set; }
+    public GroupBroadcastDataMessage(string groupName, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    public GroupBroadcastDataMessage(string groupName, IReadOnlyList`1<string> excludedList, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    public sealed virtual byte get_PartitionKey();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_ExcludedList();
+    [CompilerGeneratedAttribute]
+public void set_ExcludedList(IReadOnlyList`1<string> value);
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_ExcludedUserList();
+    [CompilerGeneratedAttribute]
+public void set_ExcludedUserList(IReadOnlyList`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_CallerUserId();
+    [CompilerGeneratedAttribute]
+public void set_CallerUserId(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.HandshakeRequestMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private int <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ConnectionType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Target>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MigrationLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowStatefulReconnects>k__BackingField;
+    public int Version { get; public set; }
+    public int ConnectionType { get; public set; }
+    public string Target { get; public set; }
+    public int MigrationLevel { get; public set; }
+    public bool AllowStatefulReconnects { get; public set; }
+    public HandshakeRequestMessage(int version);
+    public HandshakeRequestMessage(int version, int connectionType, int migrationLevel);
+    [CompilerGeneratedAttribute]
+public int get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(int value);
+    [CompilerGeneratedAttribute]
+public int get_ConnectionType();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionType(int value);
+    [CompilerGeneratedAttribute]
+public string get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(string value);
+    [CompilerGeneratedAttribute]
+public int get_MigrationLevel();
+    [CompilerGeneratedAttribute]
+public void set_MigrationLevel(int value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowStatefulReconnects();
+    [CompilerGeneratedAttribute]
+public void set_AllowStatefulReconnects(bool value);
+}
+public class Microsoft.Azure.SignalR.Protocol.HandshakeResponseMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    public string ErrorMessage { get; public set; }
+    public string ConnectionId { get; public set; }
+    public HandshakeResponseMessage(string errorMessage);
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_ErrorMessage(string value);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IAckableMessage {
+    public int AckId { get; public set; }
+    public abstract virtual int get_AckId();
+    public abstract virtual void set_AckId(int value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IHasDataMessageType {
+    public DataMessageType Type { get; public set; }
+    public abstract virtual DataMessageType get_Type();
+    public abstract virtual void set_Type(DataMessageType value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IHasProtocol {
+    public string Protocol { get; public set; }
+    public abstract virtual string get_Protocol();
+    public abstract virtual void set_Protocol(string value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IHasSubscriberFilter {
+    public string Filter { get; public set; }
+    public abstract virtual string get_Filter();
+    public abstract virtual void set_Filter(string value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IHasTtl {
+    public Nullable`1<int> Ttl { get; public set; }
+    public abstract virtual Nullable`1<int> get_Ttl();
+    public abstract virtual void set_Ttl(Nullable`1<int> value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IMessageWithTracingId {
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public abstract virtual Nullable`1<ulong> get_TracingId();
+    public abstract virtual void set_TracingId(Nullable`1<ulong> value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IPartializable {
+    public bool IsPartial { get; public set; }
+    public abstract virtual bool get_IsPartial();
+    public abstract virtual void set_IsPartial(bool value);
+}
+public interface Microsoft.Azure.SignalR.Protocol.IPartitionableMessage {
+    public byte PartitionKey { get; }
+    public abstract virtual byte get_PartitionKey();
+}
+public interface Microsoft.Azure.SignalR.Protocol.IServiceProtocol {
+    public int Version { get; }
+    public abstract virtual int get_Version();
+    public abstract virtual bool TryParseMessage(ReadOnlySequence`1& input, ServiceMessage& message);
+    public abstract virtual void WriteMessage(ServiceMessage message, IBufferWriter`1<byte> output);
+    public abstract virtual ReadOnlyMemory`1<byte> GetMessageBytes(ServiceMessage message);
+}
+public class Microsoft.Azure.SignalR.Protocol.JoinGroupMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public byte PartitionKey { get; }
+    public JoinGroupMessage(string connectionId, string groupName, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.JoinGroupWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public string GroupName { get; public set; }
+    public int AckId { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public byte PartitionKey { get; }
+    public JoinGroupWithAckMessage(string connectionId, string groupName, Nullable`1<ulong> tracingId);
+    public JoinGroupWithAckMessage(string connectionId, string groupName, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.LeaveGroupMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public byte PartitionKey { get; }
+    public LeaveGroupMessage(string connectionId, string groupName, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.LeaveGroupWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public string GroupName { get; public set; }
+    public int AckId { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public byte PartitionKey { get; }
+    public LeaveGroupWithAckMessage(string connectionId, string groupName, Nullable`1<ulong> tracingId);
+    public LeaveGroupWithAckMessage(string connectionId, string groupName, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.MulticastDataMessage : MultiPayloadDataMessage {
+    [CompilerGeneratedAttribute]
+private string <Filter>k__BackingField;
+    public string Filter { get; public set; }
+    protected MulticastDataMessage(IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Filter();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Filter(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.MultiConnectionDataMessage : MulticastDataMessage {
+    private static byte Key;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <ConnectionList>k__BackingField;
+    public IReadOnlyList`1<string> ConnectionList { get; public set; }
+    public byte PartitionKey { get; }
+    public MultiConnectionDataMessage(IReadOnlyList`1<string> connectionList, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    private static MultiConnectionDataMessage();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_ConnectionList();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionList(IReadOnlyList`1<string> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.MultiGroupBroadcastDataMessage : MulticastDataMessage {
+    private static byte Key;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <GroupList>k__BackingField;
+    public IReadOnlyList`1<string> GroupList { get; public set; }
+    public byte PartitionKey { get; }
+    public MultiGroupBroadcastDataMessage(IReadOnlyList`1<string> groupList, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    private static MultiGroupBroadcastDataMessage();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_GroupList();
+    [CompilerGeneratedAttribute]
+public void set_GroupList(IReadOnlyList`1<string> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.MultiPayloadDataMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, ReadOnlyMemory`1<byte>> <Payloads>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public IDictionary`2<string, ReadOnlyMemory`1<byte>> Payloads { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    protected MultiPayloadDataMessage(IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, ReadOnlyMemory`1<byte>> get_Payloads();
+    [CompilerGeneratedAttribute]
+public void set_Payloads(IDictionary`2<string, ReadOnlyMemory`1<byte>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+}
+public class Microsoft.Azure.SignalR.Protocol.MultiUserDataMessage : MulticastDataMessage {
+    private static byte Key;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<string> <UserList>k__BackingField;
+    public IReadOnlyList`1<string> UserList { get; public set; }
+    public byte PartitionKey { get; }
+    public MultiUserDataMessage(IReadOnlyList`1<string> userList, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    private static MultiUserDataMessage();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<string> get_UserList();
+    [CompilerGeneratedAttribute]
+public void set_UserList(IReadOnlyList`1<string> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.OpenConnectionMessage : ConnectionMessage {
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Claim[] <Claims>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, StringValues> <Headers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <QueryString>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Protocol>k__BackingField;
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public Claim[] Claims { get; public set; }
+    public IDictionary`2<string, StringValues> Headers { get; public set; }
+    public string QueryString { get; public set; }
+    public string Protocol { get; public set; }
+    public OpenConnectionMessage(string connectionId, Claim[] claims);
+    public OpenConnectionMessage(string connectionId, Claim[] claims, IDictionary`2<string, StringValues> headers, string queryString);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public Claim[] get_Claims();
+    [CompilerGeneratedAttribute]
+public void set_Claims(Claim[] value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, StringValues> get_Headers();
+    [CompilerGeneratedAttribute]
+public void set_Headers(IDictionary`2<string, StringValues> value);
+    [CompilerGeneratedAttribute]
+public string get_QueryString();
+    [CompilerGeneratedAttribute]
+public void set_QueryString(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Protocol();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Protocol(string value);
+}
+public class Microsoft.Azure.SignalR.Protocol.PingMessage : ServiceMessage {
+    public static PingMessage Instance;
+    [CompilerGeneratedAttribute]
+private String[] <Messages>k__BackingField;
+    public String[] Messages { get; public set; }
+    private static PingMessage();
+    [CompilerGeneratedAttribute]
+public String[] get_Messages();
+    [CompilerGeneratedAttribute]
+public void set_Messages(String[] value);
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.ServiceCompletionMessage : ConnectionMessage {
+    [CompilerGeneratedAttribute]
+private string <InvocationId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CallerServerId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string InvocationId { get; public set; }
+    public string CallerServerId { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public ServiceCompletionMessage(string invocationId, string connectionId, string callerServerId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_InvocationId();
+    [CompilerGeneratedAttribute]
+public void set_InvocationId(string value);
+    [CompilerGeneratedAttribute]
+public string get_CallerServerId();
+    [CompilerGeneratedAttribute]
+public void set_CallerServerId(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+}
+public class Microsoft.Azure.SignalR.Protocol.ServiceErrorMessage : ServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    public string ErrorMessage { get; public set; }
+    public ServiceErrorMessage(string errorMessage);
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_ErrorMessage(string value);
+}
+public enum Microsoft.Azure.SignalR.Protocol.ServiceEventKind : Enum {
+    public int value__;
+    public static ServiceEventKind Reloading;
+    public static ServiceEventKind Invalid;
+    public static ServiceEventKind NotExisted;
+    public static ServiceEventKind BufferFull;
+}
+public class Microsoft.Azure.SignalR.Protocol.ServiceEventMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private ServiceEventObjectType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ServiceEventKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    public ServiceEventObjectType Type { get; public set; }
+    public string Id { get; public set; }
+    public ServiceEventKind Kind { get; public set; }
+    public string Message { get; public set; }
+    public ServiceEventMessage(ServiceEventObjectType type, string id, ServiceEventKind kind, string message);
+    [CompilerGeneratedAttribute]
+public ServiceEventObjectType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(ServiceEventObjectType value);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public ServiceEventKind get_Kind();
+    [CompilerGeneratedAttribute]
+public void set_Kind(ServiceEventKind value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+}
+public enum Microsoft.Azure.SignalR.Protocol.ServiceEventObjectType : Enum {
+    public int value__;
+    public static ServiceEventObjectType ServiceInstance;
+    public static ServiceEventObjectType Connection;
+    public static ServiceEventObjectType User;
+    public static ServiceEventObjectType Group;
+    public static ServiceEventObjectType ServerConnection;
+}
+public class Microsoft.Azure.SignalR.Protocol.ServiceMappingMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <InvocationId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InstanceId>k__BackingField;
+    public string InvocationId { get; public set; }
+    public string ConnectionId { get; public set; }
+    public string InstanceId { get; public set; }
+    public ServiceMappingMessage(string invocationId, string connectionId, string instanceId);
+    [CompilerGeneratedAttribute]
+public string get_InvocationId();
+    [CompilerGeneratedAttribute]
+public void set_InvocationId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_InstanceId();
+    [CompilerGeneratedAttribute]
+public void set_InstanceId(string value);
+}
+public abstract class Microsoft.Azure.SignalR.Protocol.ServiceMessage : object {
+    public virtual ServiceMessage Clone();
+    public static byte GeneratePartitionKey(string input);
+}
+public class Microsoft.Azure.SignalR.Protocol.ServiceProtocol : object {
+    private static int ProtocolVersion;
+    public int Version { get; }
+    private static ServiceProtocol();
+    public sealed virtual int get_Version();
+    public sealed virtual bool TryParseMessage(ReadOnlySequence`1& input, ServiceMessage& message);
+    private static ServiceMessage ParseMessage(MessagePackReader& reader);
+    public sealed virtual void WriteMessage(ServiceMessage message, IBufferWriter`1<byte> output);
+    public sealed virtual ReadOnlyMemory`1<byte> GetMessageBytes(ServiceMessage message);
+    private static void WriteMessageCore(MessagePackWriter& writer, ServiceMessage message);
+    private static void WriteHandshakeRequestMessage(MessagePackWriter& writer, HandshakeRequestMessage message);
+    private static void WriteHandshakeResponseMessage(MessagePackWriter& writer, HandshakeResponseMessage message);
+    private static void WriteAccessKeyRequestMessage(MessagePackWriter& writer, AccessKeyRequestMessage message);
+    private static void WriteAccessKeyResponseMessage(MessagePackWriter& writer, AccessKeyResponseMessage message);
+    private static void WritePingMessage(MessagePackWriter& writer, PingMessage message);
+    private static void WriteOpenConnectionMessage(MessagePackWriter& writer, OpenConnectionMessage message);
+    private static void WriteCloseConnectionMessage(MessagePackWriter& writer, CloseConnectionMessage message);
+    [ObsoleteAttribute]
+private static void WriteCloseConnectionWithAckMessage(MessagePackWriter& writer, CloseConnectionWithAckMessage message);
+    [ObsoleteAttribute]
+private static void WriteCloseConnectionsWithAckMessage(MessagePackWriter& writer, CloseConnectionsWithAckMessage message);
+    private static void WriteCloseUserConnectionsWithAckMessage(MessagePackWriter& writer, CloseUserConnectionsWithAckMessage message);
+    private static void WriteCloseGroupConnectionsWithAckMessage(MessagePackWriter& writer, CloseGroupConnectionsWithAckMessage message);
+    private static void WriteConnectionDataMessage(MessagePackWriter& writer, ConnectionDataMessage message);
+    private static void WriteConnectionReconnectMessage(MessagePackWriter& writer, ConnectionReconnectMessage message);
+    private static void WriteMultiConnectionDataMessage(MessagePackWriter& writer, MultiConnectionDataMessage message);
+    private static void WriteUserDataMessage(MessagePackWriter& writer, UserDataMessage message);
+    private static void WriteMultiUserDataMessage(MessagePackWriter& writer, MultiUserDataMessage message);
+    private static void WriteBroadcastDataMessage(MessagePackWriter& writer, BroadcastDataMessage message);
+    private static void WriteJoinGroupMessage(MessagePackWriter& writer, JoinGroupMessage message);
+    private static void WriteLeaveGroupMessage(MessagePackWriter& writer, LeaveGroupMessage message);
+    private static void WriteUserJoinGroupMessage(MessagePackWriter& writer, UserJoinGroupMessage message);
+    private static void WriteUserLeaveGroupMessage(MessagePackWriter& writer, UserLeaveGroupMessage message);
+    private static void WriteUserJoinGroupWithAckMessage(MessagePackWriter& writer, UserJoinGroupWithAckMessage message);
+    private static void WriteUserLeaveGroupWithAckMessage(MessagePackWriter& writer, UserLeaveGroupWithAckMessage message);
+    private static void WriteGroupBroadcastDataMessage(MessagePackWriter& writer, GroupBroadcastDataMessage message);
+    private static void WriteMultiGroupBroadcastDataMessage(MessagePackWriter& writer, MultiGroupBroadcastDataMessage message);
+    private static void WriteServiceErrorMessage(MessagePackWriter& writer, ServiceErrorMessage message);
+    private static void WriteServiceEventMessage(MessagePackWriter& writer, ServiceEventMessage message);
+    private static void WriteJoinGroupWithAckMessage(MessagePackWriter& writer, JoinGroupWithAckMessage message);
+    private static void WriteLeaveGroupWithAckMessage(MessagePackWriter& writer, LeaveGroupWithAckMessage message);
+    private static void WriteCheckUserInGroupWithAckMessage(MessagePackWriter& writer, CheckUserInGroupWithAckMessage message);
+    private static void WriteCheckGroupExistenceWithAckMessage(MessagePackWriter& writer, CheckGroupExistenceWithAckMessage message);
+    private static void WriteCheckConnectionExistenceWithAckMessage(MessagePackWriter& writer, CheckConnectionExistenceWithAckMessage message);
+    private static void WriteCheckUserExistenceWithAckMessage(MessagePackWriter& writer, CheckUserExistenceWithAckMessage message);
+    private static void WriteAckMessage(MessagePackWriter& writer, AckMessage message);
+    private static void WriteClientInvocationMessage(MessagePackWriter& writer, ClientInvocationMessage message);
+    private static void WriteClientCompletionMessage(MessagePackWriter& writer, ClientCompletionMessage message);
+    private static void WriteErrorCompletionMessage(MessagePackWriter& writer, ErrorCompletionMessage message);
+    private static void WriteServiceMappingMessage(MessagePackWriter& writer, ServiceMappingMessage message);
+    private static void WriteConnectionFlowControlMessage(MessagePackWriter& writer, ConnectionFlowControlMessage message);
+    private static void WriteStringArray(MessagePackWriter& writer, IReadOnlyList`1<string> array);
+    private static void WritePayloads(MessagePackWriter& writer, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads);
+    private static void WriteHeaders(MessagePackWriter& writer, IDictionary`2<string, StringValues> headers);
+    private static AccessKeyRequestMessage CreateAccessKeyRequestMessage(MessagePackReader& reader, int arrayLength);
+    private static AccessKeyResponseMessage CreateAccessKeyResponseMessage(MessagePackReader& reader, int arrayLength);
+    private static HandshakeRequestMessage CreateHandshakeRequestMessage(MessagePackReader& reader, int arrayLength);
+    private static HandshakeResponseMessage CreateHandshakeResponseMessage(MessagePackReader& reader, int arrayLength);
+    private static PingMessage CreatePingMessage(MessagePackReader& reader, int arrayLength);
+    private static OpenConnectionMessage CreateOpenConnectionMessage(MessagePackReader& reader, int arrayLength);
+    private static CloseConnectionMessage CreateCloseConnectionMessage(MessagePackReader& reader, int arrayLength);
+    [ObsoleteAttribute]
+private static CloseConnectionWithAckMessage CreateCloseConnectionWithAckMessage(MessagePackReader& reader, int arrayLength);
+    [ObsoleteAttribute]
+private static CloseConnectionsWithAckMessage CreateCloseConnectionsWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CloseUserConnectionsWithAckMessage CreateCloseUserConnectionsWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CloseGroupConnectionsWithAckMessage CreateCloseGroupConnectionsWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static ConnectionDataMessage CreateConnectionDataMessage(MessagePackReader& reader, int arrayLength);
+    private static ConnectionReconnectMessage CreateConnectionReconnectMessage(MessagePackReader& reader, int arrayLength);
+    private static MultiConnectionDataMessage CreateMultiConnectionDataMessage(MessagePackReader& reader, int arrayLength);
+    private static ServiceMessage CreateUserDataMessage(MessagePackReader& reader, int arrayLength);
+    private static MultiUserDataMessage CreateMultiUserDataMessage(MessagePackReader& reader, int arrayLength);
+    private static BroadcastDataMessage CreateBroadcastDataMessage(MessagePackReader& reader, int arrayLength);
+    private static JoinGroupMessage CreateJoinGroupMessage(MessagePackReader& reader, int arrayLength);
+    private static LeaveGroupMessage CreateLeaveGroupMessage(MessagePackReader& reader, int arrayLength);
+    private static UserJoinGroupMessage CreateUserJoinGroupMessage(MessagePackReader& reader, int arrayLength);
+    private static UserLeaveGroupMessage CreateUserLeaveGroupMessage(MessagePackReader& reader, int arrayLength);
+    private static UserJoinGroupWithAckMessage CreateUserJoinGroupWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static UserLeaveGroupWithAckMessage CreateUserLeaveGroupWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static GroupBroadcastDataMessage CreateGroupBroadcastDataMessage(MessagePackReader& reader, int arrayLength);
+    private static MultiGroupBroadcastDataMessage CreateMultiGroupBroadcastDataMessage(MessagePackReader& reader, int arrayLength);
+    private static ServiceErrorMessage CreateServiceErrorMessage(MessagePackReader& reader);
+    private static ServiceEventMessage CreateServiceEventMessage(MessagePackReader& reader);
+    private static JoinGroupWithAckMessage CreateJoinGroupWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static LeaveGroupWithAckMessage CreateLeaveGroupWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CheckUserInGroupWithAckMessage CreateCheckUserInGroupWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CheckGroupExistenceWithAckMessage CreateGroupExistenceWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CheckConnectionExistenceWithAckMessage CreateCheckConnectionExistenceWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static CheckUserExistenceWithAckMessage CreateCheckUserExistenceWithAckMessage(MessagePackReader& reader, int arrayLength);
+    private static AckMessage CreateAckMessage(MessagePackReader& reader, int arrayLength);
+    private static ClientInvocationMessage CreateClientInvocationMessage(MessagePackReader& reader, int arrayLength);
+    private static ClientCompletionMessage CreateClientCompletionMessage(MessagePackReader& reader, int arrayLength);
+    private static ErrorCompletionMessage CreateErrorCompletionMessage(MessagePackReader& reader, int arrayLength);
+    private static ServiceMappingMessage CreateServiceMappingMessage(MessagePackReader& reader, int arrayLength);
+    private static ConnectionFlowControlMessage CreateConnectionFlowControlMessage(MessagePackReader& reader, int arrayLength);
+    private static Claim[] ReadClaims(MessagePackReader& reader);
+    private static IDictionary`2<string, ReadOnlyMemory`1<byte>> ReadPayloads(MessagePackReader& reader);
+    private static Dictionary`2<string, StringValues> ReadHeaders(MessagePackReader& reader);
+    private static bool ReadBoolean(MessagePackReader& reader, string field);
+    private static int ReadInt32(MessagePackReader& reader, string field);
+    private static string ReadString(MessagePackReader& reader, string field);
+    private static string ReadString(MessagePackReader& reader, string formatField, int param);
+    private static string ReadString(MessagePackReader& reader, string formatField, string param1, int param2);
+    private static String[] ReadStringArray(MessagePackReader& reader, string field);
+    private static Byte[] ReadBytes(MessagePackReader& reader, string field);
+    private static Byte[] ReadBytes(MessagePackReader& reader, string formatField, int param);
+    private static long ReadMapLength(MessagePackReader& reader, string field);
+    private static long ReadArrayLength(MessagePackReader& reader, string field);
+}
+public static class Microsoft.Azure.SignalR.Protocol.ServiceProtocolConstants : object {
+    public static int HandshakeRequestType;
+    public static int HandshakeResponseType;
+    public static int PingMessageType;
+    public static int OpenConnectionMessageType;
+    public static int CloseConnectionMessageType;
+    public static int ConnectionDataMessageType;
+    public static int MultiConnectionDataMessageType;
+    public static int UserDataMessageType;
+    public static int MultiUserDataMessageType;
+    public static int BroadcastDataMessageType;
+    public static int JoinGroupMessageType;
+    public static int LeaveGroupMessageType;
+    public static int GroupBroadcastDataMessageType;
+    public static int MultiGroupBroadcastDataMessageType;
+    public static int ServiceErrorMessageType;
+    public static int UserJoinGroupMessageType;
+    public static int UserLeaveGroupMessageType;
+    public static int JoinGroupWithAckMessageType;
+    public static int LeaveGroupWithAckMessageType;
+    public static int AckMessageType;
+    public static int CheckUserInGroupWithAckMessageType;
+    public static int ServiceEventMessageType;
+    public static int CheckGroupExistenceWithAckMessageType;
+    public static int CheckConnectionExistenceWithAckMessageType;
+    public static int CheckUserExistenceWithAckMessageType;
+    public static int UserJoinGroupWithAckMessageType;
+    public static int UserLeaveGroupWithAckMessageType;
+    public static int AccessKeyRequestType;
+    public static int AccessKeyResponseType;
+    public static int CloseConnectionWithAckMessageType;
+    public static int CloseConnectionsWithAckMessageType;
+    public static int CloseUserConnectionsWithAckMessageType;
+    public static int CloseGroupConnectionsWithAckMessageType;
+    public static int ClientInvocationMessageType;
+    public static int ClientCompletionMessageType;
+    public static int ErrorCompletionMessageType;
+    public static int ServiceMappingMessageType;
+    public static int ConnectionReconnectMessageType;
+    public static int ConnectionFlowControlMessageType;
+}
+public class Microsoft.Azure.SignalR.Protocol.UserDataMessage : MulticastDataMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    public string UserId { get; public set; }
+    public byte PartitionKey { get; }
+    public UserDataMessage(string userId, IDictionary`2<string, ReadOnlyMemory`1<byte>> payloads, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.UserJoinGroupMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Ttl>k__BackingField;
+    public string UserId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public Nullable`1<int> Ttl { get; public set; }
+    public byte PartitionKey { get; }
+    public UserJoinGroupMessage(string userId, string groupName, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<int> get_Ttl();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Ttl(Nullable`1<int> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.UserJoinGroupWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Ttl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    public string UserId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public Nullable`1<int> Ttl { get; public set; }
+    public int AckId { get; public set; }
+    public byte PartitionKey { get; }
+    public UserJoinGroupWithAckMessage(string userId, string groupName, int ackId, Nullable`1<int> ttl, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<int> get_Ttl();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Ttl(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.UserLeaveGroupMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    public string UserId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public byte PartitionKey { get; }
+    public UserLeaveGroupMessage(string userId, string groupName, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    public sealed virtual byte get_PartitionKey();
+}
+public class Microsoft.Azure.SignalR.Protocol.UserLeaveGroupWithAckMessage : ExtensibleServiceMessage {
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <TracingId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <AckId>k__BackingField;
+    public string UserId { get; public set; }
+    public string GroupName { get; public set; }
+    public Nullable`1<ulong> TracingId { get; public set; }
+    public int AckId { get; public set; }
+    public byte PartitionKey { get; }
+    public UserLeaveGroupWithAckMessage(string userId, string groupName, int ackId, Nullable`1<ulong> tracingId);
+    [CompilerGeneratedAttribute]
+public string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public string get_GroupName();
+    [CompilerGeneratedAttribute]
+public void set_GroupName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_TracingId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TracingId(Nullable`1<ulong> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_AckId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_AckId(int value);
+    public sealed virtual byte get_PartitionKey();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[DebuggerDisplayAttribute("{DebuggerDisplay,nq}")]
+internal class Nerdbank.Streams.Sequence`1 : object {
+    private static int DefaultLengthFromArrayPool;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private static ReadOnlySequence`1<T> Empty;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private Stack`1<SequenceSegment<T>> segmentPool;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private MemoryPool`1<T> memoryPool;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ArrayPool`1<T> arrayPool;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private SequenceSegment<T> first;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private SequenceSegment<T> last;
+    [CompilerGeneratedAttribute]
+private int <MinimumSpanLength>k__BackingField;
+    public int MinimumSpanLength { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ReadOnlySequence`1<T> AsReadOnlySequence { get; }
+    public long Length { get; }
+    private string DebuggerDisplay { get; }
+    public Sequence`1(MemoryPool`1<T> memoryPool);
+    public Sequence`1(ArrayPool`1<T> arrayPool);
+    private static Sequence`1();
+    [CompilerGeneratedAttribute]
+public int get_MinimumSpanLength();
+    [CompilerGeneratedAttribute]
+public void set_MinimumSpanLength(int value);
+    public ReadOnlySequence`1<T> get_AsReadOnlySequence();
+    public long get_Length();
+    private string get_DebuggerDisplay();
+    public static ReadOnlySequence`1<T> op_Implicit(Sequence`1<T> sequence);
+    public void AdvanceTo(SequencePosition position);
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<T> GetMemory(int sizeHint);
+    public sealed virtual Span`1<T> GetSpan(int sizeHint);
+    [EditorBrowsableAttribute("1")]
+public sealed virtual void Dispose();
+    public void Reset();
+    private SequenceSegment<T> GetSegment(int sizeHint);
+    private void Append(SequenceSegment<T> segment);
+    private SequenceSegment<T> RecycleAndGetNext(SequenceSegment<T> segment);
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class System.Buffers.SequenceReader`1 : ValueType {
+    private bool usingSequence;
+    private ReadOnlySequence`1<T> sequence;
+    private SequencePosition currentPosition;
+    private SequencePosition nextPosition;
+    private ReadOnlyMemory`1<T> memory;
+    private bool moreData;
+    private long length;
+    [CompilerGeneratedAttribute]
+private ReadOnlySpan`1<T> <CurrentSpan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <CurrentSpanIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Consumed>k__BackingField;
+    public bool End { get; }
+    public ReadOnlySequence`1<T> Sequence { get; }
+    public SequencePosition Position { get; }
+    public ReadOnlySpan`1<T> CurrentSpan { get; private set; }
+    public int CurrentSpanIndex { get; private set; }
+    public ReadOnlySpan`1<T> UnreadSpan { get; }
+    public long Consumed { get; private set; }
+    public long Remaining { get; }
+    public long Length { get; }
+    public SequenceReader`1(ReadOnlySequence`1& sequence);
+    public SequenceReader`1(ReadOnlyMemory`1<T> memory);
+    public bool get_End();
+    public ReadOnlySequence`1<T> get_Sequence();
+    public SequencePosition get_Position();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public ReadOnlySpan`1<T> get_CurrentSpan();
+    [CompilerGeneratedAttribute]
+private void set_CurrentSpan(ReadOnlySpan`1<T> value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public int get_CurrentSpanIndex();
+    [CompilerGeneratedAttribute]
+private void set_CurrentSpanIndex(int value);
+    public ReadOnlySpan`1<T> get_UnreadSpan();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public long get_Consumed();
+    [CompilerGeneratedAttribute]
+private void set_Consumed(long value);
+    public long get_Remaining();
+    public long get_Length();
+    public bool TryPeek(T& value);
+    public bool TryRead(T& value);
+    public void Rewind(long count);
+    private void RetreatToPreviousSpan(long consumed);
+    private void ResetReader();
+    private void GetNextSpan();
+    public void Advance(long count);
+    internal void AdvanceCurrentSpan(long count);
+    internal void AdvanceWithinSpan(long count);
+    internal bool TryAdvance(long count);
+    private void AdvanceToNextSpan(long count);
+    public bool TryCopyTo(Span`1<T> destination);
+    internal bool TryCopyMultisegment(Span`1<T> destination);
+}
+[ExtensionAttribute]
+internal static class System.Buffers.SequenceReaderExtensions : object {
+    [ExtensionAttribute]
+internal static bool TryRead(SequenceReader`1& reader, T& value);
+    private static bool TryReadMultisegment(SequenceReader`1& reader, T& value);
+    [ExtensionAttribute]
+public static bool TryRead(SequenceReader`1& reader, SByte& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int16& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt16& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int16& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int32& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt32& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int32& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Int64& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, UInt64& value);
+    private static bool TryReadReverseEndianness(SequenceReader`1& reader, Int64& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Single& value);
+    [ExtensionAttribute]
+public static bool TryReadBigEndian(SequenceReader`1& reader, Double& value);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsByRefLikeAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsUnmanagedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

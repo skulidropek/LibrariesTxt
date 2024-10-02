@@ -1,0 +1,2571 @@
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ActionAttribute("ApplyCodeStyle", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "ApplySyntaxStyleActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ApplyCodeStyleAction : CodeCleanupActionBase {
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected virtual bool get_SaveProfileAsRecentlyUsed();
+    protected virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupFileListActionBase : object {
+    public string Description { get; }
+    public ScopeType ScopeType { get; }
+    public bool SaveProfileAsRecentlyUsed { get; }
+    public bool SilentCleanup { get; }
+    public bool AllowToMarkFilesClean { get; }
+    private sealed virtual override bool JetBrains.Application.UI.ActionsRevised.Menu.IExecutableAction.Update(IDataContext dataContext, ActionPresentation presentation, DelegateUpdate nextUpdate);
+    private sealed virtual override void JetBrains.Application.UI.ActionsRevised.Menu.IExecutableAction.Execute(IDataContext context, DelegateExecute nextExecute);
+    private void Execute(ISolution solution);
+    protected virtual void RunCleanup(ISolution solution, IProjectFile[] selectedFilesArray, IPsiSourceFile[] sourceFiles, CodeCleanupProfile profile, IContextBoundSettingsStore contextBoundSettingsStore);
+    protected virtual void AfterExecution(ISolution solution, CodeCleanupProfile profile);
+    protected virtual void MarkFilesClean(ISolution solution, IEnumerable`1<IProjectFile> filesToMarkClean);
+    public abstract virtual string get_Description();
+    public abstract virtual string GetNoFilesMessage(IContextBoundSettingsStore store);
+    public abstract virtual ScopeType get_ScopeType();
+    protected abstract virtual IEnumerable`1<IProjectFile> GetFilesToCleanup(ISolution solution);
+    public virtual bool get_SaveProfileAsRecentlyUsed();
+    public virtual bool get_SilentCleanup();
+    public virtual bool get_AllowToMarkFilesClean();
+    public sealed virtual IActionRequirement GetRequirement(IDataContext dataContext);
+}
+[ActionAttribute("CleanupModifiedFiles", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "CleanupRecentlyModifiedFilesActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupModifiedFilesAction : CleanupModifiedFilesActionBase {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupModifiedFilesActionBase : CleanupFileListActionBase {
+    public string Description { get; }
+    public ScopeType ScopeType { get; }
+    public bool AllowToMarkFilesClean { get; }
+    protected virtual void MarkFilesClean(ISolution solution, IEnumerable`1<IProjectFile> filesToMarkClean);
+    public virtual string get_Description();
+    public virtual string GetNoFilesMessage(IContextBoundSettingsStore store);
+    public virtual ScopeType get_ScopeType();
+    protected virtual IEnumerable`1<IProjectFile> GetFilesToCleanup(ISolution solution);
+    public virtual bool get_AllowToMarkFilesClean();
+    protected virtual void RunCleanup(ISolution solution, IProjectFile[] selectedFilesArray, IPsiSourceFile[] sourceFiles, CodeCleanupProfile profile, IContextBoundSettingsStore contextBoundSettingsStore);
+}
+[SolutionComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupOnSaveHandler : object {
+    private static int MaxAttempts;
+    private Lifetime myLifetime;
+    [NotNullAttribute]
+private IShellLocks myLocks;
+    [NotNullAttribute]
+private ILogger myLogger;
+    [NotNullAttribute]
+private ISolution mySolution;
+    [NotNullAttribute]
+private DocumentManager myDocumentManager;
+    [NotNullAttribute]
+private IDocumentStorageHelpers myDocumentStorageHelpers;
+    [NotNullAttribute]
+private ApplicationWideContextBoundSettingStore myStore;
+    [NotNullAttribute]
+private ReasonsToDelayBuildStart myReasonsToDelayBuildStart;
+    [NotNullAttribute]
+private LanguageManager myLanguageManager;
+    [NotNullAttribute]
+private CodeCleanupService myCodeCleanupService;
+    [NotNullAttribute]
+private CodeCleanupSettingsComponent myCodeCleanupSettingsComponent;
+    [NotNullAttribute]
+private CodeCleanupProfileSelector myCodeCleanupProfileSelector;
+    [NotNullAttribute]
+private ICommandProcessor myCommandProcessor;
+    [NotNullAttribute]
+private IEditorManager myEditorManager;
+    [NotNullAttribute]
+private DocumentSettings myDocumentSettings;
+    [NotNullAttribute]
+private ChangeManager myChangeManager;
+    [NotNullAttribute]
+private Reasons`1<string> myReasonsToSuspend;
+    [NotNullAttribute]
+private HashSet`1<IPsiSourceFile> myQueue;
+    [NotNullAttribute]
+private HashSet`1<VirtualFileSystemPath> myUnknownQueue;
+    [NotNullAttribute]
+private Dictionary`2<IPsiSourceFile, long> myAlreadyCleanedUp;
+    [NotNullAttribute]
+private Dictionary`2<VirtualFileSystemPath, string> myDocumentOldText;
+    [NotNullAttribute]
+private IProperty`1<bool> myPartCleanupOnSave;
+    [NotNullAttribute]
+private IProperty`1<bool> myCleanupSharedFiles;
+    [CanBeNullAttribute]
+private LifetimeDefinition myLifetimeQueueNotEmpty;
+    private int myAttempts;
+    public CleanupOnSaveHandler(Lifetime lifetime, IShellLocks locks, ILogger logger, ISolution solution, DocumentManager documentManager, IDocumentStorageHelpers documentStorageHelpers, ApplicationWideContextBoundSettingStore store, ReasonsToDelayBuildStart reasonsToDelayBuildStart, LanguageManager languageManager, CodeCleanupService codeCleanup, CodeCleanupSettingsComponent codeCleanupSettingsComponent, CodeCleanupProfileSelector codeCleanupProfileSelector, ICommandProcessor commandProcessor, IEditorManager editorManager, DocumentSettings documentSettings, ChangeManager changeManager, SharedDocumentsSynchronizer sharedDocumentsSynchronizer);
+    private void MarkCleanupPerformed(VirtualFileSystemPath location, IPsiSourceFile _);
+    private void OnChangeManagerChanged(ChangeEventArgs args);
+    private void QueueDocument(DocumentSavedEventArgs args);
+    private void PerformCleanup(Lifetime lifetime);
+    private void PerformCleanupAfterCommit(Lifetime lifetime);
+    private bool CheckThatAllLinkedFilesHaveSameContent(Lifetime lifetime);
+    private void QueueNewAttempt(Lifetime lifetime);
+    private void FinishCleanup();
+    [CompilerGeneratedAttribute]
+private void <OnChangeManagerChanged>b__28_0(VirtualFileSystemPath oldLocation, VirtualFileSystemPath newLocation);
+    [CompilerGeneratedAttribute]
+private void <OnChangeManagerChanged>b__28_1(VirtualFileSystemPath path);
+    [CompilerGeneratedAttribute]
+private bool <QueueDocument>b__29_3(IProjectFile it);
+}
+[ActionAttribute("CleanupOpenFiles", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "CleanupOpenFilesActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupOpenFilesAction : CleanupOpenFilesActionBase {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CleanupOpenFilesActionBase : CleanupFileListActionBase {
+    public string Description { get; }
+    public ScopeType ScopeType { get; }
+    public virtual string get_Description();
+    public virtual string GetNoFilesMessage(IContextBoundSettingsStore store);
+    public virtual ScopeType get_ScopeType();
+    protected virtual IEnumerable`1<IProjectFile> GetFilesToCleanup(ISolution solution);
+}
+[ActionAttribute("CleanupCode", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "CleanupCodeActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CodeCleanupAction : CodeCleanupActionBase {
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected CleanupInvocationType InvocationType { get; }
+    protected virtual bool get_SaveProfileAsRecentlyUsed();
+    protected virtual CleanupInvocationType get_InvocationType();
+    protected virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup.CodeCleanupActionBase : object {
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected CleanupInvocationType InvocationType { get; }
+    protected abstract virtual bool get_SaveProfileAsRecentlyUsed();
+    private sealed virtual override bool JetBrains.Application.UI.ActionsRevised.Menu.IExecutableAction.Update(IDataContext dataContext, ActionPresentation presentation, DelegateUpdate nextUpdate);
+    private sealed virtual override void JetBrains.Application.UI.ActionsRevised.Menu.IExecutableAction.Execute(IDataContext context, DelegateExecute nextExecute);
+    private void Execute(ISolution solution, CodeCleanupFilesCollector collector);
+    protected virtual CleanupInvocationType get_InvocationType();
+    protected virtual void AfterExecution(ISolution solution, CodeCleanupProfile profile);
+    [CanBeNullAttribute]
+protected abstract virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+    public sealed virtual IActionRequirement GetRequirement(IDataContext dataContext);
+}
+[VsOverrideActionAttribute("({5d7e7f65-a63f-46ee-84f1-990b2cab23f9}:6419)")]
+[VsOverrideActionAttribute("({5d7e7f65-a63f-46ee-84f1-990b2cab23f9}:6417)")]
+[VsOverrideActionAttribute("({5d7e7f65-a63f-46ee-84f1-990b2cab23f9}:6420)")]
+[VsOverrideActionAttribute("({5d7e7f65-a63f-46ee-84f1-990b2cab23f9}:6416)")]
+[VsOverrideActionAttribute("({5d7e7f65-a63f-46ee-84f1-990b2cab23f9}:6418)")]
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "CodeCleanupActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CodeCleanupHideVsAction : HideVsMenuWhenHasReSharperPsiActionBase {
+}
+[SolutionComponentAttribute("0")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CodeCleanupProfileSelector : object {
+    protected CodeCleanupSettingsComponent myCodeCleanupSettingsComponent;
+    protected ISettingsStore mySettingsStore;
+    protected DocumentManager myDocumentManager;
+    public CodeCleanupProfileSelector(CodeCleanupSettingsComponent codeCleanupSettingsComponent, ISettingsStore settingsStore, DocumentManager documentManager);
+    [CanBeNullAttribute]
+protected virtual CodeCleanupProfile SelectProfileInteractive(CodeCleanupFilesCollector cleanupFilesCollector, bool selectingSilentCleanupProfile);
+    [NotNullAttribute]
+private IContextBoundSettingsStore GetSettingsStore(CodeCleanupFilesCollector cleanupFilesCollector);
+    [NotNullAttribute]
+private CleanupScopeViewModel DetermineScope(CodeCleanupFilesCollector cleanupFilesCollector);
+    [CanBeNullAttribute]
+protected virtual CodeCleanupProfile SelectProfileInteractive(IContextBoundSettingsStore contextBoundSettingsStore, CleanupScopeViewModel codeCleanupScope, bool selectingSilentCleanupProfile, Action`1<CodeCleanupProfile> actionWithProfile);
+    [NotNullAttribute]
+public virtual void SelectProfileAndFiles(string description, ISolution solution, IEnumerable`1<IProjectFile> files, bool isSilentCleanup, bool allowToRemoveFiles, Action`3<CodeCleanupProfile, IEnumerable`1<IProjectFile>, IEnumerable`1<IProjectFile>> onOk, Action onCancel);
+    [CanBeNullAttribute]
+public CodeCleanupProfile SelectProfile(string scopeKind, ISolution solution, bool isSilentCleanup);
+    [CanBeNullAttribute]
+public CodeCleanupProfile SelectProfile(CodeCleanupFilesCollector cleanupFilesCollector, bool isSilentCleanup);
+    public void SelectSilentProfile(CodeCleanupFilesCollector cleanupFilesCollector, Action`1<CodeCleanupProfile> actionWithProfile);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class JetBrains.ReSharper.Features.Altering.CodeCleanup.CodeCleanupRunner : object {
+    public static void CleanupSelection(CodeCleanupFilesCollector cleanupFilesCollector, CodeCleanupProfile cleanupProfile);
+    public static void CleanupFiles(ICodeCleanupFilesProvider cleanupFilesCollector, CodeCleanupProfile cleanupProfile, bool forceRunWholeFilesModules);
+    public static void CleanupFiles(ISolution solution, IReadOnlyList`1<IPsiSourceFile> filesToCleanup, CodeCleanupProfile cleanupProfile, Func`2<IPsiSourceFile, DocumentRange[]> getRanges, bool forceRunWholeFilesModules, bool forceSaveFiles);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "CompactFormatActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.CompactFormatCodeAction : SpecificReformatCodeActionBase {
+}
+[CodeCleanupModuleAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.DetectSettingsCodeCleanupModule : object {
+    public string Name { get; }
+    public PsiLanguageType LanguageType { get; }
+    public ICollection`1<CodeCleanupOptionDescriptor> Descriptors { get; }
+    public bool IsAvailableOnSelection { get; }
+    public sealed virtual string get_Name();
+    public sealed virtual PsiLanguageType get_LanguageType();
+    public sealed virtual ICollection`1<CodeCleanupOptionDescriptor> get_Descriptors();
+    public sealed virtual bool get_IsAvailableOnSelection();
+    public sealed virtual void SetDefaultSetting(CodeCleanupProfile profile, DefaultProfileType profileType);
+    public sealed virtual bool IsAvailable(IPsiSourceFile sourceFile);
+    public sealed virtual bool IsAvailable(CodeCleanupProfile profile);
+    public sealed virtual void Process(IPsiSourceFile sourceFile, IRangeMarker rangeMarker, CodeCleanupProfile profile, IProgressIndicator progressIndicator, IUserDataHolder cache);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.DetectSettingsCodeCleanupProfile : CodeCleanupProfile {
+    [CompilerGeneratedAttribute]
+private MultilanguageAutodetectSession <DetectSession>k__BackingField;
+    public MultilanguageAutodetectSession DetectSession { get; }
+    [CompilerGeneratedAttribute]
+public MultilanguageAutodetectSession get_DetectSession();
+}
+[ActionAttribute("DetectSettingsInBackground", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "DetectCodeStyleSettingsActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.DetectSettingsInBackgroundAction : object {
+    public sealed virtual bool Update(IDataContext dataContext, ActionPresentation presentation, DelegateUpdate nextUpdate);
+    public sealed virtual void Execute(IDataContext context, DelegateExecute nextExecute);
+    public sealed virtual IActionRequirement GetRequirement(IDataContext dataContext);
+}
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ActionGroupAttribute("0", "10")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.IntoCleanupCodeGroup : object {
+    public IntoCleanupCodeGroup(CodeCleanupAction codeCleanupAction, SilentCodeCleanupAction silentCodeCleanupAction, RecentFilesCleanupCodeGroup recentFilesCleanupCodeGroup, ReformatCodeAction reformatCodeAction, ApplyCodeStyleAction applyCodeStyleAction, DetectSettingsInBackgroundAction detectSettingsInBackgroundAction, CSharpAutoNamingAction cSharpAutoNamingAction);
+}
+public interface JetBrains.ReSharper.Features.Altering.CodeCleanup.IProfileNameDialogComponent {
+    [CanBeNullAttribute]
+public abstract virtual string ShowDialog(ICollection`1<string> forbiddenNames, string initialProfileName);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ModifiedDocumentsCollection : object {
+    private ISolution mySolution;
+    private List`1<Entry> myEntries;
+    public IDocument[] Documents { get; }
+    public ModifiedDocumentsCollection(ISolution solution);
+    public void Add(IProjectFile projectFile, string newText, DocOffset caretPos, bool canIncrementalUpdate);
+    public IDocument[] get_Documents();
+    public void ApplyDocumentText();
+    public void ApplyCaretPosition();
+    public sealed virtual void Dispose();
+}
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[ActionGroupAttribute("1", "10")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.RecentFilesCleanupCodeGroup : object {
+    public RecentFilesCleanupCodeGroup(CleanupModifiedFilesAction modifiedFilesAction, CleanupOpenFilesAction cleanupOpenFilesAction, SilentCleanupModifiedFilesAction silentModifiedFilesAction, SilentCleanupOpenFilesAction silentCleanupOpenFilesAction);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "ReformatCodeActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ReformatCodeAction : CodeCleanupActionBase {
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected virtual bool get_SaveProfileAsRecentlyUsed();
+    protected virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "AutoIndentLinesActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ReindentFormatCodeAction : SpecificReformatCodeActionBase {
+}
+[ActionAttribute("Silent CleanupModifiedFiles", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "SilentCleanupRecentlyModifiedFilesActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.SilentCleanupModifiedFilesAction : CleanupModifiedFilesActionBase {
+    public bool SilentCleanup { get; }
+    public virtual bool get_SilentCleanup();
+}
+[ActionAttribute("SilentCleanupOpenFiles", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "SilentCleanupOpenFilesActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.SilentCleanupOpenFilesAction : CleanupOpenFilesActionBase {
+    public bool SilentCleanup { get; }
+    public virtual bool get_SilentCleanup();
+}
+[ActionAttribute("SilentCleanupCode", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "SilentCleanupCodeActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.SilentCodeCleanupAction : SilentCodeCleanupActionBase {
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected virtual bool get_SaveProfileAsRecentlyUsed();
+    protected virtual CodeCleanupProfile GetProfileInteractive(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup.SilentCodeCleanupActionBase : CodeCleanupActionBase {
+    protected sealed virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+    protected abstract virtual CodeCleanupProfile GetProfileInteractive(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "SpaciousFormatActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.SpaciousFormatCodeAction : SpecificReformatCodeActionBase {
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup.SpecificReformatCodeActionBase : CodeCleanupActionBase {
+    private CodeFormatProfile myCodeFormatProfile;
+    protected bool SaveProfileAsRecentlyUsed { get; }
+    protected SpecificReformatCodeActionBase(CodeFormatProfile codeFormatProfile);
+    protected sealed virtual bool get_SaveProfileAsRecentlyUsed();
+    protected sealed virtual CodeCleanupProfile GetProfile(CodeCleanupFilesCollector cleanupFilesCollector);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "StrictFormatActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.StrictFormatCodeAction : SpecificReformatCodeActionBase {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupButtonProvider : DefaultButtonProviderBase {
+    private ICollectionEditItemViewModelFactory myCollectionEditItemViewModelFactory;
+    private static DefaultButtonProviderCaptions ourButtonProviderCaptions;
+    public CodeCleanupButtonProvider(Lifetime lifetime, IProperty`1<ICollectionEditItemViewModel> selectedItemProperty, ObservableCollection`1<ICollectionEditItemViewModel> items, ICollectionEditItemViewModelFactory collectionEditItemViewModelFactory);
+    private static CodeCleanupButtonProvider();
+    protected virtual void AddButtonHandler();
+    protected virtual void EditButtonHandler();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupButtonProviderFactory : object {
+    private Lifetime myLifetime;
+    private ICollectionEditItemViewModelFactory myCollectionEditItemViewModelFactory;
+    public CodeCleanupButtonProviderFactory(Lifetime lifetime, ICollectionEditItemViewModelFactory collectionEditItemViewModelFactory);
+    public sealed virtual IButtonProvider GetButtonProvider(ObservableCollection`1<ICollectionEditItemViewModel> items, IProperty`1<ICollectionEditItemViewModel> selectedItemProperty, IProperty`1<IEnumerable`1<ICollectionEditItemViewModel>> selectedMultipleItemsProperty);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupItemViewModel : ObservableObject {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupProfilePropertiesManager : object {
+    private Lifetime myLifetime;
+    private ProfileSettingsSaver myProfileSettingsSaver;
+    private CodeCleanupProfile myCurrentProfile;
+    private bool isChangingProfile;
+    private List`1<Action> myUpdateValueActions;
+    public CodeCleanupProfilePropertiesManager(Lifetime lifetime, ProfileSettingsSaver profileSettingsSaver);
+    public void AddSimpleProperty(IProperty`1<T> valueProperty, CodeCleanupSingleOptionDescriptor descriptor);
+    public void AddCompoundProperty(IProperty`1<T> valueProperty, CodeCleanupSingleOptionDescriptor descriptor, PropertyInfo property);
+    public void RefreshProperties(CodeCleanupProfile currentProfile);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupSeverityItemViewModel : ObservableObject {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.CodeCleanupViewModel : ObservableObject {
+    [CompilerGeneratedAttribute]
+private StringCollectionEditViewModel <ProfilesViewModel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RichText <SelectedProfileSettingsText>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<OptionsFilterResult> <SearchFilter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ObservableCollection`1<ITreeElementViewModel> <CodeCleanupItems>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SilentCleanupViewModel <SilentCleanupViewModel>k__BackingField;
+    public StringCollectionEditViewModel ProfilesViewModel { get; }
+    public RichText SelectedProfileSettingsText { get; }
+    public IProperty`1<OptionsFilterResult> SearchFilter { get; public set; }
+    public ObservableCollection`1<ITreeElementViewModel> CodeCleanupItems { get; }
+    public SilentCleanupViewModel SilentCleanupViewModel { get; public set; }
+    public bool IsProfileSelected { get; }
+    public CodeCleanupViewModel(Lifetime lifetime, StringCollectionEditViewModel profilesViewModel, SilentCleanupViewModel silentCleanupViewModel, IEnumerable`1<ITreeElementViewModel> codeCleanupItems, string selectedProfileSettingsText, CodeCleanupProfilePropertiesManager codeCleanupProfilePropertiesManager, IEnumerable`1<CodeCleanupProfile> profiles, IProperty`1<OptionsFilterResult> searchFilter);
+    [CompilerGeneratedAttribute]
+public StringCollectionEditViewModel get_ProfilesViewModel();
+    [CompilerGeneratedAttribute]
+public RichText get_SelectedProfileSettingsText();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<OptionsFilterResult> get_SearchFilter();
+    [CompilerGeneratedAttribute]
+public void set_SearchFilter(IProperty`1<OptionsFilterResult> value);
+    [CompilerGeneratedAttribute]
+public ObservableCollection`1<ITreeElementViewModel> get_CodeCleanupItems();
+    [CompilerGeneratedAttribute]
+public SilentCleanupViewModel get_SilentCleanupViewModel();
+    [CompilerGeneratedAttribute]
+public void set_SilentCleanupViewModel(SilentCleanupViewModel value);
+    public bool get_IsProfileSelected();
+    public sealed virtual IFilterDescriptor GetFilter();
+}
+public interface JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.ITreeElementViewModel {
+    public IEnumerable`1<ITreeElementViewModel> Children { get; }
+    public abstract virtual IEnumerable`1<ITreeElementViewModel> get_Children();
+    public abstract virtual string GetDescription();
+}
+public interface JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.ITreeItemValueViewModel {
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.ProfileSettingsSaver : object {
+    private IEnumerable`1<CodeCleanupProfile> myProfiles;
+    private OptionsSettingsSmartContext myOptionsSettingsSmartContext;
+    private CodeCleanupSettingsComponent myCodeCleanupSettings;
+    public ProfileSettingsSaver(IEnumerable`1<CodeCleanupProfile> profiles, OptionsSettingsSmartContext optionsSettingsSmartContext, CodeCleanupSettingsComponent codeCleanupSettings);
+    public void SaveSettings();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.SilentCleanupViewModel : ObservableObject {
+    [CompilerGeneratedAttribute]
+private RichText <Caption>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <SilentCleanupProfileNameProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ObservableCollection`1<string> <PossibleProfileNames>k__BackingField;
+    public RichText Caption { get; }
+    public IProperty`1<string> SilentCleanupProfileNameProperty { get; }
+    public ObservableCollection`1<string> PossibleProfileNames { get; }
+    public SilentCleanupViewModel(Lifetime lifetime, string silentCleanupProfileName, string caption);
+    [CompilerGeneratedAttribute]
+public RichText get_Caption();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_SilentCleanupProfileNameProperty();
+    [CompilerGeneratedAttribute]
+public ObservableCollection`1<string> get_PossibleProfileNames();
+    public void UpdatePossibleProfileNames(IEnumerable`1<string> profileNames);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeBoolItemValueViewModel : TreeItemValueViewModel`1<bool> {
+    public TreeBoolItemValueViewModel(IProperty`1<bool> value);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeCategoryViewModel : TreeItemBaseViewModel {
+    public TreeCategoryViewModel(string description, IEnumerable`1<ITreeElementViewModel> children);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeItemBaseViewModel : ObservableObject {
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITreeItemValueViewModel <EditControl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<ITreeElementViewModel> <Children>k__BackingField;
+    public string Description { get; }
+    public ITreeItemValueViewModel EditControl { get; }
+    public IEnumerable`1<ITreeElementViewModel> Children { get; }
+    public TreeItemBaseViewModel(string description, ITreeItemValueViewModel editControl, IEnumerable`1<ITreeElementViewModel> children);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public ITreeItemValueViewModel get_EditControl();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<ITreeElementViewModel> get_Children();
+    public sealed virtual string GetDescription();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeItemRecordViewModel : TreeItemBaseViewModel {
+    public TreeItemRecordViewModel(string description, ITreeItemValueViewModel editControl);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeItemValueViewModel`1 : ObservableObject {
+    [CompilerGeneratedAttribute]
+private IProperty`1<T> <Value>k__BackingField;
+    public IProperty`1<T> Value { get; }
+    protected TreeItemValueViewModel`1(IProperty`1<T> value);
+    [CompilerGeneratedAttribute]
+public IProperty`1<T> get_Value();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ViewModel.TreeStringItemValueViewModel : TreeItemValueViewModel`1<string> {
+    public TreeStringItemValueViewModel(IProperty`1<string> value);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup.ZoneMarker : object {
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Commands.Command`1 : object {
+    [CompilerGeneratedAttribute]
+private EventHandler CanExecuteChanged;
+    private sealed virtual override bool System.Windows.Input.ICommand.CanExecute(object p);
+    private sealed virtual override void System.Windows.Input.ICommand.Execute(object parameter);
+    protected virtual bool CanExecute(TParameter parameter);
+    protected abstract virtual void Execute(TParameter parameter);
+    protected virtual void RaiseCanExecuteChanged();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_CanExecuteChanged(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_CanExecuteChanged(EventHandler value);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Commands.DelegateCommand : Command`1<object> {
+    [NotNullAttribute]
+private Action`1<object> myAction;
+    [CanBeNullAttribute]
+private Func`2<object, bool> myCanExecute;
+    public DelegateCommand(Action`1<object> action, Func`2<object, bool> canExecute);
+    protected virtual void Execute(object parameter);
+    protected virtual bool CanExecute(object parameter);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Common.CleanupViewModel : AAutomation {
+    [NotNullAttribute]
+private LifetimeDefinition myLifetimeDefinition;
+    [NotNullAttribute]
+protected LifetimeDefinition LifetimeDefinition { get; }
+    internal Lifetime Lifetime { get; }
+    protected CleanupViewModel(Lifetime lifetime);
+    protected LifetimeDefinition get_LifetimeDefinition();
+    internal Lifetime get_Lifetime();
+    public void Terminate();
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Common.CleanupViewModel`1 : CleanupViewModel {
+    [CanBeNullAttribute]
+private TInnerData myDataItem;
+    protected CleanupViewModel`1(Lifetime lifetime);
+    protected CleanupViewModel`1(TInnerData dataItem);
+    protected CleanupViewModel`1(Lifetime lifetime, TInnerData dataItem);
+    [CanBeNullAttribute]
+public TInnerData ToData();
+    protected void SetInnerData(TInnerData data);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Converters.BooleanConjuctionConverter : object {
+    public sealed virtual object Convert(Object[] values, Type targetType, object parameter, CultureInfo culture);
+    public sealed virtual Object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Converters.BooleanToVisibilityConjuctionConverter : object {
+    public sealed virtual object Convert(Object[] values, Type targetType, object parameter, CultureInfo culture);
+    public sealed virtual Object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture);
+}
+[ValueConversionAttribute("System.Boolean", "System.Boolean")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Converters.InvertBooleanConverter : object {
+    public sealed virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture);
+    public sealed virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
+}
+[ValueConversionAttribute("System.Boolean", "System.Windows.Visibility")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Converters.InvertBooleanToVisibilityConverter : object {
+    public sealed virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture);
+    public sealed virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
+}
+[ValueConversionAttribute("JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupProfileViewModel/ModificationState", "System.Windows.TextDecorationCollection")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Converters.ProfileStateToTextDecorationCollectionConverter : object {
+    public sealed virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture);
+    public sealed virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture);
+}
+public static class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Debug : object {
+    public static void Launch();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.Markup.DisplayNameExtension : MarkupExtension {
+    [CompilerGeneratedAttribute]
+private Type <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PropertyName>k__BackingField;
+    public Type Type { get; public set; }
+    public string PropertyName { get; public set; }
+    public DisplayNameExtension(string propertyName);
+    [CompilerGeneratedAttribute]
+public Type get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(Type value);
+    [CompilerGeneratedAttribute]
+public string get_PropertyName();
+    [CompilerGeneratedAttribute]
+public void set_PropertyName(string value);
+    public virtual object ProvideValue(IServiceProvider serviceProvider);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.BooleanCleanupTaskViewModel : CleanupTaskViewModel`1<bool> {
+    [CompilerGeneratedAttribute]
+private IProperty`1<Nullable`1<bool>> <IsEnabled>k__BackingField;
+    public IProperty`1<Nullable`1<bool>> IsEnabled { get; }
+    public BooleanCleanupTaskViewModel(Lifetime lifetime, CodeCleanupOptionDescriptor`1<bool> optionDescriptor, bool value, PsiLanguageType languageType);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<Nullable`1<bool>> get_IsEnabled();
+    public sealed virtual void ToggleValue();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupItemGroupModel : CleanupItemModel {
+    private CodeCleanupLanguage myLanguage;
+    private CodeCleanupGroup myGroup;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<CleanupItemModel> <Items>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<Nullable`1<bool>> <IsEnabled>k__BackingField;
+    public string Name { get; }
+    public CodeCleanupLanguage Language { get; }
+    public CodeCleanupGroup Group { get; }
+    public bool IsModified { get; }
+    public IReadOnlyList`1<CleanupItemModel> Items { get; }
+    public IProperty`1<Nullable`1<bool>> IsEnabled { get; }
+    public CleanupItemGroupModel(Lifetime lifetime, string name, IReadOnlyList`1<CleanupItemModel> items, CodeCleanupLanguage language, CodeCleanupGroup cleanupGroup);
+    [CompilerGeneratedAttribute]
+public virtual string get_Name();
+    public virtual CodeCleanupLanguage get_Language();
+    public virtual CodeCleanupGroup get_Group();
+    public virtual bool get_IsModified();
+    public virtual void MarkUnmodified();
+    public virtual void SetParentProfileViewModel(CleanupProfileViewModel owner);
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<CleanupItemModel> get_Items();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<Nullable`1<bool>> get_IsEnabled();
+    public sealed virtual void ToggleValue();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__0_0(PropertyChangedEventArgs`1<Nullable`1<bool>> args);
+    [CompilerGeneratedAttribute]
+private void <.ctor>g__OnChange|0_1();
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupItemModel : AAutomation {
+    public string Name { get; }
+    public CodeCleanupLanguage Language { get; }
+    public CodeCleanupGroup Group { get; }
+    public bool IsModified { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual CodeCleanupLanguage get_Language();
+    public abstract virtual CodeCleanupGroup get_Group();
+    public abstract virtual bool get_IsModified();
+    public abstract virtual void MarkUnmodified();
+    public abstract virtual void SetParentProfileViewModel(CleanupProfileViewModel owner);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupLanguageViewModel : CleanupItemGroupModel {
+    [CompilerGeneratedAttribute]
+private CodeCleanupLanguage <Language>k__BackingField;
+    public string LanguageName { get; }
+    public CodeCleanupLanguage Language { get; }
+    public CleanupLanguageViewModel(CodeCleanupLanguage language, Lifetime lifetime, IReadOnlyList`1<CleanupItemModel> items);
+    public string get_LanguageName();
+    [CompilerGeneratedAttribute]
+public virtual CodeCleanupLanguage get_Language();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupProfileNameService : object {
+    [NotNullAttribute]
+private HashSet`1<string> myProfilesNames;
+    public bool Add(string name);
+    public string EnsureUniqueName(string desiredName);
+    private static bool TryGetNumberSuffix(string desiredName, Int32& numbersuffix, String& pureName);
+    public void ClearKnownNames();
+    public bool IsValidName(string name);
+    public void Replace(string oldName, string newName);
+}
+[DefaultMemberAttribute("Item")]
+[DebuggerDisplayAttribute("{Name}")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupProfileViewModel : CleanupViewModel`1<CodeCleanupProfile> {
+    public Guid Uid;
+    [NotNullAttribute]
+private CleanupProfileNameService myProfileNameService;
+    [CanBeNullAttribute]
+private CleanupToolViewModel myOwner;
+    private ICommand mySwitchToEditModeCommand;
+    private ICommand mySwitchFromEditModeCommand;
+    private ICommand mySwitchToRenamingModeCommand;
+    private ICommand mySaveSwitchFromRenamingModeCommand;
+    private ICommand myDiscardSwitchFromRenamingModeCommand;
+    private ICommand mySetAsDefaultForSilentCleanupCommand;
+    [CompilerGeneratedAttribute]
+private List`1<CleanupItemModel> <Tasks>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<CodeCleanupSingleOptionDescriptor, object> <AdditionalData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsRecentlyUsed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<ModificationState> <StateProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsDefaultForSilentCleanupProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <NewName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsReadOnly>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsInEditingMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsInRenamingingMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsChanged>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsRemoved>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList <TaskGroups>k__BackingField;
+    public List`1<CleanupItemModel> Tasks { get; }
+    public Dictionary`2<CodeCleanupSingleOptionDescriptor, object> AdditionalData { get; }
+    public bool IsRecentlyUsed { get; }
+    private string System.ComponentModel.IDataErrorInfo.Error { get; }
+    [NotNullAttribute]
+public IProperty`1<ModificationState> StateProperty { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsDefaultForSilentCleanupProperty { get; }
+    [NotNullAttribute]
+public IProperty`1<string> Name { get; }
+    [NotNullAttribute]
+public IProperty`1<string> NewName { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsReadOnly { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsInEditingMode { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsInRenamingingMode { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsChanged { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> IsRemoved { get; }
+    public IList TaskGroups { get; }
+    public CleanupToolViewModel Owner { get; public set; }
+    public ICommand SwitchToEditModeCommand { get; }
+    public ICommand SwitchFromEditModeCommand { get; }
+    public ICommand SwitchToRenamingModeCommand { get; }
+    public ICommand SaveAndSwitchFromRenamingModeCommand { get; }
+    public ICommand DiscardAndSwitchFromRenamingModeCommand { get; }
+    public ICommand SetAsDefaultForSilentCleanupCommand { get; }
+    public string Item { get; }
+    public CleanupProfileViewModel(Lifetime lifetime, ModificationState modificationState, string name, CleanupProfileNameService profileNameService, CleanupItemModel[] cleanupTasks, Dictionary`2<CodeCleanupSingleOptionDescriptor, object> additionalData, bool isDefaultForSilentCleanupProperty, bool isReadOnly, bool isRecentlyUsed, CodeCleanupProfile profile);
+    private CleanupProfileViewModel(Lifetime lifetime, ModificationState modificationState, CodeCleanupProfile codeCleanupProfile, CleanupItemModel[] tasks, Dictionary`2<CodeCleanupSingleOptionDescriptor, object> additionalData, CleanupProfileNameService profileNameService, bool isDefaultForSilentCleanupProperty, bool isRecentlyUsed, bool forceReadonly);
+    [CompilerGeneratedAttribute]
+public List`1<CleanupItemModel> get_Tasks();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<CodeCleanupSingleOptionDescriptor, object> get_AdditionalData();
+    [CompilerGeneratedAttribute]
+public bool get_IsRecentlyUsed();
+    private sealed virtual override string System.ComponentModel.IDataErrorInfo.get_Error();
+    private void SetCallbacksToProfilesTasks();
+    [CompilerGeneratedAttribute]
+public IProperty`1<ModificationState> get_StateProperty();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsDefaultForSilentCleanupProperty();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_Name();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_NewName();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsReadOnly();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsInEditingMode();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsInRenamingingMode();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsChanged();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsRemoved();
+    [CompilerGeneratedAttribute]
+public IList get_TaskGroups();
+    private static List`1<CleanupItemModel> GroupTasks(Lifetime lifetime, IEnumerable`1<CleanupItemModel> tasks, bool languageFirst);
+    public CleanupToolViewModel get_Owner();
+    public void set_Owner(CleanupToolViewModel value);
+    internal void SetModified();
+    private void Initialize();
+    public void MarkTasksUnmodified();
+    public ICommand get_SwitchToEditModeCommand();
+    public ICommand get_SwitchFromEditModeCommand();
+    public ICommand get_SwitchToRenamingModeCommand();
+    public ICommand get_SaveAndSwitchFromRenamingModeCommand();
+    public ICommand get_DiscardAndSwitchFromRenamingModeCommand();
+    public ICommand get_SetAsDefaultForSilentCleanupCommand();
+    [NotNullAttribute]
+internal static CleanupProfileViewModel Existing(Lifetime lifetime, CodeCleanupProfile codeCleanupProfile, CleanupItemModel[] cleanupTasks, CleanupProfileNameService profileNameService, bool isDefaultForSilentCleanup, bool isRecentlyUsed, Dictionary`2<CodeCleanupSingleOptionDescriptor, object> additionalData, bool forceReadonly);
+    [NotNullAttribute]
+internal static CleanupProfileViewModel NewEmpty(Lifetime lifetime, string name, CodeCleanupSettingsComponent codeCleanupSettings, CleanupProfileNameService profileNameService);
+    [NotNullAttribute]
+internal static CleanupProfileViewModel NewFull(Lifetime lifetime, string name, CodeCleanupSettingsComponent codeCleanupSettings, CleanupProfileNameService profileNameService);
+    [NotNullAttribute]
+internal static CleanupProfileViewModel NewCopy(Lifetime lifetime, CleanupProfileViewModel source, string name, CodeCleanupSettingsComponent codeCleanupSettings, CleanupProfileNameService profileNameService);
+    private static CleanupProfileViewModel New(Lifetime lifetime, string name, CodeCleanupSettingsComponent codeCleanupSettings, CleanupProfileNameService profileNameService, ProfileTasksInitializationKind initializationKind);
+    internal void SetProfile(CodeCleanupProfile codeCleanupProfile);
+    public sealed virtual string get_Item(string columnName);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__20_2(PropertyChangedEventArgs`1<ModificationState> args);
+    [CompilerGeneratedAttribute]
+private void <get_SwitchToEditModeCommand>b__61_0(object o);
+    [CompilerGeneratedAttribute]
+private bool <get_SwitchToEditModeCommand>b__61_1(object o);
+    [CompilerGeneratedAttribute]
+private void <get_SwitchFromEditModeCommand>b__63_0(object o);
+    [CompilerGeneratedAttribute]
+private bool <get_SwitchFromEditModeCommand>b__63_1(object o);
+    [CompilerGeneratedAttribute]
+private void <get_SwitchToRenamingModeCommand>b__65_0(object o);
+    [CompilerGeneratedAttribute]
+private bool <get_SwitchToRenamingModeCommand>b__65_1(object o);
+    [CompilerGeneratedAttribute]
+private void <get_SaveAndSwitchFromRenamingModeCommand>b__67_0(object o);
+    [CompilerGeneratedAttribute]
+private void <get_DiscardAndSwitchFromRenamingModeCommand>b__69_0(object o);
+    [CompilerGeneratedAttribute]
+private bool <get_DiscardAndSwitchFromRenamingModeCommand>b__69_1(object o);
+    [CompilerGeneratedAttribute]
+private void <get_SetAsDefaultForSilentCleanupCommand>b__71_0(object o);
+}
+[ExtensionAttribute]
+internal static class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupProfileViewModelExtensions : object {
+    [ExtensionAttribute]
+[NotNullAttribute]
+internal static CodeCleanupProfile SaveProfileChanges(CleanupProfileViewModel cleanupProfileViewModel);
+    [ExtensionAttribute]
+[NotNullAttribute]
+internal static CodeCleanupProfile SaveNewProfile(CleanupProfileViewModel cleanupProfileViewModel, CodeCleanupSettingsComponent cleanupSettingsComponent);
+    [NotNullAttribute]
+private static CodeCleanupProfile SaveProfileViewModel(CleanupProfileViewModel cleanupProfileViewModel, bool force);
+    [CompilerGeneratedAttribute]
+internal static void <SaveProfileViewModel>g__SaveTasks|2_0(IEnumerable`1<CleanupItemModel> tasks, <>c__DisplayClass2_0& );
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupScopeViewModel : object {
+    [CompilerGeneratedAttribute]
+private string <ScopeTitle>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ScopeKind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JetHashSet`1<PsiLanguageType> <ScopeLanguages>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ActionScope <OriginType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FileName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DirectoryName>k__BackingField;
+    [CanBeNullAttribute]
+public string ScopeTitle { get; }
+    [NotNullAttribute]
+public string ScopeKind { get; }
+    [CanBeNullAttribute]
+public JetHashSet`1<PsiLanguageType> ScopeLanguages { get; }
+    public ActionScope OriginType { get; private set; }
+    [CanBeNullAttribute]
+public string FileName { get; private set; }
+    [CanBeNullAttribute]
+public string DirectoryName { get; private set; }
+    public CleanupScopeViewModel(string scopeTitle, string scopeKind, JetHashSet`1<PsiLanguageType> scopeLanguages);
+    [CompilerGeneratedAttribute]
+public string get_ScopeTitle();
+    [CompilerGeneratedAttribute]
+public string get_ScopeKind();
+    [CompilerGeneratedAttribute]
+public JetHashSet`1<PsiLanguageType> get_ScopeLanguages();
+    [CompilerGeneratedAttribute]
+public ActionScope get_OriginType();
+    [CompilerGeneratedAttribute]
+private void set_OriginType(ActionScope value);
+    [CompilerGeneratedAttribute]
+public string get_FileName();
+    [CompilerGeneratedAttribute]
+private void set_FileName(string value);
+    [CompilerGeneratedAttribute]
+public string get_DirectoryName();
+    [CompilerGeneratedAttribute]
+private void set_DirectoryName(string value);
+    [NotNullAttribute]
+public static CleanupScopeViewModel DetermineScope(CodeCleanupFilesCollector cleanupFilesCollector, DocumentManager documentManager);
+    private static CleanupScopeViewModel DetermineScope(CodeCleanupFilesCollector cleanupFilesCollector, DocumentManager documentManager, ActionScope actionScope);
+}
+[DebuggerDisplayAttribute("{LanguageName}: "{Name}"")]
+public abstract class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupTaskViewModel : CleanupItemModel {
+    [CanBeNullAttribute]
+protected CleanupProfileViewModel OwnerProfile;
+    [CompilerGeneratedAttribute]
+private PsiLanguageType <LanguageType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CodeCleanupSingleOptionDescriptor <Descriptor>k__BackingField;
+    public string Name { get; }
+    public CodeCleanupLanguage Language { get; }
+    public CodeCleanupGroup Group { get; }
+    [CanBeNullAttribute]
+public PsiLanguageType LanguageType { get; }
+    [NotNullAttribute]
+public string LanguageName { get; }
+    [NotNullAttribute]
+public CodeCleanupSingleOptionDescriptor Descriptor { get; }
+    [NotNullAttribute]
+public IUntypedProperty ValueUntyped { get; }
+    protected CleanupTaskViewModel(CodeCleanupSingleOptionDescriptor codeCleanupOptionDescriptor, PsiLanguageType languageType);
+    public virtual string get_Name();
+    public virtual CodeCleanupLanguage get_Language();
+    public virtual CodeCleanupGroup get_Group();
+    [CompilerGeneratedAttribute]
+public PsiLanguageType get_LanguageType();
+    public string get_LanguageName();
+    [CompilerGeneratedAttribute]
+public CodeCleanupSingleOptionDescriptor get_Descriptor();
+    public abstract virtual IUntypedProperty get_ValueUntyped();
+    public virtual void SetParentProfileViewModel(CleanupProfileViewModel owner);
+}
+[DebuggerDisplayAttribute("{LanguageName}: "{Name}" ({Value})")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupTaskViewModel`1 : CleanupTaskViewModel {
+    private TValue myInitialValue;
+    [CompilerGeneratedAttribute]
+private IProperty`1<TValue> <Value>k__BackingField;
+    [NotNullAttribute]
+public IProperty`1<TValue> Value { get; }
+    public bool IsModified { get; }
+    public CodeCleanupOptionDescriptor`1<TValue> Descriptor { get; }
+    public IUntypedProperty ValueUntyped { get; }
+    public CleanupTaskViewModel`1(Lifetime lifetime, CodeCleanupOptionDescriptor`1<TValue> optionDescriptor, TValue value, PsiLanguageType languageType);
+    [CompilerGeneratedAttribute]
+public IProperty`1<TValue> get_Value();
+    public virtual bool get_IsModified();
+    public virtual void MarkUnmodified();
+    public CodeCleanupOptionDescriptor`1<TValue> get_Descriptor();
+    public virtual IUntypedProperty get_ValueUntyped();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__1_0();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupTaskViewModelFactory : object {
+    public static CleanupItemModel NewCleanupTask(Lifetime lifetime, CodeCleanupOptionDescriptor codeCleanupOptionDescriptor, CodeCleanupProfile codeCleanupProfile, PsiLanguageType psiLanguageType);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupToolViewModel : CleanupViewModel {
+    [CanBeNullAttribute]
+private CleanupToolViewModelFactory myViewModelFactory;
+    [CanBeNullAttribute]
+private IContextBoundSettingsStore myContextBoundSettingsStore;
+    [NotNullAttribute]
+private CodeCleanupSettingsComponent myCleanupSettingsComponent;
+    [NotNullAttribute]
+private ObservableCollection`1<CleanupProfileViewModel> myProfiles;
+    [NotNullAttribute]
+private CleanupProfileNameService myProfileNameService;
+    [CompilerGeneratedAttribute]
+private IProperty`1<CleanupProfileViewModel> <SelectedCleanupProfile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <CleanupProfileIsSelected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <HasUnsavedChangesProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SelectingSilentCleanupProfile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AutoSave>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CleanupScopeViewModel <Scope>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <AddEmptyProfileCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <AddFullProfileCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <RemoveSelectedProfileCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <DuplicateSelectedProfileCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <SaveChangesCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <SaveChangesToCommand>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <DiscardChangesCommand>k__BackingField;
+    [NotNullAttribute]
+public ObservableCollection`1<CleanupProfileViewModel> Profiles { get; }
+    [NotNullAttribute]
+public IProperty`1<CleanupProfileViewModel> SelectedCleanupProfile { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> CleanupProfileIsSelected { get; }
+    public IProperty`1<bool> HasUnsavedChangesProperty { get; private set; }
+    public bool SelectingSilentCleanupProfile { get; }
+    public bool AutoSave { get; public set; }
+    [CanBeNullAttribute]
+public CleanupScopeViewModel Scope { get; }
+    public ICommand AddEmptyProfileCommand { get; private set; }
+    public ICommand AddFullProfileCommand { get; private set; }
+    public ICommand RemoveSelectedProfileCommand { get; private set; }
+    public ICommand DuplicateSelectedProfileCommand { get; private set; }
+    public ICommand SaveChangesCommand { get; private set; }
+    public ICommand SaveChangesToCommand { get; private set; }
+    public ICommand DiscardChangesCommand { get; private set; }
+    public CleanupToolViewModel(Lifetime lifetime, bool selectingSilentCleanupProfile, CleanupProfileViewModel[] cleanupProfilesList, CleanupToolViewModelFactory viewModelFactory, IContextBoundSettingsStore contextBoundSettingsStore, CodeCleanupSettingsComponent cleanupSettingsComponent, CleanupProfileNameService cleanupProfileNameService, CleanupScopeViewModel cleanupScope);
+    private CleanupProfileViewModel GetPreselectedProfile();
+    public ObservableCollection`1<CleanupProfileViewModel> get_Profiles();
+    [CompilerGeneratedAttribute]
+public IProperty`1<CleanupProfileViewModel> get_SelectedCleanupProfile();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_CleanupProfileIsSelected();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_HasUnsavedChangesProperty();
+    [CompilerGeneratedAttribute]
+private void set_HasUnsavedChangesProperty(IProperty`1<bool> value);
+    [CompilerGeneratedAttribute]
+public bool get_SelectingSilentCleanupProfile();
+    [CompilerGeneratedAttribute]
+public bool get_AutoSave();
+    [CompilerGeneratedAttribute]
+public void set_AutoSave(bool value);
+    [CompilerGeneratedAttribute]
+public CleanupScopeViewModel get_Scope();
+    [CompilerGeneratedAttribute]
+public ICommand get_AddEmptyProfileCommand();
+    [CompilerGeneratedAttribute]
+private void set_AddEmptyProfileCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_AddFullProfileCommand();
+    [CompilerGeneratedAttribute]
+private void set_AddFullProfileCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_RemoveSelectedProfileCommand();
+    [CompilerGeneratedAttribute]
+private void set_RemoveSelectedProfileCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_DuplicateSelectedProfileCommand();
+    [CompilerGeneratedAttribute]
+private void set_DuplicateSelectedProfileCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_SaveChangesCommand();
+    [CompilerGeneratedAttribute]
+private void set_SaveChangesCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_SaveChangesToCommand();
+    [CompilerGeneratedAttribute]
+private void set_SaveChangesToCommand(ICommand value);
+    [CompilerGeneratedAttribute]
+public ICommand get_DiscardChangesCommand();
+    [CompilerGeneratedAttribute]
+private void set_DiscardChangesCommand(ICommand value);
+    private void DuplicateSelectedProfileAction();
+    private void AddFullProfileAction();
+    private void AddEmptyProfileAction();
+    private void SaveChangesAction();
+    private void DiscardChangesAction();
+    private void InitializeCommandsAndProperties();
+    private void RefreshProfilesList();
+    private void ProfilesOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs);
+    private void SubscribeToProfileChanges(IEnumerable cleanupProfiles);
+    private static void TerminateProfiles(IEnumerable cleanupProfiles);
+    private void OnProfileStateChanged(PropertyChangedEventArgs`1<ModificationState> propertyChangedEventArgs);
+    private void OnProfileSetAsDefaultForSilentCleanup(PropertyChangedEventArgs`1<bool> propertyChangedEventArgs);
+    private void SaveChanges();
+    private void RemoveSelectedProfileAction();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.CleanupToolViewModelFactory : object {
+    [NotNullAttribute]
+private CodeCleanupSettingsComponent myCleanupSettingsComponent;
+    [NotNullAttribute]
+private CleanupProfileNameService myProfileNameService;
+    public CleanupToolViewModelFactory(CodeCleanupSettingsComponent cleanupSettingsComponent, CleanupProfileNameService profileNameService);
+    [NotNullAttribute]
+public CleanupToolViewModel InitializeToolViewModel(IContextBoundSettingsStore contextBoundSettingsStore, Lifetime lifetime, bool selectingSilentCleanupProfile, CleanupScopeViewModel cleanupScope);
+    [NotNullAttribute]
+public CleanupSettingViewModel InitializeSettingsViewModel(IContextBoundSettingsStoreLive contextBoundSettingsStore, Lifetime lifetime, CleanupScopeViewModel cleanupScope);
+    [NotNullAttribute]
+public CleanupFileListViewModel InitializeViewModelForFileList(Lifetime lifetime, string description, ISolution solution, IContextBoundSettingsStore contextBoundSettingsStore, IEnumerable`1<IProjectFile> fileList, bool allowToRemoveFiles, bool isSilentCleanup);
+    [NotNullAttribute]
+public CleanupProfileViewModel[] InitializeProfiles(Lifetime lifetime, IContextBoundSettingsStore contextBoundSettingsStore);
+    [NotNullAttribute]
+public CleanupProfileViewModel InitializeProfile(Lifetime lifetime, CodeCleanupProfile codeCleanupProfile, bool isDefaultForSilentCleanup, bool isRecentlyUsed, bool forceReadonly);
+    [NotNullAttribute]
+public static Dictionary`2<CodeCleanupSingleOptionDescriptor, object> InitializeAdditionalData(CodeCleanupProfile codeCleanupProfile, CodeCleanupSettingsComponent settingsComponent);
+    [NotNullAttribute]
+public static CleanupItemModel[] InitializeProfileTasks(Lifetime lifetime, CodeCleanupProfile codeCleanupProfile, CodeCleanupSettingsComponent codeCleanupSettings);
+    [NotNullAttribute]
+public static CleanupItemModel[] InitializeProfileTasks(Lifetime lifetime, CodeCleanupSettingsComponent codeCleanupSettings, ProfileTasksInitializationKind initializationKind);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CheckedFileCollectionModel : CheckedRichTextLiveTreeModel {
+    [CompilerGeneratedAttribute]
+private ISolution <Solution>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowToRemoveFiles>k__BackingField;
+    [NotNullAttribute]
+private IDictionary`2<CheckedRichTextLiveTreeNode, LifetimeDefinition> myNodesLifetimes;
+    [CompilerGeneratedAttribute]
+private BindableSetCollectionWithoutIndexTracking`1<object> <ItemsCollection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<IProjectFile> <RemovedItems>k__BackingField;
+    [NotNullAttribute]
+public ISolution Solution { get; }
+    public bool AllowToRemoveFiles { get; }
+    [NotNullAttribute]
+public BindableSetCollectionWithoutIndexTracking`1<object> ItemsCollection { get; }
+    [NotNullAttribute]
+public List`1<IProjectFile> RemovedItems { get; }
+    public CheckedFileCollectionModel(Lifetime lifetime, ISolution solution, IEnumerable`1<IProjectFile> fileList, bool allowToRemoveFiles);
+    [CompilerGeneratedAttribute]
+public ISolution get_Solution();
+    [CompilerGeneratedAttribute]
+public bool get_AllowToRemoveFiles();
+    [CompilerGeneratedAttribute]
+public BindableSetCollectionWithoutIndexTracking`1<object> get_ItemsCollection();
+    [CompilerGeneratedAttribute]
+public List`1<IProjectFile> get_RemovedItems();
+    protected virtual void OnChildAdded(ITreeModelNode parent, ITreeModelNode child);
+    protected virtual void OnChildRemoved(ITreeModelNode parent, ITreeModelNode child);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CheckedFileViewModel : object {
+    [CompilerGeneratedAttribute]
+private IProjectFile <File>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsChecked>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <Name>k__BackingField;
+    public IProjectFile File { get; }
+    public IProperty`1<bool> IsChecked { get; }
+    public IProperty`1<string> Name { get; }
+    public CheckedFileViewModel(IProjectFile file);
+    [CompilerGeneratedAttribute]
+public IProjectFile get_File();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsChecked();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_Name();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CheckedSourceFilePresenter : OccurrenceBrowserPresenter {
+    public CheckedSourceFilePresenter(ISolution solution, IOccurrenceBrowserPresenterContext occurrenceBrowserPresenterContext);
+    private void Present(CheckedFileViewModel value, IPresentableItem item, TreeModelNode structureelement, PresentationState state);
+}
+[ActionGroupAttribute("1", "10")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CleanupFileBrowserActionBarActionGroup : object {
+    public CleanupFileBrowserActionBarActionGroup(RemoveFromCleanupListAction removeFromCleanupListAction, Separator sep0, TreeModelBrowserExpandAllAction treeModelBrowserExpandAllAction, TreeModelBrowserCollapseAllAction treeModelBrowserCollapseAllAction, Separator sep1, CheckedTreeModelBrowserSelectAllAction selectAllAction, CheckedTreeModelBrowserClearSelectionAction clearSelectionAction, Separator sep2);
+}
+[ActionGroupAttribute("1", "10")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CleanupFileBrowserContextMenuActionGroup : object {
+    public CleanupFileBrowserContextMenuActionGroup(RemoveFromCleanupListAction removeFromCleanupListAction, Separator sep0);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CleanupFileBrowserDescriptor : LiveTreeModelBrowserDescriptor {
+    private GroupingManager myGroupingManager;
+    private ActionDefs myActionDefs;
+    [CompilerGeneratedAttribute]
+private CheckedFileCollectionModel <Automation>k__BackingField;
+    public CheckedFileCollectionModel Automation { get; }
+    public bool QuickSearchSupported { get; }
+    public PreviewSupport PreviewSupport { get; }
+    public TreeModel Model { get; }
+    public StructuredPresenter`2<TreeModelNode, IPresentableItem> Presenter { get; }
+    public LiveTreeGroupModel`1<object> TreeModel { get; }
+    protected LiveTreeModelGrouping`1[] Groupings { get; }
+    public string ActionBarID { get; }
+    public string ContextMenuID { get; }
+    public CleanupFileBrowserDescriptor(CheckedFileCollectionModel automation);
+    [CompilerGeneratedAttribute]
+public CheckedFileCollectionModel get_Automation();
+    public virtual bool get_QuickSearchSupported();
+    public virtual PreviewSupport get_PreviewSupport();
+    public virtual TreeModel get_Model();
+    public virtual StructuredPresenter`2<TreeModelNode, IPresentableItem> get_Presenter();
+    public virtual LiveTreeGroupModel`1<object> get_TreeModel();
+    protected virtual LiveTreeModelGrouping`1[] get_Groupings();
+    public virtual string get_ActionBarID();
+    public virtual string get_ContextMenuID();
+    public virtual bool Navigate(TreeModelNode node, PopupWindowContextSource windowContext, bool transferFocus, TabOptions options);
+}
+[ShellFeaturePartAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CleanupFileListGroupingProvider : object {
+    [NotNullAttribute]
+private static ProjectFileDefaultGroupProvider ourDefaultProvider;
+    private static TreeModelGrouping`1[] ourGroupings;
+    private static CleanupFileListGroupingProvider();
+    private sealed virtual override ICollection`1<TreeModelGrouping`1<CheckedFileViewModel>> JetBrains.ReSharper.Feature.Services.Tree.GroupingManagement.IGroupingProvider<JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CheckedFileViewModel>.GetGroupings(TreeModelBrowserDescriptorBase descriptor);
+    private sealed virtual override bool JetBrains.ReSharper.Feature.Services.Tree.GroupingManagement.IGroupingProvider<JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CheckedFileViewModel>.IsApplicable(TreeModelBrowserDescriptorBase descriptor);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.CleanupFileListViewModel : CleanupToolViewModel {
+    [CompilerGeneratedAttribute]
+private ISolution <Solution>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CheckedFileCollectionModel <FileCollection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <Description>k__BackingField;
+    [NotNullAttribute]
+public ISolution Solution { get; }
+    public CheckedFileCollectionModel FileCollection { get; public set; }
+    public IProperty`1<string> Description { get; }
+    public CleanupFileListViewModel(Lifetime lifetime, string description, ISolution solution, CleanupProfileViewModel[] cleanupProfilesList, CleanupToolViewModelFactory viewModelFactory, IContextBoundSettingsStore contextBoundSettingsStore, CodeCleanupSettingsComponent cleanupSettingsComponent, CleanupProfileNameService cleanupProfileNameService, IEnumerable`1<IProjectFile> fileList, bool allowToRemoveFiles, bool isSilentCleanup);
+    [CompilerGeneratedAttribute]
+public ISolution get_Solution();
+    [CompilerGeneratedAttribute]
+public CheckedFileCollectionModel get_FileCollection();
+    [CompilerGeneratedAttribute]
+public void set_FileCollection(CheckedFileCollectionModel value);
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_Description();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__10_0();
+}
+internal class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.ProjectFileDefaultGroupProvider : object {
+    public sealed virtual object ExtractGroupObject(CheckedFileViewModel item);
+}
+internal class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.ProjectFileDirectoryGroupProvider : object {
+    public sealed virtual object ExtractGroupObject(CheckedFileViewModel item);
+    public static object Extract(CheckedFileViewModel item);
+}
+internal class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.ProjectFileProjectStructureGroupProvider : object {
+    public sealed virtual object ExtractGroupObject(CheckedFileViewModel item);
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "MarkFilesAsCleanedUpActionText")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.FileList.RemoveFromCleanupListAction : object {
+    public sealed virtual bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate);
+    public sealed virtual void Execute(IDataContext context, DelegateExecute nextExecute);
+    private void CollectItems(TreeModelNode treeModelNode, List`1<CheckedFileViewModel> list);
+}
+public interface JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.ICleanupItemModel {
+    public string Name { get; }
+    [CanBeNullAttribute]
+public CodeCleanupLanguage Language { get; }
+    [CanBeNullAttribute]
+public CodeCleanupGroup Group { get; }
+    public bool IsModified { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual CodeCleanupLanguage get_Language();
+    public abstract virtual CodeCleanupGroup get_Group();
+    public abstract virtual bool get_IsModified();
+    public abstract virtual void MarkUnmodified();
+    public abstract virtual void SetParentProfileViewModel(CleanupProfileViewModel owner);
+}
+public interface JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.IToggleableCleanupItemModel {
+    public IProperty`1<Nullable`1<bool>> IsEnabled { get; }
+    public abstract virtual IProperty`1<Nullable`1<bool>> get_IsEnabled();
+    public abstract virtual void ToggleValue();
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.Options.CleanupSettingViewModel : CleanupToolViewModel {
+    public CleanupSettingViewModel(Lifetime lifetime, CleanupProfileViewModel[] cleanupProfilesList, CleanupToolViewModelFactory viewModelFactory, IContextBoundSettingsStoreLive contextBoundSettingsStore, CodeCleanupSettingsComponent cleanupSettingsComponent, CleanupProfileNameService cleanupProfileNameService, CleanupScopeViewModel cleanupScope);
+}
+[OptionsPageAttribute("CodeCleanupGeneralOptionsPage", "General", "JetBrains.Application.UI.Options.Options.ThemedIcons.OptionsThemedIcons/Options")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.Options.CodeCleanupGeneralOptionsPage : CustomSimpleOptionsPage {
+    public static string PID;
+    public CodeCleanupGeneralOptionsPage(Lifetime lifetime, OptionsPageContext optionsPageContext, OptionsSettingsSmartContext optionsSettingsSmartContext, IUIApplication environment);
+}
+[OptionsPageAttribute("CodeCleanupOptionsPage", "Profiles", "JetBrains.ReSharper.Feature.Services.Resources.AlteringFeatuThemedIcons/CodeCleanupOptionPage")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.Options.CodeCleanupOptionsPageViewModel : SimpleOptionsPage {
+    public static string PID;
+    [NotNullAttribute]
+private CleanupToolViewModelFactory myCleanupToolViewModelFactory;
+    [CanBeNullAttribute]
+private CleanupSettingViewModel myToolViewModel;
+    [NotNullAttribute]
+public CleanupSettingViewModel ToolViewModel { get; }
+    public CodeCleanupOptionsPageViewModel(Lifetime lifetime, OptionsSettingsSmartContext optionsSettingsSmartContext, CleanupToolViewModelFactory cleanupToolViewModelFactory);
+    public CleanupSettingViewModel get_ToolViewModel();
+    public virtual OptionsPageKeywords GetKeywords();
+    [CompilerGeneratedAttribute]
+internal static void <GetKeywords>g__CollectNames|6_1(IEnumerable`1<CleanupItemModel> items, <>c__DisplayClass6_0& );
+}
+[OptionsPageAttribute("CodeCleanupPage", "Code Cleanup", "JetBrains.ReSharper.Feature.Services.Resources.AlteringFeatuThemedIcons/CodeCleanupOptionPage")]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.Options.CodeCleanupPage : AEmptyOptionsPage {
+    public static string PID;
+}
+public enum JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.ProfileTasksInitializationKind : Enum {
+    public int value__;
+    public static ProfileTasksInitializationKind AsFull;
+    public static ProfileTasksInitializationKind AsReformatOnly;
+}
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ViewModels.StringCleanupTaskViewModel : CleanupTaskViewModel`1<string> {
+    public StringCleanupTaskViewModel(Lifetime lifetime, CodeCleanupOptionDescriptor`1<string> optionDescriptor, string value, PsiLanguageType languageType);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeCleanup2.ZoneMarker : object {
+}
+[OptionsPageAttribute("CSharpBlankLinesPage", "Blank Lines", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/BlankLines")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.BlankLinesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public BlankLinesPage(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IUIApplication environment, BlankLinesPageScheme schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.BlankLinesPageScheme : CSharpCodeStylePageSchema {
+    public string PageName { get; }
+    public BlankLinesPageScheme(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    private static void KeepSingleLinePropertiesFixup(IContextBoundSettingsStore store);
+}
+[OptionsPageAttribute("CSharpBracesLayoutPage", "Braces Layout", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/BracesLayout")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.BracesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public BracesPage(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IUIApplication environment, BracesPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.BracesPageSchema : BracesPageSchemaBase`1<CSharpFormatSettingsKey> {
+    public BracesPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.BracesPageSchemaBase`1 : CSharpCodeStylePageSchemaBase`1<TSettingsKey> {
+    public string PageName { get; }
+    public BracesPageSchemaBase`1(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    protected IEnumerable`1<ICodeStyleEntry> DoDescribe(bool forVirtualIndent);
+    private void InitializerFixup(IContextBoundSettingsStore store);
+}
+[OptionsPageAttribute("CSharpIndentStylePage", "Tabs, Indents, Alignment", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Indent")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.CSharpIndentStylePage : CodeStylePage {
+    public static string PID;
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public string Id { get; }
+    public CSharpIndentStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, CSharpIndentStylePageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.CSharpIndentStylePageSchema : CSharpIndentStylePageSchemaBase`1<CSharpFormatSettingsKey> {
+    public CSharpIndentStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+}
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.CSharpIndentStylePageSchemaBase`1 : IndentStylePageSchema`2<TSettingsKey, CSharpCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    public string PageName { get; }
+    public CSharpIndentStylePageSchemaBase`1(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+    public virtual string get_PageName();
+    protected virtual Tuple`3<string, PreviewParseType, Action`1<IContextBoundSettingsStore>> GetPreviewForTabAlignStyle();
+    protected virtual bool IncludeAlignSettingsInFirstCategory();
+    protected virtual string FirstCategoryDescription();
+    protected virtual void BuildFirstCategorySettings(SchemaBuilder<TSettingsKey, CSharpCodeStylePreview> builder);
+    protected virtual void Describe(SchemaBuilder<TSettingsKey, CSharpCodeStylePreview> builder);
+    private void IntAlignFixup(IContextBoundSettingsStore boundSettingsStore);
+    public static void KeepBreaksFixup(IContextBoundSettingsStore boundSettingsStore);
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.CSharpVirtualCodeStylePreview : CSharpCodeStylePreviewBase {
+    protected virtual ITreeNode FormatPreview(PreviewParseType type, IContextBoundSettingsStore boundSettingsStore, ITreeNode node, LanguageService service, IPsiModule psiModule, ICodeFormatter codeFormatter);
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.CSharpVirtualIndentStylePageSchema : CSharpIndentStylePageSchemaBase`1<CSharpVirtualFormatSettingsKey> {
+    public CSharpVirtualIndentStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    protected virtual IProperty`1<bool> BuildIsLanguageSupportEnabledProperty();
+    public virtual CodePreviewPreparator GetCodePreviewPreparator();
+}
+[OptionsPageAttribute("CSharpLineBreaksAndWrappingPage", "Line Breaks and Wrapping", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/LineBreaks")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.LineBreaksPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public LineBreaksPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, LineBreaksPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.LineBreaksPageSchema : CSharpCodeStylePageSchema {
+    public string PageName { get; }
+    public LineBreaksPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    private static void WrapLimitFixup(IContextBoundSettingsStore store);
+    private static void WrapLimitFixup2(IContextBoundSettingsStore store);
+}
+[OptionsPageAttribute("CSharpOtherPage", "Other", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Others")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.OthersPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public OthersPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, OthersPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.OthersPageSchema : CSharpCodeStylePageSchemaWithParts {
+    public string PageName { get; }
+    public OthersPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide, IEnumerable`1<OthersPageSchemaPart> othersPageSchemaParts);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> DescribeSelf();
+    private void DescribeSelf(SchemaBuilder<CSharpFormatSettingsKey, CSharpCodeStylePreview> builder);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.OthersPageSchemaPart : CSharpCodeStylePageSchemaPart {
+    protected OthersPageSchemaPart(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+}
+[OptionsPageAttribute("CSharpSpacesPage", "Spaces", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Spaces")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.SpacesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public SpacesPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, SpacesPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.SpacesPageSchema : CSharpCodeStylePageSchema {
+    public string PageName { get; }
+    public SpacesPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+}
+[OptionsPageAttribute("CSharpVirtualBracesLayoutPage", "Braces Layout", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/BracesLayout")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.VirtualBracesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public string LanguageSupportPageId { get; }
+    public string LanguageSupportPageName { get; }
+    public VirtualBracesPage(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IUIApplication environment, VirtualBracesPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+    public virtual string get_LanguageSupportPageId();
+    public virtual string get_LanguageSupportPageName();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.VirtualBracesPageSchema : BracesPageSchemaBase`1<CSharpVirtualFormatSettingsKey> {
+    public VirtualBracesPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    protected virtual IProperty`1<bool> BuildIsLanguageSupportEnabledProperty();
+    public virtual CodePreviewPreparator GetCodePreviewPreparator();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+}
+[OptionsPageAttribute("VirtualIndentStylePage", "Tabs, Indents, Alignment", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Indent")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.VirtualIndentStylePage : CodeStylePage {
+    public static string PID;
+    public bool ShowAutoDetectAndConfigureFormattingTip { get; }
+    public string LanguageSupportIsDisabledText { get; }
+    public string LanguageSupportPageId { get; }
+    public string LanguageSupportPageName { get; }
+    public string Id { get; }
+    public VirtualIndentStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, CSharpVirtualIndentStylePageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual bool get_ShowAutoDetectAndConfigureFormattingTip();
+    public virtual string get_LanguageSupportIsDisabledText();
+    public virtual string get_LanguageSupportPageId();
+    public virtual string get_LanguageSupportPageName();
+    public virtual string get_Id();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.CSharp.ZoneMarker : object {
+}
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[OptionsPageAttribute("CommonFormatter", "General Formatter Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.GeneralFormatterStylePage : BeSimpleOptionsPage {
+    public static string PID;
+    public GeneralFormatterStylePage(Lifetime lifetime, OptionsSettingsSmartContext optionsSettingsSmartContext, ProductConfigurations productConfigurations, OptionsPageContext optionsPageContext, IComponentContainer componentContainer);
+}
+[OptionsPageAttribute("VBBlankLinesPage", "Blank Lines", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/BlankLines")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.BlankLinesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public BlankLinesPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, BlankLinesPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.BlankLinesPageSchema : VBCodeStylePageSchema {
+    public string PageName { get; }
+    public BlankLinesPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+}
+[OptionsPageAttribute("VBLineBreaksPage", "Line Breaks and Wrapping", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/LineBreaks")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.LineBreaksPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public LineBreaksPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, LineBreaksPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.LineBreaksPageSchema : VBCodeStylePageSchema {
+    public string PageName { get; }
+    public LineBreaksPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    private static Action`1<IContextBoundSettingsStore> SetWrapLimitFixup(int limit);
+}
+[OptionsPageAttribute("VBOtherPage", "Other", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Others")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.OthersPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public OthersPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, OthersPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.OthersPageSchema : VBCodeStylePageSchema {
+    public string PageName { get; }
+    public OthersPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    private static void KeepBreaksFixup(IContextBoundSettingsStore settingsStore);
+}
+[OptionsPageAttribute("VBSpacesPage", "Spaces", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Spaces")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.SpacesPage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public SpacesPage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, SpacesPageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.SpacesPageSchema : VBCodeStylePageSchema {
+    public string PageName { get; }
+    public SpacesPageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+}
+internal abstract class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.VBCodeStylePageSchema : CodeStylePageSchema`2<VBFormatSettingsKey, VBCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    protected VBCodeStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.VBCodeStylePreview : CodePreviewPreparator {
+    public KnownLanguage Language { get; }
+    public ProjectFileType ProjectFileType { get; }
+    protected virtual ITreeNode Parse(IParser parser, PreviewParseType parseType);
+    public virtual KnownLanguage get_Language();
+    public virtual ProjectFileType get_ProjectFileType();
+}
+[OptionsPageAttribute("VBIndentStylePage", "Tabs and Indents", "JetBrains.ReSharper.Resources.Resources.Icons.PsiFeaturesUnsortedOptionsThemedIcons/Indent")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.VBIndentStylePage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public VBIndentStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, VBIndentStylePageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.VBIndentStylePageSchema : IndentStylePageSchema`2<VBFormatSettingsKey, VBCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    protected bool SupportsDeclarativeIndentEngine { get; }
+    public VBIndentStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+    protected virtual Pair`2<string, PreviewParseType> GetPreviewForIndents();
+    protected virtual bool get_SupportsDeclarativeIndentEngine();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeFormatter.VB.ZoneMarker : object {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CodePreviewSandBox : SandBox {
+    private ICSharpFile myDummyFile;
+    private static string Code;
+    public int LevelDelta { get; }
+    private CodePreviewSandBox(IPsiModule module);
+    public static void CreatePreviewSandBoxFor(ITreeNode node, IPsiModule psiModule);
+    public sealed virtual ISymbolTable AddGlobalDeclarations(ISymbolTable parentTable, int level, SymbolTableMode mode);
+    public sealed virtual int get_LevelDelta();
+}
+[OptionsPageAttribute("CSharpCodeStyle2", "Syntax Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/CodeStyle")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public CSharpCodeStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, CSharpCodeStylePageImplSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageImplSchema : CodeStylePageSchema`2<CSharpCodeStyleSettingsKey, CSharpCodeStyleStylePreview> {
+    private static string ArgumentsStylePreview;
+    public string PageName { get; }
+    public KnownLanguage Language { get; }
+    public bool IsAppliedOnCompletion { get; public set; }
+    public bool IsCompletionSettingEnabled { get; }
+    public CSharpCodeStylePageImplSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    public virtual KnownLanguage get_Language();
+    public virtual bool get_IsAppliedOnCompletion();
+    public virtual void set_IsAppliedOnCompletion(bool value);
+    public virtual bool get_IsCompletionSettingEnabled();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+    [CompilerGeneratedAttribute]
+internal static void <Describe>g__VarUsagePreviewFixup|11_0(IContextBoundSettingsStore store);
+    [CompilerGeneratedAttribute]
+private IValueEditorViewModel <Describe>b__11_4(IScalarSetting entry, Lifetime lifetime, IProperty`1<bool> isEnabled, ISettingsEntryConstraints constraints);
+    [CompilerGeneratedAttribute]
+private IValueEditorViewModel <Describe>b__11_11(IScalarSetting entry, Lifetime lifetime, IProperty`1<bool> isEnabled, ISettingsEntryConstraints constraints);
+}
+[LanguageAttribute("JetBrains.ReSharper.Psi.CSharp.CSharpLanguage", "16")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageProvider : object {
+    public sealed virtual string GetOptionsPageId();
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageSchema : CSharpCodeStylePageSchemaBase`1<CSharpFormatSettingsKey> {
+    protected CSharpCodeStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageSchemaBase`1 : CodeStylePageSchema`2<TSettingsKey, CSharpCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    protected CSharpCodeStylePageSchemaBase`1(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageSchemaPart : CodeStylePageSchemaPart`1<CSharpCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    protected CSharpCodeStylePageSchemaPart(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+}
+public abstract class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePageSchemaWithParts : CodeStylePageSchemaWithParts`2<CSharpFormatSettingsKey, CSharpCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    protected CSharpCodeStylePageSchemaWithParts(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide, IEnumerable`1<CodeStylePageSchemaPart`1<CSharpCodeStylePreview>> pageParts);
+    public virtual KnownLanguage get_Language();
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePreview : CSharpCodeStylePreviewBase {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStylePreviewBase : CodePreviewPreparator {
+    [NullableAttribute("2")]
+public KnownLanguage Language { get; }
+    [NullableAttribute("2")]
+public ProjectFileType ProjectFileType { get; }
+    protected virtual ITreeNode Parse(IParser parser, PreviewParseType parseType);
+    public virtual void PrepareText(ISolution solution, IDocument document, string text, PreviewParseType type, IContextBoundSettingsStore boundSettingsStore);
+    protected virtual void CreateSandbox(PreviewParseType type, ITreeNode node, IPsiModule psiModule);
+    protected virtual void ApplyCustomHighlighting(ISolution solution, IDocument document, ITreeNode node);
+    protected virtual IPsiModule CreatePsiModule(ISolution solution);
+    [NullableContextAttribute("2")]
+public virtual KnownLanguage get_Language();
+    [NullableContextAttribute("2")]
+public virtual ProjectFileType get_ProjectFileType();
+    [CompilerGeneratedAttribute]
+internal static bool <ApplyCustomHighlighting>g__IsKeyword|3_0(ITokenNode tokenNode);
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpCodeStyleStylePreview : CSharpCodeStylePreviewBase {
+    public bool PreviewCodeStyle { get; }
+    public virtual bool get_PreviewCodeStyle();
+    public virtual void PrepareText(ISolution solution, IDocument document, string text, PreviewParseType type, IContextBoundSettingsStore boundSettingsStore);
+    protected virtual ITreeNode FormatPreview(PreviewParseType type, IContextBoundSettingsStore boundSettingsStore, ITreeNode node, LanguageService service, IPsiModule psiModule, ICodeFormatter codeFormatter);
+}
+[OptionsPageAttribute("CsharpCodeStyle", "Formatting Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpFormattingStylePage : AEmptyOptionsPage {
+    public static string PID;
+}
+[OptionsPageAttribute("CSharpNamespaceImports", "Namespace Imports", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/UsingDirectives")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpNamespaceImportsPage : NamespaceImportsPageBase`1<CSharpUsingSettings> {
+    public static string PID;
+    protected PsiLanguageType Language { get; }
+    protected Expression`1<Func`2<CSharpUsingSettings, bool>> KeepNontrivialAlias { get; }
+    protected Expression`1<Func`2<CSharpUsingSettings, bool>> RemoveOnlyUnusedAliases { get; }
+    protected Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> KeepImports { get; }
+    protected Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> MandatoryImports { get; }
+    protected Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> NonRedundantNamespaces { get; }
+    protected string NonTrivialAliasExample { get; }
+    public CSharpNamespaceImportsPage(Lifetime lifetime, OptionsPageContext optionsPageContext, IconHostBase iconHost, OptionsSettingsSmartContext optionsSettingsSmartContext);
+    protected virtual PsiLanguageType get_Language();
+    protected virtual Expression`1<Func`2<CSharpUsingSettings, bool>> get_KeepNontrivialAlias();
+    protected virtual Expression`1<Func`2<CSharpUsingSettings, bool>> get_RemoveOnlyUnusedAliases();
+    protected virtual Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> get_KeepImports();
+    protected virtual Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> get_MandatoryImports();
+    protected virtual Expression`1<Func`2<CSharpUsingSettings, IIndexedEntry`2<string, string>>> get_NonRedundantNamespaces();
+    protected virtual string get_NonTrivialAliasExample();
+}
+[OptionsPageAttribute("CSharpVirtualFormattingStyle", "Virtual Formatting Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.CSharpVirtualFormattingStylePage : AEmptyOptionsPage {
+    public static string PID;
+    public string Id { get; }
+    public string LanguageName { get; }
+    public sealed virtual string get_Id();
+    public sealed virtual string get_LanguageName();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.CSharp.ZoneMarker : object {
+}
+[OptionsPageAttribute("VbnetCodeStyle2", "Syntax Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/CodeStyle")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.VB.VBCodeStylePage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public VBCodeStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, VBCodeStylePageImplSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.VB.VBCodeStylePageImplSchema : VBCodeStylePageSchema {
+    public string PageName { get; }
+    public VBCodeStylePageImplSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual IEnumerable`1<ICodeStyleEntry> Describe();
+}
+[OptionsPageAttribute("VbnetCodeStyle", "Formatting Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.VB.VBFormattingStylePage : AEmptyOptionsPage {
+    public static string PID;
+}
+[OptionsPageAttribute("VBNamespaceImports", "Namespace Imports", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/UsingDirectives")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.VB.VBNamespaceImportsPage : NamespaceImportsPageBase`1<VBImportSettings> {
+    public static string PID;
+    protected PsiLanguageType Language { get; }
+    protected Expression`1<Func`2<VBImportSettings, bool>> KeepNontrivialAlias { get; }
+    protected Expression`1<Func`2<VBImportSettings, bool>> RemoveOnlyUnusedAliases { get; }
+    protected Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> KeepImports { get; }
+    protected Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> MandatoryImports { get; }
+    protected Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> NonRedundantNamespaces { get; }
+    protected string NonTrivialAliasExample { get; }
+    public VBNamespaceImportsPage(Lifetime lifetime, OptionsPageContext optionsPageContext, IconHostBase iconHost, OptionsSettingsSmartContext optionsSettingsSmartContext);
+    protected virtual PsiLanguageType get_Language();
+    protected virtual Expression`1<Func`2<VBImportSettings, bool>> get_KeepNontrivialAlias();
+    protected virtual Expression`1<Func`2<VBImportSettings, bool>> get_RemoveOnlyUnusedAliases();
+    protected virtual Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> get_KeepImports();
+    protected virtual Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> get_MandatoryImports();
+    protected virtual Expression`1<Func`2<VBImportSettings, IIndexedEntry`2<string, string>>> get_NonRedundantNamespaces();
+    protected virtual string get_NonTrivialAliasExample();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.VB.ZoneMarker : object {
+}
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlCodeStyleBasePreview : CodePreviewPreparator {
+    public KnownLanguage Language { get; }
+    public ProjectFileType ProjectFileType { get; }
+    public virtual KnownLanguage get_Language();
+    public virtual ProjectFileType get_ProjectFileType();
+}
+[OptionsPageAttribute("XmlCodeStyle", "Formatting Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlCodeStylePage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public XmlCodeStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, XmlCodeStylePageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlCodeStylePageSchema : XmlCodeStylePageSchemaBase`2<XmlFormatterSettingsKey, XmlCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    public XmlCodeStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+    protected virtual void GetOtherSettings(SchemaBuilder<XmlFormatterSettingsKey, XmlCodeStylePreview> builder);
+}
+internal abstract class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlCodeStylePageSchemaBase`2 : IndentStylePageSchema`2<TKey, TPreview> {
+    public string PageName { get; }
+    protected XmlCodeStylePageSchemaBase`2(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual string get_PageName();
+    protected virtual Pair`2<string, PreviewParseType> GetPreviewForIndents();
+    protected virtual void Describe(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetOtherSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetGeneralSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetProcessingInstructionSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetTagHeaderSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetTagContentSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected virtual void GetAroundTagsSettings(SchemaBuilder<TKey, TPreview> builder);
+    protected static void KeepMyLinebreaksFixup(IContextBoundSettingsStore store);
+    protected static void WrapLimitFixup(IContextBoundSettingsStore store);
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlCodeStylePreview : XmlCodeStyleBasePreview {
+}
+[OptionsPageAttribute("XmlDocCodeStyle", "Formatting Style", "JetBrains.ReSharper.Feature.Services.Resources.FeaturesEnvironmentOptionsThemedIcons/FormattingStyle")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlDocCodeStylePage : CodeStylePage {
+    public static string PID;
+    public string Id { get; }
+    public XmlDocCodeStylePage(Lifetime lifetime, OptionsSettingsSmartContext smartContext, IUIApplication environment, XmlDocCodeStylePageSchema schema, CodeStylePreview preview, IComponentContainer container);
+    public virtual string get_Id();
+}
+[FormattingSettingsPresentationComponentAttribute("10")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlDocCodeStylePageSchema : XmlCodeStylePageSchemaBase`2<XmlDocFormatterSettingsKey, XmlDocCodeStylePreview> {
+    public KnownLanguage Language { get; }
+    public XmlDocCodeStylePageSchema(Lifetime lifetime, IContextBoundSettingsStoreLive smartContext, IValueEditorViewModelFactory itemViewModelFactory, IComponentContainer container, ISettingsToHide settingsToHide);
+    public virtual KnownLanguage get_Language();
+    protected virtual void GetAroundTagsSettings(SchemaBuilder<XmlDocFormatterSettingsKey, XmlDocCodeStylePreview> builder);
+}
+[CodePreviewPreparatorComponentAttribute("16")]
+internal class JetBrains.ReSharper.Features.Altering.CodeStyle.XML.XmlDocCodeStylePreview : XmlCodeStyleBasePreview {
+    public KnownLanguage Language { get; }
+    public virtual KnownLanguage get_Language();
+    protected virtual string GetFormattedResult(ITreeNode node, IContextBoundSettingsStore boundSettingsStore);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.CodeStyle.ZoneMarker : object {
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateAction_Text")]
+public class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateAction : GenerateActionBase`1<IGenerateWorkflowProvider> {
+    protected bool ShowMenuWithOneItem { get; }
+    protected virtual bool get_ShowMenuWithOneItem();
+}
+[ActionAttribute("Generate.Constructor", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateConstructorActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateConstructorAction : GenerateActionBase`1<GenerateConstructorWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.Deconstructor", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateDeconstructorActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateDeconstructorAction : GenerateActionBase`1<GenerateDeconstructorWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.Delegating", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateDelegatingMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateDelegatingAction : GenerateActionBase`1<GenerateDelegatingMembersWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.DisposePattern", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateDisposePatternActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateDisposePatternAction : GenerateActionBase`1<GenerateDisposePatternWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.EqualityComparer", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateEqualityComparerActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateEqualityComparerAction : GenerateActionBase`1<GenerateEqualityMembersWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.EqualityMembers", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateEqualityMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateEqualityMembersAction : GenerateActionBase`1<GenerateEqualityMembersWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateEventSubscriptionsActionText")]
+public class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateEventSubscriptionsAction : GenerateActionBase`1<GenerateEventSubscriptionWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.FormattingMembers", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateFormattingMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateFormattingMembersAction : GenerateActionBase`1<GenerateFormattingWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.Implementations", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "ImplementMissingMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateImplementationsAction : GenerateActionBase`1<IGenerateImplementationsWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.Overrides", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "OverrideMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateOverridesAction : GenerateActionBase`1<IGenerateOverridesWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.PartialMethods", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GeneratePartialMethodsActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GeneratePartialMethodsAction : GenerateActionBase`1<GeneratePartialMethodsWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.Properties", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GeneratePropertiesActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GeneratePropertiesAction : GenerateActionBase`1<GeneratePropertiesWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.ReadOnlyProperties", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateReadOnlyPropertiesActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateReadOnlyPropertiesAction : GenerateActionBase`1<GenerateReadOnlyPropertiesWorkflowProvider> {
+    protected bool ShowMenuWithOneItem { get; }
+    protected virtual bool get_ShowMenuWithOneItem();
+}
+[ActionAttribute("Generate.RelationalComparer", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateRelationalComparerActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateRelationalComparerAction : GenerateActionBase`1<GenerateRelationalComparerWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+[ActionAttribute("Generate.RelationalMembers", "JetBrains.ReSharper.Features.Altering.Resources.Strings", "GenerateRelationalMembersActionText")]
+internal class JetBrains.ReSharper.Features.Altering.Generate.Actions.GenerateRelationalMembersAction : GenerateActionBase`1<GenerateRelationalMembersWorkflowProvider> {
+    protected RichText Caption { get; }
+    protected virtual RichText get_Caption();
+}
+public class JetBrains.ReSharper.Features.Altering.NullChecking.CSharpEditableNullCheckingPatternViewModel : AAutomation {
+    [CompilerGeneratedAttribute]
+private IProperty`1<int> <Priority>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <PatternText>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <Example>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<PatternValidationResult> <ValidationResult>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <CanUseForAssertion>k__BackingField;
+    public IProperty`1<int> Priority { get; }
+    public string Name { get; }
+    [NotNullAttribute]
+public IProperty`1<string> PatternText { get; }
+    [NotNullAttribute]
+public IProperty`1<string> Example { get; }
+    [NotNullAttribute]
+public IProperty`1<PatternValidationResult> ValidationResult { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> CanUseForAssertion { get; }
+    public CSharpEditableNullCheckingPatternViewModel(Lifetime lifetime, string name, IProperty`1<int> priority, IProperty`1<string> patternText, IProperty`1<PatternValidationResult> validationResult, IProperty`1<bool> canUseForAssertion);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<int> get_Priority();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Name();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_PatternText();
+    [CompilerGeneratedAttribute]
+public IProperty`1<string> get_Example();
+    [CompilerGeneratedAttribute]
+public IProperty`1<PatternValidationResult> get_ValidationResult();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_CanUseForAssertion();
+}
+[OptionsPageAttribute("NullChecking", "Null checking", "JetBrains.ReSharper.Features.Altering.Resources.FeatureAlteringThemedIcons/NullChecking")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.ReSharper.Features.Altering.NullChecking.CSharpNullCheckingSettingsOptionsPage : CustomSimpleOptionsPage {
+    public static string PID;
+    public CSharpNullCheckingSettingsOptionsPage(Lifetime lifetime, OptionsSettingsSmartContext settingsStore, NullCheckPatternsManager nullCheckPatternsManager);
+}
+public class JetBrains.ReSharper.Features.Altering.NullChecking.CSharpNullCheckingSettingsViewModel : AAutomation {
+    [CompilerGeneratedAttribute]
+private ObservableCollection`1<ICSharpNullCheckingPatternViewModel> <Patterns>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<ICSharpNullCheckingPatternViewModel> <SelectedPattern>k__BackingField;
+    [NotNullAttribute]
+[ItemNotNullAttribute]
+public ObservableCollection`1<ICSharpNullCheckingPatternViewModel> Patterns { get; }
+    [NotNullAttribute]
+public IProperty`1<ICSharpNullCheckingPatternViewModel> SelectedPattern { get; }
+    [NotNullAttribute]
+public ICommand IncreasePriorityCommand { get; }
+    [NotNullAttribute]
+public ICommand DecreasePriorityCommand { get; }
+    public CSharpNullCheckingSettingsViewModel(Lifetime lifetime, OptionsSettingsSmartContext settingsStore, NullCheckPatternsManager nullCheckPatternsManager);
+    [CompilerGeneratedAttribute]
+public ObservableCollection`1<ICSharpNullCheckingPatternViewModel> get_Patterns();
+    [CompilerGeneratedAttribute]
+public IProperty`1<ICSharpNullCheckingPatternViewModel> get_SelectedPattern();
+    public ICommand get_IncreasePriorityCommand();
+    public ICommand get_DecreasePriorityCommand();
+    [NotNullAttribute]
+private static IProperty`1<int> GetPriority(NullCheckPatternDescriptor patternDescriptor, Lifetime lifetime, OptionsSettingsSmartContext settingsStore);
+    private bool CanIncreasePriority();
+    private bool CanDecreasePriority();
+    private void IncreasePriority();
+    private void DecreasePriority();
+    private void ChangePriority(bool isIncrease);
+}
+public class JetBrains.ReSharper.Features.Altering.NullChecking.CSharpReadOnlyNullCheckingPatternViewModel : AAutomation {
+    [CompilerGeneratedAttribute]
+private IProperty`1<int> <Priority>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Example>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PatternText>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CanUseForAssertion>k__BackingField;
+    public IProperty`1<int> Priority { get; }
+    public string Name { get; }
+    [NotNullAttribute]
+public string Example { get; }
+    [NotNullAttribute]
+public string PatternText { get; }
+    public bool CanUseForAssertion { get; }
+    public CSharpReadOnlyNullCheckingPatternViewModel(IProperty`1<int> priority, ReadOnlyNullCheckPatternAttribute patternAnnotation);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<int> get_Priority();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Name();
+    [CompilerGeneratedAttribute]
+public string get_Example();
+    [CompilerGeneratedAttribute]
+public string get_PatternText();
+    [CompilerGeneratedAttribute]
+public bool get_CanUseForAssertion();
+}
+public interface JetBrains.ReSharper.Features.Altering.NullChecking.ICSharpNullCheckingPatternViewModel {
+    [NotNullAttribute]
+public IProperty`1<int> Priority { get; }
+    [NotNullAttribute]
+public string Name { get; }
+    public abstract virtual IProperty`1<int> get_Priority();
+    public abstract virtual string get_Name();
+}
+[OptionsPageAttribute("FileHeaderTextPage", "File Header Text", "JetBrains.ReSharper.Feature.Services.Resources.AlteringFeatuThemedIcons/FileHeaderText")]
+public class JetBrains.ReSharper.Features.Altering.Options.FileHeaderTextOptionPage : BeSimpleOptionsPage {
+    private static string Open;
+    private static string Close;
+    public static string PID;
+    [NotNullAttribute]
+private BeTextControl myTextBox;
+    [NotNullAttribute]
+private IProperty`1<string> myFileHeaderText;
+    [NotNullAttribute]
+private IFileHeaderInjections myFileHeaderInjections;
+    public FileHeaderTextOptionPage(Lifetime lifetime, IThreading threading, OptionsPageContext optionsPageContext, OptionsSettingsSmartContext optionsSettingsSmartContext, IIconHost iconHost, IFileHeaderInjections fileHeaderInjections, ActivityTracking activityTracking, ITheming theming);
+    private void DoAddTemplateToText(string fieldName);
+    private void AddTemplateToText(string newFieldName);
+    public virtual OptionsPageKeywords GetKeywords();
+}
+public class JetBrains.ReSharper.Features.Altering.Options.FileHeaderVariablesModel : FromIndexed<string, string> {
+    public FileHeaderVariablesModel(Lifetime lifetime, GroupingEventHosts hosts, IContextBoundSettingsStore smartContext);
+    public virtual Entry<string, string> GetNewEntry();
+}
+[OptionsPageAttribute("MemberGenerator", "Members Generation", "JetBrains.ReSharper.Feature.Services.Resources.AlteringFeatuThemedIcons/GeneratedMembers")]
+public class JetBrains.ReSharper.Features.Altering.Options.MemberGenerationPage : BeSimpleOptionsPage {
+    public static string PID;
+    public MemberGenerationPage(Lifetime lifetime, OptionsPageContext optionsPageContext, OptionsSettingsSmartContext optionsSettingsSmartContext);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.Options.ZoneMarker : object {
+}
+public class JetBrains.ReSharper.Features.Altering.PostfixTemplates.PostfixTemplateItemViewModel : ObservableObject {
+    [NotNullAttribute]
+private PostfixTemplateMetadata myMetadata;
+    [NotNullAttribute]
+private PostfixTemplateAttribute myAnnotation;
+    [NotNullAttribute]
+private OptionsSettingsSmartContext mySettingsStore;
+    private bool myIsChecked;
+    [NotNullAttribute]
+public string TemplateName { get; }
+    [NotNullAttribute]
+public string Description { get; }
+    [NotNullAttribute]
+public string Example { get; }
+    public bool IsChecked { get; public set; }
+    public PostfixTemplateItemViewModel(PostfixTemplateMetadata metadata, OptionsSettingsSmartContext settingsStore);
+    public string get_TemplateName();
+    public string get_Description();
+    public string get_Example();
+    public bool get_IsChecked();
+    public void set_IsChecked(bool value);
+}
+public class JetBrains.ReSharper.Features.Altering.PostfixTemplates.PostfixTemplatesLanguageSettingsViewModel : ObservableObject {
+    private PostfixTemplatesManager myPostfixTemplatesManager;
+    private OptionsSettingsSmartContext mySettingsStore;
+    private PsiLanguageType myLanguage;
+    [CompilerGeneratedAttribute]
+private ObservableCollection`1<PostfixTemplateItemViewModel> <PostfixTemplateItems>k__BackingField;
+    public IEnumerable`1<string> Keywords { get; }
+    [NotNullAttribute]
+public string Header { get; }
+    public ObservableCollection`1<PostfixTemplateItemViewModel> PostfixTemplateItems { get; }
+    public PostfixTemplatesLanguageSettingsViewModel(PostfixTemplatesManager postfixTemplatesManager, OptionsSettingsSmartContext settingsStore, PsiLanguageType language);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Features.Altering.PostfixTemplates.PostfixTemplatesLanguageSettingsViewModel/<get_Keywords>d__5")]
+public IEnumerable`1<string> get_Keywords();
+    public string get_Header();
+    [CompilerGeneratedAttribute]
+public ObservableCollection`1<PostfixTemplateItemViewModel> get_PostfixTemplateItems();
+    public void InitializePostfixTemplateItems();
+    [CompilerGeneratedAttribute]
+private bool <InitializePostfixTemplateItems>b__11_0(PostfixTemplateMetadata x);
+    [CompilerGeneratedAttribute]
+private PostfixTemplateItemViewModel <InitializePostfixTemplateItems>b__11_2(PostfixTemplateMetadata x);
+}
+[OptionsPageAttribute("PostfixTemplates", "Postfix Templates", "JetBrains.ReSharper.Feature.Services.Resources.ServicesThemedIcons/SurroundTemplate")]
+public class JetBrains.ReSharper.Features.Altering.PostfixTemplates.PostfixTemplatesSettingsOptionsPage : CustomSimpleOptionsPage {
+    private static string PID;
+    public PostfixTemplatesSettingsOptionsPage(Lifetime lifetime, OptionsSettingsSmartContext settingsStore, PostfixTemplatesManager postfixTemplatesManager);
+}
+public class JetBrains.ReSharper.Features.Altering.PostfixTemplates.PostfixTemplatesSettingsViewModel : ObservableObject {
+    [NotNullAttribute]
+private OptionsSettingsSmartContext mySettingsStore;
+    [NotNullAttribute]
+private PostfixTemplatesManager myPostfixTemplatesManager;
+    private PostfixTemplatesLanguageSettingsViewModel mySelectedLanguage;
+    [CompilerGeneratedAttribute]
+private ObservableCollection`1<PostfixTemplatesLanguageSettingsViewModel> <LanguageSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <ShowPostfixTemplates>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <ShowSourceTemplates>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <UseBracesForStatements>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <InvokeParameterInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <SearchVarOccurrences>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICommand <Reset>k__BackingField;
+    public ObservableCollection`1<PostfixTemplatesLanguageSettingsViewModel> LanguageSettings { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> ShowPostfixTemplates { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> ShowSourceTemplates { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> UseBracesForStatements { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> InvokeParameterInfo { get; }
+    [NotNullAttribute]
+public IProperty`1<bool> SearchVarOccurrences { get; }
+    [NotNullAttribute]
+public ICommand Reset { get; }
+    public PostfixTemplatesLanguageSettingsViewModel SelectedLanguage { get; public set; }
+    public PostfixTemplatesSettingsViewModel(Lifetime lifetime, OptionsSettingsSmartContext settingsStore, PostfixTemplatesManager postfixTemplatesManager);
+    [CompilerGeneratedAttribute]
+public ObservableCollection`1<PostfixTemplatesLanguageSettingsViewModel> get_LanguageSettings();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_ShowPostfixTemplates();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_ShowSourceTemplates();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_UseBracesForStatements();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_InvokeParameterInfo();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_SearchVarOccurrences();
+    [CompilerGeneratedAttribute]
+public ICommand get_Reset();
+    public PostfixTemplatesLanguageSettingsViewModel get_SelectedLanguage();
+    public void set_SelectedLanguage(PostfixTemplatesLanguageSettingsViewModel value);
+    private void InitializeLanguageSettingsItems();
+    private void ResetExecute();
+    [CompilerGeneratedAttribute]
+private PostfixTemplatesLanguageSettingsViewModel <InitializeLanguageSettingsItems>b__28_1(PsiLanguageType x);
+}
+public class JetBrains.ReSharper.Features.Altering.Rearrange.RearrangeAction : object {
+    private Direction myDirection;
+    protected RearrangeAction(Direction direction);
+    public sealed virtual bool Update(IDataContext context, ActionPresentation presentation, DelegateUpdate nextUpdate);
+    public sealed virtual void Execute(IDataContext context, DelegateExecute nextExecute);
+    public sealed virtual IActionRequirement GetRequirement(IDataContext dataContext);
+}
+[SolutionComponentAttribute("10")]
+public class JetBrains.ReSharper.Features.Altering.Rearrange.RearrangeTargetHighlighter : object {
+    private static string ourHighlighterKey;
+    private List`1<IHighlighter> myHighlighters;
+    private ISolution mySolution;
+    private TimestampedValue`1<Nullable`1<KeyboardModifiers>> myKeys;
+    private Nullable`1<TextRange> myRange;
+    private ITextControl myTextControl;
+    private SequentialLifetimes myTooltipLifetimes;
+    private IDisposable myAlarm;
+    private SingleDisposable myLostFocus;
+    private SingleDisposable myTextControlMessageFilter;
+    private ITooltipManager myTooltipManager;
+    private IShellLocks myLocks;
+    private static TextStyle KeyStyle;
+    private static RichText LeftRight;
+    private static RichText UpDown;
+    private static RichText UpDownLeftRight;
+    public bool IsHighlighted { get; }
+    public IEnumerable`1<IPsiSourceFile> PsiFilesToPrepare { get; }
+    public RearrangeTargetHighlighter(Lifetime lifetime, ISolution solution, ITextControlManager textman, ITooltipManager tooltipManager, IShellLocks locks);
+    private static RearrangeTargetHighlighter();
+    [NotNullAttribute]
+public static RearrangeTargetHighlighter GetInstance(ISolution solution);
+    public bool get_IsHighlighted();
+    public void HighlightImmediately();
+    public sealed virtual Action BeforeCommit();
+    public sealed virtual void OnInterrupt();
+    public IEnumerable`1<IPsiSourceFile> get_PsiFilesToPrepare();
+    public sealed virtual void Dispose();
+    private void OnKeyboard();
+    private void RemoveAll();
+    private static Nullable`1<KeyboardModifiers> CheckShortcuts();
+    private void RemoveHighlighter();
+    private void AddHighlighter();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__12_0(Lifetime ltc, ITextControl tc);
+    [CompilerGeneratedAttribute]
+private void <OnKeyboard>b__22_0();
+    [CompilerGeneratedAttribute]
+private void <AddHighlighter>b__26_3();
+}
+[RegisterHighlighterAttribute("ReSharper Rearrange Left/Right Code Hint")]
+[RegisterHighlighterAttribute("ReSharper Rearrange Up/Down Code Hint")]
+public static class JetBrains.ReSharper.Features.Altering.Rearrange.RearrangeTargetHighlighterIds : object {
+    public static string HIGHLIGHTER_ATTRIBUTE_LEFTRIGHT;
+    public static string HIGHLIGHTER_ATTRIBUTE_UPDOWN;
+}
+public class JetBrains.ReSharper.Features.Altering.Resources.FeatureAlteringThemedIcons : object {
+}
+public class JetBrains.ReSharper.Features.Altering.Resources.FileLayoutThemedIcons : object {
+}
+[ActionGroupAttribute("ReSharper.RearrangeCode", "1", "10")]
+public class JetBrains.ReSharper.Features.Altering.resources.IntoRearrangeCodeGroup : object {
+    public IntoRearrangeCodeGroup(MoveUpAction moveUpAction, MoveDownAction moveDownAction, MoveLeftAction moveLeftAction, MoveRightAction moveRightAction);
+}
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+public static class JetBrains.ReSharper.Features.Altering.Resources.Strings : object {
+    private static ILogger ourLog;
+    private static Lazy`1<JetResourceManager> ourResourceManager;
+    [EditorBrowsableAttribute("2")]
+public static JetResourceManager ResourceManager { get; }
+    public static string ApplySyntaxStyleActionText { get; }
+    public static string AutoIndentLinesActionText { get; }
+    public static string BlankLinesOptionPageTitle { get; }
+    public static string BracesLayoutOptionPageTitle { get; }
+    public static string CleaningUpCode_Text { get; }
+    public static string CleaningUpFiles_Text { get; }
+    public static string CleanupCodeActionText { get; }
+    public static string CleanupOpenFilesActionText { get; }
+    public static string CleanupRecentFilesActionGroupText { get; }
+    public static string CleanupRecentlyModifiedFilesActionText { get; }
+    public static string CleanupUnsavedFilesAndSaveThemActionText { get; }
+    public static string CodeCleanupActionText { get; }
+    public static string CodeCleanupOptionPageTitle { get; }
+    public static string CodeCleanupTask_ClangTidy { get; }
+    public static string CodeCleanupTask_CppArrangeAuto { get; }
+    public static string CodeCleanupTask_CppArrangeBraces { get; }
+    public static string CodeCleanupTask_CppArrangeCVQualifiers { get; }
+    public static string CodeCleanupTask_CppArrangeFunctionDeclarations { get; }
+    public static string CodeCleanupTask_CppArrangeNestedNamespaces { get; }
+    public static string CodeCleanupTask_CppArrangeOverridingFunctions { get; }
+    public static string CodeCleanupTask_CppArrangeSlashesInIncludeDirectives { get; }
+    public static string CodeCleanupTask_CppArrangeTypeAliases { get; }
+    public static string CodeCleanupTask_CppSortIncludeDirectives { get; }
+    public static string CodeCleanupTask_CppSortMemberInitializers { get; }
+    public static string CompactFormatActionText { get; }
+    public static string DetectCodeStyleSettingsActionText { get; }
+    public static string DetectSettingsCodeCleanupModule_Name_Detect_formatting_settings { get; }
+    public static string FileHeaderTextOptionPageTitle { get; }
+    public static string FormattingStyleOptionPageTitle { get; }
+    public static string VirtualFormattingStyleOptionPageTitle { get; }
+    public static string GeneralFormatterStyleOptionPageTitle { get; }
+    public static string GeneralOptionPageTitle { get; }
+    public static string GenerateConstructorActionText { get; }
+    public static string GenerateDeconstructorActionText { get; }
+    public static string GenerateDelegatingMembersActionText { get; }
+    public static string GenerateDisposePatternActionText { get; }
+    public static string GenerateEqualityComparerActionText { get; }
+    public static string GenerateEqualityMembersActionText { get; }
+    public static string GenerateEventSubscriptionsActionText { get; }
+    public static string GenerateFormattingMembersActionText { get; }
+    public static string GeneratePartialMethodsActionText { get; }
+    public static string GeneratePropertiesActionText { get; }
+    public static string GenerateReadOnlyPropertiesActionText { get; }
+    public static string GenerateRelationalComparerActionText { get; }
+    public static string GenerateRelationalMembersActionText { get; }
+    public static string ImplementMissingMembersActionText { get; }
+    public static string LineBreaksAndWrappingOptionPageTitle { get; }
+    public static string MarkFilesAsCleanedUpActionText { get; }
+    public static string MembersGenerationOptionPageTitle { get; }
+    public static string MoveDownActionText { get; }
+    public static string MoveLeftActionText { get; }
+    public static string MoveRightActionText { get; }
+    public static string MoveUpActionText { get; }
+    public static string NamespaceImportsOptionPageTitle { get; }
+    public static string OtherOptionPageTitle { get; }
+    public static string OverrideMembersActionText { get; }
+    public static string ProfilesOptionPageTitle { get; }
+    public static string RearrangeCodeActionGroupText { get; }
+    public static string ReformatCodeActionText { get; }
+    public static string ResxEditorActionGroupText { get; }
+    public static string SilentCleanupCodeActionText { get; }
+    public static string SilentCleanupOpenFilesActionText { get; }
+    public static string SilentCleanupRecentlyModifiedFilesActionText { get; }
+    public static string SilentCleanupUnsavedFilesAndSaveThemActionText { get; }
+    public static string SpacesOptionPageTitle { get; }
+    public static string SpaciousFormatActionText { get; }
+    public static string StrictFormatActionText { get; }
+    public static string SyntaxStyleOptionPageTitle { get; }
+    public static string TabsAndIndentsOptionPageTitle { get; }
+    public static string TabsIndentsAlignmentOptionPageTitle { get; }
+    public static string GenerateAction_Text { get; }
+    public static string PostfixTemplatesSettingsOptionsPage_Name { get; }
+    public static string CSharpNullCheckingSettingsOptionsPage_Name { get; }
+    public static string VirtualIndentStylePage_LanguageSupportIsDisabledText_Virtual_Formatter_or_use_of_dedicated_settings_is_disabled { get; }
+    public static string SaveAfterCleanupIfAppliedToTheWhole_BoolOption_Text { get; }
+    public static string AutomaticallyRunCleanupWhenSavingAFile_BoolOption_Text { get; }
+    public static string OnlyInFilesMatchingTheMask_StringOption_Text { get; }
+    public static string OnlyInChangedPartsOfFile_BoolOption_Text { get; }
+    public static string OnlyRunCleanupOnChangedStatementsAnd_BoolOption_ToolTip { get; }
+    public static string PerformFullCleanupIfPartialImpossible_Tooltip { get; }
+    public static string CleanupInRecentlyModifiedFiles_Header_Text { get; }
+    public static string Experimental_Option_Text { get; }
+    public static string TheseSettingsOnlyAffectSpecificActions_RichText_Text { get; }
+    public static string ConsiderFilesRecentlyModifiedIfChanged_IntOption_Text { get; }
+    public static string SetToZeroToDisableTracking_IntOption_ToolTip { get; }
+    public static string Days_IntOption_PostfixText { get; }
+    public static string IndentAllLanguagesEquallyUsingSettings_Text { get; }
+    public static string IndentEachLanguageUsingItsOwnSettings_Text { get; }
+    public static string _ThrowNotImplementedException_Text { get; }
+    public static string _ReturnDefaultValue_Text { get; }
+    public static string U_ncompilableCode_Text { get; }
+    public static string _AutomaticProperty_Text { get; }
+    public static string PropertyWithBacking_field_Text { get; }
+    public static string AccessorsWith_defaultBody_Text { get; }
+    public static string N_one_Text { get; }
+    public static string Add_inheritdocForOverriddenMembers_Text { get; }
+    public static string _CopyXMLDocumentationFromOverridden_Text { get; }
+    public static string GeneratedMemberDefaultBodyStyle_RadioOption_Caption { get; }
+    public static string GeneratedPropertyBodyStyle_RadioOption_Caption { get; }
+    public static string GeneratedDocumentation_RadioOption_Caption { get; }
+    public static string OtherOptions_Header_Text { get; }
+    public static string Place_backingFieldAboveProperty_BoolOption_Text { get; }
+    public static string _WrapGeneratedMembersInRegions_BoolOption_Text { get; }
+    public static string AnnotatePropertyAccessorsWith_DebuggerStepThrough_BoolOption_Text { get; }
+    public static string HowToIndentMultiLanguageFiles_RadioOption_Caption { get; }
+    public static string AutoDetectIndentSizeAndStyle_BoolOption_Text { get; }
+    public static string IgnoreIndentSizeAndStyleFromSettings_BoolOption_ToolTip { get; }
+    public static string ProvideReSharperIndentSettingsToVisual_BoolOption_Text { get; }
+    public static string ProvideIndentSettingsThatWereAutoDetected_BoolOption_ToolTip { get; }
+    public static string DefaultLineEndingStyle_ComboEnum_Caption { get; }
+    public static string EnforceLineEndingStyleOnFullReformat_BoolOption_Text { get; }
+    public static string CodeStyleConfigurationFiles_Header_Text { get; }
+    public static string CodeStyleConfigurationFilesAllowYou_Text_Text { get; }
+    public static string ReadCodeStyleFromEditorconfigFiles_BoolOption_Text { get; }
+    public static string ReadStyleCopAnalyzersSettingsFromEditorconfigAndGlobalconfig_BoolOption_Text { get; }
+    public static string ReSharperWouldReadCodeStyleConfiguration_BoolOption_ToolTip { get; }
+    public static string WriteCurrentStyleTo__Button_Caption { get; }
+    public static string EditEditorconfigInteractively_Button_Caption { get; }
+    public static string ReadCodeStyleFromClangFormatFiles_BoolOption_Text { get; }
+    public static string ReSharperWouldReadCodeStyleConfiguration_BoolOption_ToolTip2 { get; }
+    public static string ReadCodeStyleFromSettingsStyleCopFiles_BoolOption_Text { get; }
+    public static string ReSharperWouldReadFromSettingsStyleCop_BoolOption_ToolTip { get; }
+    public static string ShowStatusBarIndicatorIfCodeStyleConfiguration_BoolOption_Text { get; }
+    public static string EmbraceFileHeaderIntoRegionWithName_Text { get; }
+    public static string TrackingModifiedFilesIsTurnedOffToTurn_Text { get; }
+    public static string ReSharperTrackedNoModifiedFilesDuring_Text { get; }
+    public static string CleanupCode_Text { get; }
+    public static string ThereAreNoOpenFiles_Text { get; }
+    public static string SelectAnItemToEdit_Text { get; }
+    public static string GenerateEventSubscriptions_Text { get; }
+    public static string ImplementMissingMembers_Text { get; }
+    public static string OverrideMembers_Text { get; }
+    public static string GenerateProperties_Text { get; }
+    public static string Move_Text { get; }
+    public static string WhenFormattingOnlyAPartOfTheFileTry_Text { get; }
+    public static string PlaceCommentsAtTheFirstColumnWhenCommenting_Text { get; }
+    public static string WhenFormattingSomeCodeAlsoFixColumn_Text { get; }
+    public static string WrapLongLine_Text { get; }
+    public static string RightMarginColumns_Text { get; }
+    public static string WrapLongLines_WhenEnabled_stringOutput_Text { get; }
+    public static string ThisOptionSimilarlyToTheEditorconfig_Text { get; }
+    public static string AttributeSectionsLongerThanSpecified_Text { get; }
+    public static string BlankLinesInDeclarations_Text { get; }
+    public static string BracesLayout_Text { get; }
+    public static string NestedStatements_Text { get; }
+    public static string Parenthesis_Text { get; }
+    public static string PreprocessorDirectives_Text { get; }
+    public static string OtherIndents_Text { get; }
+    public static string AlignMultilineConstructs_Text { get; }
+    public static string AlignSimilarCodeInColumns_Text { get; }
+    public static string General_Text { get; }
+    public static string ArrangementOfAttributes_Text { get; }
+    public static string ArrangementOfMethodSignatures_Text { get; }
+    public static string ArrangementOfPrimaryConstructorSignatures_Text { get; }
+    public static string ArrangementOfExpressionBodiedMembers_Text { get; }
+    public static string ArrangementOfTypeParametersConstraints_Text { get; }
+    public static string ArrangementOfDeclarationBlocks_Text { get; }
+    public static string ArrangementOfEnumerations_Text { get; }
+    public static string ArrangementOfStatements_Text { get; }
+    public static string ArrangementOfEmbeddedStatements_Text { get; }
+    public static string ArrangementOfEmbeddedBlocks_Text { get; }
+    public static string ArrangementOfSwitchExpressions_Text { get; }
+    public static string ArrangementOfPropertyPatterns_Text { get; }
+    public static string ArrangementOfInitializers_Text { get; }
+    public static string ArrangementOfInvocations_Text { get; }
+    public static string ArrangementOfMemberAccessExpressions_Text { get; }
+    public static string ArrangementOfBinaryExpressions_Text { get; }
+    public static string ArrangementOfTernaryExpressions_Text { get; }
+    public static string ArrangementOfLINQExpressions_Text { get; }
+    public static string ArrangementOfInterpolatedStrings_Text { get; }
+    public static string ReSharperOther_Text { get; }
+    public static string PreserveExistingFormatting_Text { get; }
+    public static string BeforeOtherParentheses_Text { get; }
+    public static string WithinParenthesesInStatements_Text { get; }
+    public static string WithinOtherParentheses_Text { get; }
+    public static string AroundArrayBrackets_Text { get; }
+    public static string AroundAngleBrackets_Text { get; }
+    public static string AroundBraces_Text { get; }
+    public static string AroundBinaryOperators_Text { get; }
+    public static string AfterUnaryOperators_Text { get; }
+    public static string InTernaryOperator_Text { get; }
+    public static string AroundCommaAndSemicolon_Text { get; }
+    public static string AroundColon_Text { get; }
+    public static string Attributes_Text { get; }
+    public static string Other_Text { get; }
+    public static string BeforeParenthesesInStatements_Text { get; }
+    public static string BlankLines_Text { get; }
+    public static string LineWrapping_Text { get; }
+    public static string NearbyParentheses_Text { get; }
+    public static string Arrays_Text { get; }
+    public static string AroundOperations_Text { get; }
+    public static string VarUsageInDeclarations_Text { get; }
+    public static string InstanceMembersQualification_Text { get; }
+    public static string StaticMembersQualification_Text { get; }
+    public static string BuiltInTypes_Text { get; }
+    public static string ReferenceQualificationAndUsingDirectives_Text { get; }
+    public static string Modifiers_Text { get; }
+    public static string Arguments_Text { get; }
+    public static string Parentheses_Text { get; }
+    public static string AddParenthesisToAvoidNonObviousPrecedence_Text { get; }
+    public static string Braces_Text { get; }
+    public static string CodeBody_Text { get; }
+    public static string TrailingComma_Text { get; }
+    public static string ObjectCreation_Text { get; }
+    public static string DefaultValue_Text { get; }
+    public static string ProcessingInstructions_Text { get; }
+    public static string InsideOfTagHeader_Text { get; }
+    public static string TagContent_Text { get; }
+    public static string AroundTags_Text { get; }
+    public static string ReferenceQualification_Text { get; }
+    public static string ArrangementOfListPatterns_Text { get; }
+    public static string BlankLinesInCode { get; }
+    public static string Patterns_Text { get; }
+    public static string Move__Text { get; }
+    public static string Use_ToMove__Text { get; }
+    public static string WrapLinesXmlDescription { get; }
+    public static string MaxSingleLineTagLengthXmlDescription { get; }
+    public static string MaxBlankLinesXmlDescription { get; }
+    public static string SyntaxStyle_Text { get; }
+    public static string LineBreaks_Text { get; }
+    public static string Spaces_Text { get; }
+    public static string TabsIndentsAlignment_Text { get; }
+    public static string FormattingStyle_Text { get; }
+    public static string UseNewFileHeaderEngineCheckboxHint { get; }
+    public static string FileHeaderNewSubstitutionsLabelText { get; }
+    public static string FileHeaderOldSubstitutionsLabelText { get; }
+    public static string FileHeaderRegexSettingsPageCaption { get; }
+    public static string FileHeaderRegexSettingsPageCaptionHint { get; }
+    public static string VariableName_Text { get; }
+    public static string VariableValue_Text { get; }
+    public static string FileHeaderText_Text { get; }
+    public static string FileHeaderVariables_Text { get; }
+    public static string AddNewFileHeaderVariable_Text { get; }
+    public static string RemoveSelectedFileHeaderVariable_Text { get; }
+    public static string TheFollowingValuesWillBeSubstituted_Text { get; }
+    private static Strings();
+    public static JetResourceManager get_ResourceManager();
+    public static string Choice(string format, Object[] args);
+    public static string get_ApplySyntaxStyleActionText();
+    public static string get_AutoIndentLinesActionText();
+    public static string get_BlankLinesOptionPageTitle();
+    public static string get_BracesLayoutOptionPageTitle();
+    public static string get_CleaningUpCode_Text();
+    public static string get_CleaningUpFiles_Text();
+    public static string get_CleanupCodeActionText();
+    public static string get_CleanupOpenFilesActionText();
+    public static string get_CleanupRecentFilesActionGroupText();
+    public static string get_CleanupRecentlyModifiedFilesActionText();
+    public static string get_CleanupUnsavedFilesAndSaveThemActionText();
+    public static string get_CodeCleanupActionText();
+    public static string get_CodeCleanupOptionPageTitle();
+    public static string get_CodeCleanupTask_ClangTidy();
+    public static string get_CodeCleanupTask_CppArrangeAuto();
+    public static string get_CodeCleanupTask_CppArrangeBraces();
+    public static string get_CodeCleanupTask_CppArrangeCVQualifiers();
+    public static string get_CodeCleanupTask_CppArrangeFunctionDeclarations();
+    public static string get_CodeCleanupTask_CppArrangeNestedNamespaces();
+    public static string get_CodeCleanupTask_CppArrangeOverridingFunctions();
+    public static string get_CodeCleanupTask_CppArrangeSlashesInIncludeDirectives();
+    public static string get_CodeCleanupTask_CppArrangeTypeAliases();
+    public static string get_CodeCleanupTask_CppSortIncludeDirectives();
+    public static string get_CodeCleanupTask_CppSortMemberInitializers();
+    public static string get_CompactFormatActionText();
+    public static string get_DetectCodeStyleSettingsActionText();
+    public static string get_DetectSettingsCodeCleanupModule_Name_Detect_formatting_settings();
+    public static string get_FileHeaderTextOptionPageTitle();
+    public static string get_FormattingStyleOptionPageTitle();
+    public static string get_VirtualFormattingStyleOptionPageTitle();
+    public static string get_GeneralFormatterStyleOptionPageTitle();
+    public static string get_GeneralOptionPageTitle();
+    public static string get_GenerateConstructorActionText();
+    public static string get_GenerateDeconstructorActionText();
+    public static string get_GenerateDelegatingMembersActionText();
+    public static string get_GenerateDisposePatternActionText();
+    public static string get_GenerateEqualityComparerActionText();
+    public static string get_GenerateEqualityMembersActionText();
+    public static string get_GenerateEventSubscriptionsActionText();
+    public static string get_GenerateFormattingMembersActionText();
+    public static string get_GeneratePartialMethodsActionText();
+    public static string get_GeneratePropertiesActionText();
+    public static string get_GenerateReadOnlyPropertiesActionText();
+    public static string get_GenerateRelationalComparerActionText();
+    public static string get_GenerateRelationalMembersActionText();
+    public static string get_ImplementMissingMembersActionText();
+    public static string get_LineBreaksAndWrappingOptionPageTitle();
+    public static string get_MarkFilesAsCleanedUpActionText();
+    public static string get_MembersGenerationOptionPageTitle();
+    public static string get_MoveDownActionText();
+    public static string get_MoveLeftActionText();
+    public static string get_MoveRightActionText();
+    public static string get_MoveUpActionText();
+    public static string get_NamespaceImportsOptionPageTitle();
+    public static string get_OtherOptionPageTitle();
+    public static string get_OverrideMembersActionText();
+    public static string get_ProfilesOptionPageTitle();
+    public static string get_RearrangeCodeActionGroupText();
+    public static string get_ReformatCodeActionText();
+    public static string get_ResxEditorActionGroupText();
+    public static string get_SilentCleanupCodeActionText();
+    public static string get_SilentCleanupOpenFilesActionText();
+    public static string get_SilentCleanupRecentlyModifiedFilesActionText();
+    public static string get_SilentCleanupUnsavedFilesAndSaveThemActionText();
+    public static string get_SpacesOptionPageTitle();
+    public static string get_SpaciousFormatActionText();
+    public static string get_StrictFormatActionText();
+    public static string get_SyntaxStyleOptionPageTitle();
+    public static string get_TabsAndIndentsOptionPageTitle();
+    public static string get_TabsIndentsAlignmentOptionPageTitle();
+    public static string get_GenerateAction_Text();
+    public static string get_PostfixTemplatesSettingsOptionsPage_Name();
+    public static string get_CSharpNullCheckingSettingsOptionsPage_Name();
+    public static string get_VirtualIndentStylePage_LanguageSupportIsDisabledText_Virtual_Formatter_or_use_of_dedicated_settings_is_disabled();
+    public static string get_SaveAfterCleanupIfAppliedToTheWhole_BoolOption_Text();
+    public static string get_AutomaticallyRunCleanupWhenSavingAFile_BoolOption_Text();
+    public static string get_OnlyInFilesMatchingTheMask_StringOption_Text();
+    public static string get_OnlyInChangedPartsOfFile_BoolOption_Text();
+    public static string get_OnlyRunCleanupOnChangedStatementsAnd_BoolOption_ToolTip();
+    public static string get_PerformFullCleanupIfPartialImpossible_Tooltip();
+    public static string get_CleanupInRecentlyModifiedFiles_Header_Text();
+    public static string get_Experimental_Option_Text();
+    public static string get_TheseSettingsOnlyAffectSpecificActions_RichText_Text();
+    public static string get_ConsiderFilesRecentlyModifiedIfChanged_IntOption_Text();
+    public static string get_SetToZeroToDisableTracking_IntOption_ToolTip();
+    public static string get_Days_IntOption_PostfixText();
+    public static string get_IndentAllLanguagesEquallyUsingSettings_Text();
+    public static string get_IndentEachLanguageUsingItsOwnSettings_Text();
+    public static string get__ThrowNotImplementedException_Text();
+    public static string get__ReturnDefaultValue_Text();
+    public static string get_U_ncompilableCode_Text();
+    public static string get__AutomaticProperty_Text();
+    public static string get_PropertyWithBacking_field_Text();
+    public static string get_AccessorsWith_defaultBody_Text();
+    public static string get_N_one_Text();
+    public static string get_Add_inheritdocForOverriddenMembers_Text();
+    public static string get__CopyXMLDocumentationFromOverridden_Text();
+    public static string get_GeneratedMemberDefaultBodyStyle_RadioOption_Caption();
+    public static string get_GeneratedPropertyBodyStyle_RadioOption_Caption();
+    public static string get_GeneratedDocumentation_RadioOption_Caption();
+    public static string get_OtherOptions_Header_Text();
+    public static string get_Place_backingFieldAboveProperty_BoolOption_Text();
+    public static string get__WrapGeneratedMembersInRegions_BoolOption_Text();
+    public static string get_AnnotatePropertyAccessorsWith_DebuggerStepThrough_BoolOption_Text();
+    public static string get_HowToIndentMultiLanguageFiles_RadioOption_Caption();
+    public static string get_AutoDetectIndentSizeAndStyle_BoolOption_Text();
+    public static string get_IgnoreIndentSizeAndStyleFromSettings_BoolOption_ToolTip();
+    public static string get_ProvideReSharperIndentSettingsToVisual_BoolOption_Text();
+    public static string get_ProvideIndentSettingsThatWereAutoDetected_BoolOption_ToolTip();
+    public static string get_DefaultLineEndingStyle_ComboEnum_Caption();
+    public static string get_EnforceLineEndingStyleOnFullReformat_BoolOption_Text();
+    public static string get_CodeStyleConfigurationFiles_Header_Text();
+    public static string get_CodeStyleConfigurationFilesAllowYou_Text_Text();
+    public static string get_ReadCodeStyleFromEditorconfigFiles_BoolOption_Text();
+    public static string get_ReadStyleCopAnalyzersSettingsFromEditorconfigAndGlobalconfig_BoolOption_Text();
+    public static string get_ReSharperWouldReadCodeStyleConfiguration_BoolOption_ToolTip();
+    public static string get_WriteCurrentStyleTo__Button_Caption();
+    public static string get_EditEditorconfigInteractively_Button_Caption();
+    public static string get_ReadCodeStyleFromClangFormatFiles_BoolOption_Text();
+    public static string get_ReSharperWouldReadCodeStyleConfiguration_BoolOption_ToolTip2();
+    public static string get_ReadCodeStyleFromSettingsStyleCopFiles_BoolOption_Text();
+    public static string get_ReSharperWouldReadFromSettingsStyleCop_BoolOption_ToolTip();
+    public static string get_ShowStatusBarIndicatorIfCodeStyleConfiguration_BoolOption_Text();
+    public static string get_EmbraceFileHeaderIntoRegionWithName_Text();
+    public static string get_TrackingModifiedFilesIsTurnedOffToTurn_Text();
+    public static string get_ReSharperTrackedNoModifiedFilesDuring_Text();
+    public static string get_CleanupCode_Text();
+    public static string get_ThereAreNoOpenFiles_Text();
+    public static string get_SelectAnItemToEdit_Text();
+    public static string get_GenerateEventSubscriptions_Text();
+    public static string get_ImplementMissingMembers_Text();
+    public static string get_OverrideMembers_Text();
+    public static string get_GenerateProperties_Text();
+    public static string get_Move_Text();
+    public static string get_WhenFormattingOnlyAPartOfTheFileTry_Text();
+    public static string get_PlaceCommentsAtTheFirstColumnWhenCommenting_Text();
+    public static string get_WhenFormattingSomeCodeAlsoFixColumn_Text();
+    public static string get_WrapLongLine_Text();
+    public static string get_RightMarginColumns_Text();
+    public static string get_WrapLongLines_WhenEnabled_stringOutput_Text();
+    public static string get_ThisOptionSimilarlyToTheEditorconfig_Text();
+    public static string get_AttributeSectionsLongerThanSpecified_Text();
+    public static string get_BlankLinesInDeclarations_Text();
+    public static string get_BracesLayout_Text();
+    public static string get_NestedStatements_Text();
+    public static string get_Parenthesis_Text();
+    public static string get_PreprocessorDirectives_Text();
+    public static string get_OtherIndents_Text();
+    public static string get_AlignMultilineConstructs_Text();
+    public static string get_AlignSimilarCodeInColumns_Text();
+    public static string get_General_Text();
+    public static string get_ArrangementOfAttributes_Text();
+    public static string get_ArrangementOfMethodSignatures_Text();
+    public static string get_ArrangementOfPrimaryConstructorSignatures_Text();
+    public static string get_ArrangementOfExpressionBodiedMembers_Text();
+    public static string get_ArrangementOfTypeParametersConstraints_Text();
+    public static string get_ArrangementOfDeclarationBlocks_Text();
+    public static string get_ArrangementOfEnumerations_Text();
+    public static string get_ArrangementOfStatements_Text();
+    public static string get_ArrangementOfEmbeddedStatements_Text();
+    public static string get_ArrangementOfEmbeddedBlocks_Text();
+    public static string get_ArrangementOfSwitchExpressions_Text();
+    public static string get_ArrangementOfPropertyPatterns_Text();
+    public static string get_ArrangementOfInitializers_Text();
+    public static string get_ArrangementOfInvocations_Text();
+    public static string get_ArrangementOfMemberAccessExpressions_Text();
+    public static string get_ArrangementOfBinaryExpressions_Text();
+    public static string get_ArrangementOfTernaryExpressions_Text();
+    public static string get_ArrangementOfLINQExpressions_Text();
+    public static string get_ArrangementOfInterpolatedStrings_Text();
+    public static string get_ReSharperOther_Text();
+    public static string get_PreserveExistingFormatting_Text();
+    public static string get_BeforeOtherParentheses_Text();
+    public static string get_WithinParenthesesInStatements_Text();
+    public static string get_WithinOtherParentheses_Text();
+    public static string get_AroundArrayBrackets_Text();
+    public static string get_AroundAngleBrackets_Text();
+    public static string get_AroundBraces_Text();
+    public static string get_AroundBinaryOperators_Text();
+    public static string get_AfterUnaryOperators_Text();
+    public static string get_InTernaryOperator_Text();
+    public static string get_AroundCommaAndSemicolon_Text();
+    public static string get_AroundColon_Text();
+    public static string get_Attributes_Text();
+    public static string get_Other_Text();
+    public static string get_BeforeParenthesesInStatements_Text();
+    public static string get_BlankLines_Text();
+    public static string get_LineWrapping_Text();
+    public static string get_NearbyParentheses_Text();
+    public static string get_Arrays_Text();
+    public static string get_AroundOperations_Text();
+    public static string get_VarUsageInDeclarations_Text();
+    public static string get_InstanceMembersQualification_Text();
+    public static string get_StaticMembersQualification_Text();
+    public static string get_BuiltInTypes_Text();
+    public static string get_ReferenceQualificationAndUsingDirectives_Text();
+    public static string get_Modifiers_Text();
+    public static string get_Arguments_Text();
+    public static string get_Parentheses_Text();
+    public static string get_AddParenthesisToAvoidNonObviousPrecedence_Text();
+    public static string get_Braces_Text();
+    public static string get_CodeBody_Text();
+    public static string get_TrailingComma_Text();
+    public static string get_ObjectCreation_Text();
+    public static string get_DefaultValue_Text();
+    public static string get_ProcessingInstructions_Text();
+    public static string get_InsideOfTagHeader_Text();
+    public static string get_TagContent_Text();
+    public static string get_AroundTags_Text();
+    public static string get_ReferenceQualification_Text();
+    public static string get_ArrangementOfListPatterns_Text();
+    public static string get_BlankLinesInCode();
+    public static string get_Patterns_Text();
+    public static string get_Move__Text();
+    public static string get_Use_ToMove__Text();
+    public static string get_WrapLinesXmlDescription();
+    public static string get_MaxSingleLineTagLengthXmlDescription();
+    public static string get_MaxBlankLinesXmlDescription();
+    public static string get_SyntaxStyle_Text();
+    public static string get_LineBreaks_Text();
+    public static string get_Spaces_Text();
+    public static string get_TabsIndentsAlignment_Text();
+    public static string get_FormattingStyle_Text();
+    public static string get_UseNewFileHeaderEngineCheckboxHint();
+    public static string get_FileHeaderNewSubstitutionsLabelText();
+    public static string get_FileHeaderOldSubstitutionsLabelText();
+    public static string get_FileHeaderRegexSettingsPageCaption();
+    public static string get_FileHeaderRegexSettingsPageCaptionHint();
+    public static string get_VariableName_Text();
+    public static string get_VariableValue_Text();
+    public static string get_FileHeaderText_Text();
+    public static string get_FileHeaderVariables_Text();
+    public static string get_AddNewFileHeaderVariable_Text();
+    public static string get_RemoveSelectedFileHeaderVariable_Text();
+    public static string get_TheFollowingValuesWillBeSubstituted_Text();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Features.Altering.ZoneMarker : object {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class JetBrains.ReSharper.Features.Cpp.CppClangTidyCleanupSettings : object {
+    public static string OtherClangTidyFixits;
+    public static String[] DiagnosticsWithFixits;
+    public static Dictionary`2<string, CodeCleanupOptionDescriptor`1<bool>> Descriptors;
+    public static CodeCleanupOptionGroupDescriptor GroupDescriptor;
+    private static CppClangTidyCleanupSettings();
+    public static bool IsFixitEnabled(CodeCleanupProfile profile, string diagnosticName);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

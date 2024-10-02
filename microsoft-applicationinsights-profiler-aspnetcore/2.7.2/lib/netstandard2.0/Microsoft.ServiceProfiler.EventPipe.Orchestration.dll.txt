@@ -1,0 +1,202 @@
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.AppInsightsSinks : object {
+    private IEnumerable`1<IAppInsightsLogger> _loggers;
+    public AppInsightsSinks(IEnumerable`1<IAppInsightsLogger> loggers);
+    public sealed virtual void LogInformation(string message);
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.CPUMonitoringSchedulingPolicy : EventPipeSchedulingPolicy {
+    private float _cpuThreshold;
+    public string Source { get; }
+    public CPUMonitoringSchedulingPolicy(IOptions`1<UserConfiguration> userConfiguration, ProfilerSettings profilerSettings, IExpirationPolicy expirationPolicy, IDelaySource delaySource, IResourceUsageSource resourceUsageSource, ILogger`1<CPUMonitoringSchedulingPolicy> logger);
+    public virtual string get_Source();
+    public virtual Task`1<IEnumerable`1<ValueTuple`2<TimeSpan, ProfilerAction>>> GetScheduleAsync();
+    protected virtual bool PolicyNeedsRefresh();
+}
+public abstract class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.EventPipeSchedulingPolicy : SchedulingPolicy {
+    [CompilerGeneratedAttribute]
+private ProfilerSettings <ProfilerSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IResourceUsageSource <ResourceUsageSource>k__BackingField;
+    protected ProfilerSettings ProfilerSettings { get; }
+    protected IResourceUsageSource ResourceUsageSource { get; }
+    public EventPipeSchedulingPolicy(TimeSpan profilingDuration, TimeSpan profilingCooldown, TimeSpan pollingInterval, ProfilerSettings profilerSettings, IDelaySource delaySource, IExpirationPolicy expirationPolicy, IResourceUsageSource resourceUsageSource, ILogger`1<EventPipeSchedulingPolicy> logger);
+    protected T UpdateRefreshAndGetSetting(T newSetting, T currentSetting, Boolean& needsRefresh);
+    protected virtual bool PolicyNeedsRefresh();
+    [CompilerGeneratedAttribute]
+protected ProfilerSettings get_ProfilerSettings();
+    [CompilerGeneratedAttribute]
+protected IResourceUsageSource get_ResourceUsageSource();
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.LocalProfileSettingsService : object {
+    private ILogger _logger;
+    [CompilerGeneratedAttribute]
+private SettingsContract <CurrentSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<SettingsContract> SettingsUpdated;
+    public SettingsContract CurrentSettings { get; }
+    public LocalProfileSettingsService(ILogger`1<LocalProfileSettingsService> logger);
+    [CompilerGeneratedAttribute]
+public sealed virtual SettingsContract get_CurrentSettings();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SettingsUpdated(Action`1<SettingsContract> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SettingsUpdated(Action`1<SettingsContract> value);
+    public void Dispose();
+    public sealed virtual Task`1<bool> WaitForInitializedAsync(TimeSpan timeout);
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.MemoryMonitoringSchedulingPolicy : EventPipeSchedulingPolicy {
+    private float _memoryThreshold;
+    public string Source { get; }
+    public MemoryMonitoringSchedulingPolicy(IOptions`1<UserConfiguration> userConfiguration, ProfilerSettings profilerSettings, IExpirationPolicy expirationPolicy, IDelaySource delaySource, IResourceUsageSource resourceUsageSource, ILogger`1<MemoryMonitoringSchedulingPolicy> logger);
+    public virtual string get_Source();
+    public virtual Task`1<IEnumerable`1<ValueTuple`2<TimeSpan, ProfilerAction>>> GetScheduleAsync();
+    protected virtual bool PolicyNeedsRefresh();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.MetricsProviders.MemInfoFileMemoryMetricsProvider : object {
+    private ILogger _logger;
+    private MemInfoItemParser _memInfoItemParser;
+    private IMemInfoReader _memInfoReader;
+    public MemInfoFileMemoryMetricsProvider(MemInfoItemParser memInfoItemParser, IMemInfoReader memInfoReader, ILogger`1<MemInfoFileMemoryMetricsProvider> logger);
+    public sealed virtual float GetNextValue();
+    [NullableContextAttribute("0")]
+internal ValueTuple`2<float, float> GetMetrics();
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.MetricsProviders.MemInfoItemParser : object {
+    public bool TryParse(string line, ValueTuple`3& metric);
+    internal bool TryParseMemInfoValue(string input, UInt64& value, String& unit);
+}
+public class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.MetricsProviders.MetricsProviderResolver : object {
+    private IServiceProvider _serviceProvider;
+    public MetricsProviderResolver(IServiceProvider serviceProvider);
+    public sealed virtual IMetricsProvider Resolve(MetricsProviderCategory category);
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OnDemandSchedulingPolicy : EventPipeSchedulingPolicy {
+    private IProfilerSettingsService _profilerSettingsService;
+    private string _evaluatedCollectionPlan;
+    private static int DefaultProfileNowDurationInSeconds;
+    public string Source { get; }
+    public OnDemandSchedulingPolicy(IOptions`1<UserConfiguration> userConfiguration, ProfilerSettings profilerSettings, IExpirationPolicy expirationPolicy, IProfilerSettingsService profilerSettingsService, IDelaySource delaySource, IResourceUsageSource resourceUsageSource, ILogger`1<OnDemandSchedulingPolicy> logger);
+    public virtual string get_Source();
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OnDemandSchedulingPolicy/<GetScheduleAsync>d__3")]
+public virtual Task`1<IEnumerable`1<ValueTuple`2<TimeSpan, ProfilerAction>>> GetScheduleAsync();
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OneTimeSchedulingPolicy : EventPipeSchedulingPolicy {
+    [CompilerGeneratedAttribute]
+private string <Source>k__BackingField;
+    public string Source { get; }
+    public OneTimeSchedulingPolicy(IOptions`1<UserConfiguration> userConfiguration, ProfilerSettings profilerSettings, IDelaySource delaySource, IResourceUsageSource resourceUsageSource, ILogger`1<OneTimeSchedulingPolicy> logger);
+    [CompilerGeneratedAttribute]
+public virtual string get_Source();
+    public virtual Task`1<IEnumerable`1<ValueTuple`2<TimeSpan, ProfilerAction>>> GetScheduleAsync();
+    protected virtual bool PolicyNeedsRefresh();
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OrchestratorEventPipe : Orchestrator {
+    private IReadOnlyCollection`1<SchedulingPolicy> _policyCollection;
+    private IServiceProfilerProvider _profilerProvider;
+    private ILogger _logger;
+    private TimeSpan _initialDelay;
+    private SemaphoreSlim _policyChangeHandler;
+    private List`1<Task> _semaphoreTasks;
+    private SchedulingPolicy _currentProfilingPolicy;
+    public OrchestratorEventPipe(IServiceProfilerProvider profilerProvider, IOptions`1<UserConfiguration> config, IEnumerable`1<SchedulingPolicy> policyCollection, IDelaySource delaySource, ILogger`1<OrchestratorEventPipe> logger);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OrchestratorEventPipe/<StartAsync>d__1")]
+public virtual Task StartAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OrchestratorEventPipe/<StartProfilingAsync>d__2")]
+public virtual Task`1<bool> StartProfilingAsync(SchedulingPolicy policy, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.OrchestratorEventPipe/<StopProfilingAsync>d__3")]
+public virtual Task`1<bool> StopProfilingAsync(SchedulingPolicy policy, CancellationToken cancellationToken);
+    protected virtual void Dispose(bool disposing);
+    private int ActivateSchedulePolicies();
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.RandomSchedulingPolicy : EventPipeSchedulingPolicy {
+    [CompilerGeneratedAttribute]
+private string <Source>k__BackingField;
+    private IRandomSource _randomSource;
+    private static TimeSpan ScheduleInterval;
+    private double _overhead;
+    public string Source { get; }
+    public RandomSchedulingPolicy(IOptions`1<UserConfiguration> userConfiguration, ProfilerSettings profilerSettings, IExpirationPolicy expirationPolicy, IDelaySource delaySource, IRandomSource randomSource, IResourceUsageSource resourceUsageSource, ILogger`1<RandomSchedulingPolicy> logger);
+    private static RandomSchedulingPolicy();
+    public virtual Task`1<IEnumerable`1<ValueTuple`2<TimeSpan, ProfilerAction>>> GetScheduleAsync();
+    protected virtual bool PolicyNeedsRefresh();
+    [CompilerGeneratedAttribute]
+public virtual string get_Source();
+    private void MergeStandbyDuration(List`1<ValueTuple`2<TimeSpan, ProfilerAction>> list, TimeSpan value);
+}
+internal class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.RemoteProfilerSettingsService : object {
+    private IProfilerFrontendClientFactory _frontendClientFactory;
+    private TaskCompletionSource`1<bool> _taskCompletionSource;
+    private UserConfiguration _userConfiguration;
+    private ILogger _logger;
+    [CompilerGeneratedAttribute]
+private Action`1<SettingsContract> SettingsUpdated;
+    [CompilerGeneratedAttribute]
+private SettingsContract <CurrentSettings>k__BackingField;
+    public SettingsContract CurrentSettings { get; private set; }
+    public RemoteProfilerSettingsService(IProfilerFrontendClientFactory frontendClientFactory, IOptions`1<UserConfiguration> userConfigurationOptions, ILogger`1<RemoteProfilerSettingsService> logger);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SettingsUpdated(Action`1<SettingsContract> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SettingsUpdated(Action`1<SettingsContract> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual SettingsContract get_CurrentSettings();
+    [CompilerGeneratedAttribute]
+private void set_CurrentSettings(SettingsContract value);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.RemoteProfilerSettingsService/<WaitForInitializedAsync>d__12")]
+public sealed virtual Task`1<bool> WaitForInitializedAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.RemoteProfilerSettingsService/<StartAsync>d__13")]
+private Task StartAsync(TimeSpan frequency, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.ApplicationInsights.Profiler.Core.Orchestration.RemoteProfilerSettingsService/<FetchRemoteSettingsAsync>d__14")]
+private Task FetchRemoteSettingsAsync(CancellationToken cancellationToken);
+    private void OnSettingsUpdated(SettingsContract settingsContract);
+    [CompilerGeneratedAttribute]
+private Task <.ctor>b__11_0();
+}
+public class Microsoft.ApplicationInsights.Profiler.Core.Orchestration.ResourceUsageSource : object {
+    private BaselineTracker _cpuBaselineTracker;
+    private BaselineTracker _memoryBaselineTracker;
+    private float _currentCPUBaseline;
+    private float _currentMemoryBaseline;
+    private ILogger _logger;
+    private bool _disposed;
+    public ResourceUsageSource(IMetricsProviderResolver`1<MetricsProviderCategory> metricsProviderResolver, CpuTriggerSettings cpuTriggerSettings, MemoryTriggerSettings memoryTriggerSettings, ISerializationProvider serializer, ILogger`1<ResourceUsageSource> logger);
+    public sealed virtual float GetAverageCPUUsage();
+    public sealed virtual float GetAverageMemoryUsage();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__0_0(float oldBaseline, float newBaseline);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__0_1(float oldBaseline, float newBaseline);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[NullableContextAttribute("1")]
+public interface Microsoft.ServiceProfiler.Orchestration.MetricsProviders.IMemInfoReader {
+    public abstract virtual Stream Read(string filePath);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.ServiceProfiler.Orchestration.MetricsProviders.ProcMemInfoReader : object {
+    private static string DefaultMemInfoPath;
+    private ILogger`1<ProcMemInfoReader> _logger;
+    public ProcMemInfoReader(ILogger`1<ProcMemInfoReader> logger);
+    public sealed virtual Stream Read(string filePath);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

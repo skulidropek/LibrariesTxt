@@ -1,0 +1,1883 @@
+public abstract class LamarCodeGeneration.AlterCodeGenerationAttribute : object {
+    public virtual void Modify(GeneratedType generatedType);
+    public virtual void Modify(GeneratedAssembly generatedAssembly);
+}
+public static class LamarCodeGeneration.CodeFormatter : object {
+    public static string Write(object value);
+}
+[ExtensionAttribute]
+public static class LamarCodeGeneration.CodeGenerationExtensions : object {
+    [ExtensionAttribute]
+public static GeneratedAssembly StartAssembly(ICodeFileCollection generator, GenerationRules rules);
+    [ExtensionAttribute]
+public static string ToNamespace(ICodeFileCollection codeFileCollection, GenerationRules rules);
+    [ExtensionAttribute]
+public static string ToExportDirectory(ICodeFileCollection generator, string exportDirectory);
+    [ExtensionAttribute]
+public static GeneratedAssembly AssembleTypes(ICodeFileCollection generator, GenerationRules rules);
+    [ExtensionAttribute]
+public static Setter AddStringConstant(GeneratedType generatedType, string constantName, string value);
+    [ExtensionAttribute]
+public static void ReturnNewStringConstant(FramesCollection frames, string constantName, string value);
+}
+public static class LamarCodeGeneration.ConditionalCompilation : object {
+    public static OneLineCodeFragment If(string target);
+    public static OneLineCodeFragment EndIf();
+}
+internal class LamarCodeGeneration.DependencyGatherer : object {
+    private IMethodVariables _methodVariables;
+    public LightweightCache`2<Frame, List`1<Frame>> Dependencies;
+    public LightweightCache`2<Variable, List`1<Frame>> Variables;
+    public DependencyGatherer(IMethodVariables methodVariables, IList`1<Frame> frames);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.DependencyGatherer/<findDependencies>d__4")]
+private IEnumerable`1<Frame> findDependencies(Frame frame);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.DependencyGatherer/<findDependencies>d__5")]
+private IEnumerable`1<Frame> findDependencies(Variable variable);
+    [CompilerGeneratedAttribute]
+private List`1<Frame> <.ctor>b__3_0(Frame frame);
+    [CompilerGeneratedAttribute]
+private List`1<Frame> <.ctor>b__3_1(Variable v);
+}
+public class LamarCodeGeneration.DynamicCodeBuilder : object {
+    [CompilerGeneratedAttribute]
+private IServiceVariableSource <ServiceVariableSource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IServiceProvider <Services>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICodeFileCollection[] <Collections>k__BackingField;
+    public IServiceVariableSource ServiceVariableSource { get; public set; }
+    public String[] ChildNamespaces { get; }
+    public IServiceProvider Services { get; }
+    public ICodeFileCollection[] Collections { get; }
+    public DynamicCodeBuilder(IServiceProvider services, ICodeFileCollection[] collections);
+    [CompilerGeneratedAttribute]
+public IServiceVariableSource get_ServiceVariableSource();
+    [CompilerGeneratedAttribute]
+public void set_ServiceVariableSource(IServiceVariableSource value);
+    public string GenerateAllCode();
+    public void DeleteAllGeneratedCode();
+    public string GenerateCodeFor(string childNamespace);
+    public void WriteGeneratedCode(Action`1<string> onFileWritten);
+    private string generateCode(ICodeFileCollection collection);
+    public void TryBuildAndCompileAll(Action`2<GeneratedAssembly, IServiceVariableSource> withAssembly);
+    [AsyncStateMachineAttribute("LamarCodeGeneration.DynamicCodeBuilder/<LoadPrebuiltTypes>d__11")]
+public Task LoadPrebuiltTypes(Assembly assembly);
+    public String[] get_ChildNamespaces();
+    [CompilerGeneratedAttribute]
+public IServiceProvider get_Services();
+    [CompilerGeneratedAttribute]
+public ICodeFileCollection[] get_Collections();
+}
+public interface LamarCodeGeneration.Expressions.IResolverFrame {
+    public abstract virtual void WriteExpressions(LambdaDefinition definition);
+}
+public class LamarCodeGeneration.Expressions.LambdaDefinition : object {
+    private Dictionary`2<Variable, Expression> _variables;
+    [CompilerGeneratedAttribute]
+private object <Context>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ParameterExpression[] <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Expression> <Body>k__BackingField;
+    public object Context { get; public set; }
+    public ParameterExpression[] Arguments { get; public set; }
+    public IList`1<Expression> Body { get; }
+    [CompilerGeneratedAttribute]
+public object get_Context();
+    [CompilerGeneratedAttribute]
+public void set_Context(object value);
+    public void RegisterExpression(Variable variable, Expression expression);
+    public Expression RegisterExpression(Variable variable);
+    public Expression ExpressionFor(Variable variable);
+    [CompilerGeneratedAttribute]
+public ParameterExpression[] get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(ParameterExpression[] value);
+    public TFunc Compile();
+    [CompilerGeneratedAttribute]
+public IList`1<Expression> get_Body();
+    public void Assign(Variable variable, Expression expression);
+    public void Assign(ParameterExpression variable, Expression expression);
+}
+public abstract class LamarCodeGeneration.Frames.AsyncFrame : Frame {
+}
+public class LamarCodeGeneration.Frames.CodeFrame : Frame {
+    private string _format;
+    private Object[] _values;
+    public CodeFrame(bool isAsync, string format, Object[] values);
+    private static void validateFormat(string format, Object[] values);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.CodeFrame/<FindVariables>d__5")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+    private sealed virtual override ICodeFrame LamarCodeGeneration.Frames.ICodeFrame.Creates(Variable variable);
+}
+public class LamarCodeGeneration.Frames.CommentFrame : SyncFrame {
+    private string _commentText;
+    public CommentFrame(string commentText);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+}
+public abstract class LamarCodeGeneration.Frames.CompositeFrame : Frame {
+    private Frame[] _inner;
+    public IEnumerable`1<Variable> Creates { get; }
+    protected CompositeFrame(Frame[] inner);
+    public virtual IEnumerable`1<Variable> get_Creates();
+    public sealed virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    protected abstract virtual void generateCode(GeneratedMethod method, ISourceWriter writer, Frame inner);
+    public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+    public virtual bool CanReturnTask();
+}
+public enum LamarCodeGeneration.Frames.ConstructorCallMode : Enum {
+    public int value__;
+    public static ConstructorCallMode Variable;
+    public static ConstructorCallMode ReturnValue;
+    public static ConstructorCallMode UsingNestedVariable;
+}
+public class LamarCodeGeneration.Frames.ConstructorFrame : SyncFrame {
+    [CompilerGeneratedAttribute]
+private Type <BuiltType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <DeclaredType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConstructorInfo <Ctor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable[] <Parameters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FramesCollection <ActivatorFrames>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConstructorCallMode <Mode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<SetterArg> <Setters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <Variable>k__BackingField;
+    public Type BuiltType { get; }
+    public Type DeclaredType { get; public set; }
+    public ConstructorInfo Ctor { get; }
+    public Variable[] Parameters { get; public set; }
+    public FramesCollection ActivatorFrames { get; }
+    public ConstructorCallMode Mode { get; public set; }
+    public IList`1<SetterArg> Setters { get; }
+    public Variable Variable { get; protected set; }
+    public ConstructorFrame(ConstructorInfo ctor);
+    public ConstructorFrame(Type builtType, ConstructorInfo ctor);
+    public ConstructorFrame(Type builtType, ConstructorInfo ctor, Func`2<ConstructorFrame, Variable> variableSource);
+    [CompilerGeneratedAttribute]
+public Type get_BuiltType();
+    [CompilerGeneratedAttribute]
+public Type get_DeclaredType();
+    [CompilerGeneratedAttribute]
+public void set_DeclaredType(Type value);
+    [CompilerGeneratedAttribute]
+public ConstructorInfo get_Ctor();
+    [CompilerGeneratedAttribute]
+public Variable[] get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(Variable[] value);
+    [CompilerGeneratedAttribute]
+public FramesCollection get_ActivatorFrames();
+    [CompilerGeneratedAttribute]
+public ConstructorCallMode get_Mode();
+    [CompilerGeneratedAttribute]
+public void set_Mode(ConstructorCallMode value);
+    [CompilerGeneratedAttribute]
+public IList`1<SetterArg> get_Setters();
+    [CompilerGeneratedAttribute]
+public Variable get_Variable();
+    [CompilerGeneratedAttribute]
+protected void set_Variable(Variable value);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    public string Declaration();
+    public string Invocation();
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.ConstructorFrame/<FindVariables>d__34")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+}
+public class LamarCodeGeneration.Frames.ConstructorFrame`1 : ConstructorFrame {
+    public ConstructorFrame`1(ConstructorInfo ctor);
+    public ConstructorFrame`1(Expression`1<Func`1<T>> expression);
+    public void Set(Expression`1<Func`2<T, object>> expression, Variable variable);
+}
+public enum LamarCodeGeneration.Frames.DisposalMode : Enum {
+    public int value__;
+    public static DisposalMode UsingBlock;
+    public static DisposalMode None;
+}
+public abstract class LamarCodeGeneration.Frames.Frame : object {
+    protected internal IList`1<Variable> creates;
+    protected IList`1<Frame> dependencies;
+    protected internal IList`1<Variable> uses;
+    private bool _hasResolved;
+    private Frame _next;
+    [CompilerGeneratedAttribute]
+private bool <IsAsync>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Wraps>k__BackingField;
+    public bool IsAsync { get; protected set; }
+    public bool Wraps { get; protected set; }
+    public Frame Next { get; public set; }
+    public IEnumerable`1<Variable> Uses { get; }
+    public IEnumerable`1<Variable> Creates { get; }
+    public Frame[] Dependencies { get; }
+    protected Frame(bool isAsync);
+    [CompilerGeneratedAttribute]
+public bool get_IsAsync();
+    [CompilerGeneratedAttribute]
+protected void set_IsAsync(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_Wraps();
+    [CompilerGeneratedAttribute]
+protected void set_Wraps(bool value);
+    public Frame get_Next();
+    public void set_Next(Frame value);
+    public IEnumerable`1<Variable> get_Uses();
+    public virtual IEnumerable`1<Variable> get_Creates();
+    public Frame[] get_Dependencies();
+    public Variable Create(Type variableType);
+    public Variable Create();
+    public Variable Create(string name);
+    public abstract virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    public void ResolveVariables(IMethodVariables method);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.Frame/<FindVariables>d__28")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+    public virtual bool CanReturnTask();
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.Frame/<AllFrames>d__30")]
+public IEnumerable`1<Frame> AllFrames();
+    [CompilerGeneratedAttribute]
+private bool <ResolveVariables>b__27_0(Variable x);
+}
+public interface LamarCodeGeneration.Frames.ICodeFrame {
+    public abstract virtual ICodeFrame Creates(Variable variable);
+}
+public class LamarCodeGeneration.Frames.IfBlock : CompositeFrame {
+    [CompilerGeneratedAttribute]
+private string <Condition>k__BackingField;
+    public string Condition { get; }
+    public IfBlock(string condition, Frame[] inner);
+    public IfBlock(Variable variable, Frame[] inner);
+    [CompilerGeneratedAttribute]
+public string get_Condition();
+    protected virtual void generateCode(GeneratedMethod method, ISourceWriter writer, Frame inner);
+}
+public class LamarCodeGeneration.Frames.IfNullGuard : Frame {
+    private Variable _subject;
+    private Frame[] _nullPath;
+    private Frame[] _existsPath;
+    public IfNullGuard(Variable subject, Frame[] nullPath, Frame[] existsPath);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.IfNullGuard/<FindVariables>d__5")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+}
+public class LamarCodeGeneration.Frames.MethodCall : Frame {
+    [CompilerGeneratedAttribute]
+private Dictionary`2<Type, Type> <Aliases>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <HandlerType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MethodInfo <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <ReturnVariable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <ReturnType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CommentText>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsLocal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <Target>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable[] <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DisposalMode <DisposalMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ReturnAction <ReturnAction>k__BackingField;
+    public Dictionary`2<Type, Type> Aliases { get; }
+    public Type HandlerType { get; }
+    public MethodInfo Method { get; }
+    public Variable ReturnVariable { get; private set; }
+    public Type ReturnType { get; }
+    public string CommentText { get; public set; }
+    public bool IsLocal { get; public set; }
+    public Variable Target { get; public set; }
+    public Variable[] Arguments { get; }
+    public DisposalMode DisposalMode { get; public set; }
+    public ReturnAction ReturnAction { get; public set; }
+    public MethodCall(Type handlerType, string methodName);
+    public MethodCall(Type handlerType, MethodInfo method);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<Type, Type> get_Aliases();
+    [CompilerGeneratedAttribute]
+public Type get_HandlerType();
+    [CompilerGeneratedAttribute]
+public MethodInfo get_Method();
+    public void AssignResultTo(Variable variable);
+    [CompilerGeneratedAttribute]
+public Variable get_ReturnVariable();
+    [CompilerGeneratedAttribute]
+private void set_ReturnVariable(Variable value);
+    public static MethodCall For(Expression`1<Action`1<T>> expression);
+    [CompilerGeneratedAttribute]
+public Type get_ReturnType();
+    [CompilerGeneratedAttribute]
+public string get_CommentText();
+    [CompilerGeneratedAttribute]
+public void set_CommentText(string value);
+    private Type correctedReturnType(Type type);
+    [CompilerGeneratedAttribute]
+public bool get_IsLocal();
+    [CompilerGeneratedAttribute]
+public void set_IsLocal(bool value);
+    [CompilerGeneratedAttribute]
+public Variable get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(Variable value);
+    private Variable findVariable(ParameterInfo param, IMethodVariables chain);
+    [CompilerGeneratedAttribute]
+public Variable[] get_Arguments();
+    [CompilerGeneratedAttribute]
+public DisposalMode get_DisposalMode();
+    [CompilerGeneratedAttribute]
+public void set_DisposalMode(DisposalMode value);
+    [CompilerGeneratedAttribute]
+public ReturnAction get_ReturnAction();
+    [CompilerGeneratedAttribute]
+public void set_ReturnAction(ReturnAction value);
+    public bool TrySetArgument(Variable variable);
+    public bool TrySetArgument(string parameterName, Variable variable);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.MethodCall/<FindVariables>d__47")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+    private string returnActionCode(GeneratedMethod method);
+    private bool shouldWriteInUsingBlock(GeneratedMethod method);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    private string invocationCode();
+    private bool returnsValueTask();
+    public string InvocationCode(GeneratedMethod method);
+    public string AssignmentCode(GeneratedMethod method);
+    private string determineTarget();
+    public virtual bool CanReturnTask();
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+private Variable <.ctor>b__16_0(Type x);
+}
+public enum LamarCodeGeneration.Frames.ReturnAction : Enum {
+    public int value__;
+    public static ReturnAction Return;
+    public static ReturnAction Assign;
+    public static ReturnAction Initialize;
+}
+public class LamarCodeGeneration.Frames.ReturnFrame : SyncFrame {
+    [CompilerGeneratedAttribute]
+private Type <ReturnType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <ReturnedVariable>k__BackingField;
+    public Type ReturnType { get; }
+    public Variable ReturnedVariable { get; private set; }
+    public ReturnFrame(Type returnType);
+    public ReturnFrame(Variable returnVariable);
+    [CompilerGeneratedAttribute]
+public Type get_ReturnType();
+    [CompilerGeneratedAttribute]
+public Variable get_ReturnedVariable();
+    [CompilerGeneratedAttribute]
+private void set_ReturnedVariable(Variable value);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.ReturnFrame/<FindVariables>d__11")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+}
+public class LamarCodeGeneration.Frames.ReturnValueTask : SyncFrame {
+    private Type _variableType;
+    private Variable _returnValue;
+    public ReturnValueTask(Type variableType);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Frames.ReturnValueTask/<FindVariables>d__3")]
+public virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+}
+public class LamarCodeGeneration.Frames.SetterArg : object {
+    [CompilerGeneratedAttribute]
+private string <PropertyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <Variable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <PropertyType>k__BackingField;
+    public string PropertyName { get; }
+    public Variable Variable { get; private set; }
+    public Type PropertyType { get; }
+    public SetterArg(string propertyName, Variable variable);
+    public SetterArg(string propertyName, Type propertyType);
+    public SetterArg(PropertyInfo property);
+    public SetterArg(PropertyInfo property, Variable variable);
+    [CompilerGeneratedAttribute]
+public string get_PropertyName();
+    [CompilerGeneratedAttribute]
+public Variable get_Variable();
+    [CompilerGeneratedAttribute]
+private void set_Variable(Variable value);
+    [CompilerGeneratedAttribute]
+public Type get_PropertyType();
+    public string Assignment();
+    internal void FindVariable(IMethodVariables chain);
+}
+public abstract class LamarCodeGeneration.Frames.SyncFrame : Frame {
+}
+public abstract class LamarCodeGeneration.Frames.TemplateFrame : SyncFrame {
+    private IList`1<VariableProxy> _proxies;
+    private string _template;
+    protected abstract virtual string Template();
+    protected object Arg();
+    protected object Arg(string name);
+    public sealed virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+    public sealed virtual IEnumerable`1<Variable> FindVariables(IMethodVariables chain);
+}
+public class LamarCodeGeneration.Frames.ThrowExceptionFrame : SyncFrame {
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+}
+public class LamarCodeGeneration.Frames.ThrowExceptionFrame`1 : CodeFrame {
+    public ThrowExceptionFrame`1(Object[] values);
+    public static string ToFormat(Object[] values);
+}
+public class LamarCodeGeneration.Frames.Use : object {
+    private Type _variableType;
+    private string _variableName;
+    public Use(Type variableType);
+    public Use(Type variableType, string variableName);
+    internal Variable FindVariable(IMethodVariables variables);
+    public static Use Type(string variableName);
+}
+public class LamarCodeGeneration.Frames.VariableProxy : object {
+    private Type _variableType;
+    private string _name;
+    private string _substitution;
+    [CompilerGeneratedAttribute]
+private Variable <Variable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Index>k__BackingField;
+    public Variable Variable { get; private set; }
+    public int Index { get; }
+    public VariableProxy(int index, Type variableType);
+    public VariableProxy(int index, Type variableType, string name);
+    public Variable Resolve(IMethodVariables variables);
+    [CompilerGeneratedAttribute]
+public Variable get_Variable();
+    [CompilerGeneratedAttribute]
+private void set_Variable(Variable value);
+    [CompilerGeneratedAttribute]
+public int get_Index();
+    public virtual string ToString();
+    public string Substitute(string code);
+}
+public class LamarCodeGeneration.FramesCollection : List`1<Frame> {
+    [CompilerGeneratedAttribute]
+private GeneratedMethod <ParentMethod>k__BackingField;
+    public GeneratedMethod ParentMethod { get; }
+    public FramesCollection(GeneratedMethod parentMethod);
+    [CompilerGeneratedAttribute]
+public GeneratedMethod get_ParentMethod();
+    public ICodeFrame ReturnNewGeneratedTypeObject(GeneratedType typeBeingReturned, String[] values);
+    public FramesCollection Return(Type returnType);
+    public FramesCollection Return(object returnValue);
+    public FramesCollection CallConstructor(Expression`1<Func`1<T>> constructor, Action`1<ConstructorFrame`1<T>> configure);
+    public FramesCollection Append();
+    public FramesCollection Append(Frame[] frames);
+    public FramesCollection Call(Expression`1<Action`1<T>> expression, Action`1<MethodCall> configure);
+    public void Write(GeneratedMethod method, ISourceWriter writer);
+    public FramesCollection ReturnNull();
+    public FramesCollection ThrowNotImplementedException();
+    public FramesCollection ThrowNotSupportedException();
+    public FramesCollection Throw(Object[] arguments);
+    public ICodeFrame Code(string code, Object[] values);
+    public ICodeFrame CodeAsync(string code, Object[] values);
+    public void Return();
+}
+public class LamarCodeGeneration.GeneratedAssembly : object {
+    private List`1<GeneratedType> _generatedTypes;
+    [CompilerGeneratedAttribute]
+private string <Namespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GenerationRules <Rules>k__BackingField;
+    private IList`1<Assembly> _assemblies;
+    [CompilerGeneratedAttribute]
+private Assembly <Assembly>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICodeFragment <Header>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICodeFragment <Footer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<string> <UsingNamespaces>k__BackingField;
+    public IReadOnlyList`1<GeneratedType> GeneratedTypes { get; }
+    public string Namespace { get; }
+    public GenerationRules Rules { get; }
+    public Assembly Assembly { get; private set; }
+    public ICodeFragment Header { get; public set; }
+    public ICodeFragment Footer { get; public set; }
+    public IList`1<string> UsingNamespaces { get; }
+    public GeneratedAssembly(GenerationRules rules);
+    public GeneratedAssembly(GenerationRules rules, string ns);
+    public IReadOnlyList`1<GeneratedType> get_GeneratedTypes();
+    [CompilerGeneratedAttribute]
+public string get_Namespace();
+    [CompilerGeneratedAttribute]
+public GenerationRules get_Rules();
+    public void ReferenceAssembly(Assembly assembly);
+    public GeneratedType AddType(string typeName, Type baseType);
+    public void AttachAssembly(Assembly assembly);
+    [CompilerGeneratedAttribute]
+public Assembly get_Assembly();
+    [CompilerGeneratedAttribute]
+private void set_Assembly(Assembly value);
+    [CompilerGeneratedAttribute]
+public ICodeFragment get_Header();
+    [CompilerGeneratedAttribute]
+public void set_Header(ICodeFragment value);
+    [CompilerGeneratedAttribute]
+public ICodeFragment get_Footer();
+    [CompilerGeneratedAttribute]
+public void set_Footer(ICodeFragment value);
+    [CompilerGeneratedAttribute]
+public IList`1<string> get_UsingNamespaces();
+    public string GenerateCode(IServiceVariableSource services);
+    public List`1<string> AllReferencedNamespaces();
+    private void attachSourceCodeToTypes(String& code);
+    public static GeneratedAssembly Empty();
+}
+public class LamarCodeGeneration.GeneratedMethod : object {
+    private AsyncMode _asyncMode;
+    private Frame _top;
+    private MethodInfo _parentMethod;
+    [CompilerGeneratedAttribute]
+private Type <ReturnType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MethodName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Overrides>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Argument[] <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Variable> <DerivedVariables>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<IVariableSource> <Sources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <ReturnVariable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GeneratedType <ParentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FramesCollection <Frames>k__BackingField;
+    public Type ReturnType { get; }
+    public string MethodName { get; }
+    public bool Overrides { get; public set; }
+    public AsyncMode AsyncMode { get; public set; }
+    public Argument[] Arguments { get; }
+    public IList`1<Variable> DerivedVariables { get; }
+    public IList`1<IVariableSource> Sources { get; }
+    public Variable ReturnVariable { get; public set; }
+    public GeneratedType ParentType { get; public set; }
+    public FramesCollection Frames { get; }
+    public GeneratedMethod(MethodInfo method);
+    public GeneratedMethod(string methodName, Type returnType, Argument[] arguments);
+    public static GeneratedMethod For(string name, Argument[] arguments);
+    public static GeneratedMethod ForNoArg(string name);
+    public static GeneratedMethod ForNoArg(string name);
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+public Type get_ReturnType();
+    [CompilerGeneratedAttribute]
+public string get_MethodName();
+    [CompilerGeneratedAttribute]
+public bool get_Overrides();
+    [CompilerGeneratedAttribute]
+public void set_Overrides(bool value);
+    public AsyncMode get_AsyncMode();
+    public void set_AsyncMode(AsyncMode value);
+    public bool WillGenerate();
+    [CompilerGeneratedAttribute]
+public sealed virtual Argument[] get_Arguments();
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<Variable> get_DerivedVariables();
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<IVariableSource> get_Sources();
+    [CompilerGeneratedAttribute]
+public Variable get_ReturnVariable();
+    [CompilerGeneratedAttribute]
+public void set_ReturnVariable(Variable value);
+    public void WriteMethod(ISourceWriter writer);
+    protected void writeReturnStatement(ISourceWriter writer);
+    protected string determineReturnExpression();
+    public void ArrangeFrames(GeneratedType type, IServiceVariableSource services);
+    public string ToExitStatement();
+    public void Return();
+    [CompilerGeneratedAttribute]
+public GeneratedType get_ParentType();
+    [CompilerGeneratedAttribute]
+public void set_ParentType(GeneratedType value);
+    [CompilerGeneratedAttribute]
+public sealed virtual FramesCollection get_Frames();
+}
+[DebuggerDisplayAttribute("GeneratedType: {BaseType}")]
+public class LamarCodeGeneration.GeneratedType : object {
+    private IList`1<Type> _interfaces;
+    private IList`1<GeneratedMethod> _methods;
+    [CompilerGeneratedAttribute]
+private ICodeFragment <Header>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICodeFragment <Footer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GenerationRules <Rules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Setter> <Setters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Namespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <BaseType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable[] <BaseConstructorArguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<InjectedField> <AllInjectedFields>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SourceCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <CompiledType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GeneratedAssembly <ParentAssembly>k__BackingField;
+    public ICodeFragment Header { get; public set; }
+    public ICodeFragment Footer { get; public set; }
+    public GenerationRules Rules { get; }
+    public IList`1<Setter> Setters { get; }
+    public string TypeName { get; }
+    public string Namespace { get; internal set; }
+    public Type BaseType { get; private set; }
+    public Variable[] BaseConstructorArguments { get; private set; }
+    public IList`1<InjectedField> AllInjectedFields { get; }
+    public IEnumerable`1<Type> Interfaces { get; }
+    public IEnumerable`1<GeneratedMethod> Methods { get; }
+    public string SourceCode { get; public set; }
+    public Type CompiledType { get; private set; }
+    public string FullName { get; }
+    public GeneratedAssembly ParentAssembly { get; internal set; }
+    public GeneratedType(string typeName);
+    public GeneratedType(GenerationRules rules, string typeName);
+    public GeneratedType(GeneratedAssembly parent, string typeName);
+    [CompilerGeneratedAttribute]
+public ICodeFragment get_Header();
+    [CompilerGeneratedAttribute]
+public void set_Header(ICodeFragment value);
+    [CompilerGeneratedAttribute]
+public ICodeFragment get_Footer();
+    [CompilerGeneratedAttribute]
+public void set_Footer(ICodeFragment value);
+    public void CommentType(string text);
+    [CompilerGeneratedAttribute]
+public sealed virtual GenerationRules get_Rules();
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<Setter> get_Setters();
+    [CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+public string get_Namespace();
+    [CompilerGeneratedAttribute]
+internal void set_Namespace(string value);
+    [CompilerGeneratedAttribute]
+public Type get_BaseType();
+    [CompilerGeneratedAttribute]
+private void set_BaseType(Type value);
+    [CompilerGeneratedAttribute]
+public Variable[] get_BaseConstructorArguments();
+    [CompilerGeneratedAttribute]
+private void set_BaseConstructorArguments(Variable[] value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<InjectedField> get_AllInjectedFields();
+    public IEnumerable`1<Type> get_Interfaces();
+    public IEnumerable`1<GeneratedMethod> get_Methods();
+    [CompilerGeneratedAttribute]
+public string get_SourceCode();
+    [CompilerGeneratedAttribute]
+public void set_SourceCode(string value);
+    [CompilerGeneratedAttribute]
+public Type get_CompiledType();
+    [CompilerGeneratedAttribute]
+private void set_CompiledType(Type value);
+    private sealed virtual override bool LamarCodeGeneration.Model.IVariableSource.Matches(Type type);
+    private sealed virtual override Variable LamarCodeGeneration.Model.IVariableSource.Create(Type type);
+    public GeneratedType InheritsFrom();
+    public GeneratedType InheritsFrom(Type baseType);
+    public GeneratedType Implements(Type type);
+    public GeneratedType Implements();
+    public void AddMethod(GeneratedMethod method);
+    public GeneratedMethod MethodFor(string methodName);
+    public GeneratedMethod AddVoidMethod(string name, Argument[] args);
+    public GeneratedMethod AddMethodThatReturns(string name, Argument[] args);
+    public void Write(ISourceWriter writer);
+    private void writeSetters(ISourceWriter writer);
+    private void writeConstructorMethod(ISourceWriter writer, IList`1<InjectedField> args);
+    private void writeFieldDeclarations(ISourceWriter writer, IList`1<InjectedField> args);
+    private void writeDeclaration(ISourceWriter writer);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.GeneratedType/<implements>d__65")]
+private IEnumerable`1<Type> implements();
+    public string get_FullName();
+    [CompilerGeneratedAttribute]
+public GeneratedAssembly get_ParentAssembly();
+    [CompilerGeneratedAttribute]
+internal void set_ParentAssembly(GeneratedAssembly value);
+    public Type FindType(IEnumerable`1<Type> types);
+    public void ArrangeFrames(IServiceVariableSource services);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.GeneratedType/<AssemblyReferences>d__74")]
+public IEnumerable`1<Assembly> AssemblyReferences();
+    public T CreateInstance(Object[] arguments);
+    public void ApplySetterValues(object builtObject);
+    public void UseConstantForBaseCtor(Variable variable);
+    [CompilerGeneratedAttribute]
+private bool <FindType>b__72_0(Type x);
+}
+public class LamarCodeGeneration.GenerationRules : object {
+    [CompilerGeneratedAttribute]
+private bool <SourceCodeWritingEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GeneratedNamespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TypeLoadMode <TypeLoadMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GeneratedCodeOutputPath>k__BackingField;
+    public IList`1<IVariableSource> Sources;
+    public IList`1<Assembly> Assemblies;
+    public IDictionary`2<string, object> Properties;
+    [CompilerGeneratedAttribute]
+private Assembly <ApplicationAssembly>k__BackingField;
+    public bool SourceCodeWritingEnabled { get; public set; }
+    public string GeneratedNamespace { get; public set; }
+    [ObsoleteAttribute("Use GeneratedNamespace instead")]
+public string ApplicationNamespace { get; public set; }
+    public TypeLoadMode TypeLoadMode { get; public set; }
+    public string GeneratedCodeOutputPath { get; public set; }
+    public Assembly ApplicationAssembly { get; public set; }
+    public GenerationRules(string applicationNamespace);
+    public GenerationRules(string applicationNamespace, TypeLoadMode typeLoadMode);
+    [CompilerGeneratedAttribute]
+public bool get_SourceCodeWritingEnabled();
+    [CompilerGeneratedAttribute]
+public void set_SourceCodeWritingEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public string get_GeneratedNamespace();
+    [CompilerGeneratedAttribute]
+public void set_GeneratedNamespace(string value);
+    public string get_ApplicationNamespace();
+    public void set_ApplicationNamespace(string value);
+    [CompilerGeneratedAttribute]
+public TypeLoadMode get_TypeLoadMode();
+    [CompilerGeneratedAttribute]
+public void set_TypeLoadMode(TypeLoadMode value);
+    [CompilerGeneratedAttribute]
+public string get_GeneratedCodeOutputPath();
+    [CompilerGeneratedAttribute]
+public void set_GeneratedCodeOutputPath(string value);
+    public void ReferenceAssembly(Assembly assembly);
+    public void ReferenceTypes(Type[] types);
+    [CompilerGeneratedAttribute]
+public Assembly get_ApplicationAssembly();
+    [CompilerGeneratedAttribute]
+public void set_ApplicationAssembly(Assembly value);
+}
+public class LamarCodeGeneration.GeneratorCompilationFailureException : Exception {
+    public GeneratorCompilationFailureException(ICodeFileCollection generator, Exception innerException);
+}
+public interface LamarCodeGeneration.ICodeFile {
+    public string FileName { get; }
+    public abstract virtual string get_FileName();
+    public abstract virtual void AssembleTypes(GeneratedAssembly assembly);
+    public abstract virtual Task`1<bool> AttachTypes(GenerationRules rules, Assembly assembly, IServiceProvider services, string containingNamespace);
+    public abstract virtual bool AttachTypesSynchronously(GenerationRules rules, Assembly assembly, IServiceProvider services, string containingNamespace);
+}
+public interface LamarCodeGeneration.ICodeFileCollection {
+    public string ChildNamespace { get; }
+    public GenerationRules Rules { get; }
+    public abstract virtual IReadOnlyList`1<ICodeFile> BuildFiles();
+    public abstract virtual string get_ChildNamespace();
+    public abstract virtual GenerationRules get_Rules();
+}
+public interface LamarCodeGeneration.ICodeFragment {
+    public abstract virtual void Write(ISourceWriter writer);
+}
+public interface LamarCodeGeneration.IGeneratedMethod {
+    public FramesCollection Frames { get; }
+    public Argument[] Arguments { get; }
+    public IList`1<Variable> DerivedVariables { get; }
+    public IList`1<IVariableSource> Sources { get; }
+    public abstract virtual FramesCollection get_Frames();
+    public abstract virtual Argument[] get_Arguments();
+    public abstract virtual IList`1<Variable> get_DerivedVariables();
+    public abstract virtual IList`1<IVariableSource> get_Sources();
+}
+public interface LamarCodeGeneration.IGeneratedType {
+    public IList`1<Setter> Setters { get; }
+    public IList`1<InjectedField> AllInjectedFields { get; }
+    public GenerationRules Rules { get; }
+    public abstract virtual IList`1<Setter> get_Setters();
+    public abstract virtual IList`1<InjectedField> get_AllInjectedFields();
+    public abstract virtual GenerationRules get_Rules();
+}
+public interface LamarCodeGeneration.ISourceWriter {
+    public int IndentionLevel { get; public set; }
+    public abstract virtual void BlankLine();
+    public abstract virtual void Write(string text);
+    public abstract virtual void FinishBlock(string extra);
+    public abstract virtual void WriteLine(string text);
+    public abstract virtual int get_IndentionLevel();
+    public abstract virtual void set_IndentionLevel(int value);
+}
+public class LamarCodeGeneration.Model.Argument : Variable {
+    public string Declaration { get; }
+    public Argument(Type variableType, string usage);
+    public Argument(ParameterInfo parameter);
+    public string get_Declaration();
+    public static Argument For(string argName);
+    protected bool Equals(Argument other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public enum LamarCodeGeneration.Model.AsyncMode : Enum {
+    public int value__;
+    public static AsyncMode ReturnCompletedTask;
+    public static AsyncMode AsyncTask;
+    public static AsyncMode ReturnFromLastNode;
+    public static AsyncMode None;
+}
+public class LamarCodeGeneration.Model.CastVariable : Variable {
+    [CompilerGeneratedAttribute]
+private Variable <Inner>k__BackingField;
+    public Variable Inner { get; }
+    public CastVariable(Variable parent, Type specificType);
+    [CompilerGeneratedAttribute]
+public Variable get_Inner();
+}
+public static class LamarCodeGeneration.Model.Constant : object {
+    public static Variable For(object value);
+    public static Variable ForEnum(T value);
+    public static Variable ForString(string value);
+    public static Variable ForType(Type type);
+}
+public class LamarCodeGeneration.Model.IfStyle : object {
+    private bool _writes;
+    public static IfStyle If;
+    public static IfStyle ElseIf;
+    public static IfStyle Else;
+    public static IfStyle None;
+    [CompilerGeneratedAttribute]
+private string <Code>k__BackingField;
+    public string Code { get; }
+    private IfStyle(string code, bool writes);
+    private static IfStyle();
+    [CompilerGeneratedAttribute]
+public string get_Code();
+    public void Open(ISourceWriter writer, string condition);
+    public void Close(ISourceWriter writer);
+    public virtual string ToString();
+}
+public interface LamarCodeGeneration.Model.IMethodVariables {
+    public abstract virtual Variable FindVariable(Type type);
+    public abstract virtual Variable FindVariableByName(Type dependency, string name);
+    public abstract virtual bool TryFindVariableByName(Type dependency, string name, Variable& variable);
+    public abstract virtual Variable TryFindVariable(Type type, VariableSource source);
+}
+public class LamarCodeGeneration.Model.InjectedField : Variable {
+    [CompilerGeneratedAttribute]
+private Type <ArgType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CtorArg>k__BackingField;
+    public Type ArgType { get; }
+    public string CtorArg { get; protected set; }
+    public string CtorArgDeclaration { get; }
+    public InjectedField(Type argType);
+    public InjectedField(Type argType, string name);
+    [CompilerGeneratedAttribute]
+public Type get_ArgType();
+    [CompilerGeneratedAttribute]
+public string get_CtorArg();
+    [CompilerGeneratedAttribute]
+protected void set_CtorArg(string value);
+    public virtual string get_CtorArgDeclaration();
+    public void WriteDeclaration(ISourceWriter writer);
+    public void WriteAssignment(ISourceWriter writer);
+    public Variable ToBaseCtorVariable();
+}
+public interface LamarCodeGeneration.Model.IServiceVariableSource {
+    public abstract virtual void ReplaceVariables();
+    public abstract virtual void StartNewType();
+    public abstract virtual void StartNewMethod();
+}
+public interface LamarCodeGeneration.Model.IVariableSource {
+    public abstract virtual bool Matches(Type type);
+    public abstract virtual Variable Create(Type type);
+}
+internal class LamarCodeGeneration.Model.MethodFrameArranger : object {
+    private IGeneratedMethod _method;
+    private IGeneratedType _type;
+    private Dictionary`2<Type, Variable> _variables;
+    private IServiceVariableSource _services;
+    public MethodFrameArranger(IGeneratedMethod method, IGeneratedType type, IServiceVariableSource services);
+    public MethodFrameArranger(IGeneratedMethod method, IGeneratedType type);
+    public void Arrange(AsyncMode& asyncMode, Frame& topFrame);
+    protected Frame chainFrames(Frame[] frames);
+    protected Frame[] compileFrames(IList`1<Frame> frames);
+    internal void findInjectedFields(DependencyGatherer dependencies);
+    internal void findSetters(DependencyGatherer dependencies);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Model.MethodFrameArranger/<allVariableSources>d__11")]
+private IEnumerable`1<IVariableSource> allVariableSources(VariableSource variableSource);
+    private Variable findVariable(Type type, VariableSource variableSource);
+    public sealed virtual Variable FindVariableByName(Type dependency, string name);
+    public sealed virtual Variable FindVariable(Type type);
+    public sealed virtual bool TryFindVariableByName(Type dependency, string name, Variable& variable);
+    public sealed virtual Variable TryFindVariable(Type type, VariableSource source);
+    [CompilerGeneratedAttribute]
+private void <findInjectedFields>b__9_0(Variable key, List`1<Frame> _);
+    [CompilerGeneratedAttribute]
+private void <findSetters>b__10_0(Variable key, List`1<Frame> _);
+}
+public class LamarCodeGeneration.Model.NowFetchFrame : SyncFrame {
+    [CompilerGeneratedAttribute]
+private Variable <Variable>k__BackingField;
+    public Variable Variable { get; }
+    public NowFetchFrame(Type variableType);
+    [CompilerGeneratedAttribute]
+public Variable get_Variable();
+    public virtual void GenerateCode(GeneratedMethod method, ISourceWriter writer);
+}
+public class LamarCodeGeneration.Model.NowTimeVariableSource : object {
+    public sealed virtual bool Matches(Type type);
+    public sealed virtual Variable Create(Type type);
+}
+public class LamarCodeGeneration.Model.OutArgument : Variable {
+    public string ArgumentDeclaration { get; }
+    public OutArgument(Type variableType);
+    public OutArgument(Type variableType, string usage);
+    public OutArgument(Type variableType, string usage, Frame creator);
+    public OutArgument(Type variableType, Frame creator);
+    public virtual string get_ArgumentDeclaration();
+}
+public class LamarCodeGeneration.Model.Setter : Variable {
+    [CompilerGeneratedAttribute]
+private string <PropName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <InitialValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Variable <ReadOnlyValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SetterType <Type>k__BackingField;
+    public string PropName { get; public set; }
+    public object InitialValue { get; public set; }
+    public Variable ReadOnlyValue { get; public set; }
+    public SetterType Type { get; public set; }
+    public Setter(Type variableType);
+    public Setter(Type variableType, string name);
+    public static Setter ReadOnly(string name, Variable value);
+    public static Setter StaticReadOnly(string name, Variable value);
+    public static Setter Constant(string name, Variable value);
+    [CompilerGeneratedAttribute]
+public string get_PropName();
+    [CompilerGeneratedAttribute]
+public void set_PropName(string value);
+    public virtual void WriteDeclaration(ISourceWriter writer);
+    public string ToDeclaration();
+    [CompilerGeneratedAttribute]
+public object get_InitialValue();
+    [CompilerGeneratedAttribute]
+public void set_InitialValue(object value);
+    [CompilerGeneratedAttribute]
+public Variable get_ReadOnlyValue();
+    [CompilerGeneratedAttribute]
+public void set_ReadOnlyValue(Variable value);
+    [CompilerGeneratedAttribute]
+public SetterType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(SetterType value);
+    public void SetInitialValue(object object);
+    public virtual Expression ToVariableExpression(LambdaDefinition definition);
+}
+public enum LamarCodeGeneration.Model.SetterType : Enum {
+    public int value__;
+    public static SetterType ReadWrite;
+    public static SetterType ReadOnly;
+    public static SetterType Constant;
+    public static SetterType StaticReadOnly;
+}
+public class LamarCodeGeneration.Model.StaticVariable : Variable {
+    public StaticVariable(Type variableType, string usage);
+    public sealed virtual bool Matches(Type type);
+    public sealed virtual Variable Create(Type type);
+}
+public class LamarCodeGeneration.Model.ValueTypeReturnVariable : Variable {
+    private Variable[] _inner;
+    public string Usage { get; }
+    public ValueTypeReturnVariable(Type returnType, Variable[] inner);
+    public virtual string get_Usage();
+}
+public class LamarCodeGeneration.Model.Variable : object {
+    private Frame _frame;
+    [CompilerGeneratedAttribute]
+private Type <VariableType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Usage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Properties>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Variable> <Dependencies>k__BackingField;
+    public Frame Creator { get; protected set; }
+    public Type VariableType { get; }
+    public string Usage { get; protected set; }
+    public string AssignmentUsage { get; }
+    public string ArgumentDeclaration { get; }
+    public Dictionary`2<string, object> Properties { get; }
+    public IList`1<Variable> Dependencies { get; }
+    public Variable(Type variableType);
+    public Variable(Type variableType, string usage);
+    public Variable(Type variableType, string usage, Frame creator);
+    public Variable(Type variableType, Frame creator);
+    public static Variable[] VariablesForProperties(string rootArgName);
+    public static Variable For(string variableName);
+    public static string DefaultArgName(Type argType);
+    public static string DefaultArgName();
+    public Frame get_Creator();
+    protected void set_Creator(Frame value);
+    [CompilerGeneratedAttribute]
+public Type get_VariableType();
+    [CompilerGeneratedAttribute]
+public virtual string get_Usage();
+    [CompilerGeneratedAttribute]
+protected virtual void set_Usage(string value);
+    public virtual string get_AssignmentUsage();
+    public virtual string get_ArgumentDeclaration();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Properties();
+    public virtual void OverrideName(string variableName);
+    public void OverrideType(Type variableType);
+    [CompilerGeneratedAttribute]
+public IList`1<Variable> get_Dependencies();
+    public virtual string ToString();
+    protected bool Equals(Variable other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual Expression ToVariableExpression(LambdaDefinition definition);
+}
+public enum LamarCodeGeneration.Model.VariableCreation : Enum {
+    public int value__;
+    public static VariableCreation Created;
+    public static VariableCreation Injected;
+    public static VariableCreation BuiltByFrame;
+}
+public enum LamarCodeGeneration.Model.VariableSource : Enum {
+    public int value__;
+    public static VariableSource All;
+    public static VariableSource NotServices;
+}
+public enum LamarCodeGeneration.Model.Visibility : Enum {
+    public int value__;
+    public static Visibility Public;
+    public static Visibility Protected;
+    public static Visibility Private;
+    public static Visibility Internal;
+}
+public class LamarCodeGeneration.OneLineCodeFragment : object {
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    public string Text { get; }
+    public OneLineCodeFragment(string text);
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    public sealed virtual void Write(ISourceWriter writer);
+}
+public class LamarCodeGeneration.OneLineComment : object {
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    public string Text { get; }
+    public OneLineComment(string text);
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    public sealed virtual void Write(ISourceWriter writer);
+}
+[ExtensionAttribute]
+public static class LamarCodeGeneration.ReflectionExtensions : object {
+    public static Dictionary`2<Type, string> Aliases;
+    private static ReflectionExtensions();
+    [ExtensionAttribute]
+public static bool IsAsync(MethodInfo method);
+    [ExtensionAttribute]
+public static bool CanBeOverridden(MethodInfo method);
+    [ExtensionAttribute]
+public static string FullNameInCode(Type type);
+    [ExtensionAttribute]
+public static string NameInCode(Type type);
+    [ExtensionAttribute]
+public static string NameInCode(Type type, Type[] genericParameterTypes);
+    [ExtensionAttribute]
+public static string ShortNameInCode(Type type);
+    [ExtensionAttribute]
+public static string ToSuffixedTypeName(Type type, string suffix);
+    [ExtensionAttribute]
+public static int GetStableHashCode(string str);
+}
+internal class LamarCodeGeneration.SourceCodeParser : object {
+    private LightweightCache`2<string, string> _code;
+    private StringWriter _current;
+    private string _name;
+    internal SourceCodeParser(string code);
+    public string CodeFor(string typeName);
+    public sealed virtual void Dispose();
+}
+public class LamarCodeGeneration.SourceWriter : object {
+    private StringWriter _writer;
+    private string _leadingSpaces;
+    private int _level;
+    public int IndentionLevel { get; public set; }
+    public sealed virtual int get_IndentionLevel();
+    public sealed virtual void set_IndentionLevel(int value);
+    public sealed virtual void BlankLine();
+    public sealed virtual void Write(string text);
+    public sealed virtual void WriteLine(string text);
+    private void StartBlock();
+    public sealed virtual void FinishBlock(string extra);
+    public string Code();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private void <Write>b__7_0(string line);
+}
+[ExtensionAttribute]
+public static class LamarCodeGeneration.SourceWriterExtensions : object {
+    private static string returnCompletedTask;
+    private static string returnFromResult;
+    private static SourceWriterExtensions();
+    [ExtensionAttribute]
+public static void Namespace(ISourceWriter writer, string namespace);
+    [ExtensionAttribute]
+public static void UsingNamespace(ISourceWriter writer);
+    [ExtensionAttribute]
+public static void UsingNamespace(ISourceWriter writer, string namespace);
+    [ExtensionAttribute]
+public static void UsingBlock(ISourceWriter writer, string declaration, Action`1<ISourceWriter> inner);
+    [ExtensionAttribute]
+public static void WriteReturnStatement(ISourceWriter writer, GeneratedMethod method);
+    [ExtensionAttribute]
+public static void WriteReturnStatement(ISourceWriter writer, GeneratedMethod method, Variable variable);
+    [ExtensionAttribute]
+public static void WriteComment(ISourceWriter writer, string comment);
+    [ExtensionAttribute]
+public static void WriteElse(ISourceWriter writer);
+    [ExtensionAttribute]
+public static void StartClass(ISourceWriter writer, string className, Type[] inheritsOrImplements);
+}
+public enum LamarCodeGeneration.TypeLoadMode : Enum {
+    public int value__;
+    public static TypeLoadMode Dynamic;
+    public static TypeLoadMode Auto;
+    public static TypeLoadMode Static;
+}
+public class LamarCodeGeneration.UnResolvableVariableException : Exception {
+    [CompilerGeneratedAttribute]
+private Type <DependencyType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <VariableName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IGeneratedMethod <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GeneratedType <Type>k__BackingField;
+    public Type DependencyType { get; }
+    public string VariableName { get; }
+    public IGeneratedMethod Method { get; }
+    public GeneratedType Type { get; public set; }
+    public string Message { get; }
+    public UnResolvableVariableException(Type dependencyType, string variableName, IGeneratedMethod method);
+    public UnResolvableVariableException(Type dependencyType, IGeneratedMethod method);
+    [CompilerGeneratedAttribute]
+public Type get_DependencyType();
+    [CompilerGeneratedAttribute]
+public string get_VariableName();
+    [CompilerGeneratedAttribute]
+public IGeneratedMethod get_Method();
+    [CompilerGeneratedAttribute]
+public GeneratedType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(GeneratedType value);
+    public virtual string get_Message();
+}
+internal class LamarCodeGeneration.Util.CompositeFilter`1 : object {
+    private CompositePredicate`1<T> _excludes;
+    private CompositePredicate`1<T> _includes;
+    internal CompositePredicate`1<T> Includes { get; internal set; }
+    internal CompositePredicate`1<T> Excludes { get; internal set; }
+    internal CompositePredicate`1<T> get_Includes();
+    internal void set_Includes(CompositePredicate`1<T> value);
+    internal CompositePredicate`1<T> get_Excludes();
+    internal void set_Excludes(CompositePredicate`1<T> value);
+    internal bool Matches(T target);
+}
+internal class LamarCodeGeneration.Util.CompositePredicate`1 : object {
+    private List`1<Func`2<T, bool>> _list;
+    private Func`2<T, bool> _matchesAll;
+    private Func`2<T, bool> _matchesAny;
+    private Func`2<T, bool> _matchesNone;
+    internal void Add(Func`2<T, bool> filter);
+    public static CompositePredicate`1<T> op_Addition(CompositePredicate`1<T> invokes, Func`2<T, bool> filter);
+    internal bool MatchesAll(T target);
+    internal bool MatchesAny(T target);
+    internal bool MatchesNone(T target);
+    internal bool DoesNotMatcheAny(T target);
+    [CompilerGeneratedAttribute]
+private bool <Add>b__4_0(T x);
+    [CompilerGeneratedAttribute]
+private bool <Add>b__4_1(T x);
+    [CompilerGeneratedAttribute]
+private bool <Add>b__4_2(T x);
+}
+internal class LamarCodeGeneration.Util.ConstructorFinderVisitor`1 : ExpressionVisitorBase {
+    private Type _type;
+    private ConstructorInfo _constructor;
+    public ConstructorInfo Constructor { get; }
+    public ConstructorFinderVisitor`1(Type type);
+    public ConstructorInfo get_Constructor();
+    protected virtual NewExpression VisitNew(NewExpression nex);
+    public static ConstructorInfo Find(Expression`1<Func`1<T>> expression);
+}
+internal enum LamarCodeGeneration.Util.CopyBehavior : Enum {
+    public int value__;
+    public static CopyBehavior overwrite;
+    public static CopyBehavior preserve;
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.DictionaryExtensions : object {
+    [ExtensionAttribute]
+public static void SmartAdd(IDictionary`2<TKey, TValue> dictionary, TKey key, TValue value);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.DisposableExtensions : object {
+    [ExtensionAttribute]
+public static void SafeDispose(IDisposable disposable);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.EnumerableExtensions : object {
+    [ExtensionAttribute]
+public static IEnumerable`1<T> TopologicalSort(IEnumerable`1<T> source, Func`2<T, IEnumerable`1<T>> dependencies, bool throwOnCycle);
+    private static void Visit(T item, ISet`1<T> visited, ISet`1<T> visiting, ICollection`1<T> sorted, Func`2<T, IEnumerable`1<T>> dependencies, bool throwOnCycle);
+    [ExtensionAttribute]
+public static void Fill(IList`1<T> list, T value);
+    [ExtensionAttribute]
+public static void Fill(IList`1<T> list, IEnumerable`1<T> values);
+    [ExtensionAttribute]
+public static void RemoveAll(IList`1<T> list, Func`2<T, bool> whereEvaluator);
+    [ExtensionAttribute]
+public static string Join(String[] values, string separator);
+    [ExtensionAttribute]
+public static string Join(IEnumerable`1<string> values, string separator);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> Each(IEnumerable`1<T> values, Action`2<T, int> eachAction);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+public static IEnumerable`1<T> Each(IEnumerable`1<T> values, Action`1<T> eachAction);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+public static IEnumerable Each(IEnumerable values, Action`1<object> eachAction);
+    [ExtensionAttribute]
+public static TReturn FirstValue(IEnumerable`1<TItem> enumerable, Func`2<TItem, TReturn> func);
+    [ExtensionAttribute]
+public static IList`1<T> AddMany(IList`1<T> list, T[] items);
+    [ExtensionAttribute]
+public static IList`1<T> AddRange(IList`1<T> list, IEnumerable`1<T> items);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> UnionWith(IEnumerable`1<T> first, T[] second);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.ExpressionCompiler : object {
+    [ExtensionAttribute]
+public static TDelegate CompileFast(LambdaExpression lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Delegate CompileFast(LambdaExpression lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static TDelegate CompileSys(Expression`1<TDelegate> lambdaExpr);
+    [ExtensionAttribute]
+public static Delegate CompileSys(LambdaExpression lambdaExpr);
+    [ExtensionAttribute]
+public static TDelegate CompileFast(Expression`1<TDelegate> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`1<R> CompileFast(Expression`1<Func`1<R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`2<T1, R> CompileFast(Expression`1<Func`2<T1, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`3<T1, T2, R> CompileFast(Expression`1<Func`3<T1, T2, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`4<T1, T2, T3, R> CompileFast(Expression`1<Func`4<T1, T2, T3, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`5<T1, T2, T3, T4, R> CompileFast(Expression`1<Func`5<T1, T2, T3, T4, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`6<T1, T2, T3, T4, T5, R> CompileFast(Expression`1<Func`6<T1, T2, T3, T4, T5, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Func`7<T1, T2, T3, T4, T5, T6, R> CompileFast(Expression`1<Func`7<T1, T2, T3, T4, T5, T6, R>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action CompileFast(Expression`1<Action> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`1<T1> CompileFast(Expression`1<Action`1<T1>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`2<T1, T2> CompileFast(Expression`1<Action`2<T1, T2>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`3<T1, T2, T3> CompileFast(Expression`1<Action`3<T1, T2, T3>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`4<T1, T2, T3, T4> CompileFast(Expression`1<Action`4<T1, T2, T3, T4>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`5<T1, T2, T3, T4, T5> CompileFast(Expression`1<Action`5<T1, T2, T3, T4, T5>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static Action`6<T1, T2, T3, T4, T5, T6> CompileFast(Expression`1<Action`6<T1, T2, T3, T4, T5, T6>> lambdaExpr, bool ifFastFailedReturnNull);
+    [ExtensionAttribute]
+public static TDelegate TryCompile(LambdaExpression lambdaExpr);
+    [ExtensionAttribute]
+public static TDelegate TryCompileWithPreCreatedClosure(LambdaExpression lambdaExpr, object closure, ConstantExpression[] closureConstantsExprs);
+    [ExtensionAttribute]
+public static TDelegate TryCompileWithoutClosure(LambdaExpression lambdaExpr);
+    public static TDelegate TryCompile(Expression bodyExpr, IReadOnlyList`1<ParameterExpression> paramExprs, Type[] paramTypes, Type returnType);
+    private static object TryCompile(ClosureInfo& closureInfo, Type delegateType, Type[] paramTypes, Type returnType, Expression expr, IReadOnlyList`1<ParameterExpression> paramExprs, bool isNestedLambda);
+    private static void CopyNestedClosureInfo(IReadOnlyList`1<ParameterExpression> lambdaParamExprs, ClosureInfo& info, ClosureInfo& nestedInfo);
+    private static Type[] GetClosureAndParamTypes(Type[] paramTypes, Type closureType);
+    private static bool IsClosureBoundConstant(object value, TypeInfo type);
+    private static bool TryCollectBoundConstants(ClosureInfo& closure, Expression expr, IReadOnlyList`1<ParameterExpression> paramExprs);
+    private static bool TryCompileNestedLambda(ClosureInfo& closure, int lambdaIndex, LambdaExpression lambdaExpr);
+    private static bool TryCollectMemberInitExprConstants(ClosureInfo& closure, MemberInitExpression expr, IReadOnlyList`1<ParameterExpression> paramExprs);
+    private static bool TryCollectTryExprConstants(ClosureInfo& closure, TryExpression tryExpr, IReadOnlyList`1<ParameterExpression> paramExprs);
+    private static bool TryCollectBoundConstants(ClosureInfo& closure, IReadOnlyList`1<Expression> exprs, IReadOnlyList`1<ParameterExpression> paramExprs);
+    [ExtensionAttribute]
+internal static bool IgnoresResult(ParentFlags parent);
+}
+[DebuggerStepThroughAttribute]
+[DebuggerNonUserCodeAttribute]
+public abstract class LamarCodeGeneration.Util.ExpressionVisitorBase : object {
+    public virtual Expression Visit(Expression exp);
+    protected virtual MemberBinding VisitBinding(MemberBinding binding);
+    protected virtual ElementInit VisitElementInitializer(ElementInit initializer);
+    protected virtual Expression VisitUnary(UnaryExpression u);
+    protected virtual Expression VisitBinary(BinaryExpression b);
+    protected virtual Expression VisitTypeIs(TypeBinaryExpression b);
+    protected virtual Expression VisitConstant(ConstantExpression c);
+    protected virtual Expression VisitConditional(ConditionalExpression c);
+    protected virtual Expression VisitParameter(ParameterExpression p);
+    protected virtual Expression VisitMemberAccess(MemberExpression m);
+    protected virtual Expression VisitMethodCall(MethodCallExpression m);
+    protected virtual ReadOnlyCollection`1<Expression> VisitList(ReadOnlyCollection`1<Expression> original);
+    protected virtual MemberAssignment VisitMemberAssignment(MemberAssignment assignment);
+    protected virtual MemberMemberBinding VisitMemberMemberBinding(MemberMemberBinding binding);
+    protected virtual MemberListBinding VisitMemberListBinding(MemberListBinding binding);
+    protected virtual IEnumerable`1<MemberBinding> VisitBindingList(ReadOnlyCollection`1<MemberBinding> original);
+    protected virtual IEnumerable`1<ElementInit> VisitElementInitializerList(ReadOnlyCollection`1<ElementInit> original);
+    protected virtual Expression VisitLambda(LambdaExpression lambda);
+    protected virtual NewExpression VisitNew(NewExpression nex);
+    protected virtual Expression VisitMemberInit(MemberInitExpression init);
+    protected virtual Expression VisitListInit(ListInitExpression init);
+    protected virtual Expression VisitNewArray(NewArrayExpression na);
+    protected virtual Expression VisitInvocation(InvocationExpression iv);
+}
+internal class LamarCodeGeneration.Util.FileSystem : object {
+    public static int BufferSize;
+    public void CreateDirectory(string path);
+    public long FileSizeOf(string path);
+    public bool IsFile(string path);
+    public bool FileExists(string filename);
+    public void WriteStreamToFile(string filename, Stream stream);
+    public void WriteStringToFile(string filename, string text);
+    public void AppendStringToFile(string filename, string text);
+    public string ReadStringFromFile(string filename);
+    public string GetFileName(string path);
+    public void AlterFlatFile(string path, Action`1<List`1<string>> alteration);
+    public void DeleteDirectory(string directory);
+    public void CleanDirectory(string directory);
+    public bool DirectoryExists(string directory);
+    public void WriteObjectToFile(string filename, object target);
+    public T LoadFromFileOrThrow(string filename);
+    public T LoadFromFile(string filename);
+    public void LaunchEditor(string filename);
+    public void DeleteFile(string filename);
+    public void MoveFile(string from, string to);
+    public void MoveFiles(string from, string to);
+    public void MoveDirectory(string from, string to);
+    public IEnumerable`1<string> ChildDirectoriesFor(string directory);
+    public void ReadTextFile(string path, Action`1<string> callback);
+    public string GetFullPath(string path);
+    public string GetDirectory(string path);
+    private void internalFileCopy(string source, string destination, CopyBehavior behavior);
+    private bool destinationIsFile(string destination);
+    public static string Combine(String[] paths);
+    public void LaunchBrowser(string filename);
+    public static IEnumerable`1<string> GetChildDirectories(string directory);
+}
+public class LamarCodeGeneration.Util.FindMethodVisitor : ExpressionVisitorBase {
+    private MethodInfo _method;
+    public MethodInfo Method { get; }
+    public FindMethodVisitor(Expression expression);
+    public MethodInfo get_Method();
+    protected virtual Expression VisitMethodCall(MethodCallExpression m);
+}
+[DefaultMemberAttribute("Item")]
+internal class LamarCodeGeneration.Util.LightweightCache`2 : object {
+    private IDictionary`2<TKey, TValue> _values;
+    private Func`2<TValue, TKey> _getKey;
+    private Func`2<TKey, TValue> _onMissing;
+    unknown Func`2<TKey, TValue> OnMissing {public set; }
+    public Func`2<TValue, TKey> GetKey { get; public set; }
+    public int Count { get; }
+    public TValue First { get; }
+    public TValue Item { get; public set; }
+    public LightweightCache`2(Func`2<TKey, TValue> onMissing);
+    public LightweightCache`2(IDictionary`2<TKey, TValue> dictionary, Func`2<TKey, TValue> onMissing);
+    public LightweightCache`2(IDictionary`2<TKey, TValue> dictionary);
+    public void set_OnMissing(Func`2<TKey, TValue> value);
+    public Func`2<TValue, TKey> get_GetKey();
+    public void set_GetKey(Func`2<TValue, TKey> value);
+    public int get_Count();
+    public TValue get_First();
+    public TValue get_Item(TKey key);
+    public void set_Item(TKey key, TValue value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual IEnumerator`1<TValue> GetEnumerator();
+    public void FillDefault(TKey key);
+    public void Fill(TKey key, TValue value);
+    public bool TryRetrieve(TKey key, TValue& value);
+    public void Each(Action`1<TValue> action);
+    public void Each(Action`2<TKey, TValue> action);
+    public bool Has(TKey key);
+    public bool Exists(Predicate`1<TValue> predicate);
+    public TValue Find(Predicate`1<TValue> predicate);
+    public TValue[] GetAll();
+    public void Remove(TKey key);
+    public void Clear();
+    public void WithValue(TKey key, Action`1<TValue> action);
+    public void ClearAll();
+}
+public class LamarCodeGeneration.Util.PerfTimer : object {
+    public static string Started;
+    public static string Finished;
+    public static string Marked;
+    private Stopwatch _stopwatch;
+    private ConcurrentQueue`1<Checkpoint> _checkpoints;
+    private string _description;
+    private static PerfTimer();
+    public void Start(string description);
+    public void Stop();
+    public long TimeEllapsedInMilliseconds();
+    private void add(string status, string text);
+    public void Mark(string text);
+    public void MarkStart(string text);
+    public void MarkFinished(string text);
+    public void Record(string text, Action action);
+    public T Record(string text, Func`1<T> func);
+    public IEnumerable`1<TimedStep> TimedSteps();
+    public TextReport DisplayTimings(Func`2<TimedStep, T> sort);
+    private static TextReport displayTimings(IEnumerable`1<TimedStep> ordered);
+    public TextReport DisplayTimings();
+}
+[ExtensionAttribute]
+public static class LamarCodeGeneration.Util.ReflectionExtensions : object {
+    private static List`1<Type> _enumerableTypes;
+    private static ReflectionExtensions();
+    [ExtensionAttribute]
+public static bool IsEnumerable(Type type);
+    [ExtensionAttribute]
+public static Type DetermineElementType(Type serviceType);
+    [ExtensionAttribute]
+public static T GetAttribute(MemberInfo provider);
+    [ExtensionAttribute]
+public static T GetAttribute(Assembly provider);
+    [ExtensionAttribute]
+public static T GetAttribute(Module provider);
+    [ExtensionAttribute]
+public static T GetAttribute(ParameterInfo provider);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> GetAllAttributes(Assembly provider);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> GetAllAttributes(MemberInfo provider);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> GetAllAttributes(Module provider);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> GetAllAttributes(ParameterInfo provider);
+    [ExtensionAttribute]
+public static bool HasAttribute(Assembly provider);
+    [ExtensionAttribute]
+public static bool HasAttribute(MemberInfo provider);
+    [ExtensionAttribute]
+public static bool HasAttribute(Module provider);
+    [ExtensionAttribute]
+public static bool HasAttribute(ParameterInfo provider);
+    [ExtensionAttribute]
+public static void ForAttribute(Assembly provider, Action`1<T> action);
+    [ExtensionAttribute]
+public static void ForAttribute(MemberInfo provider, Action`1<T> action);
+    [ExtensionAttribute]
+public static void ForAttribute(Module provider, Action`1<T> action);
+    [ExtensionAttribute]
+public static void ForAttribute(ParameterInfo provider, Action`1<T> action);
+    [ExtensionAttribute]
+public static void ForAttribute(Assembly provider, Action`1<T> action, Action elseDo);
+    [ExtensionAttribute]
+public static void ForAttribute(MemberInfo provider, Action`1<T> action, Action elseDo);
+    [ExtensionAttribute]
+public static void ForAttribute(Module provider, Action`1<T> action, Action elseDo);
+    [ExtensionAttribute]
+public static void ForAttribute(ParameterInfo provider, Action`1<T> action, Action elseDo);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.ReflectionHelper : object {
+    public static bool MeetsSpecialGenericConstraints(Type genericArgType, Type proposedSpecificType);
+    public static PropertyInfo GetProperty(Expression`1<Func`2<TModel, object>> expression);
+    public static PropertyInfo GetProperty(Expression`1<Func`2<TModel, T>> expression);
+    public static PropertyInfo GetProperty(LambdaExpression expression);
+    private static MemberExpression getMemberExpression(Expression`1<Func`2<TModel, T>> expression);
+    [ExtensionAttribute]
+public static MemberExpression GetMemberExpression(LambdaExpression expression, bool enforceMemberExpression);
+    public static bool IsMemberExpression(Expression`1<Func`2<T, object>> expression);
+    public static bool IsMemberExpression(Expression`1<Func`2<T, U>> expression);
+    private static bool TryEvaluateExpression(Expression operation, Object& value);
+    public static MethodInfo GetMethod(Expression`1<Func`2<T, object>> expression);
+    public static MethodInfo GetMethod(Expression`1<Func`1<object>> expression);
+    public static MethodInfo GetMethod(Expression expression);
+    public static MethodInfo GetMethod(Expression`1<TDelegate> expression);
+    public static MethodInfo GetMethod(Expression`1<Func`2<T, U>> expression);
+    public static MethodInfo GetMethod(Expression`1<Func`3<T, U, V>> expression);
+    public static MethodInfo GetMethod(Expression`1<Action`1<T>> expression);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.StringExtensions : object {
+    [ExtensionAttribute]
+public static string Elid(string longString, int length);
+    [ExtensionAttribute]
+public static string CombineToPath(string path, string root);
+    [ExtensionAttribute]
+public static void IfNotNull(string target, Action`1<string> continuation);
+    [ExtensionAttribute]
+public static string ToFullPath(string path);
+    [ExtensionAttribute]
+public static string ParentDirectory(string path);
+    [ExtensionAttribute]
+public static bool IsEmpty(string stringValue);
+    [ExtensionAttribute]
+public static bool IsNotEmpty(string stringValue);
+    [ExtensionAttribute]
+public static void IsNotEmpty(string stringValue, Action`1<string> action);
+    [ExtensionAttribute]
+public static bool ToBool(string stringValue);
+    [ExtensionAttribute]
+public static string ToFormat(string stringFormat, Object[] args);
+    [ExtensionAttribute]
+public static bool EqualsIgnoreCase(string thisString, string otherString);
+    [ExtensionAttribute]
+public static string Capitalize(string stringValue);
+    [ExtensionAttribute]
+public static string ConvertCRLFToBreaks(string plainText);
+    [ExtensionAttribute]
+public static DateTime ToDateTime(string dateTimeValue);
+    [ExtensionAttribute]
+public static string ToGmtFormattedDate(DateTime date);
+    [ExtensionAttribute]
+public static String[] ToDelimitedArray(string content);
+    [ExtensionAttribute]
+public static String[] ToDelimitedArray(string content, char delimiter);
+    [ExtensionAttribute]
+public static bool IsValidNumber(string number);
+    [ExtensionAttribute]
+public static bool IsValidNumber(string number, CultureInfo culture);
+    [ExtensionAttribute]
+public static IList`1<string> getPathParts(string path);
+    [ExtensionAttribute]
+public static string DirectoryPath(string path);
+    [IteratorStateMachineAttribute("LamarCodeGeneration.Util.StringExtensions/<ReadLines>d__21")]
+[ExtensionAttribute]
+public static IEnumerable`1<string> ReadLines(string text);
+    [ExtensionAttribute]
+internal static void ReadLines(string text, Action`1<string> callback);
+    [ExtensionAttribute]
+internal static string SplitCamelCase(string str);
+    [ExtensionAttribute]
+internal static string SplitPascalCase(string str);
+}
+public class LamarCodeGeneration.Util.TextWriting.Column : object {
+    private ColumnJustification _justification;
+    [CompilerGeneratedAttribute]
+private int <RightPadding>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <LeftPadding>k__BackingField;
+    private int _maxWidth;
+    public int RightPadding { get; public set; }
+    public int LeftPadding { get; public set; }
+    public int Width { get; }
+    public Column(ColumnJustification justification, int leftPadding, int rightPadding);
+    [CompilerGeneratedAttribute]
+public int get_RightPadding();
+    [CompilerGeneratedAttribute]
+public void set_RightPadding(int value);
+    [CompilerGeneratedAttribute]
+public int get_LeftPadding();
+    [CompilerGeneratedAttribute]
+public void set_LeftPadding(int value);
+    public bool Equals(Column other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public virtual void WatchData(string contents);
+    public sealed virtual int get_Width();
+    public sealed virtual void Write(TextWriter writer, string text);
+    public virtual string GetText(string text);
+    public sealed virtual void WriteToConsole(string text);
+}
+public enum LamarCodeGeneration.Util.TextWriting.ColumnJustification : Enum {
+    public int value__;
+    public static ColumnJustification left;
+    public static ColumnJustification right;
+}
+public class LamarCodeGeneration.Util.TextWriting.ColumnLine : object {
+    private IColumn[] _columns;
+    private String[] _contents;
+    public int Width { get; }
+    public ColumnLine(IEnumerable`1<IColumn> columns, String[] contents);
+    public sealed virtual void WriteToConsole();
+    public sealed virtual void Write(TextWriter writer);
+    public sealed virtual int get_Width();
+}
+public class LamarCodeGeneration.Util.TextWriting.ColumnSet : object {
+    private IList`1<IColumn> _columns;
+    public IEnumerable`1<IColumn> Columns { get; }
+    public ColumnSet(int count);
+    public ColumnSet(IColumn[] columns);
+    public IEnumerable`1<IColumn> get_Columns();
+    public Line Add(String[] contents);
+}
+public class LamarCodeGeneration.Util.TextWriting.DividerLine : object {
+    private char _character;
+    [CompilerGeneratedAttribute]
+private int <Width>k__BackingField;
+    public int Width { get; public set; }
+    public DividerLine(char character);
+    public sealed virtual void WriteToConsole();
+    public sealed virtual void Write(TextWriter writer);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Width();
+    [CompilerGeneratedAttribute]
+public void set_Width(int value);
+}
+public interface LamarCodeGeneration.Util.TextWriting.IColumn {
+    public int Width { get; }
+    public abstract virtual void WatchData(string contents);
+    public abstract virtual int get_Width();
+    public abstract virtual void Write(TextWriter writer, string text);
+    public abstract virtual void WriteToConsole(string text);
+}
+public interface LamarCodeGeneration.Util.TextWriting.Line {
+    public int Width { get; }
+    public abstract virtual void WriteToConsole();
+    public abstract virtual void Write(TextWriter writer);
+    public abstract virtual int get_Width();
+}
+public class LamarCodeGeneration.Util.TextWriting.PlainLine : object {
+    private string _text;
+    public int Width { get; }
+    public PlainLine(string text);
+    public sealed virtual void WriteToConsole();
+    public sealed virtual void Write(TextWriter writer);
+    public sealed virtual int get_Width();
+}
+public class LamarCodeGeneration.Util.TextWriting.TextReport : object {
+    private IList`1<Line> _lines;
+    private IList`1<DividerLine> _dividers;
+    private Stack`1<ColumnSet> _columnSets;
+    public void AddDivider(char character);
+    public void StartColumns(int count);
+    public void EndColumns();
+    public void StartColumns(IColumn[] columns);
+    public void AddColumnData(String[] contents);
+    public void AddText(string text);
+    public void Write(TextWriter writer);
+    public void Write(TextWriter writer, int maxWidth);
+    public virtual string ToString();
+}
+public class LamarCodeGeneration.Util.TimedStep : object {
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Start>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Finished>k__BackingField;
+    public string Text { get; public set; }
+    public long Start { get; public set; }
+    public long Finished { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    [CompilerGeneratedAttribute]
+public void set_Text(string value);
+    [CompilerGeneratedAttribute]
+public long get_Start();
+    [CompilerGeneratedAttribute]
+public void set_Start(long value);
+    [CompilerGeneratedAttribute]
+public long get_Finished();
+    [CompilerGeneratedAttribute]
+public void set_Finished(long value);
+    public long Duration();
+    public sealed virtual int CompareTo(TimedStep other);
+}
+[ExtensionAttribute]
+internal static class LamarCodeGeneration.Util.Tools : object {
+    [ExtensionAttribute]
+internal static bool IsValueType(Type type);
+    [ExtensionAttribute]
+internal static bool IsPrimitive(Type type);
+    [ExtensionAttribute]
+internal static bool IsClass(Type type);
+    [ExtensionAttribute]
+internal static bool IsUnsigned(Type type);
+    [ExtensionAttribute]
+internal static bool IsNullable(Type type);
+    [ExtensionAttribute]
+internal static PropertyInfo FindProperty(Type type, string propertyName);
+    [ExtensionAttribute]
+internal static FieldInfo FindField(Type type, string fieldName);
+    [ExtensionAttribute]
+internal static MethodInfo FindMethod(Type type, string methodName);
+    [ExtensionAttribute]
+internal static MethodInfo FindDelegateInvokeMethod(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo FindNullableGetValueOrDefaultMethod(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo FindValueGetterMethod(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo FindNullableHasValueGetterMethod(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo FindPropertyGetMethod(PropertyInfo prop);
+    [ExtensionAttribute]
+internal static MethodInfo FindPropertySetMethod(PropertyInfo prop);
+    [ExtensionAttribute]
+internal static MethodInfo FindConvertOperator(Type type, Type sourceType, Type targetType);
+    [ExtensionAttribute]
+internal static ConstructorInfo FindSingleParamConstructor(Type type, Type paramType);
+    internal static ExpressionType GetArithmeticFromArithmeticAssignOrSelf(ExpressionType arithmetic);
+    [ExtensionAttribute]
+public static T[] AsArray(IEnumerable`1<T> xs);
+    [ExtensionAttribute]
+public static IReadOnlyList`1<T> AsReadOnlyList(IEnumerable`1<T> xs);
+    public static T[] Empty();
+    [ExtensionAttribute]
+public static T[] WithLast(T[] source, T value);
+    public static Type[] GetParamTypes(IReadOnlyList`1<ParameterExpression> paramExprs);
+    public static Type GetFuncOrActionType(Type[] paramTypes, Type returnType);
+    [ExtensionAttribute]
+public static int GetFirstIndex(IReadOnlyList`1<T> source, T item);
+    [ExtensionAttribute]
+public static int GetFirstIndex(T[] source, Func`2<T, bool> predicate);
+    [ExtensionAttribute]
+public static T GetFirst(IEnumerable`1<T> source);
+    [ExtensionAttribute]
+public static T GetFirst(IEnumerable`1<T> source, Func`2<T, bool> predicate);
+    [ExtensionAttribute]
+public static R[] Map(IReadOnlyList`1<T> source, Func`2<T, R> project);
+}
+[ExtensionAttribute]
+public static class LamarCodeGeneration.Util.TypeExtensions : object {
+    private static IList`1<Type> _integerTypes;
+    private static Type[] _tupleTypes;
+    private static TypeExtensions();
+    [ExtensionAttribute]
+public static T As(object target);
+    [ExtensionAttribute]
+public static bool IsNullableOfT(Type theType);
+    [ExtensionAttribute]
+public static bool IsNullableOf(Type theType, Type otherType);
+    [ExtensionAttribute]
+public static bool IsTypeOrNullableOf(Type theType);
+    [ExtensionAttribute]
+public static bool CanBeCastTo(Type type);
+    [ExtensionAttribute]
+public static bool CanBeCastTo(Type type, Type destinationType);
+    [ExtensionAttribute]
+public static bool IsInNamespace(Type type, string nameSpace);
+    [ExtensionAttribute]
+public static bool IsOpenGeneric(Type type);
+    [ExtensionAttribute]
+public static bool IsGenericEnumerable(Type type);
+    [ExtensionAttribute]
+public static bool IsConcreteTypeOf(Type pluggedType);
+    [ExtensionAttribute]
+public static bool ImplementsInterfaceTemplate(Type pluggedType, Type templateType);
+    [ExtensionAttribute]
+public static bool IsConcreteWithDefaultCtor(Type type);
+    [ExtensionAttribute]
+public static Type FindInterfaceThatCloses(Type type, Type openType);
+    [ExtensionAttribute]
+public static Type FindParameterTypeTo(Type type, Type openType);
+    [ExtensionAttribute]
+public static bool IsNullable(Type type);
+    [ExtensionAttribute]
+public static bool Closes(Type type, Type openType);
+    [ExtensionAttribute]
+public static Type GetInnerTypeFromNullable(Type nullableType);
+    [ExtensionAttribute]
+public static string GetName(Type type);
+    [ExtensionAttribute]
+public static string GetFullName(Type type);
+    [ExtensionAttribute]
+public static bool IsString(Type type);
+    [ExtensionAttribute]
+public static bool IsPrimitive(Type type);
+    [ExtensionAttribute]
+public static bool IsSimple(Type type);
+    [ExtensionAttribute]
+public static bool IsConcrete(Type type);
+    [ExtensionAttribute]
+public static bool IsNotConcrete(Type type);
+    [ExtensionAttribute]
+public static bool IsDateTime(Type typeToCheck);
+    [ExtensionAttribute]
+public static bool IsBoolean(Type typeToCheck);
+    [ExtensionAttribute]
+public static string PrettyPrint(Type type);
+    [ExtensionAttribute]
+public static string PrettyPrint(Type type, Func`2<Type, string> selector);
+    [ExtensionAttribute]
+public static bool IsNumeric(Type type);
+    [ExtensionAttribute]
+public static bool IsIntegerBased(Type type);
+    [ExtensionAttribute]
+public static bool IsFloatingPoint(Type type);
+    [ExtensionAttribute]
+public static T CloseAndBuildAs(Type openType, Type[] parameterTypes);
+    [ExtensionAttribute]
+public static T CloseAndBuildAs(Type openType, object ctorArgument, Type[] parameterTypes);
+    [ExtensionAttribute]
+public static T CloseAndBuildAs(Type openType, object ctorArgument1, object ctorArgument2, Type[] parameterTypes);
+    [ExtensionAttribute]
+public static bool PropertyMatches(PropertyInfo prop1, PropertyInfo prop2);
+    [ExtensionAttribute]
+public static T Create(Type type);
+    [ExtensionAttribute]
+public static object Create(Type type);
+    [ExtensionAttribute]
+public static Type DeriveElementType(Type type);
+    [ExtensionAttribute]
+public static Type IsAnEnumerationOf(Type type);
+    [ExtensionAttribute]
+public static void ForAttribute(Type type, Action`1<T> action);
+    [ExtensionAttribute]
+public static void ForAttribute(Type type, Action`1<T> action, Action elseDo);
+    [ExtensionAttribute]
+public static bool HasAttribute(Type type);
+    [ExtensionAttribute]
+public static T GetAttribute(Type type);
+    [ExtensionAttribute]
+public static bool IsValueTuple(Type type);
+}
+public static class LamarCodeGeneration.WalkReferencedAssemblies : object {
+    [IteratorStateMachineAttribute("LamarCodeGeneration.WalkReferencedAssemblies/<ForTypes>d__0")]
+public static IEnumerable`1<Assembly> ForTypes(Type[] types);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

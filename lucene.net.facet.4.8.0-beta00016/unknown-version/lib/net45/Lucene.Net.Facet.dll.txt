@@ -1,0 +1,1152 @@
+[ExtensionAttribute]
+public static class Lucene.Net.Documents.Extensions.DocumentExtensions : object {
+    [ExtensionAttribute]
+public static SortedSetDocValuesFacetField AddSortedSetDocValuesFacetField(Document document, string dim, string label);
+    [ExtensionAttribute]
+public static AssociationFacetField AddAssociationFacetField(Document document, BytesRef assoc, string dim, String[] path);
+    [ExtensionAttribute]
+public static Int32AssociationFacetField AddInt32AssociationFacetField(Document document, int assoc, string dim, String[] path);
+    [ExtensionAttribute]
+public static SingleAssociationFacetField AddSingleAssociationFacetField(Document document, float assoc, string dim, String[] path);
+    [ExtensionAttribute]
+public static FacetField AddFacetField(Document document, string dim, String[] path);
+}
+public class Lucene.Net.Facet.DrillDownQuery : Query {
+    private FacetsConfig config;
+    private BooleanQuery query;
+    private IDictionary`2<string, int> drillDownDims;
+    internal BooleanQuery BooleanQuery { get; }
+    internal IDictionary`2<string, int> Dims { get; }
+    internal DrillDownQuery(FacetsConfig config, BooleanQuery query, IDictionary`2<string, int> drillDownDims);
+    internal DrillDownQuery(FacetsConfig config, Filter filter, DrillDownQuery other);
+    internal DrillDownQuery(FacetsConfig config, Query baseQuery, IList`1<Query> clauses, IDictionary`2<string, int> drillDownDims);
+    public DrillDownQuery(FacetsConfig config);
+    public DrillDownQuery(FacetsConfig config, Query baseQuery);
+    public static Term Term(string field, string dim, String[] path);
+    private void Merge(string dim, String[] path);
+    public void Add(string dim, String[] path);
+    public void Add(string dim, Query subQuery);
+    public void Add(string dim, Filter subFilter);
+    internal static Filter GetFilter(Query query);
+    public virtual object Clone();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual Query Rewrite(IndexReader r);
+    public virtual string ToString(string field);
+    internal BooleanQuery get_BooleanQuery();
+    internal IDictionary`2<string, int> get_Dims();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual IEnumerator`1<BooleanClause> GetEnumerator();
+    private sealed virtual override IEnumerator`1<KeyValuePair`2<string, int>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.Int32>>.GetEnumerator();
+}
+public class Lucene.Net.Facet.DrillSideways : object {
+    protected IndexSearcher m_searcher;
+    protected TaxonomyReader m_taxoReader;
+    protected SortedSetDocValuesReaderState m_state;
+    protected FacetsConfig m_config;
+    protected bool ScoreSubDocsAtOnce { get; }
+    public DrillSideways(IndexSearcher searcher, FacetsConfig config, TaxonomyReader taxoReader);
+    public DrillSideways(IndexSearcher searcher, FacetsConfig config, SortedSetDocValuesReaderState state);
+    public DrillSideways(IndexSearcher searcher, FacetsConfig config, TaxonomyReader taxoReader, SortedSetDocValuesReaderState state);
+    protected virtual Facets BuildFacetsResult(FacetsCollector drillDowns, FacetsCollector[] drillSideways, String[] drillSidewaysDims);
+    public virtual DrillSidewaysResult Search(DrillDownQuery query, ICollector hitCollector);
+    public virtual DrillSidewaysResult Search(DrillDownQuery query, Filter filter, FieldDoc after, int topN, Sort sort, bool doDocScores, bool doMaxScore);
+    public virtual DrillSidewaysResult Search(DrillDownQuery query, int topN);
+    public virtual DrillSidewaysResult Search(ScoreDoc after, DrillDownQuery query, int topN);
+    protected virtual bool get_ScoreSubDocsAtOnce();
+}
+internal class Lucene.Net.Facet.DrillSidewaysQuery : Query {
+    internal Query baseQuery;
+    internal ICollector drillDownCollector;
+    internal ICollector[] drillSidewaysCollectors;
+    internal Query[] drillDownQueries;
+    internal bool scoreSubDocsAtOnce;
+    internal DrillSidewaysQuery(Query baseQuery, ICollector drillDownCollector, ICollector[] drillSidewaysCollectors, Query[] drillDownQueries, bool scoreSubDocsAtOnce);
+    public virtual string ToString(string field);
+    public virtual Query Rewrite(IndexReader reader);
+    public virtual Weight CreateWeight(IndexSearcher searcher);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+}
+public class Lucene.Net.Facet.DrillSidewaysResult : object {
+    [CompilerGeneratedAttribute]
+private Facets <Facets>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TopDocs <Hits>k__BackingField;
+    public Facets Facets { get; private set; }
+    public TopDocs Hits { get; private set; }
+    public DrillSidewaysResult(Facets facets, TopDocs hits);
+    [CompilerGeneratedAttribute]
+public Facets get_Facets();
+    [CompilerGeneratedAttribute]
+private void set_Facets(Facets value);
+    [CompilerGeneratedAttribute]
+public TopDocs get_Hits();
+    [CompilerGeneratedAttribute]
+private void set_Hits(TopDocs value);
+}
+internal class Lucene.Net.Facet.DrillSidewaysScorer : BulkScorer {
+    private ICollector drillDownCollector;
+    private DocsAndCost[] dims;
+    private Scorer baseScorer;
+    private AtomicReaderContext context;
+    internal bool scoreSubDocsAtOnce;
+    private static int CHUNK;
+    private static int MASK;
+    private int collectDocID;
+    private float collectScore;
+    internal DrillSidewaysScorer(AtomicReaderContext context, Scorer baseScorer, ICollector drillDownCollector, DocsAndCost[] dims, bool scoreSubDocsAtOnce);
+    public virtual bool Score(ICollector collector, int maxDoc);
+    private void DoQueryFirstScoring(ICollector collector, DocIdSetIterator[] disis, ICollector[] sidewaysCollectors, IBits[] bits, ICollector[] bitsSidewaysCollectors);
+    private void DoDrillDownAdvanceScoring(ICollector collector, DocIdSetIterator[] disis, ICollector[] sidewaysCollectors);
+    private void DoUnionScoring(ICollector collector, DocIdSetIterator[] disis, ICollector[] sidewaysCollectors);
+    private void CollectHit(ICollector collector, ICollector[] sidewaysCollectors);
+    private void CollectHit(ICollector collector, ICollector[] sidewaysCollectors, ICollector[] sidewaysCollectors2);
+    private void CollectNearMiss(ICollector sidewaysCollector);
+}
+public class Lucene.Net.Facet.FacetField : Field {
+    internal static FieldType TYPE;
+    [CompilerGeneratedAttribute]
+private string <Dim>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Path>k__BackingField;
+    public string Dim { get; private set; }
+    [WritableArrayAttribute]
+public String[] Path { get; private set; }
+    public FacetField(string dim, String[] path);
+    private static FacetField();
+    [CompilerGeneratedAttribute]
+public string get_Dim();
+    [CompilerGeneratedAttribute]
+private void set_Dim(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_Path();
+    [CompilerGeneratedAttribute]
+private void set_Path(String[] value);
+    public virtual string ToString();
+    public static void VerifyLabel(string label);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Lucene.Net.Facet.FacetResult : object {
+    [CompilerGeneratedAttribute]
+private string <Dim>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ChildCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LabelAndValue[] <LabelValues>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <TypeOfValue>k__BackingField;
+    public string Dim { get; private set; }
+    [WritableArrayAttribute]
+public String[] Path { get; private set; }
+    public float Value { get; private set; }
+    public int ChildCount { get; private set; }
+    [WritableArrayAttribute]
+public LabelAndValue[] LabelValues { get; private set; }
+    public Type TypeOfValue { get; private set; }
+    public FacetResult(string dim, String[] path, float value, LabelAndValue[] labelValues, int childCount);
+    public FacetResult(string dim, String[] path, int value, LabelAndValue[] labelValues, int childCount);
+    [CompilerGeneratedAttribute]
+public string get_Dim();
+    [CompilerGeneratedAttribute]
+private void set_Dim(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_Path();
+    [CompilerGeneratedAttribute]
+private void set_Path(String[] value);
+    [CompilerGeneratedAttribute]
+public float get_Value();
+    [CompilerGeneratedAttribute]
+private void set_Value(float value);
+    [CompilerGeneratedAttribute]
+public int get_ChildCount();
+    [CompilerGeneratedAttribute]
+private void set_ChildCount(int value);
+    [CompilerGeneratedAttribute]
+public LabelAndValue[] get_LabelValues();
+    [CompilerGeneratedAttribute]
+private void set_LabelValues(LabelAndValue[] value);
+    [CompilerGeneratedAttribute]
+public Type get_TypeOfValue();
+    [CompilerGeneratedAttribute]
+private void set_TypeOfValue(Type value);
+    public virtual string ToString();
+    public string ToString(IFormatProvider provider);
+    [NullableContextAttribute("2")]
+private sealed virtual override string System.IFormattable.ToString(string format, IFormatProvider provider);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object other);
+    public virtual int GetHashCode();
+}
+public abstract class Lucene.Net.Facet.Facets : object {
+    public abstract virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+    public abstract virtual float GetSpecificValue(string dim, String[] path);
+    public abstract virtual IList`1<FacetResult> GetAllDims(int topN);
+}
+public class Lucene.Net.Facet.FacetsCollector : object {
+    private AtomicReaderContext context;
+    private Scorer scorer;
+    private int totalHits;
+    private Single[] scores;
+    private bool keepScores;
+    private IList`1<MatchingDocs> matchingDocs;
+    private Docs docs;
+    public bool KeepScores { get; }
+    public bool AcceptsDocsOutOfOrder { get; }
+    public FacetsCollector(bool keepScores);
+    protected virtual Docs CreateDocs(int maxDoc);
+    public bool get_KeepScores();
+    public virtual IList`1<MatchingDocs> GetMatchingDocs();
+    public sealed virtual bool get_AcceptsDocsOutOfOrder();
+    public sealed virtual void Collect(int doc);
+    public sealed virtual void SetScorer(Scorer scorer);
+    public sealed virtual void SetNextReader(AtomicReaderContext context);
+    public static TopDocs Search(IndexSearcher searcher, Query q, int n, ICollector fc);
+    public static TopDocs Search(IndexSearcher searcher, Query q, Filter filter, int n, ICollector fc);
+    public static TopFieldDocs Search(IndexSearcher searcher, Query q, Filter filter, int n, Sort sort, ICollector fc);
+    public static TopFieldDocs Search(IndexSearcher searcher, Query q, Filter filter, int n, Sort sort, bool doDocScores, bool doMaxScore, ICollector fc);
+    public virtual TopDocs SearchAfter(IndexSearcher searcher, ScoreDoc after, Query q, int n, ICollector fc);
+    public static TopDocs SearchAfter(IndexSearcher searcher, ScoreDoc after, Query q, Filter filter, int n, ICollector fc);
+    public static TopDocs SearchAfter(IndexSearcher searcher, ScoreDoc after, Query q, Filter filter, int n, Sort sort, ICollector fc);
+    public static TopDocs SearchAfter(IndexSearcher searcher, ScoreDoc after, Query q, Filter filter, int n, Sort sort, bool doDocScores, bool doMaxScore, ICollector fc);
+    private static TopDocs DoSearch(IndexSearcher searcher, ScoreDoc after, Query q, Filter filter, int n, Sort sort, bool doDocScores, bool doMaxScore, ICollector fc);
+}
+public class Lucene.Net.Facet.FacetsConfig : object {
+    public static string DEFAULT_INDEX_FIELD_NAME;
+    private IDictionary`2<string, DimConfig> fieldTypes;
+    private IDictionary`2<string, string> assocDimTypes;
+    private object syncLock;
+    public static DimConfig DEFAULT_DIM_CONFIG;
+    private static char DELIM_CHAR;
+    private static char ESCAPE_CHAR;
+    protected DimConfig DefaultDimConfig { get; }
+    public IDictionary`2<string, DimConfig> DimConfigs { get; }
+    private static FacetsConfig();
+    protected virtual DimConfig get_DefaultDimConfig();
+    public virtual DimConfig GetDimConfig(string dimName);
+    public virtual void SetHierarchical(string dimName, bool v);
+    public virtual void SetMultiValued(string dimName, bool v);
+    public virtual void SetRequireDimCount(string dimName, bool v);
+    public virtual void SetIndexFieldName(string dimName, string indexFieldName);
+    public virtual IDictionary`2<string, DimConfig> get_DimConfigs();
+    private static void CheckSeen(ISet`1<string> seenDims, string dim);
+    public virtual Document Build(Document doc);
+    public virtual Document Build(ITaxonomyWriter taxoWriter, Document doc);
+    private void ProcessFacetFields(ITaxonomyWriter taxoWriter, IDictionary`2<string, IList`1<FacetField>> byField, Document doc);
+    private void ProcessSSDVFacetFields(IDictionary`2<string, IList`1<SortedSetDocValuesFacetField>> byField, Document doc);
+    private void ProcessAssocFacetFields(ITaxonomyWriter taxoWriter, IDictionary`2<string, IList`1<AssociationFacetField>> byField, Document doc);
+    protected virtual BytesRef DedupAndEncode(Int32sRef ordinals);
+    private static void CheckTaxoWriter(ITaxonomyWriter taxoWriter);
+    public static string PathToString(string dim, String[] path);
+    public static string PathToString(String[] path);
+    public static string PathToString(String[] path, int length);
+    public static String[] StringToPath(string s);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Lucene.Net.Facet.LabelAndValue : object {
+    [CompilerGeneratedAttribute]
+private string <Label>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <TypeOfValue>k__BackingField;
+    public string Label { get; private set; }
+    public float Value { get; private set; }
+    public Type TypeOfValue { get; private set; }
+    public LabelAndValue(string label, float value);
+    public LabelAndValue(string label, int value);
+    [CompilerGeneratedAttribute]
+public string get_Label();
+    [CompilerGeneratedAttribute]
+private void set_Label(string value);
+    [CompilerGeneratedAttribute]
+public float get_Value();
+    [CompilerGeneratedAttribute]
+private void set_Value(float value);
+    [CompilerGeneratedAttribute]
+public Type get_TypeOfValue();
+    [CompilerGeneratedAttribute]
+private void set_TypeOfValue(Type value);
+    public virtual string ToString();
+    public string ToString(IFormatProvider provider);
+    [NullableContextAttribute("2")]
+private sealed virtual override string System.IFormattable.ToString(string format, IFormatProvider provider);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object other);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Facet.MultiFacets : Facets {
+    private IDictionary`2<string, Facets> dimToFacets;
+    private Facets defaultFacets;
+    public MultiFacets(IDictionary`2<string, Facets> dimToFacets, Facets defaultFacets);
+    public virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+    public virtual float GetSpecificValue(string dim, String[] path);
+    public virtual IList`1<FacetResult> GetAllDims(int topN);
+}
+public class Lucene.Net.Facet.OrdAndValue`1 : object {
+    public int Ord;
+    public T Value;
+    public OrdAndValue`1(int ord, T value);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(OrdAndValue`1<T> other);
+    public virtual int GetHashCode();
+    public static bool op_Equality(OrdAndValue`1<T> left, OrdAndValue`1<T> right);
+    public static bool op_Inequality(OrdAndValue`1<T> left, OrdAndValue`1<T> right);
+}
+public class Lucene.Net.Facet.RandomSamplingFacetsCollector : FacetsCollector {
+    private static int NOT_CALCULATED;
+    private int sampleSize;
+    private XORShift64Random random;
+    private double samplingRate;
+    private IList`1<MatchingDocs> sampledDocs;
+    private int totalHits;
+    private int leftoverBin;
+    private int leftoverIndex;
+    public double SamplingRate { get; }
+    public RandomSamplingFacetsCollector(int sampleSize);
+    public RandomSamplingFacetsCollector(int sampleSize, long seed);
+    public virtual IList`1<MatchingDocs> GetMatchingDocs();
+    public virtual IList`1<MatchingDocs> GetOriginalMatchingDocs();
+    private IList`1<MatchingDocs> CreateSampledDocs(ICollection`1<MatchingDocs> matchingDocsList);
+    private MatchingDocs CreateSample(MatchingDocs docs);
+    public virtual FacetResult AmortizeFacetCounts(FacetResult res, FacetsConfig config, IndexSearcher searcher);
+    public virtual double get_SamplingRate();
+}
+public class Lucene.Net.Facet.Range.DoubleRange : Range {
+    internal double minIncl;
+    internal double maxIncl;
+    [CompilerGeneratedAttribute]
+private double <Min>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Max>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MinInclusive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MaxInclusive>k__BackingField;
+    private static double EPSILON;
+    public double Min { get; private set; }
+    public double Max { get; private set; }
+    public bool MinInclusive { get; private set; }
+    public bool MaxInclusive { get; private set; }
+    public DoubleRange(string label, double minIn, bool minInclusive, double maxIn, bool maxInclusive);
+    [CompilerGeneratedAttribute]
+public double get_Min();
+    [CompilerGeneratedAttribute]
+private void set_Min(double value);
+    [CompilerGeneratedAttribute]
+public double get_Max();
+    [CompilerGeneratedAttribute]
+private void set_Max(double value);
+    [CompilerGeneratedAttribute]
+public bool get_MinInclusive();
+    [CompilerGeneratedAttribute]
+private void set_MinInclusive(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_MaxInclusive();
+    [CompilerGeneratedAttribute]
+private void set_MaxInclusive(bool value);
+    public bool Accept(double value);
+    internal Int64Range ToInt64Range();
+    public virtual string ToString();
+    public virtual Filter GetFilter(Filter fastMatchFilter, ValueSource valueSource);
+}
+public class Lucene.Net.Facet.Range.DoubleRangeFacetCounts : RangeFacetCounts {
+    public DoubleRangeFacetCounts(string field, FacetsCollector hits, DoubleRange[] ranges);
+    public DoubleRangeFacetCounts(string field, ValueSource valueSource, FacetsCollector hits, DoubleRange[] ranges);
+    public DoubleRangeFacetCounts(string field, ValueSource valueSource, FacetsCollector hits, Filter fastMatchFilter, DoubleRange[] ranges);
+    private void Count(ValueSource valueSource, IEnumerable`1<MatchingDocs> matchingDocs);
+}
+public class Lucene.Net.Facet.Range.Int64Range : Range {
+    internal long minIncl;
+    internal long maxIncl;
+    [CompilerGeneratedAttribute]
+private long <Min>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Max>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MinInclusive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MaxInclusive>k__BackingField;
+    public long Min { get; private set; }
+    public long Max { get; private set; }
+    public bool MinInclusive { get; private set; }
+    public bool MaxInclusive { get; private set; }
+    public Int64Range(string label, long minIn, bool minInclusive, long maxIn, bool maxInclusive);
+    [CompilerGeneratedAttribute]
+public long get_Min();
+    [CompilerGeneratedAttribute]
+private void set_Min(long value);
+    [CompilerGeneratedAttribute]
+public long get_Max();
+    [CompilerGeneratedAttribute]
+private void set_Max(long value);
+    [CompilerGeneratedAttribute]
+public bool get_MinInclusive();
+    [CompilerGeneratedAttribute]
+private void set_MinInclusive(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_MaxInclusive();
+    [CompilerGeneratedAttribute]
+private void set_MaxInclusive(bool value);
+    public bool Accept(long value);
+    public virtual string ToString();
+    public virtual Filter GetFilter(Filter fastMatchFilter, ValueSource valueSource);
+}
+internal class Lucene.Net.Facet.Range.Int64RangeCounter : object {
+    internal Int64RangeNode root;
+    internal Int64[] boundaries;
+    internal Int32[] leafCounts;
+    private int leafUpto;
+    private int missingCount;
+    public Int64RangeCounter(Int64Range[] ranges);
+    public void Add(long v);
+    public int FillCounts(Int32[] counts);
+    private int Rollup(Int64RangeNode node, Int32[] counts, bool sawOutputs);
+    private static Int64RangeNode Split(int start, int end, IList`1<InclusiveRange> elementaryIntervals);
+}
+public class Lucene.Net.Facet.Range.Int64RangeFacetCounts : RangeFacetCounts {
+    public Int64RangeFacetCounts(string field, FacetsCollector hits, Int64Range[] ranges);
+    public Int64RangeFacetCounts(string field, ValueSource valueSource, FacetsCollector hits, Int64Range[] ranges);
+    public Int64RangeFacetCounts(string field, ValueSource valueSource, FacetsCollector hits, Filter fastMatchFilter, Int64Range[] ranges);
+    private void Count(ValueSource valueSource, IList`1<MatchingDocs> matchingDocs);
+}
+public abstract class Lucene.Net.Facet.Range.Range : object {
+    [CompilerGeneratedAttribute]
+private string <Label>k__BackingField;
+    public string Label { get; private set; }
+    protected Range(string label);
+    [CompilerGeneratedAttribute]
+public string get_Label();
+    [CompilerGeneratedAttribute]
+private void set_Label(string value);
+    public abstract virtual Filter GetFilter(Filter fastMatchFilter, ValueSource valueSource);
+    public virtual Filter GetFilter(ValueSource valueSource);
+    protected virtual void FailNoMatch();
+}
+public abstract class Lucene.Net.Facet.Range.RangeFacetCounts : Facets {
+    protected Range[] m_ranges;
+    protected Int32[] m_counts;
+    protected Filter m_fastMatchFilter;
+    protected string m_field;
+    protected int m_totCount;
+    protected RangeFacetCounts(string field, Range[] ranges, Filter fastMatchFilter);
+    public virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+    public virtual float GetSpecificValue(string dim, String[] path);
+    public virtual IList`1<FacetResult> GetAllDims(int topN);
+}
+public class Lucene.Net.Facet.SortedSet.DefaultSortedSetDocValuesReaderState : SortedSetDocValuesReaderState {
+    private string field;
+    private AtomicReader topReader;
+    private int valueCount;
+    private IndexReader origReader;
+    private IDictionary`2<string, OrdRange> prefixToOrdRange;
+    public IDictionary`2<string, OrdRange> PrefixToOrdRange { get; }
+    public string Field { get; }
+    public IndexReader OrigReader { get; }
+    public int Count { get; }
+    public DefaultSortedSetDocValuesReaderState(IndexReader reader, string field);
+    public virtual SortedSetDocValues GetDocValues();
+    public virtual IDictionary`2<string, OrdRange> get_PrefixToOrdRange();
+    public virtual OrdRange GetOrdRange(string dim);
+    public virtual string get_Field();
+    public virtual IndexReader get_OrigReader();
+    public virtual int get_Count();
+}
+public class Lucene.Net.Facet.SortedSet.SortedSetDocValuesFacetCounts : Facets {
+    internal SortedSetDocValuesReaderState state;
+    internal SortedSetDocValues dv;
+    internal string field;
+    internal Int32[] counts;
+    public SortedSetDocValuesFacetCounts(SortedSetDocValuesReaderState state, FacetsCollector hits);
+    public virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+    private FacetResult GetDim(string dim, OrdRange ordRange, int topN);
+    private void Count(IList`1<MatchingDocs> matchingDocs);
+    public virtual float GetSpecificValue(string dim, String[] path);
+    public virtual IList`1<FacetResult> GetAllDims(int topN);
+}
+public class Lucene.Net.Facet.SortedSet.SortedSetDocValuesFacetField : Field {
+    public static FieldType TYPE;
+    [CompilerGeneratedAttribute]
+private string <Dim>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Label>k__BackingField;
+    public string Dim { get; private set; }
+    public string Label { get; private set; }
+    public SortedSetDocValuesFacetField(string dim, string label);
+    private static SortedSetDocValuesFacetField();
+    [CompilerGeneratedAttribute]
+public string get_Dim();
+    [CompilerGeneratedAttribute]
+private void set_Dim(string value);
+    [CompilerGeneratedAttribute]
+public string get_Label();
+    [CompilerGeneratedAttribute]
+private void set_Label(string value);
+    public virtual string ToString();
+}
+public abstract class Lucene.Net.Facet.SortedSet.SortedSetDocValuesReaderState : object {
+    public string Field { get; }
+    public IDictionary`2<string, OrdRange> PrefixToOrdRange { get; }
+    public IndexReader OrigReader { get; }
+    public int Count { get; }
+    public abstract virtual SortedSetDocValues GetDocValues();
+    public abstract virtual string get_Field();
+    public abstract virtual OrdRange GetOrdRange(string dim);
+    public abstract virtual IDictionary`2<string, OrdRange> get_PrefixToOrdRange();
+    public abstract virtual IndexReader get_OrigReader();
+    public abstract virtual int get_Count();
+}
+public class Lucene.Net.Facet.Taxonomy.AssociationFacetField : Field {
+    public static FieldType TYPE;
+    [CompilerGeneratedAttribute]
+private string <Dim>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BytesRef <Assoc>k__BackingField;
+    public string Dim { get; private set; }
+    [WritableArrayAttribute]
+public String[] Path { get; private set; }
+    public BytesRef Assoc { get; private set; }
+    public AssociationFacetField(BytesRef assoc, string dim, String[] path);
+    private static AssociationFacetField();
+    [CompilerGeneratedAttribute]
+public string get_Dim();
+    [CompilerGeneratedAttribute]
+private void set_Dim(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_Path();
+    [CompilerGeneratedAttribute]
+private void set_Path(String[] value);
+    [CompilerGeneratedAttribute]
+public BytesRef get_Assoc();
+    [CompilerGeneratedAttribute]
+private void set_Assoc(BytesRef value);
+    public virtual string ToString();
+}
+public class Lucene.Net.Facet.Taxonomy.CachedOrdinalsReader : OrdinalsReader {
+    private OrdinalsReader source;
+    private IEventAggregator eventAggregator;
+    private ConditionalWeakTable`2<object, CachedOrds> ordsCache;
+    private object syncLock;
+    public string IndexFieldName { get; }
+    public CachedOrdinalsReader(OrdinalsReader source);
+    private CachedOrds GetCachedOrds(AtomicReaderContext context);
+    public virtual string get_IndexFieldName();
+    public virtual OrdinalsSegmentReader GetReader(AtomicReaderContext context);
+    public virtual long RamBytesUsed();
+}
+public class Lucene.Net.Facet.Taxonomy.CategoryPath : object {
+    public static CategoryPath EMPTY;
+    [CompilerGeneratedAttribute]
+private String[] <Components>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    [WritableArrayAttribute]
+public String[] Components { get; private set; }
+    public int Length { get; private set; }
+    public int FullPathLength { get; }
+    private CategoryPath(CategoryPath copyFrom, int prefixLen);
+    public CategoryPath(String[] components);
+    public CategoryPath(string pathString, char delimiter);
+    private static CategoryPath();
+    [CompilerGeneratedAttribute]
+public String[] get_Components();
+    [CompilerGeneratedAttribute]
+private void set_Components(String[] value);
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+private void set_Length(int value);
+    public virtual int get_FullPathLength();
+    public virtual int CompareTo(CategoryPath other);
+    private static void HasDelimiter(string offender, char delimiter);
+    private void NoDelimiter(Char[] buf, int offset, int len, char delimiter);
+    public virtual int CopyFullPath(Char[] buf, int start, char delimiter);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual long Int64HashCode();
+    public virtual CategoryPath Subpath(int length);
+    public virtual string ToString();
+    public virtual string ToString(char delimiter);
+    public static bool op_Equality(CategoryPath left, CategoryPath right);
+    public static bool op_Inequality(CategoryPath left, CategoryPath right);
+    public static bool op_LessThan(CategoryPath left, CategoryPath right);
+    public static bool op_LessThanOrEqual(CategoryPath left, CategoryPath right);
+    public static bool op_GreaterThan(CategoryPath left, CategoryPath right);
+    public static bool op_GreaterThanOrEqual(CategoryPath left, CategoryPath right);
+}
+internal abstract class Lucene.Net.Facet.Taxonomy.Directory.Consts : object {
+    internal static string FULL;
+    internal static string FIELD_PAYLOADS;
+    internal static string PAYLOAD_PARENT;
+    internal static BytesRef PAYLOAD_PARENT_BYTES_REF;
+    private static Consts();
+}
+public class Lucene.Net.Facet.Taxonomy.Directory.DirectoryTaxonomyReader : TaxonomyReader {
+    private static int DEFAULT_CACHE_VALUE;
+    private DirectoryTaxonomyWriter taxoWriter;
+    private long taxoEpoch;
+    private DirectoryReader indexReader;
+    private LruDictionary`2<FacetLabel, Int32Class> ordinalCache;
+    private LruDictionary`2<int, FacetLabel> categoryCache;
+    private ReaderWriterLockSlim ordinalCacheLock;
+    private ReaderWriterLockSlim categoryCacheLock;
+    private TaxonomyIndexArrays taxoArrays;
+    private bool isDisposed;
+    internal DirectoryReader InternalIndexReader { get; }
+    public ParallelTaxonomyArrays ParallelTaxonomyArrays { get; }
+    public IDictionary`2<string, string> CommitUserData { get; }
+    public int Count { get; }
+    private DirectoryTaxonomyReader(DirectoryReader indexReader, DirectoryTaxonomyWriter taxoWriter, LruDictionary`2<FacetLabel, Int32Class> ordinalCache, LruDictionary`2<int, FacetLabel> categoryCache, TaxonomyIndexArrays taxoArrays);
+    public DirectoryTaxonomyReader(Directory directory);
+    public DirectoryTaxonomyReader(DirectoryTaxonomyWriter taxoWriter);
+    protected virtual void Dispose(bool disposing);
+    protected virtual TaxonomyReader DoOpenIfChanged();
+    protected virtual DirectoryReader OpenIndexReader(Directory directory);
+    protected virtual DirectoryReader OpenIndexReader(IndexWriter writer);
+    internal virtual DirectoryReader get_InternalIndexReader();
+    public virtual ParallelTaxonomyArrays get_ParallelTaxonomyArrays();
+    public virtual IDictionary`2<string, string> get_CommitUserData();
+    public virtual int GetOrdinal(FacetLabel cp);
+    public virtual FacetLabel GetPath(int ordinal);
+    public virtual int get_Count();
+    public virtual void SetCacheSize(int size);
+    public virtual string ToString(int max);
+    [CompilerGeneratedAttribute]
+private TaxonomyIndexArrays <get_ParallelTaxonomyArrays>b__21_0();
+}
+public class Lucene.Net.Facet.Taxonomy.Directory.DirectoryTaxonomyWriter : object {
+    public static string INDEX_EPOCH;
+    private Directory dir;
+    private IndexWriter indexWriter;
+    private ITaxonomyWriterCache cache;
+    private AtomicInt32 cacheMisses;
+    private long indexEpoch;
+    private SinglePositionTokenStream parentStream;
+    private Field parentStreamField;
+    private Field fullPathField;
+    private int cacheMissesUntilFill;
+    private bool shouldFillCache;
+    private ReaderManager readerManager;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) initializedReaderManager;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) shouldRefreshReaderManager;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) cacheIsComplete;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) isClosed;
+    private TaxonomyIndexArrays modreq(System.Runtime.CompilerServices.IsVolatile) taxoArrays;
+    private Int32 modreq(System.Runtime.CompilerServices.IsVolatile) nextID;
+    private object syncLock;
+    public IDictionary`2<string, string> CommitData { get; }
+    public int Count { get; }
+    public Directory Directory { get; }
+    internal IndexWriter InternalIndexWriter { get; }
+    public long TaxonomyEpoch { get; }
+    public DirectoryTaxonomyWriter(Directory directory, OpenMode openMode, ITaxonomyWriterCache cache);
+    public DirectoryTaxonomyWriter(Directory directory, OpenMode openMode);
+    public DirectoryTaxonomyWriter(Directory directory);
+    private static IDictionary`2<string, string> ReadCommitData(Directory dir);
+    public static void Unlock(Directory directory);
+    protected virtual IndexWriter OpenIndexWriter(Directory directory, IndexWriterConfig config);
+    protected virtual IndexWriterConfig CreateIndexWriterConfig(OpenMode openMode);
+    private void InitReaderManager();
+    public static ITaxonomyWriterCache DefaultTaxonomyWriterCache();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void DoClose();
+    private void CloseResources();
+    protected virtual int FindCategory(FacetLabel categoryPath);
+    public virtual int AddCategory(FacetLabel categoryPath);
+    private int InternalAddCategory(FacetLabel cp);
+    protected void EnsureOpen();
+    private int AddCategoryDocument(FacetLabel categoryPath, int parent);
+    private void AddToCache(FacetLabel categoryPath, int id);
+    private void RefreshReaderManager();
+    public virtual void Commit();
+    private IDictionary`2<string, string> CombinedCommitData(IDictionary`2<string, string> commitData);
+    public virtual void SetCommitData(IDictionary`2<string, string> commitUserData);
+    public virtual IDictionary`2<string, string> get_CommitData();
+    public virtual void PrepareCommit();
+    public virtual int get_Count();
+    public virtual void SetCacheMissesUntilFill(int i);
+    private void PerhapsFillCache();
+    private TaxonomyIndexArrays GetTaxoArrays();
+    public virtual int GetParent(int ordinal);
+    public virtual void AddTaxonomy(Directory taxoDir, IOrdinalMap map);
+    public virtual void Rollback();
+    public virtual void ReplaceTaxonomy(Directory taxoDir);
+    public virtual Directory get_Directory();
+    internal IndexWriter get_InternalIndexWriter();
+    public long get_TaxonomyEpoch();
+}
+internal class Lucene.Net.Facet.Taxonomy.Directory.TaxonomyIndexArrays : ParallelTaxonomyArrays {
+    private Int32[] parents;
+    private bool initializedChildren;
+    private Int32[] children;
+    private Int32[] siblings;
+    private object syncLock;
+    [WritableArrayAttribute]
+public Int32[] Parents { get; }
+    [WritableArrayAttribute]
+public Int32[] Children { get; }
+    [WritableArrayAttribute]
+public Int32[] Siblings { get; }
+    private TaxonomyIndexArrays(Int32[] parents);
+    public TaxonomyIndexArrays(IndexReader reader);
+    public TaxonomyIndexArrays(IndexReader reader, TaxonomyIndexArrays copyFrom);
+    private void InitChildrenSiblings(TaxonomyIndexArrays copyFrom);
+    private void ComputeChildrenSiblings(int first);
+    private void InitParents(IndexReader reader, int first);
+    internal virtual TaxonomyIndexArrays Add(int ordinal, int parentOrdinal);
+    public virtual Int32[] get_Parents();
+    public virtual Int32[] get_Children();
+    public virtual Int32[] get_Siblings();
+}
+public class Lucene.Net.Facet.Taxonomy.DocValuesOrdinalsReader : OrdinalsReader {
+    private string field;
+    public string IndexFieldName { get; }
+    public DocValuesOrdinalsReader(string field);
+    public virtual OrdinalsSegmentReader GetReader(AtomicReaderContext context);
+    public virtual string get_IndexFieldName();
+    protected virtual void Decode(BytesRef buf, Int32sRef ordinals);
+}
+public class Lucene.Net.Facet.Taxonomy.FacetLabel : object {
+    private static int BYTE_BLOCK_SIZE;
+    public static int MAX_CATEGORY_PATH_LENGTH;
+    [CompilerGeneratedAttribute]
+private String[] <Components>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    [WritableArrayAttribute]
+public String[] Components { get; private set; }
+    public int Length { get; private set; }
+    private FacetLabel(FacetLabel copyFrom, int prefixLen);
+    public FacetLabel(String[] components);
+    public FacetLabel(string dim, String[] path);
+    private static FacetLabel();
+    [CompilerGeneratedAttribute]
+public String[] get_Components();
+    [CompilerGeneratedAttribute]
+private void set_Components(String[] value);
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+private void set_Length(int value);
+    private void CheckComponents();
+    public virtual int CompareTo(FacetLabel other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual long Int64HashCode();
+    public virtual FacetLabel Subpath(int length);
+    public virtual string ToString();
+    public static bool op_Equality(FacetLabel left, FacetLabel right);
+    public static bool op_Inequality(FacetLabel left, FacetLabel right);
+    public static bool op_LessThan(FacetLabel left, FacetLabel right);
+    public static bool op_LessThanOrEqual(FacetLabel left, FacetLabel right);
+    public static bool op_GreaterThan(FacetLabel left, FacetLabel right);
+    public static bool op_GreaterThanOrEqual(FacetLabel left, FacetLabel right);
+}
+public class Lucene.Net.Facet.Taxonomy.FastTaxonomyFacetCounts : Int32TaxonomyFacets {
+    public FastTaxonomyFacetCounts(TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    public FastTaxonomyFacetCounts(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    private void Count(IList`1<MatchingDocs> matchingDocs);
+}
+public class Lucene.Net.Facet.Taxonomy.Int32AssociationFacetField : AssociationFacetField {
+    public Int32AssociationFacetField(int assoc, string dim, String[] path);
+    public static BytesRef Int32ToBytesRef(int v);
+    public static int BytesRefToInt32(BytesRef b);
+    public virtual string ToString();
+}
+public abstract class Lucene.Net.Facet.Taxonomy.Int32TaxonomyFacets : TaxonomyFacets {
+    protected Int32[] m_values;
+    protected Int32TaxonomyFacets(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config);
+    protected virtual void Rollup();
+    private int Rollup(int ord);
+    public virtual float GetSpecificValue(string dim, String[] path);
+    public virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+}
+public interface Lucene.Net.Facet.Taxonomy.ITaxonomyWriter {
+    public int Count { get; }
+    public IDictionary`2<string, string> CommitData { get; }
+    public abstract virtual int AddCategory(FacetLabel categoryPath);
+    public abstract virtual int GetParent(int ordinal);
+    public abstract virtual int get_Count();
+    public abstract virtual void SetCommitData(IDictionary`2<string, string> commitUserData);
+    public abstract virtual IDictionary`2<string, string> get_CommitData();
+}
+[DefaultMemberAttribute("Item")]
+public class Lucene.Net.Facet.Taxonomy.LruDictionary`2 : object {
+    private LurchTable`2<TKey, TValue> cache;
+    public int Limit { get; public set; }
+    public TValue Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public ICollection`1<TKey> Keys { get; }
+    public ICollection`1<TValue> Values { get; }
+    public LruDictionary`2(int limit);
+    public LruDictionary`2(int limit, IEqualityComparer`1<TKey> comparer);
+    public virtual int get_Limit();
+    public virtual void set_Limit(int value);
+    public virtual TValue Put(TKey key, TValue value);
+    public virtual TValue Get(TKey key);
+    public virtual TValue get_Item(TKey key);
+    public virtual void set_Item(TKey key, TValue value);
+    public virtual int get_Count();
+    public virtual bool get_IsReadOnly();
+    public virtual ICollection`1<TKey> get_Keys();
+    public virtual ICollection`1<TValue> get_Values();
+    public virtual void Add(KeyValuePair`2<TKey, TValue> item);
+    public virtual void Add(TKey key, TValue value);
+    public virtual void Clear();
+    public virtual bool Contains(KeyValuePair`2<TKey, TValue> item);
+    public virtual bool ContainsKey(TKey key);
+    public virtual void CopyTo(KeyValuePair`2[] array, int index);
+    public virtual IEnumerator`1<KeyValuePair`2<TKey, TValue>> GetEnumerator();
+    public virtual bool Remove(KeyValuePair`2<TKey, TValue> item);
+    public virtual bool Remove(TKey key);
+    public virtual bool TryGetValue(TKey key, TValue& value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public abstract class Lucene.Net.Facet.Taxonomy.OrdinalsReader : object {
+    public string IndexFieldName { get; }
+    public abstract virtual OrdinalsSegmentReader GetReader(AtomicReaderContext context);
+    public abstract virtual string get_IndexFieldName();
+}
+public abstract class Lucene.Net.Facet.Taxonomy.ParallelTaxonomyArrays : object {
+    [WritableArrayAttribute]
+public Int32[] Parents { get; }
+    [WritableArrayAttribute]
+public Int32[] Children { get; }
+    [WritableArrayAttribute]
+public Int32[] Siblings { get; }
+    public abstract virtual Int32[] get_Parents();
+    public abstract virtual Int32[] get_Children();
+    public abstract virtual Int32[] get_Siblings();
+}
+public static class Lucene.Net.Facet.Taxonomy.PrintTaxonomyStats : object {
+    public static int Main(String[] args);
+    public static void PrintStats(TaxonomyReader r, TextWriter out, bool printTree);
+    private static int CountAllChildren(TaxonomyReader r, int ord);
+    private static void PrintAllChildren(TextWriter out, TaxonomyReader r, int ord, string indent, int depth);
+}
+public class Lucene.Net.Facet.Taxonomy.SearcherTaxonomyManager : ReferenceManager`1<SearcherAndTaxonomy> {
+    private SearcherFactory searcherFactory;
+    private long taxoEpoch;
+    private DirectoryTaxonomyWriter taxoWriter;
+    public SearcherTaxonomyManager(IndexWriter writer, bool applyAllDeletes, SearcherFactory searcherFactory, DirectoryTaxonomyWriter taxoWriter);
+    public SearcherTaxonomyManager(Directory indexDir, Directory taxoDir, SearcherFactory searcherFactory);
+    protected virtual void DecRef(SearcherAndTaxonomy ref);
+    protected virtual bool TryIncRef(SearcherAndTaxonomy ref);
+    protected virtual SearcherAndTaxonomy RefreshIfNeeded(SearcherAndTaxonomy ref);
+    protected virtual int GetRefCount(SearcherAndTaxonomy reference);
+}
+public class Lucene.Net.Facet.Taxonomy.SingleAssociationFacetField : AssociationFacetField {
+    public SingleAssociationFacetField(float assoc, string dim, String[] path);
+    public static BytesRef SingleToBytesRef(float v);
+    public static float BytesRefToSingle(BytesRef b);
+    public virtual string ToString();
+}
+public abstract class Lucene.Net.Facet.Taxonomy.SingleTaxonomyFacets : TaxonomyFacets {
+    protected Single[] m_values;
+    protected SingleTaxonomyFacets(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config);
+    protected virtual void Rollup();
+    private float Rollup(int ord);
+    public virtual float GetSpecificValue(string dim, String[] path);
+    public virtual FacetResult GetTopChildren(int topN, string dim, String[] path);
+}
+public class Lucene.Net.Facet.Taxonomy.TaxonomyFacetCounts : Int32TaxonomyFacets {
+    private OrdinalsReader ordinalsReader;
+    public TaxonomyFacetCounts(OrdinalsReader ordinalsReader, TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    private void Count(IList`1<MatchingDocs> matchingDocs);
+}
+public abstract class Lucene.Net.Facet.Taxonomy.TaxonomyFacets : Facets {
+    private static IComparer`1<FacetResult> BY_VALUE_THEN_DIM;
+    protected string m_indexFieldName;
+    protected TaxonomyReader m_taxoReader;
+    protected FacetsConfig m_config;
+    protected Int32[] m_children;
+    protected Int32[] m_siblings;
+    protected internal TaxonomyFacets(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config);
+    private static TaxonomyFacets();
+    protected virtual DimConfig VerifyDim(string dim);
+    public virtual IList`1<FacetResult> GetAllDims(int topN);
+}
+public class Lucene.Net.Facet.Taxonomy.TaxonomyFacetSumInt32Associations : Int32TaxonomyFacets {
+    public TaxonomyFacetSumInt32Associations(TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    public TaxonomyFacetSumInt32Associations(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    private void SumValues(IList`1<MatchingDocs> matchingDocs);
+}
+public class Lucene.Net.Facet.Taxonomy.TaxonomyFacetSumSingleAssociations : SingleTaxonomyFacets {
+    public TaxonomyFacetSumSingleAssociations(TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    public TaxonomyFacetSumSingleAssociations(string indexFieldName, TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc);
+    private void SumValues(IList`1<MatchingDocs> matchingDocs);
+}
+public class Lucene.Net.Facet.Taxonomy.TaxonomyFacetSumValueSource : SingleTaxonomyFacets {
+    private OrdinalsReader ordinalsReader;
+    public TaxonomyFacetSumValueSource(TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc, ValueSource valueSource);
+    public TaxonomyFacetSumValueSource(OrdinalsReader ordinalsReader, TaxonomyReader taxoReader, FacetsConfig config, FacetsCollector fc, ValueSource valueSource);
+    private void SumValues(IList`1<MatchingDocs> matchingDocs, bool keepScores, ValueSource valueSource);
+}
+public abstract class Lucene.Net.Facet.Taxonomy.TaxonomyReader : object {
+    public static int ROOT_ORDINAL;
+    public static int INVALID_ORDINAL;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) closed;
+    private AtomicInt32 refCount;
+    private object syncLock;
+    public ParallelTaxonomyArrays ParallelTaxonomyArrays { get; }
+    public IDictionary`2<string, string> CommitUserData { get; }
+    public int RefCount { get; }
+    public int Count { get; }
+    public static T OpenIfChanged(T oldTaxoReader);
+    protected abstract virtual TaxonomyReader DoOpenIfChanged();
+    protected void EnsureOpen();
+    public sealed virtual void Dispose();
+    protected abstract virtual void Dispose(bool disposing);
+    public void DecRef();
+    public abstract virtual ParallelTaxonomyArrays get_ParallelTaxonomyArrays();
+    public virtual ChildrenEnumerator GetChildren(int ordinal);
+    public abstract virtual IDictionary`2<string, string> get_CommitUserData();
+    public abstract virtual int GetOrdinal(FacetLabel categoryPath);
+    public virtual int GetOrdinal(string dim, String[] path);
+    public abstract virtual FacetLabel GetPath(int ordinal);
+    public int get_RefCount();
+    public abstract virtual int get_Count();
+    public void IncRef();
+    public bool TryIncRef();
+}
+internal class Lucene.Net.Facet.Taxonomy.WriterCache.CategoryPathUtils : object {
+    public static void Serialize(FacetLabel cp, CharBlockArray charBlockArray);
+    public static int HashCodeOfSerialized(CharBlockArray charBlockArray, int offset);
+    public static bool EqualsToSerialized(FacetLabel cp, CharBlockArray charBlockArray, int offset);
+}
+[DefaultMemberAttribute("Item")]
+internal class Lucene.Net.Facet.Taxonomy.WriterCache.CharBlockArray : object {
+    private static long serialVersionUID;
+    private static int DEFAULT_BLOCK_SIZE;
+    internal IList`1<Block> blocks;
+    internal Block current;
+    internal int blockSize;
+    internal int length;
+    public char Item { get; }
+    public int Length { get; }
+    private bool J2N.Text.ICharSequence.HasValue { get; }
+    internal CharBlockArray(int blockSize);
+    internal CharBlockArray(Stream reader);
+    private void AddBlock();
+    internal virtual int BlockIndex(int index);
+    internal virtual int IndexInBlock(int index);
+    public virtual CharBlockArray Append(ICharSequence chars);
+    public virtual CharBlockArray Append(char c);
+    public virtual CharBlockArray Append(ICharSequence chars, int start, int length);
+    public virtual CharBlockArray Append(Char[] chars, int start, int length);
+    public virtual CharBlockArray Append(string s);
+    public virtual char get_Item(int index);
+    public virtual int get_Length();
+    private sealed virtual override bool J2N.Text.ICharSequence.get_HasValue();
+    public virtual ICharSequence Subsequence(int startIndex, int length);
+    private sealed virtual override ICharSequence J2N.Text.ICharSequence.Subsequence(int startIndex, int length);
+    public virtual string ToString();
+    internal virtual void Flush(Stream out);
+    public static CharBlockArray Open(Stream in);
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.Cl2oTaxonomyWriterCache : object {
+    private int initialCapcity;
+    private int numHashArrays;
+    private float loadFactor;
+    private CompactLabelToOrdinal modreq(System.Runtime.CompilerServices.IsVolatile) cache;
+    private ReaderWriterLockSlim syncLock;
+    private object disposalLock;
+    private bool isDisposed;
+    public bool IsFull { get; }
+    public Cl2oTaxonomyWriterCache(int initialCapcity, float loadFactor, int numHashArrays);
+    public virtual void Clear();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    public virtual bool get_IsFull();
+    public virtual int Get(FacetLabel categoryPath);
+    public virtual bool Put(FacetLabel categoryPath, int ordinal);
+    public virtual int GetMemoryUsage();
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.CollisionMap : object {
+    private int capacity;
+    private float loadFactor;
+    private int size;
+    private int threshold;
+    private CharBlockArray labelRepository;
+    private Entry[] entries;
+    public int Count { get; }
+    public int Capacity { get; }
+    internal CollisionMap(CharBlockArray labelRepository);
+    internal CollisionMap(int initialCapacity, CharBlockArray labelRepository);
+    private CollisionMap(int initialCapacity, float loadFactor, CharBlockArray labelRepository);
+    public virtual int get_Count();
+    public virtual int get_Capacity();
+    private void Grow();
+    public virtual int Get(FacetLabel label, int hash);
+    public virtual int AddLabel(FacetLabel label, int hash, int cid);
+    public virtual void AddLabelOffset(int hash, int offset, int cid);
+    private void AddEntry(int offset, int cid, int hash, int bucketIndex);
+    internal virtual IEnumerator`1<Entry> GetEnumerator();
+    internal static int IndexFor(int h, int length);
+    internal virtual int GetMemoryUsage();
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.CompactLabelToOrdinal : LabelToOrdinal {
+    public static float DefaultLoadFactor;
+    public static char TERMINATOR_CHAR;
+    private static int COLLISION;
+    private HashArray[] hashArrays;
+    private CollisionMap collisionMap;
+    private CharBlockArray labelRepository;
+    private int capacity;
+    private int threshold;
+    private float loadFactor;
+    public int SizeOfMap { get; }
+    public CompactLabelToOrdinal(int initialCapacity, float loadFactor, int numHashArrays);
+    public virtual int get_SizeOfMap();
+    internal static int DetermineCapacity(int minCapacity, int initialCapacity);
+    private void Init();
+    public virtual void AddLabel(FacetLabel label, int ordinal);
+    public virtual int GetOrdinal(FacetLabel label);
+    private void Grow();
+    private bool AddLabel(HashArray a, FacetLabel label, int hash, int ordinal);
+    private void AddLabelOffset(int hash, int cid, int knownOffset);
+    private static bool AddLabelOffsetToHashArray(HashArray a, int hash, int ordinal, int knownOffset);
+    private int GetOrdinal(HashArray a, FacetLabel label, int hash);
+    internal static int IndexFor(int h, int length);
+    internal static int StringHashCode(FacetLabel label);
+    internal static int StringHashCode(CharBlockArray labelRepository, int offset);
+    internal virtual int GetMemoryUsage();
+    internal static CompactLabelToOrdinal Open(FileInfo file, float loadFactor, int numHashArrays);
+    internal virtual void Flush(Stream stream);
+}
+internal interface Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru {
+    public string Stats { get; }
+    public abstract virtual string get_Stats();
+    public abstract virtual void Clear();
+    public abstract virtual bool MakeRoomLRU();
+    public abstract virtual bool Put(FacetLabel name, int val);
+    public abstract virtual bool Put(FacetLabel name, int prefixLen, int val);
+    public abstract virtual bool TryGetValue(FacetLabel name, Int32& value);
+}
+public interface Lucene.Net.Facet.Taxonomy.WriterCache.INameInt32CacheLru {
+    public int Count { get; }
+    public int Limit { get; }
+    public abstract virtual int get_Count();
+    public abstract virtual int get_Limit();
+}
+public interface Lucene.Net.Facet.Taxonomy.WriterCache.ITaxonomyWriterCache {
+    public bool IsFull { get; }
+    public abstract virtual int Get(FacetLabel categoryPath);
+    public abstract virtual bool Put(FacetLabel categoryPath, int ordinal);
+    public abstract virtual bool get_IsFull();
+    public abstract virtual void Clear();
+}
+public abstract class Lucene.Net.Facet.Taxonomy.WriterCache.LabelToOrdinal : object {
+    protected int m_counter;
+    public static int INVALID_ORDINAL;
+    public int MaxOrdinal { get; }
+    public virtual int get_MaxOrdinal();
+    public virtual int GetNextOrdinal();
+    public abstract virtual void AddLabel(FacetLabel label, int ordinal);
+    public abstract virtual int GetOrdinal(FacetLabel label);
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.LruTaxonomyWriterCache : object {
+    private IInternalNameInt32CacheLru cache;
+    private object syncLock;
+    private bool isDisposed;
+    public bool IsFull { get; }
+    public LruTaxonomyWriterCache(int cacheSize);
+    public LruTaxonomyWriterCache(int cacheSize, LRUType lruType);
+    public virtual bool get_IsFull();
+    public virtual void Clear();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    public virtual int Get(FacetLabel categoryPath);
+    public virtual bool Put(FacetLabel categoryPath, int ordinal);
+}
+internal class Lucene.Net.Facet.Taxonomy.WriterCache.NameCacheLru`1 : object {
+    private IDictionary`2<TName, int> cache;
+    internal long nMisses;
+    internal long nHits;
+    private int maxCacheSize;
+    private object syncLock;
+    private Func`2<FacetLabel, TName> getKey;
+    private Func`3<FacetLabel, int, TName> getKeyWithPrefixLength;
+    public int Limit { get; }
+    public int Count { get; }
+    private bool IsCacheFull { get; }
+    private string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Stats { get; }
+    internal NameCacheLru`1(int limit, Func`2<FacetLabel, TName> getKey, Func`3<FacetLabel, int, TName> getKeyWithPrefixLength);
+    public sealed virtual int get_Limit();
+    public sealed virtual int get_Count();
+    private void CreateCache(int maxSize);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.TryGetValue(FacetLabel name, Int32& value);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int val);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int prefixLen, int val);
+    private bool get_IsCacheFull();
+    private sealed virtual override void Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Clear();
+    private sealed virtual override string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.get_Stats();
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.MakeRoomLRU();
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.NameHashInt32CacheLru : object {
+    private IInternalNameInt32CacheLru cache;
+    public int Count { get; }
+    public int Limit { get; }
+    private string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Stats { get; }
+    internal NameHashInt32CacheLru(int limit);
+    public sealed virtual int get_Count();
+    public sealed virtual int get_Limit();
+    private sealed virtual override string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.get_Stats();
+    private sealed virtual override void Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Clear();
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.MakeRoomLRU();
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int val);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int prefixLen, int val);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.TryGetValue(FacetLabel name, Int32& value);
+}
+public class Lucene.Net.Facet.Taxonomy.WriterCache.NameInt32CacheLru : object {
+    private IInternalNameInt32CacheLru cache;
+    public int Count { get; }
+    public int Limit { get; }
+    private string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Stats { get; }
+    internal NameInt32CacheLru(int limit);
+    public sealed virtual int get_Count();
+    public sealed virtual int get_Limit();
+    private sealed virtual override string Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.get_Stats();
+    private sealed virtual override void Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Clear();
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.MakeRoomLRU();
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int val);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.Put(FacetLabel name, int prefixLen, int val);
+    private sealed virtual override bool Lucene.Net.Facet.Taxonomy.WriterCache.IInternalNameInt32CacheLru.TryGetValue(FacetLabel name, Int32& value);
+}
+public class Lucene.Net.Facet.TopOrdAndInt32Queue : PriorityQueue`1<OrdAndValue`1<int>> {
+    public TopOrdAndInt32Queue(int topN);
+    protected internal virtual bool LessThan(OrdAndValue`1<int> a, OrdAndValue`1<int> b);
+}
+public class Lucene.Net.Facet.TopOrdAndSingleQueue : PriorityQueue`1<OrdAndValue`1<float>> {
+    public TopOrdAndSingleQueue(int topN);
+    protected internal virtual bool LessThan(OrdAndValue`1<float> a, OrdAndValue`1<float> b);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

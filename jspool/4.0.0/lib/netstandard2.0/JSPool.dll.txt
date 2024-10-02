@@ -1,0 +1,248 @@
+public class JSPool.Exceptions.JsPoolExhaustedException : Exception {
+    public JsPoolExhaustedException(string message);
+    public JsPoolExhaustedException(string message, Exception innerException);
+    protected JsPoolExhaustedException(SerializationInfo info, StreamingContext context);
+}
+public class JSPool.FileWatcher : object {
+    public static int DEFAULT_DEBOUNCE_TIMEOUT;
+    protected FileSystemWatcher _watcher;
+    protected ISet`1<string> _watchedFiles;
+    protected Timer _timer;
+    [CompilerGeneratedAttribute]
+private EventHandler Changed;
+    [CompilerGeneratedAttribute]
+private int <DebounceTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    public int DebounceTimeout { get; public set; }
+    public string Path { get; public set; }
+    public IEnumerable`1<string> Files { get; public set; }
+    private static FileWatcher();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Changed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Changed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public int get_DebounceTimeout();
+    [CompilerGeneratedAttribute]
+public void set_DebounceTimeout(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Path();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Path(string value);
+    public sealed virtual IEnumerable`1<string> get_Files();
+    public sealed virtual void set_Files(IEnumerable`1<string> value);
+    public virtual bool Start();
+    public virtual void Stop();
+    protected virtual void OnFileChanged(object sender, FileSystemEventArgs args);
+    protected virtual void OnTimer(object state);
+    public sealed virtual void Dispose();
+}
+public interface JSPool.IFileWatcher {
+    public string Path { get; public set; }
+    public IEnumerable`1<string> Files { get; public set; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Changed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Changed(EventHandler value);
+    public abstract virtual string get_Path();
+    public abstract virtual void set_Path(string value);
+    public abstract virtual IEnumerable`1<string> get_Files();
+    public abstract virtual void set_Files(IEnumerable`1<string> value);
+    public abstract virtual bool Start();
+    public abstract virtual void Stop();
+}
+public interface JSPool.IJsPool {
+}
+public interface JSPool.IJsPool`1 {
+    public int EngineCount { get; }
+    public int AvailableEngineCount { get; }
+    public abstract virtual T GetEngine(Nullable`1<TimeSpan> timeout);
+    [ObsoleteAttribute("Disposing the engine will now return it to the pool. Prefer disposing the engine to explicitly calling ReturnEngineToPool.")]
+public abstract virtual void ReturnEngineToPool(T engine);
+    public abstract virtual int get_EngineCount();
+    public abstract virtual int get_AvailableEngineCount();
+    public abstract virtual void DisposeEngine(T engine, bool repopulateEngines);
+    public abstract virtual void Recycle();
+}
+[DebuggerDisplayAttribute("{DebuggerDisplay,nq}")]
+public class JSPool.JsPool : JsPool`2<PooledJsEngine, IJsEngine> {
+    public JsPool(JsPoolConfig config);
+    protected virtual void CollectGarbage(IJsEngine engine);
+}
+[DebuggerDisplayAttribute("{DebuggerDisplay,nq}")]
+public class JSPool.JsPool`2 : object {
+    protected JsPoolConfig`1<TOriginal> _config;
+    protected BlockingCollection`1<TPooled> _availableEngines;
+    protected ConcurrentDictionary`2<TPooled, byte> _registeredEngines;
+    protected Func`1<TOriginal> _engineFactory;
+    protected IFileWatcher _fileWatcher;
+    protected CancellationTokenSource _cancellationTokenSource;
+    private object _engineCreationLock;
+    [CompilerGeneratedAttribute]
+private EventHandler Recycled;
+    public int EngineCount { get; }
+    public int AvailableEngineCount { get; }
+    private string DebuggerDisplay { get; }
+    public JsPool`2(JsPoolConfig`1<TOriginal> config);
+    [CompilerGeneratedAttribute]
+public void add_Recycled(EventHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_Recycled(EventHandler value);
+    protected virtual Func`1<TOriginal> CreateEngineFactory();
+    protected virtual void InitializeWatcher();
+    protected virtual void PopulateEngines();
+    protected virtual TPooled CreateEngine();
+    public virtual TPooled GetEngine(Nullable`1<TimeSpan> timeout);
+    protected virtual TPooled TakeEngine(TPooled engine);
+    [ObsoleteAttribute("Disposing the engine will now return it to the pool. Prefer disposing the engine to explicitly calling ReturnEngineToPool.")]
+public virtual void ReturnEngineToPool(TPooled engine);
+    protected virtual void ReturnEngineToPoolInternal(TPooled engine);
+    public virtual void DisposeEngine(TPooled engine, bool repopulateEngines);
+    protected virtual void DisposeAllEngines();
+    public virtual void Recycle();
+    public virtual void Dispose();
+    protected virtual void CollectGarbage(TOriginal engine);
+    public virtual int get_EngineCount();
+    public virtual int get_AvailableEngineCount();
+    private string get_DebuggerDisplay();
+    [CompilerGeneratedAttribute]
+private void <InitializeWatcher>b__12_0(object sender, EventArgs args);
+}
+public class JSPool.JsPoolConfig : JsPoolConfig`1<IJsEngine> {
+}
+public class JSPool.JsPoolConfig`1 : object {
+    [CompilerGeneratedAttribute]
+private int <StartEngines>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxEngines>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <GetEngineTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<T> <Initializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`1<T> <EngineFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxUsagesPerEngine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <GarbageCollectionInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WatchPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <WatchFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <DebounceTimeout>k__BackingField;
+    public int StartEngines { get; public set; }
+    public int MaxEngines { get; public set; }
+    public TimeSpan GetEngineTimeout { get; public set; }
+    public Action`1<T> Initializer { get; public set; }
+    public Func`1<T> EngineFactory { get; public set; }
+    public int MaxUsagesPerEngine { get; public set; }
+    public int GarbageCollectionInterval { get; public set; }
+    public string WatchPath { get; public set; }
+    public IEnumerable`1<string> WatchFiles { get; public set; }
+    public int DebounceTimeout { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StartEngines();
+    [CompilerGeneratedAttribute]
+public void set_StartEngines(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxEngines();
+    [CompilerGeneratedAttribute]
+public void set_MaxEngines(int value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_GetEngineTimeout();
+    [CompilerGeneratedAttribute]
+public void set_GetEngineTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public Action`1<T> get_Initializer();
+    [CompilerGeneratedAttribute]
+public void set_Initializer(Action`1<T> value);
+    [CompilerGeneratedAttribute]
+public Func`1<T> get_EngineFactory();
+    [CompilerGeneratedAttribute]
+public void set_EngineFactory(Func`1<T> value);
+    [CompilerGeneratedAttribute]
+public int get_MaxUsagesPerEngine();
+    [CompilerGeneratedAttribute]
+public void set_MaxUsagesPerEngine(int value);
+    [CompilerGeneratedAttribute]
+public int get_GarbageCollectionInterval();
+    [CompilerGeneratedAttribute]
+public void set_GarbageCollectionInterval(int value);
+    [CompilerGeneratedAttribute]
+public string get_WatchPath();
+    [CompilerGeneratedAttribute]
+public void set_WatchPath(string value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<string> get_WatchFiles();
+    [CompilerGeneratedAttribute]
+public void set_WatchFiles(IEnumerable`1<string> value);
+    [CompilerGeneratedAttribute]
+public int get_DebounceTimeout();
+    [CompilerGeneratedAttribute]
+public void set_DebounceTimeout(int value);
+}
+public class JSPool.PooledJsEngine : PooledObject`1<IJsEngine> {
+    public string Name { get; }
+    public string Version { get; }
+    public bool SupportsScriptPrecompilation { get; }
+    public bool SupportsScriptInterruption { get; }
+    public bool SupportsGarbageCollection { get; }
+    public virtual string get_Name();
+    public virtual string get_Version();
+    public virtual bool get_SupportsScriptPrecompilation();
+    public virtual bool get_SupportsScriptInterruption();
+    public virtual bool get_SupportsGarbageCollection();
+    public virtual IPrecompiledScript Precompile(string code);
+    public virtual IPrecompiledScript Precompile(string code, string documentName);
+    public virtual IPrecompiledScript PrecompileFile(string path, Encoding encoding);
+    public virtual IPrecompiledScript PrecompileResource(string resourceName, Type type);
+    public virtual IPrecompiledScript PrecompileResource(string resourceName, Assembly assembly);
+    public virtual object Evaluate(string expression);
+    public virtual object Evaluate(string expression, string documentName);
+    public virtual T Evaluate(string expression);
+    public virtual T Evaluate(string expression, string documentName);
+    public virtual void Execute(string code);
+    public virtual void Execute(string code, string documentName);
+    public virtual void Execute(IPrecompiledScript precompiledScript);
+    public virtual void ExecuteFile(string path, Encoding encoding);
+    public virtual void ExecuteResource(string resourceName, Type type);
+    public virtual void ExecuteResource(string resourceName, Assembly assembly);
+    public virtual object CallFunction(string functionName, Object[] args);
+    public virtual T CallFunction(string functionName, Object[] args);
+    public virtual bool HasVariable(string variableName);
+    public virtual object GetVariableValue(string variableName);
+    public virtual T GetVariableValue(string variableName);
+    public virtual void SetVariableValue(string variableName, object value);
+    public virtual void RemoveVariable(string variableName);
+    public virtual void EmbedHostObject(string itemName, object value);
+    public virtual void EmbedHostType(string itemName, Type type);
+    public virtual void Interrupt();
+    public virtual void CollectGarbage();
+}
+public abstract class JSPool.PooledObject`1 : object {
+    [CompilerGeneratedAttribute]
+private T <InnerEngine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action <ReturnEngineToPool>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <UsageCount>k__BackingField;
+    public T InnerEngine { get; internal set; }
+    private Action ReturnEngineToPool { get; internal set; }
+    public int UsageCount { get; private set; }
+    [CompilerGeneratedAttribute]
+public virtual T get_InnerEngine();
+    [CompilerGeneratedAttribute]
+internal virtual void set_InnerEngine(T value);
+    [CompilerGeneratedAttribute]
+private Action get_ReturnEngineToPool();
+    [CompilerGeneratedAttribute]
+internal void set_ReturnEngineToPool(Action value);
+    internal void IncreaseUsageCount();
+    [CompilerGeneratedAttribute]
+public int get_UsageCount();
+    [CompilerGeneratedAttribute]
+private void set_UsageCount(int value);
+    public virtual void Dispose();
+}

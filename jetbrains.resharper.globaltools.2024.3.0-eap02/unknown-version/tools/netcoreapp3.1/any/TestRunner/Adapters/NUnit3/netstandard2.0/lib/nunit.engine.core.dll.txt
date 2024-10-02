@@ -1,0 +1,991 @@
+internal static class NUnit.Common.ExceptionHelper : object {
+    public static string BuildMessage(Exception exception);
+    public static string BuildMessageAndStackTrace(Exception exception);
+    private static string GetSafeStackTrace(Exception exception);
+    private static List`1<Exception> FlattenExceptionHierarchy(Exception exception);
+    private static string GetExceptionMessage(Exception ex);
+}
+public static class NUnit.Common.Guard : object {
+    public static void ArgumentNotNull(object value, string name);
+    public static void ArgumentNotNullOrEmpty(string value, string name);
+    public static void ArgumentInRange(bool condition, string message, string paramName);
+    public static void ArgumentValid(bool condition, string message, string paramName);
+    public static void OperationValid(bool condition, string message);
+}
+public class NUnit.Engine.Agents.RemoteTestAgent : TestAgent {
+    private IServiceLocator _services;
+    public ITestAgentTransport Transport;
+    public int ProcessId { get; }
+    public RemoteTestAgent(IServiceLocator services, Guid agentId);
+    public int get_ProcessId();
+    public virtual bool Start();
+    public virtual void Stop();
+    public virtual ITestEngineRunner CreateRunner(TestPackage package);
+}
+public abstract class NUnit.Engine.Agents.TestAgent : object {
+    internal ManualResetEvent StopSignal;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    private bool _disposed;
+    public Guid Id { get; }
+    public TestAgent(Guid agentId);
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_Id();
+    public abstract virtual bool Start();
+    public abstract virtual void Stop();
+    public abstract virtual ITestEngineRunner CreateRunner(TestPackage package);
+    public bool WaitForStop(int timeout);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class NUnit.Engine.AsyncTestEngineResult : object {
+    private TestEngineResult modreq(System.Runtime.CompilerServices.IsVolatile) _result;
+    private ManualResetEvent _waitHandle;
+    public TestEngineResult EngineResult { get; }
+    public EventWaitHandle WaitHandle { get; }
+    public bool IsComplete { get; }
+    private XmlNode NUnit.Engine.ITestRun.Result { get; }
+    public TestEngineResult get_EngineResult();
+    public EventWaitHandle get_WaitHandle();
+    public void SetResult(TestEngineResult result);
+    public bool Wait(int timeout);
+    public bool get_IsComplete();
+    private sealed virtual override XmlNode NUnit.Engine.ITestRun.get_Result();
+    private sealed virtual override bool NUnit.Engine.ITestRun.Wait(int timeout);
+}
+public class NUnit.Engine.Communication.Messages.CommandMessage : TestEngineMessage {
+    [CompilerGeneratedAttribute]
+private string <CommandName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Object[] <Arguments>k__BackingField;
+    public string CommandName { get; }
+    public Object[] Arguments { get; }
+    public CommandMessage(string commandName, Object[] arguments);
+    [CompilerGeneratedAttribute]
+public string get_CommandName();
+    [CompilerGeneratedAttribute]
+public Object[] get_Arguments();
+}
+public class NUnit.Engine.Communication.Messages.CommandReturnMessage : TestEngineMessage {
+    [CompilerGeneratedAttribute]
+private object <ReturnValue>k__BackingField;
+    public object ReturnValue { get; }
+    public CommandReturnMessage(object returnValue);
+    [CompilerGeneratedAttribute]
+public object get_ReturnValue();
+}
+public class NUnit.Engine.Communication.Messages.ProgressMessage : TestEngineMessage {
+    [CompilerGeneratedAttribute]
+private string <Report>k__BackingField;
+    public string Report { get; }
+    public ProgressMessage(string report);
+    [CompilerGeneratedAttribute]
+public string get_Report();
+}
+public abstract class NUnit.Engine.Communication.Messages.TestEngineMessage : object {
+}
+public class NUnit.Engine.Communication.Protocols.BinarySerializationProtocol : object {
+    private static int MAX_MESSAGE_LENGTH;
+    private MemoryStream _receiveMemoryStream;
+    public sealed virtual Byte[] Encode(object message);
+    public sealed virtual IEnumerable`1<TestEngineMessage> Decode(Byte[] receivedBytes);
+    public void Reset();
+    internal Byte[] SerializeMessage(object message);
+    internal object DeserializeMessage(Byte[] bytes);
+    private bool ReadSingleMessage(ICollection`1<TestEngineMessage> messages);
+    private static void WriteInt32(Byte[] buffer, int startIndex, int number);
+    private static int ReadInt32(Stream stream);
+    private static Byte[] ReadByteArray(Stream stream, int length);
+}
+public interface NUnit.Engine.Communication.Protocols.ISerializationProtocol {
+    public abstract virtual Byte[] Encode(object message);
+    public abstract virtual IEnumerable`1<TestEngineMessage> Decode(Byte[] receivedBytes);
+}
+public interface NUnit.Engine.Communication.Transports.ITestAgentTransport {
+    public TestAgent Agent { get; }
+    public abstract virtual TestAgent get_Agent();
+    public abstract virtual ITestEngineRunner CreateRunner(TestPackage package);
+}
+public interface NUnit.Engine.Communication.Transports.ITransport {
+    public abstract virtual bool Start();
+    public abstract virtual void Stop();
+}
+public class NUnit.Engine.Communication.Transports.Tcp.SocketReader : object {
+    private static int BUFFER_SIZE;
+    private Socket _socket;
+    private ISerializationProtocol _wireProtocol;
+    private Queue`1<TestEngineMessage> _msgQueue;
+    private Byte[] _buffer;
+    public SocketReader(Socket socket, ISerializationProtocol protocol);
+    public TestEngineMessage GetNextMessage();
+    public TMessage GetNextMessage();
+}
+public class NUnit.Engine.Communication.Transports.Tcp.TestAgentTcpTransport : object {
+    private static Logger log;
+    private string _agencyUrl;
+    private Socket _clientSocket;
+    private ITestEngineRunner _runner;
+    [CompilerGeneratedAttribute]
+private TestAgent <Agent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IPEndPoint <ServerEndPoint>k__BackingField;
+    public TestAgent Agent { get; }
+    public IPEndPoint ServerEndPoint { get; }
+    public TestAgentTcpTransport(RemoteTestAgent agent, string serverUrl);
+    private static TestAgentTcpTransport();
+    [CompilerGeneratedAttribute]
+public sealed virtual TestAgent get_Agent();
+    [CompilerGeneratedAttribute]
+public IPEndPoint get_ServerEndPoint();
+    public sealed virtual bool Start();
+    public sealed virtual void Stop();
+    public sealed virtual ITestEngineRunner CreateRunner(TestPackage package);
+    private void CommandLoop();
+    private void SendResult(object result);
+    public sealed virtual void OnTestEvent(string report);
+}
+public class NUnit.Engine.CoreEngine : object {
+    [CompilerGeneratedAttribute]
+private ServiceContext <Services>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WorkDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private InternalTraceLevel <InternalTraceLevel>k__BackingField;
+    private bool _disposed;
+    public ServiceContext Services { get; private set; }
+    public string WorkDirectory { get; public set; }
+    public InternalTraceLevel InternalTraceLevel { get; public set; }
+    [CompilerGeneratedAttribute]
+public ServiceContext get_Services();
+    [CompilerGeneratedAttribute]
+private void set_Services(ServiceContext value);
+    [CompilerGeneratedAttribute]
+public string get_WorkDirectory();
+    [CompilerGeneratedAttribute]
+public void set_WorkDirectory(string value);
+    [CompilerGeneratedAttribute]
+public InternalTraceLevel get_InternalTraceLevel();
+    [CompilerGeneratedAttribute]
+public void set_InternalTraceLevel(InternalTraceLevel value);
+    public void InitializeServices();
+    public void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class NUnit.Engine.Drivers.InvalidAssemblyFrameworkDriver : NotRunnableFrameworkDriver {
+    public InvalidAssemblyFrameworkDriver(string assemblyPath, string message);
+}
+public abstract class NUnit.Engine.Drivers.NotRunnableFrameworkDriver : object {
+    private static string LOAD_RESULT_FORMAT;
+    private static string RUN_RESULT_FORMAT;
+    private string _name;
+    private string _fullname;
+    private string _message;
+    private string _type;
+    protected string _runstate;
+    protected string _result;
+    protected string _label;
+    [CompilerGeneratedAttribute]
+private string <ID>k__BackingField;
+    public string ID { get; public set; }
+    private string TestID { get; }
+    public NotRunnableFrameworkDriver(string assemblyPath, string message);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ID();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ID(string value);
+    public sealed virtual string Load(string assemblyPath, IDictionary`2<string, object> settings);
+    public sealed virtual int CountTestCases(string filter);
+    public sealed virtual string Run(ITestEventListener listener, string filter);
+    public sealed virtual string Explore(string filter);
+    public sealed virtual void StopRun(bool force);
+    private static string Escape(string original);
+    private string GetLoadResult();
+    private string get_TestID();
+}
+public class NUnit.Engine.Drivers.NUnit3DriverFactory : object {
+    private static string NUNIT_FRAMEWORK;
+    private static ILogger log;
+    private static NUnit3DriverFactory();
+    public sealed virtual bool IsSupportedTestFramework(AssemblyName reference);
+    public sealed virtual IFrameworkDriver GetDriver(AssemblyName reference);
+}
+public class NUnit.Engine.Drivers.NUnitNetStandardDriver : object {
+    private static string LOAD_MESSAGE;
+    private static string INVALID_FRAMEWORK_MESSAGE;
+    private static string FAILED_TO_LOAD_TEST_ASSEMBLY;
+    private static string FAILED_TO_LOAD_NUNIT;
+    private static string CONTROLLER_TYPE;
+    private static string LOAD_METHOD;
+    private static string EXPLORE_METHOD;
+    private static string COUNT_METHOD;
+    private static string RUN_METHOD;
+    private static string RUN_ASYNC_METHOD;
+    private static string STOP_RUN_METHOD;
+    private static ILogger log;
+    private Assembly _testAssembly;
+    private Assembly _frameworkAssembly;
+    private object _frameworkController;
+    private Type _frameworkControllerType;
+    [CompilerGeneratedAttribute]
+private string <ID>k__BackingField;
+    public string ID { get; public set; }
+    private static NUnitNetStandardDriver();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ID();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ID(string value);
+    public sealed virtual string Load(string testAssembly, IDictionary`2<string, object> settings);
+    public sealed virtual int CountTestCases(string filter);
+    public sealed virtual string Run(ITestEventListener listener, string filter);
+    public void RunAsync(Action`1<string> callback, string filter);
+    public sealed virtual void StopRun(bool force);
+    public sealed virtual string Explore(string filter);
+    private void CheckLoadWasCalled();
+    private object CreateObject(string typeName, Object[] args);
+    private object ExecuteMethod(string methodName, Object[] args);
+    private object ExecuteMethod(string methodName, Type[] ptypes, Object[] args);
+    private object ExecuteMethod(MethodInfo method, Object[] args);
+}
+public class NUnit.Engine.Drivers.SkippedAssemblyFrameworkDriver : NotRunnableFrameworkDriver {
+    public SkippedAssemblyFrameworkDriver(string assemblyPath);
+}
+internal class NUnit.Engine.Extensibility.ExtensionAssembly : object {
+    [CompilerGeneratedAttribute]
+private string <FilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <FromWildCard>k__BackingField;
+    [CompilerGeneratedAttribute]
+private AssemblyDefinition <Assembly>k__BackingField;
+    public string FilePath { get; }
+    public bool FromWildCard { get; }
+    public AssemblyDefinition Assembly { get; }
+    public string AssemblyName { get; }
+    public Version AssemblyVersion { get; }
+    public ModuleDefinition MainModule { get; }
+    public ExtensionAssembly(string filePath, bool fromWildCard);
+    [CompilerGeneratedAttribute]
+public string get_FilePath();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_FromWildCard();
+    [CompilerGeneratedAttribute]
+public AssemblyDefinition get_Assembly();
+    public sealed virtual string get_AssemblyName();
+    public sealed virtual Version get_AssemblyVersion();
+    public ModuleDefinition get_MainModule();
+    private AssemblyDefinition GetAssemblyDefinition();
+    public sealed virtual void Dispose();
+}
+public class NUnit.Engine.Extensibility.ExtensionNode : object {
+    private object _extensionObject;
+    private Dictionary`2<string, List`1<string>> _properties;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IRuntimeFramework <TargetFramework>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AssemblyPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Version <AssemblyVersion>k__BackingField;
+    public string TypeName { get; private set; }
+    public IRuntimeFramework TargetFramework { get; }
+    public bool Enabled { get; public set; }
+    public string Path { get; public set; }
+    public string Description { get; public set; }
+    public IEnumerable`1<string> PropertyNames { get; }
+    public string AssemblyPath { get; private set; }
+    public Version AssemblyVersion { get; private set; }
+    public object ExtensionObject { get; }
+    public ExtensionNode(string assemblyPath, Version assemblyVersion, string typeName, IRuntimeFramework targetFramework);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TypeName();
+    [CompilerGeneratedAttribute]
+private void set_TypeName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IRuntimeFramework get_TargetFramework();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_Enabled();
+    [CompilerGeneratedAttribute]
+public void set_Enabled(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    public sealed virtual IEnumerable`1<string> get_PropertyNames();
+    public sealed virtual IEnumerable`1<string> GetValues(string name);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_AssemblyPath();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyPath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Version get_AssemblyVersion();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyVersion(Version value);
+    public object get_ExtensionObject();
+    public object CreateExtensionObject(Object[] args);
+    public void AddProperty(string name, string val);
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+private bool <CreateExtensionObject>b__35_0(TypeInfo t);
+}
+public class NUnit.Engine.Extensibility.ExtensionPoint : object {
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<ExtensionNode> <Extensions>k__BackingField;
+    public string Path { get; private set; }
+    public string Description { get; public set; }
+    public string TypeName { get; private set; }
+    private IEnumerable`1<IExtensionNode> NUnit.Engine.Extensibility.IExtensionPoint.Extensions { get; }
+    public List`1<ExtensionNode> Extensions { get; private set; }
+    public ExtensionPoint(string path, Type type);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Path();
+    [CompilerGeneratedAttribute]
+private void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TypeName();
+    [CompilerGeneratedAttribute]
+private void set_TypeName(string value);
+    private sealed virtual override IEnumerable`1<IExtensionNode> NUnit.Engine.Extensibility.IExtensionPoint.get_Extensions();
+    [CompilerGeneratedAttribute]
+public List`1<ExtensionNode> get_Extensions();
+    [CompilerGeneratedAttribute]
+private void set_Extensions(List`1<ExtensionNode> value);
+    public void Install(ExtensionNode node);
+    public void Remove(ExtensionNode extension);
+}
+[ExtensionAttribute]
+internal static class NUnit.Engine.Extensibility.ExtensionSelector : object {
+    [ExtensionAttribute]
+public static bool IsDuplicateOf(IExtensionAssembly first, IExtensionAssembly second);
+    [ExtensionAttribute]
+public static bool IsBetterVersionOf(IExtensionAssembly first, IExtensionAssembly second);
+}
+internal interface NUnit.Engine.Extensibility.IExtensionAssembly {
+    public bool FromWildCard { get; }
+    public string AssemblyName { get; }
+    public Version AssemblyVersion { get; }
+    public abstract virtual bool get_FromWildCard();
+    public abstract virtual string get_AssemblyName();
+    public abstract virtual Version get_AssemblyVersion();
+}
+public interface NUnit.Engine.IDriverService {
+    public abstract virtual IFrameworkDriver GetDriver(AppDomain domain, string assemblyPath, string targetFramework, bool skipNonTestAssemblies);
+}
+internal class NUnit.Engine.Internal.AddinsFileReader : object {
+    public sealed virtual IEnumerable`1<string> Read(IFile file);
+    internal static IEnumerable`1<string> Read(Stream stream);
+}
+public static class NUnit.Engine.Internal.AssemblyHelper : object {
+    public static string GetDirectoryName(Assembly assembly);
+    public static string GetAssemblyPath(Assembly assembly);
+    private static bool IsFileUri(string uri);
+    public static string GetAssemblyPathFromCodeBase(string codeBase);
+}
+public static class NUnit.Engine.Internal.Backports.Path : object {
+    public static bool IsPathFullyQualified(string path);
+    private static bool RunningOnWindows();
+}
+internal class NUnit.Engine.Internal.Backports.Tuple`2 : object {
+    [CompilerGeneratedAttribute]
+private T1 <Item1>k__BackingField;
+    [CompilerGeneratedAttribute]
+private T2 <Item2>k__BackingField;
+    public T1 Item1 { get; }
+    public T2 Item2 { get; }
+    public Tuple`2(T1 first, T2 second);
+    [CompilerGeneratedAttribute]
+public T1 get_Item1();
+    [CompilerGeneratedAttribute]
+public T2 get_Item2();
+}
+public class NUnit.Engine.Internal.CurrentMessageCounter : object {
+    private ManualResetEvent _noMessages;
+    private int _currentMessageCount;
+    public void OnMessageStart();
+    public void OnMessageEnd();
+    public void WaitForAllCurrentMessages();
+}
+internal class NUnit.Engine.Internal.DirectoryFinder : object {
+    private IFileSystem fileSystem;
+    public DirectoryFinder(IFileSystem fileSystem);
+    public sealed virtual IEnumerable`1<IDirectory> GetDirectories(IDirectory startDirectory, string pattern);
+    public sealed virtual IEnumerable`1<IFile> GetFiles(IDirectory startDirectory, string pattern);
+    private static List`1<IDirectory> ExpandOneStep(IList`1<IDirectory> dirList, string pattern);
+}
+internal class NUnit.Engine.Internal.FileSystemAccess.Default.Directory : object {
+    private DirectoryInfo directory;
+    [CompilerGeneratedAttribute]
+private IDirectory <Parent>k__BackingField;
+    public IDirectory Parent { get; private set; }
+    public string FullName { get; }
+    public Directory(string path);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDirectory get_Parent();
+    [CompilerGeneratedAttribute]
+private void set_Parent(IDirectory value);
+    public sealed virtual string get_FullName();
+    public sealed virtual IEnumerable`1<IDirectory> GetDirectories(string searchPattern, SearchOption searchOption);
+    public sealed virtual IEnumerable`1<IFile> GetFiles(string searchPattern);
+}
+internal class NUnit.Engine.Internal.FileSystemAccess.Default.File : object {
+    [CompilerGeneratedAttribute]
+private IDirectory <Parent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FullName>k__BackingField;
+    public IDirectory Parent { get; private set; }
+    public string FullName { get; private set; }
+    public File(string path);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDirectory get_Parent();
+    [CompilerGeneratedAttribute]
+private void set_Parent(IDirectory value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_FullName();
+    [CompilerGeneratedAttribute]
+private void set_FullName(string value);
+}
+internal class NUnit.Engine.Internal.FileSystemAccess.Default.FileSystem : object {
+    public sealed virtual bool Exists(IDirectory directory);
+    public sealed virtual bool Exists(IFile file);
+    public sealed virtual IDirectory GetDirectory(string path);
+    public sealed virtual IFile GetFile(string path);
+}
+internal interface NUnit.Engine.Internal.FileSystemAccess.IDirectory {
+    public IDirectory Parent { get; }
+    public string FullName { get; }
+    public abstract virtual IDirectory get_Parent();
+    public abstract virtual string get_FullName();
+    public abstract virtual IEnumerable`1<IDirectory> GetDirectories(string searchPattern, SearchOption searchOption);
+    public abstract virtual IEnumerable`1<IFile> GetFiles(string searchPattern);
+}
+internal interface NUnit.Engine.Internal.FileSystemAccess.IFile {
+    public IDirectory Parent { get; }
+    public string FullName { get; }
+    public abstract virtual IDirectory get_Parent();
+    public abstract virtual string get_FullName();
+}
+internal interface NUnit.Engine.Internal.FileSystemAccess.IFileSystem {
+    public abstract virtual bool Exists(IDirectory directory);
+    public abstract virtual bool Exists(IFile file);
+    public abstract virtual IDirectory GetDirectory(string path);
+    public abstract virtual IFile GetFile(string path);
+}
+internal interface NUnit.Engine.Internal.IAddinsFileReader {
+    public abstract virtual IEnumerable`1<string> Read(IFile file);
+}
+internal interface NUnit.Engine.Internal.IDirectoryFinder {
+    public abstract virtual IEnumerable`1<IDirectory> GetDirectories(IDirectory startDirectory, string pattern);
+    public abstract virtual IEnumerable`1<IFile> GetFiles(IDirectory startDirectory, string pattern);
+}
+[ExtensionAttribute]
+internal static class NUnit.Engine.Internal.IEnumerableExtensions : object {
+    [ExtensionAttribute]
+public static bool Any(IEnumerable`1<T> enumeration);
+}
+public static class NUnit.Engine.Internal.InternalTrace : object {
+    private static InternalTraceWriter _traceWriter;
+    [CompilerGeneratedAttribute]
+private static InternalTraceLevel <DefaultTraceLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <Initialized>k__BackingField;
+    public static InternalTraceLevel DefaultTraceLevel { get; private set; }
+    public static bool Initialized { get; private set; }
+    [CompilerGeneratedAttribute]
+public static InternalTraceLevel get_DefaultTraceLevel();
+    [CompilerGeneratedAttribute]
+private static void set_DefaultTraceLevel(InternalTraceLevel value);
+    [CompilerGeneratedAttribute]
+public static bool get_Initialized();
+    [CompilerGeneratedAttribute]
+private static void set_Initialized(bool value);
+    public static void Initialize(string logName, InternalTraceLevel level);
+    public static Logger GetLogger(string name, InternalTraceLevel level);
+    public static Logger GetLogger(Type type, InternalTraceLevel level);
+    public static Logger GetLogger(string name);
+    public static Logger GetLogger(Type type);
+}
+internal class NUnit.Engine.Internal.InternalTraceWriter : TextWriter {
+    private TextWriter _writer;
+    private object _myLock;
+    public Encoding Encoding { get; }
+    internal InternalTraceWriter(string logPath);
+    public InternalTraceWriter(TextWriter writer);
+    public virtual Encoding get_Encoding();
+    public virtual void Write(char value);
+    public virtual void Write(string value);
+    public virtual void WriteLine(string value);
+    protected virtual void Dispose(bool disposing);
+    public virtual void Flush();
+}
+public class NUnit.Engine.Internal.Logger : object {
+    private static string TimeFmt;
+    private static string TraceFmt;
+    private string _name;
+    private TextWriter _writer;
+    [CompilerGeneratedAttribute]
+private InternalTraceLevel <TraceLevel>k__BackingField;
+    public InternalTraceLevel TraceLevel { get; }
+    public Logger(string fullName, InternalTraceLevel level, TextWriter writer);
+    [CompilerGeneratedAttribute]
+public InternalTraceLevel get_TraceLevel();
+    public sealed virtual void Error(string message);
+    public sealed virtual void Error(string format, Object[] args);
+    public sealed virtual void Warning(string message);
+    public sealed virtual void Warning(string format, Object[] args);
+    public sealed virtual void Info(string message);
+    public sealed virtual void Info(string format, Object[] args);
+    public sealed virtual void Debug(string message);
+    public sealed virtual void Debug(string format, Object[] args);
+    private void Log(InternalTraceLevel level, string message);
+    private void Log(InternalTraceLevel level, string format, Object[] args);
+    private void WriteLog(InternalTraceLevel level, string message);
+}
+public static class NUnit.Engine.Internal.NUnitConfiguration : object {
+    private static string _engineDirectory;
+    private static string _applicationDirectory;
+    public static string EngineDirectory { get; }
+    public static string ApplicationDirectory { get; }
+    public static string get_EngineDirectory();
+    public static string get_ApplicationDirectory();
+}
+public class NUnit.Engine.Internal.PathUtils : object {
+    public static UInt32 FILE_ATTRIBUTE_DIRECTORY;
+    public static UInt32 FILE_ATTRIBUTE_NORMAL;
+    public static int MAX_PATH;
+    protected static char DirectorySeparatorChar;
+    protected static char AltDirectorySeparatorChar;
+    private static PathUtils();
+    public static bool IsAssemblyFileType(string path);
+    public static string RelativePath(string from, string to);
+    public static string Canonicalize(string path);
+    public static bool SamePathOrUnder(string path1, string path2);
+    public static string Combine(string path1, String[] morePaths);
+    public static bool IsFullyQualifiedWindowsPath(string path);
+    public static bool IsFullyQualifiedUnixPath(string path);
+    private static bool IsWindowsDirectorySeparator(char c);
+    private static bool IsValidDriveSpecifier(char c);
+    private static bool IsWindows();
+    private static String[] SplitPath(string path);
+    private static bool PathsEqual(string path1, string path2);
+}
+[ExtensionAttribute]
+public static class NUnit.Engine.Internal.ProcessUtils : object {
+    private static Char[] CharsThatRequireQuoting;
+    private static Char[] CharsThatRequireEscaping;
+    private static ProcessUtils();
+    [ExtensionAttribute]
+public static void EscapeProcessArgument(StringBuilder builder, string literalValue, bool alwaysQuote);
+}
+public class NUnit.Engine.Internal.ProvidedPathsAssemblyResolver : object {
+    private static ILogger log;
+    private List`1<string> _resolutionPaths;
+    private static ProvidedPathsAssemblyResolver();
+    public void Install();
+    public void AddPath(string dirPath);
+    public void AddPathFromFile(string filePath);
+    public void RemovePath(string dirPath);
+    public void RemovePathFromFile(string filePath);
+    private Assembly AssemblyResolve(object sender, ResolveEventArgs args);
+}
+[ExtensionAttribute]
+public static class NUnit.Engine.Internal.ResultHelper : object {
+    private static string TEST_RUN_ELEMENT;
+    private static string TEST_SUITE_ELEMENT;
+    private static string PROJECT_SUITE_TYPE;
+    [ExtensionAttribute]
+public static TestEngineResult Aggregate(TestEngineResult result, string elementName, string suiteType, string id, string name, string fullName);
+    [ExtensionAttribute]
+public static TestEngineResult Aggregate(TestEngineResult result, string elementName, string id, string name, string fullName);
+    [ExtensionAttribute]
+public static TestEngineResult MakeProjectResult(TestEngineResult result, TestPackage package);
+    [ExtensionAttribute]
+public static TestEngineResult MakeTestRunResult(TestEngineResult result, TestPackage package);
+    public static TestEngineResult Merge(IList`1<TestEngineResult> results);
+    public static XmlNode Aggregate(string elementName, string id, string name, string fullName, IList`1<XmlNode> resultNodes);
+    public static XmlNode Aggregate(string elementName, string testType, string id, string name, string fullName, IList`1<XmlNode> resultNodes);
+}
+[ExtensionAttribute]
+public static class NUnit.Engine.Internal.TestPackageExtensions : object {
+    [ExtensionAttribute]
+public static bool IsAssemblyPackage(TestPackage package);
+    [ExtensionAttribute]
+public static bool HasSubPackages(TestPackage package);
+    [ExtensionAttribute]
+public static IList`1<TestPackage> Select(TestPackage package, TestPackageSelectorDelegate selector);
+    private static void AccumulatePackages(TestPackage package, IList`1<TestPackage> selection, TestPackageSelectorDelegate selector);
+}
+public class NUnit.Engine.Internal.TestPackageSelectorDelegate : MulticastDelegate {
+    public TestPackageSelectorDelegate(object object, IntPtr method);
+    public virtual bool Invoke(TestPackage p);
+    public virtual IAsyncResult BeginInvoke(TestPackage p, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+public static class NUnit.Engine.InternalEnginePackageSettings : object {
+    public static string ImageRuntimeVersion;
+    public static string ImageRequiresX86;
+    public static string ImageRequiresDefaultAppDomainAssemblyResolver;
+    public static string ImageTargetFrameworkName;
+}
+public interface NUnit.Engine.ITestAgency {
+    public abstract virtual void Register(ITestAgent agent);
+}
+public interface NUnit.Engine.ITestAgent {
+    public Guid Id { get; }
+    public abstract virtual Guid get_Id();
+    public abstract virtual bool Start();
+    public abstract virtual void Stop();
+    public abstract virtual ITestEngineRunner CreateRunner(TestPackage package);
+}
+public interface NUnit.Engine.ITestEngineRunner {
+    public abstract virtual TestEngineResult Load();
+    public abstract virtual void Unload();
+    public abstract virtual TestEngineResult Reload();
+    public abstract virtual int CountTestCases(TestFilter filter);
+    public abstract virtual TestEngineResult Run(ITestEventListener listener, TestFilter filter);
+    public abstract virtual AsyncTestEngineResult RunAsync(ITestEventListener listener, TestFilter filter);
+    public abstract virtual void StopRun(bool force);
+    public abstract virtual TestEngineResult Explore(TestFilter filter);
+}
+public interface NUnit.Engine.ITestRunnerFactory {
+    public abstract virtual ITestEngineRunner MakeTestRunner(TestPackage package);
+}
+public abstract class NUnit.Engine.Runners.AbstractTestRunner : object {
+    [CompilerGeneratedAttribute]
+private IServiceLocator <Services>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITestRunnerFactory <TestRunnerFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TestPackage <TestPackage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TestEngineResult <LoadResult>k__BackingField;
+    protected bool _disposed;
+    protected IServiceLocator Services { get; private set; }
+    protected ITestRunnerFactory TestRunnerFactory { get; private set; }
+    protected TestPackage TestPackage { get; protected set; }
+    protected TestEngineResult LoadResult { get; protected set; }
+    public bool IsPackageLoaded { get; }
+    public AbstractTestRunner(IServiceLocator services, TestPackage package);
+    [CompilerGeneratedAttribute]
+protected IServiceLocator get_Services();
+    [CompilerGeneratedAttribute]
+private void set_Services(IServiceLocator value);
+    [CompilerGeneratedAttribute]
+protected ITestRunnerFactory get_TestRunnerFactory();
+    [CompilerGeneratedAttribute]
+private void set_TestRunnerFactory(ITestRunnerFactory value);
+    [CompilerGeneratedAttribute]
+protected TestPackage get_TestPackage();
+    [CompilerGeneratedAttribute]
+protected void set_TestPackage(TestPackage value);
+    [CompilerGeneratedAttribute]
+protected TestEngineResult get_LoadResult();
+    [CompilerGeneratedAttribute]
+protected void set_LoadResult(TestEngineResult value);
+    public bool get_IsPackageLoaded();
+    protected abstract virtual TestEngineResult LoadPackage();
+    protected virtual TestEngineResult ReloadPackage();
+    public virtual void UnloadPackage();
+    protected abstract virtual TestEngineResult RunTests(ITestEventListener listener, TestFilter filter);
+    protected virtual AsyncTestEngineResult RunTestsAsync(ITestEventListener listener, TestFilter filter);
+    public abstract virtual void StopRun(bool force);
+    public abstract virtual TestEngineResult Explore(TestFilter filter);
+    public sealed virtual TestEngineResult Load();
+    public sealed virtual TestEngineResult Reload();
+    public sealed virtual void Unload();
+    public abstract virtual int CountTestCases(TestFilter filter);
+    public sealed virtual TestEngineResult Run(ITestEventListener listener, TestFilter filter);
+    public sealed virtual AsyncTestEngineResult RunAsync(ITestEventListener listener, TestFilter filter);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class NUnit.Engine.Runners.AggregatingTestRunner : AbstractTestRunner {
+    private List`1<ITestEngineRunner> _runners;
+    private List`1<Exception> _unloadExceptions;
+    public int LevelOfParallelism { get; }
+    public IList`1<ITestEngineRunner> Runners { get; }
+    public AggregatingTestRunner(IServiceLocator services, TestPackage package);
+    public virtual int get_LevelOfParallelism();
+    public IList`1<ITestEngineRunner> get_Runners();
+    public virtual TestEngineResult Explore(TestFilter filter);
+    protected virtual TestEngineResult LoadPackage();
+    public virtual void UnloadPackage();
+    public virtual int CountTestCases(TestFilter filter);
+    protected virtual TestEngineResult RunTests(ITestEventListener listener, TestFilter filter);
+    private void RunTestsSequentially(ITestEventListener listener, TestFilter filter, List`1<TestEngineResult> results, bool disposeRunners);
+    private void RunTestsInParallel(ITestEventListener listener, TestFilter filter, List`1<TestEngineResult> results, bool disposeRunners);
+    public virtual void StopRun(bool force);
+    protected virtual void Dispose(bool disposing);
+    protected virtual ITestEngineRunner CreateRunner(TestPackage package);
+    private static void LogResultsFromTask(TestExecutionTask task, List`1<TestEngineResult> results, List`1<Exception> unloadExceptions);
+}
+public abstract class NUnit.Engine.Runners.DirectTestRunner : AbstractTestRunner {
+    private List`1<IFrameworkDriver> _drivers;
+    private ProvidedPathsAssemblyResolver _assemblyResolver;
+    [CompilerGeneratedAttribute]
+private AppDomain <TestDomain>k__BackingField;
+    protected AppDomain TestDomain { get; protected set; }
+    public DirectTestRunner(IServiceLocator services, TestPackage package);
+    [CompilerGeneratedAttribute]
+protected AppDomain get_TestDomain();
+    [CompilerGeneratedAttribute]
+protected void set_TestDomain(AppDomain value);
+    public virtual TestEngineResult Explore(TestFilter filter);
+    protected virtual TestEngineResult LoadPackage();
+    private static string LoadDriver(IFrameworkDriver driver, string testFile, TestPackage subPackage);
+    public virtual int CountTestCases(TestFilter filter);
+    protected virtual TestEngineResult RunTests(ITestEventListener listener, TestFilter filter);
+    public virtual void StopRun(bool force);
+    private void EnsurePackageIsLoaded();
+}
+public interface NUnit.Engine.Runners.ITestExecutionTask {
+    public abstract virtual void Execute();
+}
+public class NUnit.Engine.Runners.LocalTestRunner : DirectTestRunner {
+    public LocalTestRunner(IServiceLocator services, TestPackage package);
+}
+public class NUnit.Engine.Runners.ParallelTaskWorkerPool : object {
+    private object _taskLock;
+    private Queue`1<ITestExecutionTask> _tasks;
+    private List`1<Thread> _threads;
+    private int _maxThreads;
+    private bool _isRunning;
+    public ParallelTaskWorkerPool(int maxThreads);
+    public void Enqueue(ITestExecutionTask task);
+    public void Start();
+    private void ProcessTasksProc();
+    public bool WaitAll(int timeout);
+    public void WaitAll();
+}
+public class NUnit.Engine.Runners.TestExecutionTask : object {
+    private ITestEngineRunner _runner;
+    private ITestEventListener _listener;
+    private TestFilter _filter;
+    private TestEngineResult modreq(System.Runtime.CompilerServices.IsVolatile) _result;
+    private bool _disposeRunner;
+    private bool _hasExecuted;
+    private Exception _unloadException;
+    public TestEngineResult Result { get; }
+    public Exception UnloadException { get; }
+    public TestExecutionTask(ITestEngineRunner runner, ITestEventListener listener, TestFilter filter, bool disposeRunner);
+    public sealed virtual void Execute();
+    public TestEngineResult get_Result();
+    public Exception get_UnloadException();
+}
+public enum NUnit.Engine.RuntimeType : Enum {
+    public int value__;
+    public static RuntimeType Any;
+    public static RuntimeType Net;
+    public static RuntimeType Mono;
+    public static RuntimeType NetCore;
+}
+public class NUnit.Engine.ServiceContext : object {
+    [CompilerGeneratedAttribute]
+private ServiceManager <ServiceManager>k__BackingField;
+    public ServiceManager ServiceManager { get; private set; }
+    public int ServiceCount { get; }
+    [CompilerGeneratedAttribute]
+public ServiceManager get_ServiceManager();
+    [CompilerGeneratedAttribute]
+private void set_ServiceManager(ServiceManager value);
+    public int get_ServiceCount();
+    public void Add(IService service);
+    public sealed virtual T GetService();
+    public sealed virtual object GetService(Type serviceType);
+}
+public class NUnit.Engine.Services.DriverService : Service {
+    private static ILogger log;
+    private IList`1<IDriverFactory> _factories;
+    private static DriverService();
+    public sealed virtual IFrameworkDriver GetDriver(AppDomain domain, string assemblyPath, string targetFramework, bool skipNonTestAssemblies);
+    public virtual void StartService();
+}
+public class NUnit.Engine.Services.ExtensionManager : object {
+    private static Logger log;
+    private static Version ENGINE_VERSION;
+    private IFileSystem _fileSystem;
+    private IAddinsFileReader _addinsReader;
+    private IDirectoryFinder _directoryFinder;
+    private List`1<ExtensionPoint> _extensionPoints;
+    private Dictionary`2<string, ExtensionPoint> _pathIndex;
+    private List`1<ExtensionNode> _extensions;
+    private List`1<ExtensionAssembly> _assemblies;
+    private Dictionary`2<string, object> _visited;
+    public IEnumerable`1<IExtensionPoint> ExtensionPoints { get; }
+    public IEnumerable`1<IExtensionNode> Extensions { get; }
+    internal ExtensionManager(IAddinsFileReader addinsReader, IFileSystem fileSystem);
+    internal ExtensionManager(IAddinsFileReader addinsReader, IFileSystem fileSystem, IDirectoryFinder directoryFinder);
+    private static ExtensionManager();
+    internal void FindExtensions(string startDir);
+    public IEnumerable`1<IExtensionPoint> get_ExtensionPoints();
+    public IEnumerable`1<IExtensionNode> get_Extensions();
+    public void EnableExtension(string typeName, bool enabled);
+    public ExtensionPoint GetExtensionPoint(string path);
+    public ExtensionPoint GetExtensionPoint(Type type);
+    public ExtensionPoint GetExtensionPoint(TypeReference type);
+    [IteratorStateMachineAttribute("NUnit.Engine.Services.ExtensionManager/<GetExtensionNodes>d__21")]
+public IEnumerable`1<ExtensionNode> GetExtensionNodes(string path);
+    public ExtensionNode GetExtensionNode(string path);
+    [IteratorStateMachineAttribute("NUnit.Engine.Services.ExtensionManager/<GetExtensionNodes>d__23`1")]
+public IEnumerable`1<ExtensionNode> GetExtensionNodes(bool includeDisabled);
+    [IteratorStateMachineAttribute("NUnit.Engine.Services.ExtensionManager/<GetExtensions>d__24`1")]
+public IEnumerable`1<T> GetExtensions();
+    public void FindExtensionPoints(Assembly[] targetAssemblies);
+    private ExtensionPoint DeduceExtensionPointFromType(TypeReference typeRef);
+    private void FindExtensionAssemblies(IDirectory startDir);
+    private void ProcessDirectory(IDirectory startDir, bool fromWildCard);
+    private int ProcessAddinsFiles(IDirectory startDir, bool fromWildCard);
+    private void ProcessAddinsFile(IDirectory baseDir, IFile addinsFile, bool fromWildCard);
+    private Tuple`2<IDirectory, string> GetBaseDirAndPattern(IDirectory baseDir, string path);
+    private void ProcessCandidateAssembly(string filePath, bool fromWildCard);
+    private bool WasVisited(string filePath, bool fromWildcard);
+    private void MarkAsVisited(string filePath, bool fromWildcard);
+    internal void FindExtensionsInAssembly(ExtensionAssembly assembly);
+    internal static bool CanLoadTargetFramework(Assembly runnerAsm, ExtensionAssembly extensionAsm);
+    public sealed virtual void Dispose();
+}
+public class NUnit.Engine.Services.ExtensionService : Service {
+    private ExtensionManager _extensionManager;
+    public IEnumerable`1<IExtensionPoint> ExtensionPoints { get; }
+    public IEnumerable`1<IExtensionNode> Extensions { get; }
+    internal ExtensionService(IAddinsFileReader addinsReader, IFileSystem fileSystem);
+    internal ExtensionService(IAddinsFileReader addinsReader, IFileSystem fileSystem, IDirectoryFinder directoryFinder);
+    public sealed virtual IEnumerable`1<IExtensionPoint> get_ExtensionPoints();
+    public sealed virtual IEnumerable`1<IExtensionNode> get_Extensions();
+    private sealed virtual override IExtensionPoint NUnit.Engine.IExtensionService.GetExtensionPoint(string path);
+    [IteratorStateMachineAttribute("NUnit.Engine.Services.ExtensionService/<NUnit-Engine-IExtensionService-GetExtensionNodes>d__9")]
+private sealed virtual override IEnumerable`1<IExtensionNode> NUnit.Engine.IExtensionService.GetExtensionNodes(string path);
+    public sealed virtual void EnableExtension(string typeName, bool enabled);
+    public IEnumerable`1<T> GetExtensions();
+    public ExtensionNode GetExtensionNode(string path);
+    public IEnumerable`1<ExtensionNode> GetExtensionNodes();
+    public virtual void StartService();
+    public virtual void StopService();
+}
+public static class NUnit.Engine.Services.InProcessTestRunnerFactory : object {
+    public static ITestEngineRunner MakeTestRunner(IServiceLocator context, TestPackage package);
+}
+public abstract class NUnit.Engine.Services.Service : object {
+    [CompilerGeneratedAttribute]
+private IServiceLocator <ServiceContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ServiceStatus <Status>k__BackingField;
+    protected bool _disposed;
+    public IServiceLocator ServiceContext { get; public set; }
+    public ServiceStatus Status { get; protected set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual IServiceLocator get_ServiceContext();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ServiceContext(IServiceLocator value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ServiceStatus get_Status();
+    [CompilerGeneratedAttribute]
+protected void set_Status(ServiceStatus value);
+    public virtual void StartService();
+    public virtual void StopService();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class NUnit.Engine.Services.ServiceManager : object {
+    private List`1<IService> _services;
+    private Dictionary`2<Type, IService> _serviceIndex;
+    private static Logger log;
+    [CompilerGeneratedAttribute]
+private bool <ServicesInitialized>k__BackingField;
+    private bool _disposed;
+    public bool ServicesInitialized { get; private set; }
+    public int ServiceCount { get; }
+    private static ServiceManager();
+    [CompilerGeneratedAttribute]
+public bool get_ServicesInitialized();
+    [CompilerGeneratedAttribute]
+private void set_ServicesInitialized(bool value);
+    public int get_ServiceCount();
+    public IService GetService(Type serviceType);
+    public void AddService(IService service);
+    public void StartServices();
+    public void StopServices();
+    public void ClearServices();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public class NUnit.Engine.TestEngineResult : object {
+    private List`1<string> _xmlText;
+    private List`1<XmlNode> _xmlNodes;
+    public bool IsSingle { get; }
+    public IList`1<XmlNode> XmlNodes { get; }
+    public XmlNode Xml { get; }
+    public TestEngineResult(XmlNode xml);
+    public TestEngineResult(string xml);
+    public bool get_IsSingle();
+    public IList`1<XmlNode> get_XmlNodes();
+    public XmlNode get_Xml();
+    public void Add(string xml);
+    public void Add(XmlNode xml);
+}
+public static class NUnit.EnginePackageSettings : object {
+    public static string ActiveConfig;
+    public static string ConfigNames;
+    public static string AutoBinPath;
+    public static string BasePath;
+    public static string ConfigurationFile;
+    public static string DebugTests;
+    public static string DebugAgent;
+    public static string DomainUsage;
+    public static string PrivateBinPath;
+    public static string MaxAgents;
+    public static string ProcessModel;
+    [ObsoleteAttribute("Use 'RequestedRuntimeFramework' instead.")]
+public static string RuntimeFramework;
+    public static string RequestedRuntimeFramework;
+    public static string TargetRuntimeFramework;
+    public static string RunAsX86;
+    public static string DisposeRunners;
+    public static string ShadowCopyFiles;
+    public static string LoadUserProfile;
+    public static string SkipNonTestAssemblies;
+    public static string PauseBeforeRun;
+    public static string InternalTraceLevel;
+    public static string PrincipalPolicy;
+    public static string WorkDirectory;
+}
+[ExtensionAttribute]
+public static class NUnit.XmlHelper : object {
+    public static XmlNode CreateTopLevelElement(string name);
+    public static XmlNode CreateXmlNode(string xml);
+    [ExtensionAttribute]
+public static void AddAttribute(XmlNode node, string name, string value);
+    [ExtensionAttribute]
+public static XmlNode AddElement(XmlNode node, string name);
+    [ExtensionAttribute]
+public static XmlNode AddElementWithCDataSection(XmlNode node, string name, string data);
+    [ExtensionAttribute]
+public static string GetAttribute(XmlNode result, string name);
+    [ExtensionAttribute]
+public static int GetAttribute(XmlNode result, string name, int defaultValue);
+    [ExtensionAttribute]
+public static double GetAttribute(XmlNode result, string name, double defaultValue);
+    [ExtensionAttribute]
+public static DateTime GetAttribute(XmlNode result, string name, DateTime defaultValue);
+}
+[AttributeUsageAttribute("69")]
+internal class System.Runtime.CompilerServices.ExtensionAttribute : Attribute {
+}

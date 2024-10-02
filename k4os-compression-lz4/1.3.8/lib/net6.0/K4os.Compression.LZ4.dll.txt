@@ -1,0 +1,697 @@
+internal class K4os.Compression.LZ4.AssemblyHook : object {
+}
+public enum K4os.Compression.LZ4.Encoders.EncoderAction : Enum {
+    public int value__;
+    public static EncoderAction None;
+    public static EncoderAction Loaded;
+    public static EncoderAction Copied;
+    public static EncoderAction Encoded;
+}
+public interface K4os.Compression.LZ4.Encoders.ILZ4Decoder {
+    public int BlockSize { get; }
+    public int BytesReady { get; }
+    public abstract virtual int get_BlockSize();
+    public abstract virtual int get_BytesReady();
+    public abstract virtual int Decode(Byte* source, int length, int blockSize);
+    public abstract virtual int Inject(Byte* source, int length);
+    public abstract virtual void Drain(Byte* target, int offset, int length);
+    public abstract virtual Byte* Peek(int offset);
+}
+public interface K4os.Compression.LZ4.Encoders.ILZ4Encoder {
+    public int BlockSize { get; }
+    public int BytesReady { get; }
+    public abstract virtual int get_BlockSize();
+    public abstract virtual int get_BytesReady();
+    public abstract virtual int Topup(Byte* source, int length);
+    public abstract virtual int Encode(Byte* target, int length, bool allowCopy);
+}
+public class K4os.Compression.LZ4.Encoders.LZ4BlockDecoder : UnmanagedResources {
+    private PinnedMemory _outputBufferPin;
+    private int _outputLength;
+    private int _outputIndex;
+    private int _blockSize;
+    private Byte* OutputBuffer { get; }
+    public int BlockSize { get; }
+    public int BytesReady { get; }
+    public LZ4BlockDecoder(int blockSize);
+    private Byte* get_OutputBuffer();
+    public sealed virtual int get_BlockSize();
+    public sealed virtual int get_BytesReady();
+    public sealed virtual int Decode(Byte* source, int length, int blockSize);
+    public sealed virtual int Inject(Byte* source, int length);
+    public sealed virtual void Drain(Byte* target, int offset, int length);
+    public sealed virtual Byte* Peek(int offset);
+    protected virtual void ReleaseUnmanaged();
+}
+public class K4os.Compression.LZ4.Encoders.LZ4BlockEncoder : LZ4EncoderBase {
+    private LZ4Level _level;
+    public LZ4BlockEncoder(LZ4Level level, int blockSize);
+    protected virtual int EncodeBlock(Byte* source, int sourceLength, Byte* target, int targetLength);
+    protected virtual int CopyDict(Byte* target, int dictionaryLength);
+}
+public class K4os.Compression.LZ4.Encoders.LZ4ChainDecoder : UnmanagedResources {
+    private PinnedMemory _outputBufferPin;
+    private PinnedMemory _contextPin;
+    private int _blockSize;
+    private int _outputLength;
+    private int _outputIndex;
+    private Byte* OutputBuffer { get; }
+    private LZ4_streamDecode_t* Context { get; }
+    public int BlockSize { get; }
+    public int BytesReady { get; }
+    public LZ4ChainDecoder(int blockSize, int extraBlocks);
+    private Byte* get_OutputBuffer();
+    private LZ4_streamDecode_t* get_Context();
+    public sealed virtual int get_BlockSize();
+    public sealed virtual int get_BytesReady();
+    public sealed virtual int Decode(Byte* source, int length, int blockSize);
+    public sealed virtual int Inject(Byte* source, int length);
+    public sealed virtual void Drain(Byte* target, int offset, int length);
+    public sealed virtual Byte* Peek(int offset);
+    private void Prepare(int blockSize);
+    private int CopyDict(int index);
+    private int ApplyDict(int index);
+    private int DecodeBlock(Byte* source, int sourceLength, Byte* target, int targetLength);
+    protected virtual void ReleaseUnmanaged();
+}
+public static class K4os.Compression.LZ4.Encoders.LZ4Decoder : object {
+    public static ILZ4Decoder Create(bool chaining, int blockSize, int extraBlocks);
+    private static ILZ4Decoder CreateChainDecoder(int blockSize, int extraBlocks);
+    private static ILZ4Decoder CreateBlockDecoder(int blockSize);
+}
+public static class K4os.Compression.LZ4.Encoders.LZ4Encoder : object {
+    public static ILZ4Encoder Create(bool chaining, LZ4Level level, int blockSize, int extraBlocks);
+    private static ILZ4Encoder CreateBlockEncoder(LZ4Level level, int blockSize);
+    private static ILZ4Encoder CreateFastEncoder(int blockSize, int extraBlocks);
+    private static ILZ4Encoder CreateHighEncoder(LZ4Level level, int blockSize, int extraBlocks);
+}
+public abstract class K4os.Compression.LZ4.Encoders.LZ4EncoderBase : UnmanagedResources {
+    private PinnedMemory _inputBufferPin;
+    private int _inputLength;
+    private int _blockSize;
+    private int _inputIndex;
+    private int _inputPointer;
+    private Byte* InputBuffer { get; }
+    public int BlockSize { get; }
+    public int BytesReady { get; }
+    protected LZ4EncoderBase(bool chaining, int blockSize, int extraBlocks);
+    private Byte* get_InputBuffer();
+    public sealed virtual int get_BlockSize();
+    public sealed virtual int get_BytesReady();
+    public sealed virtual int Topup(Byte* source, int length);
+    public sealed virtual int Encode(Byte* target, int length, bool allowCopy);
+    private void Commit();
+    protected abstract virtual int EncodeBlock(Byte* source, int sourceLength, Byte* target, int targetLength);
+    protected abstract virtual int CopyDict(Byte* target, int dictionaryLength);
+    protected virtual void ReleaseUnmanaged();
+}
+[ExtensionAttribute]
+public static class K4os.Compression.LZ4.Encoders.LZ4EncoderExtensions : object {
+    [ExtensionAttribute]
+public static bool Topup(ILZ4Encoder encoder, Byte*& source, int length);
+    [ExtensionAttribute]
+public static int Topup(ILZ4Encoder encoder, Byte[] source, int offset, int length);
+    [ExtensionAttribute]
+public static bool Topup(ILZ4Encoder encoder, Byte[] source, Int32& offset, int length);
+    [ExtensionAttribute]
+public static int Encode(ILZ4Encoder encoder, Byte[] target, int offset, int length, bool allowCopy);
+    [ExtensionAttribute]
+public static EncoderAction Encode(ILZ4Encoder encoder, Byte[] target, Int32& offset, int length, bool allowCopy);
+    [ExtensionAttribute]
+public static EncoderAction Encode(ILZ4Encoder encoder, Byte*& target, int length, bool allowCopy);
+    [ExtensionAttribute]
+public static EncoderAction TopupAndEncode(ILZ4Encoder encoder, Byte* source, int sourceLength, Byte* target, int targetLength, bool forceEncode, bool allowCopy, Int32& loaded, Int32& encoded);
+    [ExtensionAttribute]
+public static EncoderAction TopupAndEncode(ILZ4Encoder encoder, Byte[] source, int sourceOffset, int sourceLength, Byte[] target, int targetOffset, int targetLength, bool forceEncode, bool allowCopy, Int32& loaded, Int32& encoded);
+    [ExtensionAttribute]
+public static EncoderAction TopupAndEncode(ILZ4Encoder encoder, ReadOnlySpan`1<byte> source, Span`1<byte> target, bool forceEncode, bool allowCopy, Int32& loaded, Int32& encoded);
+    [ExtensionAttribute]
+private static EncoderAction FlushAndEncode(ILZ4Encoder encoder, Byte* target, int targetLength, bool forceEncode, bool allowCopy, int loaded, Int32& encoded);
+    [ExtensionAttribute]
+public static EncoderAction FlushAndEncode(ILZ4Encoder encoder, Byte* target, int targetLength, bool allowCopy, Int32& encoded);
+    [ExtensionAttribute]
+public static EncoderAction FlushAndEncode(ILZ4Encoder encoder, Byte[] target, int targetOffset, int targetLength, bool allowCopy, Int32& encoded);
+    [ExtensionAttribute]
+public static EncoderAction FlushAndEncode(ILZ4Encoder encoder, Span`1<byte> target, bool allowCopy, Int32& encoded);
+    [ExtensionAttribute]
+public static void Drain(ILZ4Decoder decoder, Byte[] target, int targetOffset, int offset, int length);
+    [ExtensionAttribute]
+public static void Drain(ILZ4Decoder decoder, Span`1<byte> target, int offset, int length);
+    [ExtensionAttribute]
+public static bool DecodeAndDrain(ILZ4Decoder decoder, Byte* source, int sourceLength, Byte* target, int targetLength, Int32& decoded);
+    [ExtensionAttribute]
+public static bool DecodeAndDrain(ILZ4Decoder decoder, Byte[] source, int sourceOffset, int sourceLength, Byte[] target, int targetOffset, int targetLength, Int32& decoded);
+    [ExtensionAttribute]
+public static bool DecodeAndDrain(ILZ4Decoder decoder, ReadOnlySpan`1<byte> source, Span`1<byte> target, Int32& decoded);
+    [ExtensionAttribute]
+public static int Inject(ILZ4Decoder decoder, Byte[] buffer, int offset, int length);
+    [ExtensionAttribute]
+public static int Decode(ILZ4Decoder decoder, Byte[] buffer, int offset, int length, int blockSize);
+}
+public class K4os.Compression.LZ4.Encoders.LZ4FastChainEncoder : LZ4EncoderBase {
+    private PinnedMemory _contextPin;
+    private LZ4_stream_t* Context { get; }
+    public LZ4FastChainEncoder(int blockSize, int extraBlocks);
+    private LZ4_stream_t* get_Context();
+    protected virtual void ReleaseUnmanaged();
+    protected virtual int EncodeBlock(Byte* source, int sourceLength, Byte* target, int targetLength);
+    protected virtual int CopyDict(Byte* target, int length);
+}
+public class K4os.Compression.LZ4.Encoders.LZ4HighChainEncoder : LZ4EncoderBase {
+    private PinnedMemory _contextPin;
+    private LZ4_streamHC_t* Context { get; }
+    public LZ4HighChainEncoder(LZ4Level level, int blockSize, int extraBlocks);
+    private LZ4_streamHC_t* get_Context();
+    protected virtual void ReleaseUnmanaged();
+    protected virtual int EncodeBlock(Byte* source, int sourceLength, Byte* target, int targetLength);
+    protected virtual int CopyDict(Byte* target, int length);
+}
+public enum K4os.Compression.LZ4.Engine.Algorithm : Enum {
+    public int value__;
+    public static Algorithm X32;
+    public static Algorithm X64;
+}
+internal class K4os.Compression.LZ4.Engine.LL : object {
+    [CompilerGeneratedAttribute]
+private static bool <Enforce32>k__BackingField;
+    private static UInt32[] _inc32table;
+    private static Int32[] _dec64table;
+    protected static UInt32* inc32table;
+    protected static Int32* dec64table;
+    protected static int LZ4_MEMORY_USAGE;
+    protected static int LZ4_MAX_INPUT_SIZE;
+    protected static int LZ4_DISTANCE_MAX;
+    protected static int LZ4_DISTANCE_ABSOLUTE_MAX;
+    protected static int LZ4_HASHLOG;
+    protected static int LZ4_HASHTABLESIZE;
+    protected static int LZ4_HASH_SIZE_U32;
+    protected static int ACCELERATION_DEFAULT;
+    protected static int MINMATCH;
+    protected static int WILDCOPYLENGTH;
+    protected static int LASTLITERALS;
+    protected static int MFLIMIT;
+    protected static int MATCH_SAFEGUARD_DISTANCE;
+    protected static int FASTLOOP_SAFE_DISTANCE;
+    protected static int LZ4_minLength;
+    protected static int KB;
+    protected static int MB;
+    protected static UInt32 GB;
+    protected static int ML_BITS;
+    protected static UInt32 ML_MASK;
+    protected static int RUN_BITS;
+    protected static UInt32 RUN_MASK;
+    protected static int OPTIMAL_ML;
+    protected static int LZ4_OPT_NUM;
+    protected static int LZ4_64Klimit;
+    protected static int LZ4_skipTrigger;
+    protected static int LZ4HC_DICTIONARY_LOGSIZE;
+    protected static int LZ4HC_MAXD;
+    protected static int LZ4HC_MAXD_MASK;
+    protected static int LZ4HC_HASH_LOG;
+    protected static int LZ4HC_HASHTABLESIZE;
+    protected static int LZ4HC_HASH_MASK;
+    protected static int LZ4HC_CLEVEL_MIN;
+    protected static int LZ4HC_CLEVEL_DEFAULT;
+    protected static int LZ4HC_CLEVEL_OPT_MIN;
+    protected static int LZ4HC_CLEVEL_MAX;
+    public static bool Enforce32 { get; public set; }
+    public static Algorithm Algorithm { get; }
+    private static LL();
+    public static int LZ4_sizeofStateHC();
+    public static void LZ4_setCompressionLevel(LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel);
+    public static void LZ4_favorDecompressionSpeed(LZ4_streamHC_t* LZ4_streamHCPtr, int favor);
+    public static LZ4_streamHC_t* LZ4_initStreamHC(Void* buffer, int size);
+    public static LZ4_streamHC_t* LZ4_initStreamHC(LZ4_streamHC_t* stream);
+    public static void LZ4_resetStreamHC_fast(LZ4_streamHC_t* LZ4_streamHCPtr, int compressionLevel);
+    private static UInt32 HASH_FUNCTION(UInt32 value);
+    protected static UInt16& DELTANEXTU16(UInt16* table, UInt32 pos);
+    public static UInt32 LZ4HC_hashPtr(Void* ptr);
+    public static void LZ4HC_Insert(LZ4_streamHC_t* hc4, Byte* ip);
+    public static void LZ4HC_setExternalDict(LZ4_streamHC_t* ctxPtr, Byte* newBlock);
+    public static void LZ4HC_clearTables(LZ4_streamHC_t* hc4);
+    public static void LZ4HC_init_internal(LZ4_streamHC_t* hc4, Byte* start);
+    public static int LZ4_saveDictHC(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* safeBuffer, int dictSize);
+    public static int LZ4_loadDictHC(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* dictionary, int dictSize);
+    public static UInt32 LZ4HC_rotl32(UInt32 x, int r);
+    public static bool LZ4HC_protectDictEnd(UInt32 dictLimit, UInt32 matchIndex);
+    public static int LZ4HC_countBack(Byte* ip, Byte* match, Byte* iMin, Byte* mMin);
+    public static UInt32 LZ4HC_reverseCountPattern(Byte* ip, Byte* iLow, UInt32 pattern);
+    public static UInt32 LZ4HC_rotatePattern(UInt32 rotate, UInt32 pattern);
+    public static int LZ4HC_literalsPrice(int litlen);
+    public static int LZ4HC_sequencePrice(int litlen, int mlen);
+    [ConditionalAttribute("DEBUG")]
+public static void Assert(bool value, string message);
+    [CompilerGeneratedAttribute]
+public static bool get_Enforce32();
+    [CompilerGeneratedAttribute]
+public static void set_Enforce32(bool value);
+    public static Algorithm get_Algorithm();
+    internal static int LZ4_compressBound(int isize);
+    internal static int LZ4_decoderRingBufferSize(int isize);
+    protected static UInt32 LZ4_hash4(UInt32 sequence, tableType_t tableType);
+    protected static UInt32 LZ4_hash5(ulong sequence, tableType_t tableType);
+    protected static void LZ4_clearHash(UInt32 h, Void* tableBase, tableType_t tableType);
+    protected static void LZ4_putIndexOnHash(UInt32 idx, UInt32 h, Void* tableBase, tableType_t tableType);
+    protected static void LZ4_putPositionOnHash(Byte* p, UInt32 h, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    protected static UInt32 LZ4_getIndexOnHash(UInt32 h, Void* tableBase, tableType_t tableType);
+    protected static Byte* LZ4_getPositionOnHash(UInt32 h, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    public static int MIN(int a, int b);
+    public static UInt32 MIN(UInt32 a, UInt32 b);
+    public static UInt32 MAX(UInt32 a, UInt32 b);
+    public static long MAX(long a, long b);
+    public static long MIN(long a, long b);
+    protected static UInt32 LZ4_readVLE(Byte** ip, Byte* lencheck, bool loop_check, bool initial_check, variable_length_error* error);
+    public static int LZ4_saveDict(LZ4_stream_t* LZ4_dict, Byte* safeBuffer, int dictSize);
+    public static LZ4_stream_t* LZ4_initStream(LZ4_stream_t* buffer);
+    public static void LZ4_setStreamDecode(LZ4_streamDecode_t* LZ4_streamDecode, Byte* dictionary, int dictSize);
+}
+internal class K4os.Compression.LZ4.Engine.LL32 : LL {
+    protected static cParams_t[] clTable;
+    protected static int ALGORITHM_ARCH;
+    private static UInt32[] _DeBruijnBytePos;
+    private static UInt32* DeBruijnBytePos;
+    private static LL32();
+    public static int LZ4_decompress_generic(Byte* src, Byte* dst, int srcSize, int outputSize, endCondition_directive endOnInput, earlyEnd_directive partialDecoding, dict_directive dict, Byte* lowPrefix, Byte* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_generic(Byte* src, Byte* dst, int srcSize, int outputSize, bool endOnInput, bool partialDecoding, dict_directive dict, Byte* lowPrefix, Byte* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe(Byte* source, Byte* dest, int compressedSize, int maxDecompressedSize);
+    public static int LZ4_decompress_safe_withPrefix64k(Byte* source, Byte* dest, int compressedSize, int maxOutputSize);
+    public static int LZ4_decompress_safe_withSmallPrefix(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, UInt32 prefixSize);
+    public static int LZ4_decompress_safe_doubleDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, UInt32 prefixSize, Void* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe_forceExtDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, Void* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe_usingDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, Byte* dictStart, int dictSize);
+    public static int LZ4_decompress_safe_partial(Byte* src, Byte* dst, int compressedSize, int targetOutputSize, int dstCapacity);
+    public static int LZ4_decompress_safe_continue(LZ4_streamDecode_t* LZ4_streamDecode, Byte* source, Byte* dest, int compressedSize, int maxOutputSize);
+    protected static int LZ4_compress_generic(LZ4_stream_t* cctx, Byte* source, Byte* dest, int inputSize, Int32* inputConsumed, int maxOutputSize, limitedOutput_directive outputDirective, tableType_t tableType, dict_directive dictDirective, dictIssue_directive dictIssue, int acceleration);
+    public static int LZ4_compress_fast_extState(LZ4_stream_t* state, Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static int LZ4_compress_fast(Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static int LZ4_compress_default(Byte* src, Byte* dst, int srcSize, int maxOutputSize);
+    public static int LZ4_compress_fast_continue(LZ4_stream_t* LZ4_stream, Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static UInt32 LZ4HC_countPattern(Byte* ip, Byte* iEnd, UInt32 pattern32);
+    public static int LZ4HC_InsertAndGetWiderMatch(LZ4_streamHC_t* hc4, Byte* ip, Byte* iLowLimit, Byte* iHighLimit, int longest, Byte** matchpos, Byte** startpos, int maxNbAttempts, bool patternAnalysis, bool chainSwap, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_InsertAndFindBestMatch(LZ4_streamHC_t* hc4, Byte* ip, Byte* iLimit, Byte** matchpos, int maxNbAttempts, bool patternAnalysis, dictCtx_directive dict);
+    public static LZ4HC_match_t LZ4HC_FindLongerMatch(LZ4_streamHC_t* ctx, Byte* ip, Byte* iHighLimit, int minLen, int nbSearches, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_encodeSequence(Byte** ip, Byte** op, Byte** anchor, int matchLength, Byte* match, limitedOutput_directive limit, Byte* oend);
+    public static int LZ4HC_compress_hashChain(LZ4_streamHC_t* ctx, Byte* source, Byte* dest, Int32* srcSizePtr, int maxOutputSize, int maxNbAttempts, limitedOutput_directive limit, dictCtx_directive dict);
+    public static int LZ4HC_compress_optimal(LZ4_streamHC_t* ctx, Byte* source, Byte* dst, Int32* srcSizePtr, int dstCapacity, int nbSearches, UInt32 sufficient_len, limitedOutput_directive limit, bool fullUpdate, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_compress_generic_internal(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit, dictCtx_directive dict);
+    public static int LZ4HC_compress_generic_noDictCtx(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4HC_compress_generic_dictCtx(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4HC_compress_generic(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4_compressHC_continue_generic(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, limitedOutput_directive limit);
+    public static int LZ4_compress_HC_continue(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, int srcSize, int dstCapacity);
+    public static int LZ4_compress_HC_continue_destSize(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, Int32* srcSizePtr, int targetDestSize);
+    public static int LZ4_compress_HC_destSize(LZ4_streamHC_t* state, Byte* source, Byte* dest, Int32* sourceSizePtr, int targetDestSize, int cLevel);
+    public static int LZ4_compress_HC_extStateHC_fastReset(LZ4_streamHC_t* state, Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    public static int LZ4_compress_HC_extStateHC(LZ4_streamHC_t* state, Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    public static int LZ4_compress_HC(Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    protected static UInt32 LZ4_NbCommonBytes(UInt32 val);
+    protected static UInt32 LZ4_count(Byte* pIn, Byte* pMatch, Byte* pInLimit);
+    protected static UInt32 LZ4_hashPosition(Void* p, tableType_t tableType);
+    protected static void LZ4_putPosition(Byte* p, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    protected static Byte* LZ4_getPosition(Byte* p, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    protected static void LZ4_renormDictT(LZ4_stream_t* LZ4_dict, int nextSize);
+    public int LZ4_loadDict(LZ4_stream_t* LZ4_dict, Byte* dictionary, int dictSize);
+}
+internal class K4os.Compression.LZ4.Engine.LL64 : LL {
+    protected static cParams_t[] clTable;
+    protected static int ALGORITHM_ARCH;
+    private static LL64();
+    public static int LZ4_decompress_generic(Byte* src, Byte* dst, int srcSize, int outputSize, endCondition_directive endOnInput, earlyEnd_directive partialDecoding, dict_directive dict, Byte* lowPrefix, Byte* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_generic(Byte* src, Byte* dst, int srcSize, int outputSize, bool endOnInput, bool partialDecoding, dict_directive dict, Byte* lowPrefix, Byte* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe(Byte* source, Byte* dest, int compressedSize, int maxDecompressedSize);
+    public static int LZ4_decompress_safe_withPrefix64k(Byte* source, Byte* dest, int compressedSize, int maxOutputSize);
+    public static int LZ4_decompress_safe_withSmallPrefix(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, UInt32 prefixSize);
+    public static int LZ4_decompress_safe_doubleDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, UInt32 prefixSize, Void* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe_forceExtDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, Void* dictStart, UInt32 dictSize);
+    public static int LZ4_decompress_safe_usingDict(Byte* source, Byte* dest, int compressedSize, int maxOutputSize, Byte* dictStart, int dictSize);
+    public static int LZ4_decompress_safe_partial(Byte* src, Byte* dst, int compressedSize, int targetOutputSize, int dstCapacity);
+    public static int LZ4_decompress_safe_continue(LZ4_streamDecode_t* LZ4_streamDecode, Byte* source, Byte* dest, int compressedSize, int maxOutputSize);
+    protected static int LZ4_compress_generic(LZ4_stream_t* cctx, Byte* source, Byte* dest, int inputSize, Int32* inputConsumed, int maxOutputSize, limitedOutput_directive outputDirective, tableType_t tableType, dict_directive dictDirective, dictIssue_directive dictIssue, int acceleration);
+    public static int LZ4_compress_fast_extState(LZ4_stream_t* state, Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static int LZ4_compress_fast(Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static int LZ4_compress_default(Byte* src, Byte* dst, int srcSize, int maxOutputSize);
+    public static int LZ4_compress_fast_continue(LZ4_stream_t* LZ4_stream, Byte* source, Byte* dest, int inputSize, int maxOutputSize, int acceleration);
+    public static UInt32 LZ4HC_countPattern(Byte* ip, Byte* iEnd, UInt32 pattern32);
+    public static int LZ4HC_InsertAndGetWiderMatch(LZ4_streamHC_t* hc4, Byte* ip, Byte* iLowLimit, Byte* iHighLimit, int longest, Byte** matchpos, Byte** startpos, int maxNbAttempts, bool patternAnalysis, bool chainSwap, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_InsertAndFindBestMatch(LZ4_streamHC_t* hc4, Byte* ip, Byte* iLimit, Byte** matchpos, int maxNbAttempts, bool patternAnalysis, dictCtx_directive dict);
+    public static LZ4HC_match_t LZ4HC_FindLongerMatch(LZ4_streamHC_t* ctx, Byte* ip, Byte* iHighLimit, int minLen, int nbSearches, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_encodeSequence(Byte** ip, Byte** op, Byte** anchor, int matchLength, Byte* match, limitedOutput_directive limit, Byte* oend);
+    public static int LZ4HC_compress_hashChain(LZ4_streamHC_t* ctx, Byte* source, Byte* dest, Int32* srcSizePtr, int maxOutputSize, int maxNbAttempts, limitedOutput_directive limit, dictCtx_directive dict);
+    public static int LZ4HC_compress_optimal(LZ4_streamHC_t* ctx, Byte* source, Byte* dst, Int32* srcSizePtr, int dstCapacity, int nbSearches, UInt32 sufficient_len, limitedOutput_directive limit, bool fullUpdate, dictCtx_directive dict, HCfavor_e favorDecSpeed);
+    public static int LZ4HC_compress_generic_internal(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit, dictCtx_directive dict);
+    public static int LZ4HC_compress_generic_noDictCtx(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4HC_compress_generic_dictCtx(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4HC_compress_generic(LZ4_streamHC_t* ctx, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, int cLevel, limitedOutput_directive limit);
+    public static int LZ4_compressHC_continue_generic(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, Int32* srcSizePtr, int dstCapacity, limitedOutput_directive limit);
+    public static int LZ4_compress_HC_continue(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, int srcSize, int dstCapacity);
+    public static int LZ4_compress_HC_continue_destSize(LZ4_streamHC_t* LZ4_streamHCPtr, Byte* src, Byte* dst, Int32* srcSizePtr, int targetDestSize);
+    public static int LZ4_compress_HC_destSize(LZ4_streamHC_t* state, Byte* source, Byte* dest, Int32* sourceSizePtr, int targetDestSize, int cLevel);
+    public static int LZ4_compress_HC_extStateHC_fastReset(LZ4_streamHC_t* state, Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    public static int LZ4_compress_HC_extStateHC(LZ4_streamHC_t* state, Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    public static int LZ4_compress_HC(Byte* src, Byte* dst, int srcSize, int dstCapacity, int compressionLevel);
+    protected static UInt32 LZ4_NbCommonBytes(ulong val);
+    protected static UInt32 LZ4_count(Byte* pIn, Byte* pMatch, Byte* pInLimit);
+    protected static UInt32 LZ4_hashPosition(Void* p, tableType_t tableType);
+    protected static void LZ4_putPosition(Byte* p, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    protected static Byte* LZ4_getPosition(Byte* p, Void* tableBase, tableType_t tableType, Byte* srcBase);
+    protected static void LZ4_renormDictT(LZ4_stream_t* LZ4_dict, int nextSize);
+    public int LZ4_loadDict(LZ4_stream_t* LZ4_dict, Byte* dictionary, int dictSize);
+}
+internal static class K4os.Compression.LZ4.Engine.LLxx : object {
+    private static NotImplementedException AlgorithmNotImplemented(string action);
+    public static int LZ4_decompress_safe(Byte* source, Byte* target, int sourceLength, int targetLength);
+    public static int LZ4_decompress_safe_partial(Byte* source, Byte* target, int sourceLength, int targetLength);
+    public static int LZ4_decompress_safe_usingDict(Byte* source, Byte* target, int sourceLength, int targetLength, Byte* dictionary, int dictionaryLength);
+    public static int LZ4_decompress_safe_continue(LZ4_streamDecode_t* context, Byte* source, Byte* target, int sourceLength, int targetLength);
+    public static int LZ4_compress_fast(Byte* source, Byte* target, int sourceLength, int targetLength, int acceleration);
+    public static int LZ4_compress_fast_continue(LZ4_stream_t* context, Byte* source, Byte* target, int sourceLength, int targetLength, int acceleration);
+    public static int LZ4_compress_HC(Byte* source, Byte* target, int sourceLength, int targetLength, int level);
+    public static int LZ4_compress_HC_continue(LZ4_streamHC_t* context, Byte* source, Byte* target, int sourceLength, int targetLength);
+}
+public static class K4os.Compression.LZ4.Engine.Pubternal : object {
+    public static int CompressFast(FastContext context, Byte* source, Byte* target, int sourceLength, int targetLength, int acceleration);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class K4os.Compression.LZ4.Internal.BufferPool : object {
+    public static int MinPooledSize;
+    private static bool ShouldBePooled(int length);
+    private static Byte[] Rent(int size, bool zero);
+    public static Byte[] Alloc(int size, bool zero);
+    public static bool IsPooled(Byte[] buffer);
+    [NullableContextAttribute("2")]
+public static void Free(Byte[] buffer);
+}
+public class K4os.Compression.LZ4.Internal.Mem : object {
+    public static int K1;
+    public static int K2;
+    public static int K4;
+    public static int K8;
+    public static int K16;
+    public static int K32;
+    public static int K64;
+    public static int K128;
+    public static int K256;
+    public static int K512;
+    public static int M1;
+    public static int M4;
+    public static Byte[] Empty;
+    public static bool System32 { get; }
+    private static Mem();
+    public static bool get_System32();
+    public static int RoundUp(int value, int step);
+    internal static void CpBlk(Void* target, Void* source, UInt32 length);
+    internal static void ZBlk(Void* target, byte value, UInt32 length);
+    public static void Copy(Byte* target, Byte* source, int length);
+    public static void Move(Byte* target, Byte* source, int length);
+    public static Void* Alloc(int size);
+    public static Byte* Zero(Byte* target, int length);
+    public static Byte* Fill(Byte* target, byte value, int length);
+    public static Void* AllocZero(int size);
+    public static void Free(Void* ptr);
+    public static T* CloneArray(T[] array);
+    public static byte Peek1(Void* p);
+    public static void Poke1(Void* p, byte v);
+    public static ushort Peek2(Void* p);
+    public static void Poke2(Void* p, ushort v);
+    public static UInt32 Peek4(Void* p);
+    public static void Poke4(Void* p, UInt32 v);
+    public static ulong Peek8(Void* p);
+    public static void Poke8(Void* p, ulong v);
+    public static void Copy1(Byte* target, Byte* source);
+    public static void Copy2(Byte* target, Byte* source);
+    public static void Copy4(Byte* target, Byte* source);
+    public static void Copy8(Byte* target, Byte* source);
+}
+public class K4os.Compression.LZ4.Internal.Mem32 : Mem {
+    public static UInt32 PeekW(Void* p);
+    public static void PokeW(Void* p, UInt32 v);
+    public static void Copy16(Byte* target, Byte* source);
+    public static void Copy18(Byte* target, Byte* source);
+    public static void WildCopy8(Byte* target, Byte* source, Void* limit);
+    public static void WildCopy32(Byte* target, Byte* source, Void* limit);
+}
+public class K4os.Compression.LZ4.Internal.Mem64 : Mem {
+    public static ushort Peek2(Void* p);
+    public static void Poke2(Void* p, ushort v);
+    public static UInt32 Peek4(Void* p);
+    public static void Poke4(Void* p, UInt32 v);
+    public static void Copy1(Byte* target, Byte* source);
+    public static void Copy2(Byte* target, Byte* source);
+    public static void Copy4(Byte* target, Byte* source);
+    public static ulong Peek8(Void* p);
+    public static void Poke8(Void* p, ulong v);
+    public static void Copy8(Byte* target, Byte* source);
+    public static ulong PeekW(Void* p);
+    public static void PokeW(Void* p, ulong v);
+    public static void Copy16(Byte* target, Byte* source);
+    public static void Copy18(Byte* target, Byte* source);
+    public static void WildCopy8(Byte* target, Byte* source, Void* limit);
+    public static void WildCopy32(Byte* target, Byte* source, Void* limit);
+}
+public class K4os.Compression.LZ4.Internal.PinnedMemory : ValueType {
+    [CompilerGeneratedAttribute]
+private static int <MaxPooledSize>k__BackingField;
+    private Byte* _pointer;
+    private GCHandle _handle;
+    private int _size;
+    public static int MaxPooledSize { get; public set; }
+    public Byte* Pointer { get; }
+    public Span`1<byte> Span { get; }
+    private static PinnedMemory();
+    [CompilerGeneratedAttribute]
+public static int get_MaxPooledSize();
+    [CompilerGeneratedAttribute]
+public static void set_MaxPooledSize(int value);
+    [IsReadOnlyAttribute]
+public Byte* get_Pointer();
+    public Span`1<byte> get_Span();
+    [IsReadOnlyAttribute]
+public T* Reference();
+    public static PinnedMemory Alloc(int size, bool zero);
+    public static void Alloc(PinnedMemory& memory, int size, bool zero);
+    public static void Alloc(PinnedMemory& memory, bool zero);
+    private static void AllocateNative(PinnedMemory& memory, int size, bool zero);
+    private static void RentManagedFromPool(PinnedMemory& memory, int size, bool zero);
+    public void Clear();
+    public void Free();
+    private void ReleaseManaged();
+    private void ReleaseNative();
+    private void ClearFields();
+}
+public abstract class K4os.Compression.LZ4.Internal.UnmanagedResources : object {
+    private int _disposed;
+    public bool IsDisposed { get; }
+    public bool get_IsDisposed();
+    protected void ThrowIfDisposed();
+    protected virtual void ReleaseUnmanaged();
+    protected virtual void ReleaseManaged();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    protected virtual override void Finalize();
+}
+public static class K4os.Compression.LZ4.LZ4Codec : object {
+    public static int Version;
+    public static bool Enforce32 { get; public set; }
+    public static bool get_Enforce32();
+    public static void set_Enforce32(bool value);
+    public static int MaximumOutputSize(int length);
+    public static int Encode(Byte* source, int sourceLength, Byte* target, int targetLength, LZ4Level level);
+    public static int Encode(ReadOnlySpan`1<byte> source, Span`1<byte> target, LZ4Level level);
+    [NullableContextAttribute("1")]
+public static int Encode(Byte[] source, int sourceOffset, int sourceLength, Byte[] target, int targetOffset, int targetLength, LZ4Level level);
+    public static int Decode(Byte* source, int sourceLength, Byte* target, int targetLength);
+    public static int PartialDecode(Byte* source, int sourceLength, Byte* target, int targetLength);
+    public static int Decode(Byte* source, int sourceLength, Byte* target, int targetLength, Byte* dictionary, int dictionaryLength);
+    public static int PartialDecode(ReadOnlySpan`1<byte> source, Span`1<byte> target);
+    public static int Decode(ReadOnlySpan`1<byte> source, Span`1<byte> target);
+    public static int Decode(ReadOnlySpan`1<byte> source, Span`1<byte> target, ReadOnlySpan`1<byte> dictionary);
+    [NullableContextAttribute("1")]
+public static int Decode(Byte[] source, int sourceOffset, int sourceLength, Byte[] target, int targetOffset, int targetLength);
+    [NullableContextAttribute("1")]
+public static int Decode(Byte[] source, int sourceOffset, int sourceLength, Byte[] target, int targetOffset, int targetLength, Byte[] dictionary, int dictionaryOffset, int dictionaryLength);
+}
+public enum K4os.Compression.LZ4.LZ4Level : Enum {
+    public int value__;
+    public static LZ4Level L00_FAST;
+    public static LZ4Level L03_HC;
+    public static LZ4Level L04_HC;
+    public static LZ4Level L05_HC;
+    public static LZ4Level L06_HC;
+    public static LZ4Level L07_HC;
+    public static LZ4Level L08_HC;
+    public static LZ4Level L09_HC;
+    public static LZ4Level L10_OPT;
+    public static LZ4Level L11_OPT;
+    public static LZ4Level L12_MAX;
+}
+public static class K4os.Compression.LZ4.LZ4Pickler : object {
+    private static int MAX_STACKALLOC;
+    private static byte VersionMask;
+    [NullableContextAttribute("1")]
+public static Byte[] Pickle(Byte[] source, LZ4Level level);
+    [NullableContextAttribute("1")]
+public static Byte[] Pickle(Byte[] source, int sourceIndex, int sourceLength, LZ4Level level);
+    public static Byte[] Pickle(Byte* source, int length, LZ4Level level);
+    public static Byte[] Pickle(ReadOnlySpan`1<byte> source, LZ4Level level);
+    private static Byte[] PickleWithBuffer(ReadOnlySpan`1<byte> source, LZ4Level level, Span`1<byte> buffer);
+    public static void Pickle(ReadOnlySpan`1<byte> source, TBufferWriter writer, LZ4Level level);
+    public static void Pickle(ReadOnlySpan`1<byte> source, IBufferWriter`1<byte> writer, LZ4Level level);
+    private static int GetPessimisticHeaderSize(int version, int sourceLength);
+    private static int GetUncompressedHeaderSize(int version, int sourceLength);
+    private static int GetCompressedHeaderSize(int version, int sourceLength, int encodedLength);
+    private static int EncodeUncompressedHeader(Span`1<byte> target, int version, int sourceLength);
+    private static int EncodeUncompressedHeaderV0(Span`1<byte> target);
+    private static int EncodeCompressedHeader(Span`1<byte> target, int version, int headerSize, int sourceLength, int encodedLength);
+    private static int EncodeCompressedHeaderV0(Span`1<byte> target, int headerSize, int sourceLength, int encodedLength);
+    private static void PokeN(Span`1<byte> target, int value, int size);
+    private static byte EncodeHeaderByteV0(int sizeOfDiff);
+    private static int EffectiveSizeOf(int value);
+    private static int EncodeSizeOf(int size);
+    [NullableContextAttribute("1")]
+private static Exception UnexpectedVersion(int version);
+    [NullableContextAttribute("1")]
+public static Byte[] Unpickle(Byte[] source);
+    [NullableContextAttribute("1")]
+public static Byte[] Unpickle(Byte[] source, int index, int count);
+    public static Byte[] Unpickle(Byte* source, int count);
+    public static Byte[] Unpickle(ReadOnlySpan`1<byte> source);
+    public static void Unpickle(ReadOnlySpan`1<byte> source, TBufferWriter writer);
+    public static void Unpickle(ReadOnlySpan`1<byte> source, IBufferWriter`1<byte> writer);
+    public static int UnpickledSize(ReadOnlySpan`1<byte> source);
+    private static int UnpickledSize(PickleHeader& header);
+    public static void Unpickle(ReadOnlySpan`1<byte> source, Span`1<byte> output);
+    private static void UnpickleCore(PickleHeader& header, ReadOnlySpan`1<byte> source, Span`1<byte> target);
+    private static PickleHeader DecodeHeader(ReadOnlySpan`1<byte> source);
+    private static PickleHeader DecodeHeaderV0(ReadOnlySpan`1<byte> source);
+    private static int PeekN(ReadOnlySpan`1<byte> bytes, int size);
+    [NullableContextAttribute("1")]
+private static Exception CorruptedPickle(string message);
+}
+[IsReadOnlyAttribute]
+internal class K4os.Compression.LZ4.PickleHeader : ValueType {
+    [CompilerGeneratedAttribute]
+private ushort <DataOffset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ushort <Flags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ResultLength>k__BackingField;
+    public ushort DataOffset { get; }
+    public ushort Flags { get; }
+    public int ResultLength { get; }
+    public bool IsCompressed { get; }
+    public PickleHeader(ushort dataOffset, int resultLength, bool compressed);
+    [CompilerGeneratedAttribute]
+public ushort get_DataOffset();
+    [CompilerGeneratedAttribute]
+public ushort get_Flags();
+    [CompilerGeneratedAttribute]
+public int get_ResultLength();
+    public bool get_IsCompressed();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[AttributeUsageAttribute("32")]
+[ExcludeFromCodeCoverageAttribute]
+internal class System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute : Attribute {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[AttributeUsageAttribute("2432")]
+[ExcludeFromCodeCoverageAttribute]
+internal class System.Diagnostics.CodeAnalysis.StringSyntaxAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <Syntax>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Object[] <Arguments>k__BackingField;
+    public static string CompositeFormat;
+    public static string DateOnlyFormat;
+    public static string DateTimeFormat;
+    public static string EnumFormat;
+    public static string GuidFormat;
+    public static string Json;
+    public static string NumericFormat;
+    public static string Regex;
+    public static string TimeOnlyFormat;
+    public static string TimeSpanFormat;
+    public static string Uri;
+    public static string Xml;
+    public string Syntax { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Object[] Arguments { get; }
+    public StringSyntaxAttribute(string syntax);
+    public StringSyntaxAttribute(string syntax, Object[] arguments);
+    [CompilerGeneratedAttribute]
+public string get_Syntax();
+    [CompilerGeneratedAttribute]
+public Object[] get_Arguments();
+}
+[AttributeUsageAttribute("2240")]
+[ExcludeFromCodeCoverageAttribute]
+internal class System.Diagnostics.CodeAnalysis.UnscopedRefAttribute : Attribute {
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class System.Extensions : object {
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+internal static T Required(T value, string name);
+    [ExtensionAttribute]
+[ConditionalAttribute("DEBUG")]
+public static void AssertTrue(bool value, string name);
+    [DoesNotReturnAttribute]
+private static void ThrowAssertionFailed(string name);
+    [NullableContextAttribute("1")]
+[DoesNotReturnAttribute]
+private static T ThrowArgumentNullException(string name);
+    [ExtensionAttribute]
+internal static void Validate(T[] buffer, int offset, int length, bool allowNullIfEmpty);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[AttributeUsageAttribute("32767")]
+[ExcludeFromCodeCoverageAttribute]
+internal class System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <FeatureName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsOptional>k__BackingField;
+    public static string RefStructs;
+    public static string RequiredMembers;
+    public string FeatureName { get; }
+    public bool IsOptional { get; public set; }
+    public CompilerFeatureRequiredAttribute(string featureName);
+    [CompilerGeneratedAttribute]
+public string get_FeatureName();
+    [CompilerGeneratedAttribute]
+public bool get_IsOptional();
+    [CompilerGeneratedAttribute]
+public void set_IsOptional(bool value);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsUnmanagedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[AttributeUsageAttribute("396")]
+[ExcludeFromCodeCoverageAttribute]
+internal class System.Runtime.CompilerServices.RequiredMemberAttribute : Attribute {
+}

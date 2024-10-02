@@ -1,0 +1,330 @@
+public interface Lucene.Net.Replicator.Http.Abstractions.IReplicationRequest {
+    public string Path { get; }
+    public abstract virtual string get_Path();
+    public abstract virtual string QueryParam(string name);
+}
+public interface Lucene.Net.Replicator.Http.Abstractions.IReplicationResponse {
+    public int StatusCode { get; public set; }
+    public Stream Body { get; }
+    public abstract virtual int get_StatusCode();
+    public abstract virtual void set_StatusCode(int value);
+    public abstract virtual Stream get_Body();
+    public abstract virtual void Flush();
+}
+public interface Lucene.Net.Replicator.Http.Abstractions.IReplicationService {
+    public abstract virtual void Perform(IReplicationRequest request, IReplicationResponse response);
+}
+public abstract class Lucene.Net.Replicator.Http.HttpClientBase : object {
+    [ObsoleteAttribute("Use DEFAULT_TIMEOUT instead.  This extension method will be removed in 4.8.0 release candidate.")]
+public static int DEFAULT_CONNECTION_TIMEOUT;
+    public static TimeSpan DEFAULT_TIMEOUT;
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) isDisposed;
+    private HttpClient httpc;
+    protected string Url { get; private set; }
+    public TimeSpan Timeout { get; public set; }
+    public bool IsDisposed { get; }
+    protected HttpClientBase(string host, int port, string path, HttpMessageHandler messageHandler);
+    protected HttpClientBase(string url, HttpMessageHandler messageHandler);
+    protected HttpClientBase(string url, HttpClient client);
+    private static HttpClientBase();
+    [CompilerGeneratedAttribute]
+protected string get_Url();
+    [CompilerGeneratedAttribute]
+private void set_Url(string value);
+    public virtual TimeSpan get_Timeout();
+    public virtual void set_Timeout(TimeSpan value);
+    protected void EnsureOpen();
+    private static string NormalizedUrl(string host, int port, string path);
+    protected virtual void VerifyStatus(HttpResponseMessage response);
+    protected virtual void ThrowKnownError(HttpResponseMessage response);
+    protected virtual HttpResponseMessage ExecutePost(string request, object entity, String[] parameters);
+    protected virtual HttpResponseMessage ExecuteGet(string request, String[] parameters);
+    private HttpResponseMessage Execute(HttpRequestMessage request);
+    private string QueryString(string request, String[] parameters);
+    [ObsoleteAttribute("Use GetResponseStream(HttpResponseMessage) instead.  This extension method will be removed in 4.8.0 release candidate.")]
+public virtual Stream ResponseInputStream(HttpResponseMessage response);
+    [ObsoleteAttribute("Use GetResponseStream(HttpResponseMessage, bool) instead.  This extension method will be removed in 4.8.0 release candidate.")]
+public virtual Stream ResponseInputStream(HttpResponseMessage response, bool consume);
+    public virtual Stream GetResponseStream(HttpResponseMessage response);
+    public virtual Stream GetResponseStream(HttpResponseMessage response, bool consume);
+    public bool get_IsDisposed();
+    protected virtual T DoAction(HttpResponseMessage response, Func`1<T> call);
+    protected virtual T DoAction(HttpResponseMessage response, bool consume, Func`1<T> call);
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    private static void ConsumeQuietly(HttpResponseMessage response);
+}
+public class Lucene.Net.Replicator.Http.HttpReplicator : HttpClientBase {
+    public HttpReplicator(string host, int port, string path, HttpMessageHandler messageHandler);
+    public HttpReplicator(string url, HttpMessageHandler messageHandler);
+    public HttpReplicator(string url, HttpClient client);
+    public virtual SessionToken CheckForUpdate(string currentVersion);
+    public virtual Stream ObtainFile(string sessionId, string source, string fileName);
+    public virtual void Publish(IRevision revision);
+    public virtual void Release(string sessionId);
+}
+public class Lucene.Net.Replicator.Http.ReplicationService : object {
+    public static string REPLICATION_CONTEXT;
+    public static string REPLICATE_VERSION_PARAM;
+    public static string REPLICATE_SESSION_ID_PARAM;
+    public static string REPLICATE_SOURCE_PARAM;
+    public static string REPLICATE_FILENAME_PARAM;
+    public static JsonSerializerSettings JSON_SERIALIZER_SETTINGS;
+    private static int SHARD_IDX;
+    private static int ACTION_IDX;
+    private string context;
+    private IReadOnlyDictionary`2<string, IReplicator> replicators;
+    public ReplicationService(IReadOnlyDictionary`2<string, IReplicator> replicators, string context);
+    private static ReplicationService();
+    private String[] GetPathElements(IReplicationRequest request);
+    private static string ExtractRequestParam(IReplicationRequest request, string paramName);
+    public virtual void Perform(IReplicationRequest request, IReplicationResponse response);
+}
+public class Lucene.Net.Replicator.IndexAndTaxonomyReplicationHandler : object {
+    public static string INFO_STREAM_COMPONENT;
+    private Directory indexDirectory;
+    private Directory taxonomyDirectory;
+    private Action callback;
+    private IDictionary`2 modreq(System.Runtime.CompilerServices.IsVolatile) currentRevisionFiles;
+    private String modreq(System.Runtime.CompilerServices.IsVolatile) currentVersion;
+    private InfoStream modreq(System.Runtime.CompilerServices.IsVolatile) infoStream;
+    public string CurrentVersion { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> CurrentRevisionFiles { get; }
+    public InfoStream InfoStream { get; public set; }
+    public IndexAndTaxonomyReplicationHandler(Directory indexDirectory, Directory taxonomyDirectory, Action callback);
+    public virtual string get_CurrentVersion();
+    public virtual IDictionary`2<string, IList`1<RevisionFile>> get_CurrentRevisionFiles();
+    public virtual void RevisionReady(string version, IDictionary`2<string, IList`1<RevisionFile>> revisionFiles, IDictionary`2<string, IList`1<string>> copiedFiles, IDictionary`2<string, Directory> sourceDirectory);
+    private void WriteToInfoStream(String[] messages);
+    public virtual InfoStream get_InfoStream();
+    public virtual void set_InfoStream(InfoStream value);
+}
+public class Lucene.Net.Replicator.IndexAndTaxonomyRevision : object {
+    public static string INDEX_SOURCE;
+    public static string TAXONOMY_SOURCE;
+    private IndexWriter indexWriter;
+    private SnapshotDirectoryTaxonomyWriter taxonomyWriter;
+    private IndexCommit indexCommit;
+    private IndexCommit taxonomyCommit;
+    private SnapshotDeletionPolicy indexSdp;
+    private SnapshotDeletionPolicy taxonomySdp;
+    private string version;
+    private IDictionary`2<string, IList`1<RevisionFile>> sourceFiles;
+    public string Version { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> SourceFiles { get; }
+    public IndexAndTaxonomyRevision(IndexWriter indexWriter, SnapshotDirectoryTaxonomyWriter taxonomyWriter);
+    public static IDictionary`2<string, IList`1<RevisionFile>> RevisionFiles(IndexCommit indexCommit, IndexCommit taxonomyCommit);
+    public static string RevisionVersion(IndexCommit indexCommit, IndexCommit taxonomyCommit);
+    public virtual int CompareTo(string version);
+    public virtual int CompareTo(IRevision other);
+    public virtual string get_Version();
+    public virtual IDictionary`2<string, IList`1<RevisionFile>> get_SourceFiles();
+    public virtual Stream Open(string source, string fileName);
+    public virtual void Release();
+}
+public class Lucene.Net.Replicator.IndexInputStream : Stream {
+    private IndexInput input;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public IndexInputStream(IndexInput input);
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    protected virtual void Dispose(bool disposing);
+}
+public class Lucene.Net.Replicator.IndexReplicationHandler : object {
+    public static string INFO_STREAM_COMPONENT;
+    private Directory indexDirectory;
+    private Action callback;
+    private IDictionary`2 modreq(System.Runtime.CompilerServices.IsVolatile) currentRevisionFiles;
+    private String modreq(System.Runtime.CompilerServices.IsVolatile) currentVersion;
+    private InfoStream modreq(System.Runtime.CompilerServices.IsVolatile) infoStream;
+    public string CurrentVersion { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> CurrentRevisionFiles { get; }
+    public InfoStream InfoStream { get; public set; }
+    public IndexReplicationHandler(Directory indexDirectory, Action callback);
+    private void WriteToInfoStream(String[] messages);
+    public static IndexCommit GetLastCommit(Directory directory);
+    public static string GetSegmentsFile(IList`1<string> files, bool allowEmpty);
+    public static void CleanupFilesOnFailure(Directory directory, IList`1<string> files);
+    public static void CleanupOldIndexFiles(Directory directory, string segmentsFile);
+    public static void CopyFiles(Directory source, Directory target, IList`1<string> files);
+    public static void WriteSegmentsGen(string segmentsFile, Directory directory);
+    public virtual string get_CurrentVersion();
+    public virtual IDictionary`2<string, IList`1<RevisionFile>> get_CurrentRevisionFiles();
+    public virtual void RevisionReady(string version, IDictionary`2<string, IList`1<RevisionFile>> revisionFiles, IDictionary`2<string, IList`1<string>> copiedFiles, IDictionary`2<string, Directory> sourceDirectory);
+    public virtual InfoStream get_InfoStream();
+    public virtual void set_InfoStream(InfoStream value);
+}
+public class Lucene.Net.Replicator.IndexRevision : object {
+    private static string SOURCE;
+    private IndexWriter writer;
+    private IndexCommit commit;
+    private SnapshotDeletionPolicy sdp;
+    private string version;
+    private IDictionary`2<string, IList`1<RevisionFile>> sourceFiles;
+    public string Version { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> SourceFiles { get; }
+    public IndexRevision(IndexWriter writer);
+    private static RevisionFile CreateRevisionFile(string fileName, Directory directory);
+    public static IDictionary`2<string, IList`1<RevisionFile>> RevisionFiles(IndexCommit commit);
+    public static string RevisionVersion(IndexCommit commit);
+    public virtual int CompareTo(string version);
+    public virtual int CompareTo(IRevision other);
+    public virtual string get_Version();
+    public virtual IDictionary`2<string, IList`1<RevisionFile>> get_SourceFiles();
+    public virtual Stream Open(string source, string fileName);
+    public virtual void Release();
+    public virtual string ToString();
+}
+public interface Lucene.Net.Replicator.IReplicationHandler {
+    public string CurrentVersion { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> CurrentRevisionFiles { get; }
+    public abstract virtual string get_CurrentVersion();
+    public abstract virtual IDictionary`2<string, IList`1<RevisionFile>> get_CurrentRevisionFiles();
+    public abstract virtual void RevisionReady(string version, IDictionary`2<string, IList`1<RevisionFile>> revisionFiles, IDictionary`2<string, IList`1<string>> copiedFiles, IDictionary`2<string, Directory> sourceDirectory);
+}
+public interface Lucene.Net.Replicator.IReplicator {
+    public abstract virtual void Publish(IRevision revision);
+    public abstract virtual SessionToken CheckForUpdate(string currentVersion);
+    public abstract virtual void Release(string sessionId);
+    public abstract virtual Stream ObtainFile(string sessionId, string source, string fileName);
+}
+public interface Lucene.Net.Replicator.IRevision {
+    public string Version { get; }
+    public IDictionary`2<string, IList`1<RevisionFile>> SourceFiles { get; }
+    public abstract virtual int CompareTo(string version);
+    public abstract virtual string get_Version();
+    public abstract virtual IDictionary`2<string, IList`1<RevisionFile>> get_SourceFiles();
+    public abstract virtual Stream Open(string source, string fileName);
+    public abstract virtual void Release();
+}
+public interface Lucene.Net.Replicator.ISourceDirectoryFactory {
+    public abstract virtual Directory GetDirectory(string sessionId, string source);
+    public abstract virtual void CleanupSession(string sessionId);
+}
+public class Lucene.Net.Replicator.LocalReplicator : object {
+    public static long DEFAULT_SESSION_EXPIRATION_THRESHOLD;
+    private long expirationThreshold;
+    private object syncLock;
+    private RefCountedRevision modreq(System.Runtime.CompilerServices.IsVolatile) currentRevision;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) disposed;
+    private AtomicInt32 sessionToken;
+    private IDictionary`2<string, ReplicationSession> sessions;
+    public long ExpirationThreshold { get; public set; }
+    private void CheckExpiredSessions();
+    private void ReleaseSession(string sessionId);
+    protected void EnsureOpen();
+    public virtual SessionToken CheckForUpdate(string currentVersion);
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    public virtual long get_ExpirationThreshold();
+    public virtual void set_ExpirationThreshold(long value);
+    public virtual Stream ObtainFile(string sessionId, string source, string fileName);
+    public virtual void Publish(IRevision revision);
+    public virtual void Release(string sessionId);
+    [CompilerGeneratedAttribute]
+private bool <CheckExpiredSessions>b__9_0(ReplicationSession token);
+}
+public class Lucene.Net.Replicator.PerSessionDirectoryFactory : object {
+    private string workingDirectory;
+    public PerSessionDirectoryFactory(string workingDirectory);
+    public virtual Directory GetDirectory(string sessionId, string source);
+    public virtual void CleanupSession(string sessionId);
+}
+public class Lucene.Net.Replicator.ReplicationClient : object {
+    public static string INFO_STREAM_COMPONENT;
+    private IReplicator replicator;
+    private IReplicationHandler handler;
+    private ISourceDirectoryFactory factory;
+    private Byte[] copyBuffer;
+    private ReentrantLock updateLock;
+    private object syncLock;
+    private ReplicationThread updateThread;
+    private bool disposed;
+    private InfoStream infoStream;
+    public bool IsUpdateThreadAlive { get; }
+    public InfoStream InfoStream { get; public set; }
+    public ReplicationClient(IReplicator replicator, IReplicationHandler handler, ISourceDirectoryFactory factory);
+    private void CopyBytes(IndexOutput output, Stream input);
+    private void DoUpdate();
+    protected void EnsureOpen();
+    private void WriteToInfoStream(string message);
+    protected virtual void HandleUpdateException(Exception exception);
+    protected virtual IDictionary`2<string, IList`1<RevisionFile>> RequiredFiles(IDictionary`2<string, IList`1<RevisionFile>> newRevisionFiles);
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    public virtual void StartUpdateThread(long intervalInMilliseconds, string threadName);
+    public virtual void StopUpdateThread();
+    public virtual bool get_IsUpdateThreadAlive();
+    public virtual string ToString();
+    public virtual void UpdateNow();
+    public virtual InfoStream get_InfoStream();
+    public virtual void set_InfoStream(InfoStream value);
+}
+public class Lucene.Net.Replicator.RevisionFile : object {
+    [CompilerGeneratedAttribute]
+private string <FileName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Length>k__BackingField;
+    public string FileName { get; private set; }
+    public long Length { get; public set; }
+    public RevisionFile(string fileName, long length);
+    [CompilerGeneratedAttribute]
+public string get_FileName();
+    [CompilerGeneratedAttribute]
+private void set_FileName(string value);
+    [CompilerGeneratedAttribute]
+public long get_Length();
+    [CompilerGeneratedAttribute]
+public void set_Length(long value);
+    public virtual bool Equals(object obj);
+    public virtual bool Equals(RevisionFile other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class Lucene.Net.Replicator.SessionExpiredException : IOException {
+    public SessionExpiredException(string message);
+    public SessionExpiredException(string message, Exception inner);
+    protected SessionExpiredException(SerializationInfo info, StreamingContext context);
+}
+public class Lucene.Net.Replicator.SessionToken : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, IList`1<RevisionFile>> <SourceFiles>k__BackingField;
+    public string Id { get; private set; }
+    public string Version { get; private set; }
+    public IDictionary`2<string, IList`1<RevisionFile>> SourceFiles { get; private set; }
+    public SessionToken(IDataInput reader);
+    public SessionToken(string id, IRevision revision);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_Version();
+    [CompilerGeneratedAttribute]
+private void set_Version(string value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, IList`1<RevisionFile>> get_SourceFiles();
+    [CompilerGeneratedAttribute]
+private void set_SourceFiles(IDictionary`2<string, IList`1<RevisionFile>> value);
+    public void Serialize(DataOutputStream writer);
+    public virtual string ToString();
+}

@@ -1,0 +1,1090 @@
+public class Microsoft.Bot.Streaming.Payloads.CancelDisassembler : object {
+    [CompilerGeneratedAttribute]
+private IPayloadSender <Sender>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private char <Type>k__BackingField;
+    private IPayloadSender Sender { get; private set; }
+    private Guid Id { get; private set; }
+    private char Type { get; private set; }
+    public CancelDisassembler(IPayloadSender sender, Guid id, char type);
+    [CompilerGeneratedAttribute]
+private IPayloadSender get_Sender();
+    [CompilerGeneratedAttribute]
+private void set_Sender(IPayloadSender value);
+    [CompilerGeneratedAttribute]
+private Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+private char get_Type();
+    [CompilerGeneratedAttribute]
+private void set_Type(char value);
+    public Task Disassemble();
+}
+public class Microsoft.Bot.Streaming.Payloads.ContentStream : object {
+    private PayloadStreamAssembler _assembler;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Length>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    public Guid Id { get; private set; }
+    public string ContentType { get; public set; }
+    public Nullable`1<int> Length { get; public set; }
+    public Stream Stream { get; private set; }
+    public ContentStream(Guid id, PayloadStreamAssembler assembler);
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ContentType();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<int> get_Length();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Length(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Stream get_Stream();
+    [CompilerGeneratedAttribute]
+private void set_Stream(Stream value);
+    public void Cancel();
+}
+public class Microsoft.Bot.Streaming.Payloads.Header : object {
+    private int _internalPayloadLength;
+    [CompilerGeneratedAttribute]
+private char <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <End>k__BackingField;
+    public char Type { get; public set; }
+    public int PayloadLength { get; public set; }
+    public Guid Id { get; public set; }
+    public bool End { get; public set; }
+    [CompilerGeneratedAttribute]
+public char get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(char value);
+    public int get_PayloadLength();
+    public void set_PayloadLength(int value);
+    [CompilerGeneratedAttribute]
+public Guid get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public bool get_End();
+    [CompilerGeneratedAttribute]
+public void set_End(bool value);
+    private static void ClampLength(int value, int max, int min);
+}
+public static class Microsoft.Bot.Streaming.Payloads.HeaderSerializer : object {
+    public static byte Delimiter;
+    public static byte Terminator;
+    public static byte End;
+    public static byte NotEnd;
+    public static int TypeOffset;
+    public static int TypeDelimiterOffset;
+    public static int LengthOffset;
+    public static int LengthLength;
+    public static int LengthDelimeterOffset;
+    public static int IdOffset;
+    public static int IdLength;
+    public static int IdDelimeterOffset;
+    public static int EndOffset;
+    public static int TerminatorOffset;
+    public static int Serialize(Header header, Byte[] buffer, int offset);
+    public static Header Deserialize(Byte[] buffer, int offset, int count);
+}
+public interface Microsoft.Bot.Streaming.Payloads.IAssembler {
+    public bool End { get; }
+    public Guid Id { get; }
+    public abstract virtual bool get_End();
+    public abstract virtual Guid get_Id();
+    public abstract virtual void Close();
+    public abstract virtual Stream CreateStreamFromPayload();
+    public abstract virtual Stream GetPayloadAsStream();
+    public abstract virtual void OnReceive(Header header, Stream stream, int contentLength);
+}
+public interface Microsoft.Bot.Streaming.Payloads.IContentStream {
+    public Guid Id { get; }
+    public string ContentType { get; public set; }
+    public Nullable`1<int> Length { get; public set; }
+    public Stream Stream { get; }
+    public abstract virtual Guid get_Id();
+    public abstract virtual string get_ContentType();
+    public abstract virtual void set_ContentType(string value);
+    public abstract virtual Nullable`1<int> get_Length();
+    public abstract virtual void set_Length(Nullable`1<int> value);
+    public abstract virtual Stream get_Stream();
+}
+internal interface Microsoft.Bot.Streaming.Payloads.IPayloadTypeManager {
+    public abstract virtual IAssembler CreatePayloadAssembler(Header header);
+}
+internal interface Microsoft.Bot.Streaming.Payloads.IRequestManager {
+    public abstract virtual Task`1<bool> SignalResponseAsync(Guid requestId, ReceiveResponse response);
+    public abstract virtual Task`1<ReceiveResponse> GetResponseAsync(Guid requestId, CancellationToken cancellationToken);
+}
+public interface Microsoft.Bot.Streaming.Payloads.IStreamManager {
+    public abstract virtual PayloadStreamAssembler GetPayloadAssembler(Guid id);
+    public abstract virtual Stream GetPayloadStream(Header header);
+    public abstract virtual void OnReceive(Header header, Stream contentStream, int contentLength);
+    public abstract virtual void CloseStream(Guid id);
+}
+internal class Microsoft.Bot.Streaming.Payloads.PayloadAssemblerManager : object {
+    private Func`3<Guid, ReceiveRequest, Task> _onReceiveRequest;
+    private Func`3<Guid, ReceiveResponse, Task> _onReceiveResponse;
+    private IStreamManager _streamManager;
+    private Dictionary`2<Guid, IAssembler> _activeAssemblers;
+    public PayloadAssemblerManager(IStreamManager streamManager, Func`3<Guid, ReceiveRequest, Task> onReceiveRequest, Func`3<Guid, ReceiveResponse, Task> onReceiveResponse);
+    public Stream GetPayloadStream(Header header);
+    public void OnReceive(Header header, Stream contentStream, int contentLength);
+    private static bool IsStreamPayload(Header header);
+    private IAssembler CreatePayloadAssembler(Header header);
+}
+public abstract class Microsoft.Bot.Streaming.Payloads.PayloadDisassembler : object {
+    private TaskCompletionSource`1<bool> _taskCompletionSource;
+    [CompilerGeneratedAttribute]
+private static JsonSerializer <Serializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IPayloadSender <Sender>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <StreamLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <SendOffset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsEnd>k__BackingField;
+    public char Type { get; }
+    protected static JsonSerializer Serializer { get; protected set; }
+    private IPayloadSender Sender { get; private set; }
+    private Stream Stream { get; private set; }
+    private Nullable`1<int> StreamLength { get; private set; }
+    private int SendOffset { get; private set; }
+    private Guid Id { get; private set; }
+    private bool IsEnd { get; private set; }
+    public PayloadDisassembler(IPayloadSender sender, Guid id);
+    private static PayloadDisassembler();
+    public abstract virtual char get_Type();
+    [CompilerGeneratedAttribute]
+protected static JsonSerializer get_Serializer();
+    [CompilerGeneratedAttribute]
+protected static void set_Serializer(JsonSerializer value);
+    [CompilerGeneratedAttribute]
+private IPayloadSender get_Sender();
+    [CompilerGeneratedAttribute]
+private void set_Sender(IPayloadSender value);
+    [CompilerGeneratedAttribute]
+private Stream get_Stream();
+    [CompilerGeneratedAttribute]
+private void set_Stream(Stream value);
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> get_StreamLength();
+    [CompilerGeneratedAttribute]
+private void set_StreamLength(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+private int get_SendOffset();
+    [CompilerGeneratedAttribute]
+private void set_SendOffset(int value);
+    [CompilerGeneratedAttribute]
+private Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+private bool get_IsEnd();
+    [CompilerGeneratedAttribute]
+private void set_IsEnd(bool value);
+    public abstract virtual Task`1<StreamWrapper> GetStreamAsync();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.PayloadDisassembler/<DisassembleAsync>d__33")]
+public Task DisassembleAsync(CancellationToken cancellationToken);
+    protected static StreamDescription GetStreamDescription(ResponseMessageStream stream);
+    protected static void Serialize(T item, MemoryStream& stream, Int32& length);
+    private Task SendAsync();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.PayloadDisassembler/<OnSentAsync>d__37")]
+private Task OnSentAsync(Header header);
+}
+public class Microsoft.Bot.Streaming.Payloads.PayloadStream : Stream {
+    private PayloadStreamAssembler _assembler;
+    private Queue`1<Byte[]> _bufferQueue;
+    private SemaphoreSlim _dataAvailable;
+    private object _syncLock;
+    private long _producerLength;
+    private long _consumerPosition;
+    private Byte[] _active;
+    private int _activeOffset;
+    private bool _end;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Position { get; public set; }
+    public long Length { get; }
+    public PayloadStream(PayloadStreamAssembler assembler);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual long get_Length();
+    public virtual void Flush();
+    public virtual void SetLength(long value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.PayloadStream/<ReadAsync>d__24")]
+public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public void Cancel();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public void DoneProducing();
+    internal void GiveBuffer(Byte[] buffer, int count);
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.Bot.Streaming.Payloads.PayloadStreamAssembler : object {
+    private object _syncLock;
+    private IStreamManager _streamManager;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <ContentLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    public Nullable`1<int> ContentLength { get; public set; }
+    public string ContentType { get; public set; }
+    public Guid Id { get; private set; }
+    public bool End { get; private set; }
+    private Stream Stream { get; private set; }
+    public PayloadStreamAssembler(IStreamManager streamManager, Guid id);
+    public PayloadStreamAssembler(IStreamManager streamManager, Guid id, string type, Nullable`1<int> length);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_ContentLength();
+    [CompilerGeneratedAttribute]
+public void set_ContentLength(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public string get_ContentType();
+    [CompilerGeneratedAttribute]
+public void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_End();
+    [CompilerGeneratedAttribute]
+private void set_End(bool value);
+    [CompilerGeneratedAttribute]
+private Stream get_Stream();
+    [CompilerGeneratedAttribute]
+private void set_Stream(Stream value);
+    public sealed virtual Stream CreateStreamFromPayload();
+    public sealed virtual Stream GetPayloadAsStream();
+    public sealed virtual void OnReceive(Header header, Stream stream, int contentLength);
+    public sealed virtual void Close();
+}
+public static class Microsoft.Bot.Streaming.Payloads.PayloadTypes : object {
+    public static char Request;
+    public static char Response;
+    public static char Stream;
+    public static char CancelAll;
+    public static char CancelStream;
+    public static bool IsStream(Header header);
+}
+internal class Microsoft.Bot.Streaming.Payloads.ReceiveRequestAssembler : object {
+    private Func`3<Guid, ReceiveRequest, Task> _onCompleted;
+    private IStreamManager _streamManager;
+    private Nullable`1<int> _length;
+    private object _syncLock;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static JsonSerializer <Serializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    public Guid Id { get; private set; }
+    public bool End { get; private set; }
+    protected static JsonSerializer Serializer { get; protected set; }
+    private Stream Stream { get; private set; }
+    public ReceiveRequestAssembler(Header header, IStreamManager streamManager, Func`3<Guid, ReceiveRequest, Task> onCompleted);
+    private static ReceiveRequestAssembler();
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_End();
+    [CompilerGeneratedAttribute]
+private void set_End(bool value);
+    [CompilerGeneratedAttribute]
+protected static JsonSerializer get_Serializer();
+    [CompilerGeneratedAttribute]
+protected static void set_Serializer(JsonSerializer value);
+    [CompilerGeneratedAttribute]
+private Stream get_Stream();
+    [CompilerGeneratedAttribute]
+private void set_Stream(Stream value);
+    public sealed virtual Stream CreateStreamFromPayload();
+    public sealed virtual Stream GetPayloadAsStream();
+    public sealed virtual void OnReceive(Header header, Stream stream, int contentLength);
+    public sealed virtual void Close();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.ReceiveRequestAssembler/<ProcessRequestAsync>d__25")]
+private Task ProcessRequestAsync(Stream stream);
+}
+internal class Microsoft.Bot.Streaming.Payloads.ReceiveResponseAssembler : object {
+    private Func`3<Guid, ReceiveResponse, Task> _onCompleted;
+    private IStreamManager _streamManager;
+    private Nullable`1<int> _length;
+    private object _syncLock;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static JsonSerializer <Serializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    public Guid Id { get; private set; }
+    public bool End { get; private set; }
+    protected static JsonSerializer Serializer { get; protected set; }
+    private Stream Stream { get; private set; }
+    public ReceiveResponseAssembler(Header header, IStreamManager streamManager, Func`3<Guid, ReceiveResponse, Task> onCompleted);
+    private static ReceiveResponseAssembler();
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_End();
+    [CompilerGeneratedAttribute]
+private void set_End(bool value);
+    [CompilerGeneratedAttribute]
+protected static JsonSerializer get_Serializer();
+    [CompilerGeneratedAttribute]
+protected static void set_Serializer(JsonSerializer value);
+    [CompilerGeneratedAttribute]
+private Stream get_Stream();
+    [CompilerGeneratedAttribute]
+private void set_Stream(Stream value);
+    public sealed virtual Stream CreateStreamFromPayload();
+    public sealed virtual Stream GetPayloadAsStream();
+    public sealed virtual void OnReceive(Header header, Stream stream, int contentLength);
+    public sealed virtual void Close();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.ReceiveResponseAssembler/<ProcessResponseAsync>d__25")]
+private Task ProcessResponseAsync(Stream stream);
+}
+public class Microsoft.Bot.Streaming.Payloads.RequestDisassembler : PayloadDisassembler {
+    [CompilerGeneratedAttribute]
+private StreamingRequest <Request>k__BackingField;
+    public StreamingRequest Request { get; private set; }
+    public char Type { get; }
+    public RequestDisassembler(IPayloadSender sender, Guid id, StreamingRequest request);
+    [CompilerGeneratedAttribute]
+public StreamingRequest get_Request();
+    [CompilerGeneratedAttribute]
+private void set_Request(StreamingRequest value);
+    public virtual char get_Type();
+    public virtual Task`1<StreamWrapper> GetStreamAsync();
+}
+public class Microsoft.Bot.Streaming.Payloads.RequestManager : object {
+    private ConcurrentDictionary`2<Guid, TaskCompletionSource`1<ReceiveResponse>> _responseTasks;
+    public RequestManager(ConcurrentDictionary`2<Guid, TaskCompletionSource`1<ReceiveResponse>> responseTasks);
+    public sealed virtual Task`1<bool> SignalResponseAsync(Guid requestId, ReceiveResponse response);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.RequestManager/<GetResponseAsync>d__4")]
+public sealed virtual Task`1<ReceiveResponse> GetResponseAsync(Guid requestId, CancellationToken cancellationToken);
+    public void RejectAllResponses(Exception reason);
+}
+internal class Microsoft.Bot.Streaming.Payloads.RequestPayload : object {
+    [CompilerGeneratedAttribute]
+private string <Verb>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<StreamDescription> <Streams>k__BackingField;
+    [JsonPropertyAttribute("verb")]
+public string Verb { get; public set; }
+    [JsonPropertyAttribute("path")]
+public string Path { get; public set; }
+    [JsonPropertyAttribute("streams")]
+public List`1<StreamDescription> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Verb();
+    [CompilerGeneratedAttribute]
+public void set_Verb(string value);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public List`1<StreamDescription> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<StreamDescription> value);
+}
+public class Microsoft.Bot.Streaming.Payloads.ResponseDisassembler : PayloadDisassembler {
+    [CompilerGeneratedAttribute]
+private StreamingResponse <Response>k__BackingField;
+    public StreamingResponse Response { get; private set; }
+    public char Type { get; }
+    public ResponseDisassembler(IPayloadSender sender, Guid id, StreamingResponse response);
+    [CompilerGeneratedAttribute]
+public StreamingResponse get_Response();
+    [CompilerGeneratedAttribute]
+private void set_Response(StreamingResponse value);
+    public virtual char get_Type();
+    public virtual Task`1<StreamWrapper> GetStreamAsync();
+}
+public class Microsoft.Bot.Streaming.Payloads.ResponseMessageStream : object {
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HttpContent <Content>k__BackingField;
+    public Guid Id { get; private set; }
+    public HttpContent Content { get; public set; }
+    public ResponseMessageStream(Guid id);
+    [CompilerGeneratedAttribute]
+public Guid get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(Guid value);
+    [CompilerGeneratedAttribute]
+public HttpContent get_Content();
+    [CompilerGeneratedAttribute]
+public void set_Content(HttpContent value);
+}
+public class Microsoft.Bot.Streaming.Payloads.ResponseMessageStreamDisassembler : PayloadDisassembler {
+    [CompilerGeneratedAttribute]
+private ResponseMessageStream <ContentStream>k__BackingField;
+    public ResponseMessageStream ContentStream { get; private set; }
+    public char Type { get; }
+    public ResponseMessageStreamDisassembler(IPayloadSender sender, ResponseMessageStream contentStream);
+    [CompilerGeneratedAttribute]
+public ResponseMessageStream get_ContentStream();
+    [CompilerGeneratedAttribute]
+private void set_ContentStream(ResponseMessageStream value);
+    public virtual char get_Type();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.ResponseMessageStreamDisassembler/<GetStreamAsync>d__7")]
+public virtual Task`1<StreamWrapper> GetStreamAsync();
+}
+internal class Microsoft.Bot.Streaming.Payloads.ResponsePayload : object {
+    [CompilerGeneratedAttribute]
+private int <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<StreamDescription> <Streams>k__BackingField;
+    [JsonPropertyAttribute("statusCode")]
+public int StatusCode { get; public set; }
+    [JsonPropertyAttribute("streams")]
+public List`1<StreamDescription> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(int value);
+    [CompilerGeneratedAttribute]
+public List`1<StreamDescription> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<StreamDescription> value);
+}
+public class Microsoft.Bot.Streaming.Payloads.SendOperations : object {
+    private IPayloadSender _payloadSender;
+    public SendOperations(IPayloadSender payloadSender);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.SendOperations/<SendRequestAsync>d__2")]
+public Task SendRequestAsync(Guid id, StreamingRequest request, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.SendOperations/<SendResponseAsync>d__3")]
+public Task SendResponseAsync(Guid id, StreamingResponse response);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.SendOperations/<SendCancelAllAsync>d__4")]
+public Task SendCancelAllAsync(Guid id);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Payloads.SendOperations/<SendCancelStreamAsync>d__5")]
+public Task SendCancelStreamAsync(Guid id);
+}
+public class Microsoft.Bot.Streaming.Payloads.StreamDescription : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Length>k__BackingField;
+    [JsonPropertyAttribute("id")]
+public string Id { get; public set; }
+    [JsonPropertyAttribute("type")]
+public string ContentType { get; public set; }
+    [JsonPropertyAttribute("length")]
+public Nullable`1<int> Length { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_ContentType();
+    [CompilerGeneratedAttribute]
+public void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_Length();
+    [CompilerGeneratedAttribute]
+public void set_Length(Nullable`1<int> value);
+}
+public class Microsoft.Bot.Streaming.Payloads.StreamManager : object {
+    private ConcurrentDictionary`2<Guid, PayloadStreamAssembler> _activeAssemblers;
+    private Action`1<PayloadStreamAssembler> _onCancelStream;
+    public StreamManager(Action`1<PayloadStreamAssembler> onCancelStream);
+    public sealed virtual PayloadStreamAssembler GetPayloadAssembler(Guid id);
+    public sealed virtual Stream GetPayloadStream(Header header);
+    public sealed virtual void OnReceive(Header header, Stream contentStream, int contentLength);
+    public sealed virtual void CloseStream(Guid id);
+}
+public class Microsoft.Bot.Streaming.Payloads.StreamWrapper : object {
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <StreamLength>k__BackingField;
+    public Stream Stream { get; public set; }
+    public Nullable`1<int> StreamLength { get; public set; }
+    [CompilerGeneratedAttribute]
+public Stream get_Stream();
+    [CompilerGeneratedAttribute]
+public void set_Stream(Stream value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_StreamLength();
+    [CompilerGeneratedAttribute]
+public void set_StreamLength(Nullable`1<int> value);
+}
+public interface Microsoft.Bot.Streaming.PayloadTransport.IPayloadReceiver {
+    public bool IsConnected { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public abstract virtual bool get_IsConnected();
+    public abstract virtual void Connect(ITransportReceiver receiver);
+    public abstract virtual void Subscribe(Func`2<Header, Stream> getStream, Action`3<Header, Stream, int> receiveAction);
+    public abstract virtual void Disconnect(DisconnectedEventArgs e);
+}
+public interface Microsoft.Bot.Streaming.PayloadTransport.IPayloadSender {
+    public bool IsConnected { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public abstract virtual bool get_IsConnected();
+    public abstract virtual void Connect(ITransportSender sender);
+    public abstract virtual void SendPayload(Header header, Stream payload, bool isLengthKnown, Func`2<Header, Task> sentCallback);
+    public abstract virtual void Disconnect(DisconnectedEventArgs e);
+}
+public class Microsoft.Bot.Streaming.PayloadTransport.PayloadReceiver : object {
+    private Func`2<Header, Stream> _getStream;
+    private Action`3<Header, Stream, int> _receiveAction;
+    private ITransportReceiver _receiver;
+    private bool _isDisconnecting;
+    private Byte[] _receiveHeaderBuffer;
+    private Byte[] _receiveContentBuffer;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    public bool IsConnected { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public sealed virtual bool get_IsConnected();
+    public sealed virtual void Connect(ITransportReceiver receiver);
+    public sealed virtual void Subscribe(Func`2<Header, Stream> getStream, Action`3<Header, Stream, int> receiveAction);
+    public sealed virtual void Disconnect(DisconnectedEventArgs e);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void RunReceive();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.PayloadTransport.PayloadReceiver/<ReceivePacketsAsync>d__19")]
+private Task ReceivePacketsAsync();
+}
+public class Microsoft.Bot.Streaming.PayloadTransport.PayloadSender : object {
+    private SendQueue`1<SendPacket> _sendQueue;
+    private EventWaitHandle _connectedEvent;
+    private ITransportSender _sender;
+    private bool _isDisconnecting;
+    private Byte[] _sendHeaderBuffer;
+    private Byte[] _sendContentBuffer;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    public bool IsConnected { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public sealed virtual bool get_IsConnected();
+    public sealed virtual void Connect(ITransportSender sender);
+    public sealed virtual void SendPayload(Header header, Stream payload, bool isLengthKnown, Func`2<Header, Task> sentCallback);
+    public sealed virtual void Disconnect(DisconnectedEventArgs e);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.PayloadTransport.PayloadSender/<WritePacketAsync>d__18")]
+private Task WritePacketAsync(SendPacket packet);
+}
+internal class Microsoft.Bot.Streaming.PayloadTransport.SendPacket : object {
+    [CompilerGeneratedAttribute]
+private Header <Header>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <Payload>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsLengthKnown>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<Header, Task> <SentCallback>k__BackingField;
+    public Header Header { get; public set; }
+    public Stream Payload { get; public set; }
+    public bool IsLengthKnown { get; public set; }
+    public Func`2<Header, Task> SentCallback { get; public set; }
+    [CompilerGeneratedAttribute]
+public Header get_Header();
+    [CompilerGeneratedAttribute]
+public void set_Header(Header value);
+    [CompilerGeneratedAttribute]
+public Stream get_Payload();
+    [CompilerGeneratedAttribute]
+public void set_Payload(Stream value);
+    [CompilerGeneratedAttribute]
+public bool get_IsLengthKnown();
+    [CompilerGeneratedAttribute]
+public void set_IsLengthKnown(bool value);
+    [CompilerGeneratedAttribute]
+public Func`2<Header, Task> get_SentCallback();
+    [CompilerGeneratedAttribute]
+public void set_SentCallback(Func`2<Header, Task> value);
+}
+internal class Microsoft.Bot.Streaming.PayloadTransport.SendQueue`1 : object {
+    private Func`2<T, Task> _action;
+    private Queue`1<object> _queue;
+    private SemaphoreSlim _semaphore;
+    private EventWaitHandle _completionEvent;
+    private object _lock;
+    private CancellationTokenSource _cts;
+    private int _timeoutSeconds;
+    private bool _disposed;
+    public SendQueue`1(Func`2<T, Task> action, int timeoutSeconds);
+    public void Post(T item);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void PostInternal(object item);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.PayloadTransport.SendQueue`1/<ProcessAsync>d__13")]
+private Task ProcessAsync();
+}
+public class Microsoft.Bot.Streaming.PayloadTransport.TransportDisconnectedException : Exception {
+    public string Reason { get; }
+    public TransportDisconnectedException(string message);
+    public TransportDisconnectedException(string message, Exception innerException);
+    public string get_Reason();
+}
+internal class Microsoft.Bot.Streaming.ProtocolAdapter : object {
+    private RequestHandler _requestHandler;
+    private object _handlerContext;
+    private IPayloadSender _payloadSender;
+    private IPayloadReceiver _payloadReceiver;
+    private IRequestManager _requestManager;
+    private SendOperations _sendOperations;
+    private IStreamManager _streamManager;
+    private PayloadAssemblerManager _assemblerManager;
+    public ProtocolAdapter(RequestHandler requestHandler, IRequestManager requestManager, IPayloadSender payloadSender, IPayloadReceiver payloadReceiver, object handlerContext);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ProtocolAdapter/<SendRequestAsync>d__9")]
+public Task`1<ReceiveResponse> SendRequestAsync(StreamingRequest request, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ProtocolAdapter/<OnReceiveRequestAsync>d__10")]
+private Task OnReceiveRequestAsync(Guid id, ReceiveRequest request);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ProtocolAdapter/<OnReceiveResponseAsync>d__11")]
+private Task OnReceiveResponseAsync(Guid id, ReceiveResponse response);
+    private void OnCancelStream(IAssembler contentStreamAssembler);
+}
+public class Microsoft.Bot.Streaming.ReceiveRequest : object {
+    [CompilerGeneratedAttribute]
+private string <Verb>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<IContentStream> <Streams>k__BackingField;
+    public string Verb { get; public set; }
+    public string Path { get; public set; }
+    public List`1<IContentStream> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Verb();
+    [CompilerGeneratedAttribute]
+public void set_Verb(string value);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public List`1<IContentStream> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<IContentStream> value);
+}
+[ExtensionAttribute]
+public static class Microsoft.Bot.Streaming.ReceiveRequestExtensions : object {
+    [ExtensionAttribute]
+public static T ReadBodyAsJson(ReceiveRequest request);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ReceiveRequestExtensions/<ReadBodyAsJsonAsync>d__1`1")]
+[ExtensionAttribute]
+public static Task`1<T> ReadBodyAsJsonAsync(ReceiveRequest request);
+    [ExtensionAttribute]
+public static string ReadBodyAsString(ReceiveRequest request);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ReceiveRequestExtensions/<ReadBodyAsStringAsync>d__3")]
+[ExtensionAttribute]
+public static Task`1<string> ReadBodyAsStringAsync(ReceiveRequest request);
+}
+public class Microsoft.Bot.Streaming.ReceiveResponse : object {
+    [CompilerGeneratedAttribute]
+private int <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<IContentStream> <Streams>k__BackingField;
+    public int StatusCode { get; public set; }
+    public List`1<IContentStream> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(int value);
+    [CompilerGeneratedAttribute]
+public List`1<IContentStream> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<IContentStream> value);
+}
+[ExtensionAttribute]
+public static class Microsoft.Bot.Streaming.ReceiveResponseExtensions : object {
+    [ExtensionAttribute]
+public static T ReadBodyAsJson(ReceiveResponse response);
+    [ExtensionAttribute]
+public static string ReadBodyAsString(ReceiveResponse response);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.ReceiveResponseExtensions/<ReadBodyAsStringAsync>d__2")]
+[ExtensionAttribute]
+public static Task`1<string> ReadBodyAsStringAsync(ReceiveResponse response);
+}
+public abstract class Microsoft.Bot.Streaming.RequestHandler : object {
+    public abstract virtual Task`1<StreamingResponse> ProcessRequestAsync(ReceiveRequest request, ILogger`1<RequestHandler> logger, object context, CancellationToken cancellationToken);
+}
+public static class Microsoft.Bot.Streaming.SerializationSettings : object {
+    public static string ApplicationJson;
+    public static JsonSerializerSettings BotSchemaSerializationSettings;
+    public static JsonSerializerSettings DefaultSerializationSettings;
+    public static JsonSerializerSettings DefaultDeserializationSettings;
+    private static SerializationSettings();
+}
+[ExtensionAttribute]
+internal static class Microsoft.Bot.Streaming.StreamExtensions : object {
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.StreamExtensions/<ReadAsUtf8StringAsync>d__0")]
+[ExtensionAttribute]
+public static Task`1<string> ReadAsUtf8StringAsync(Stream stream);
+    [ExtensionAttribute]
+public static string ReadAsUtf8String(Stream stream);
+}
+public class Microsoft.Bot.Streaming.StreamingRequest : object {
+    public static string GET;
+    public static string POST;
+    public static string PUT;
+    public static string DELETE;
+    [CompilerGeneratedAttribute]
+private string <Verb>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<ResponseMessageStream> <Streams>k__BackingField;
+    public string Verb { get; public set; }
+    public string Path { get; public set; }
+    public List`1<ResponseMessageStream> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Verb();
+    [CompilerGeneratedAttribute]
+public void set_Verb(string value);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public List`1<ResponseMessageStream> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<ResponseMessageStream> value);
+    public static StreamingRequest CreateGet(string path, HttpContent body);
+    public static StreamingRequest CreatePost(string path, HttpContent body);
+    public static StreamingRequest CreatePut(string path, HttpContent body);
+    public static StreamingRequest CreateDelete(string path, HttpContent body);
+    public static StreamingRequest CreateRequest(string method, string path, HttpContent body);
+    public void AddStream(HttpContent content);
+    public void AddStream(HttpContent content, Guid streamId);
+}
+[ExtensionAttribute]
+public static class Microsoft.Bot.Streaming.StreamingRequestExtensions : object {
+    [ExtensionAttribute]
+public static void SetBody(StreamingRequest request, string body);
+    [ExtensionAttribute]
+public static void SetBody(StreamingRequest request, object body);
+}
+public class Microsoft.Bot.Streaming.StreamingResponse : object {
+    [CompilerGeneratedAttribute]
+private int <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<ResponseMessageStream> <Streams>k__BackingField;
+    public int StatusCode { get; public set; }
+    public List`1<ResponseMessageStream> Streams { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(int value);
+    [CompilerGeneratedAttribute]
+public List`1<ResponseMessageStream> get_Streams();
+    [CompilerGeneratedAttribute]
+public void set_Streams(List`1<ResponseMessageStream> value);
+    public static StreamingResponse NotFound(HttpContent body);
+    public static StreamingResponse Forbidden(HttpContent body);
+    public static StreamingResponse OK(HttpContent body);
+    public static StreamingResponse InternalServerError(HttpContent body);
+    public static StreamingResponse CreateResponse(HttpStatusCode statusCode, HttpContent body);
+    public void AddStream(HttpContent content);
+}
+[ExtensionAttribute]
+public static class Microsoft.Bot.Streaming.StreamingResponseExtensions : object {
+    [ExtensionAttribute]
+public static void SetBody(StreamingResponse response, string body);
+    [ExtensionAttribute]
+public static void SetBody(StreamingResponse response, object body);
+}
+public class Microsoft.Bot.Streaming.Transport.DisconnectedEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private static DisconnectedEventArgs <Empty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Reason>k__BackingField;
+    public static DisconnectedEventArgs Empty { get; public set; }
+    public string Reason { get; public set; }
+    private static DisconnectedEventArgs();
+    [CompilerGeneratedAttribute]
+public static DisconnectedEventArgs get_Empty();
+    [CompilerGeneratedAttribute]
+public static void set_Empty(DisconnectedEventArgs value);
+    [CompilerGeneratedAttribute]
+public string get_Reason();
+    [CompilerGeneratedAttribute]
+public void set_Reason(string value);
+}
+public class Microsoft.Bot.Streaming.Transport.DisconnectedEventHandler : MulticastDelegate {
+    public DisconnectedEventHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, DisconnectedEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, DisconnectedEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public interface Microsoft.Bot.Streaming.Transport.IStreamingTransportClient {
+    public bool IsConnected { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public abstract virtual bool get_IsConnected();
+    public abstract virtual Task ConnectAsync();
+    public abstract virtual Task ConnectAsync(IDictionary`2<string, string> requestHeaders);
+    public abstract virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest message, CancellationToken cancellationToken);
+    public abstract virtual void Disconnect();
+}
+public interface Microsoft.Bot.Streaming.Transport.IStreamingTransportServer {
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public abstract virtual Task StartAsync();
+    public abstract virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest request, CancellationToken cancellationToken);
+}
+public interface Microsoft.Bot.Streaming.Transport.ITransport {
+    public bool IsConnected { get; }
+    public abstract virtual bool get_IsConnected();
+    public abstract virtual void Close();
+}
+public interface Microsoft.Bot.Streaming.Transport.ITransportReceiver {
+    public abstract virtual Task`1<int> ReceiveAsync(Byte[] buffer, int offset, int count);
+}
+public interface Microsoft.Bot.Streaming.Transport.ITransportSender {
+    public abstract virtual Task`1<int> SendAsync(Byte[] buffer, int offset, int count);
+}
+public class Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeClient : object {
+    private string _baseName;
+    private RequestHandler _requestHandler;
+    private IPayloadSender _sender;
+    private IPayloadReceiver _receiver;
+    private RequestManager _requestManager;
+    private ProtocolAdapter _protocolAdapter;
+    private bool _autoReconnect;
+    private object _syncLock;
+    private bool _isDisconnecting;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    public bool IsConnected { get; }
+    public bool IncomingConnected { get; }
+    public bool OutgoingConnected { get; }
+    public NamedPipeClient(string baseName, RequestHandler requestHandler, bool autoReconnect);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public sealed virtual bool get_IsConnected();
+    public bool get_IncomingConnected();
+    public bool get_OutgoingConnected();
+    public sealed virtual Task ConnectAsync();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeClient/<ConnectAsync>d__21")]
+public sealed virtual Task ConnectAsync(IDictionary`2<string, string> requestHeaders);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeClient/<SendAsync>d__22")]
+public sealed virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest message, CancellationToken cancellationToken);
+    public sealed virtual void Disconnect();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void OnConnectionDisconnected(object sender, EventArgs e);
+}
+public class Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeServer : object {
+    private string _baseName;
+    private RequestHandler _requestHandler;
+    private RequestManager _requestManager;
+    private IPayloadSender _sender;
+    private IPayloadReceiver _receiver;
+    private ProtocolAdapter _protocolAdapter;
+    private bool _autoReconnect;
+    private object _syncLock;
+    private bool _isDisconnecting;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    public bool IsConnected { get; }
+    public NamedPipeServer(string baseName, RequestHandler requestHandler, bool autoReconnect);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public bool get_IsConnected();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeServer/<StartAsync>d__16")]
+public sealed virtual Task StartAsync();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeServer/<SendAsync>d__17")]
+public sealed virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest request, CancellationToken cancellationToken);
+    public void Disconnect();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void OnConnectionDisconnected(object sender, EventArgs e);
+}
+public class Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeTransport : object {
+    public static string ServerIncomingPath;
+    public static string ServerOutgoingPath;
+    private PipeStream _stream;
+    private bool _disposed;
+    public bool IsConnected { get; }
+    public NamedPipeTransport(PipeStream stream);
+    public sealed virtual bool get_IsConnected();
+    public sealed virtual void Close();
+    public sealed virtual void Dispose();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeTransport/<ReceiveAsync>d__9")]
+public sealed virtual Task`1<int> ReceiveAsync(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.NamedPipes.NamedPipeTransport/<SendAsync>d__10")]
+public sealed virtual Task`1<int> SendAsync(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.Bot.Streaming.Transport.TransportConstants : object {
+    public static int MaxPayloadLength;
+    public static int MaxHeaderLength;
+    public static int MaxLength;
+    public static int MinLength;
+}
+public class Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketClient : object {
+    private string _url;
+    private RequestHandler _requestHandler;
+    private RequestManager _requestManager;
+    private ProtocolAdapter _protocolAdapter;
+    private IPayloadSender _sender;
+    private IPayloadReceiver _receiver;
+    private bool _isDisconnecting;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    [CompilerGeneratedAttribute]
+private DateTime <LastMessageSendTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsConnected>k__BackingField;
+    public DateTime LastMessageSendTime { get; private set; }
+    public bool IsConnected { get; private set; }
+    public WebSocketClient(string url, RequestHandler requestHandler, object handlerContext);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public DateTime get_LastMessageSendTime();
+    [CompilerGeneratedAttribute]
+private void set_LastMessageSendTime(DateTime value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsConnected();
+    [CompilerGeneratedAttribute]
+private void set_IsConnected(bool value);
+    public sealed virtual Task ConnectAsync();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketClient/<ConnectAsync>d__21")]
+public sealed virtual Task ConnectAsync(IDictionary`2<string, string> requestHeaders);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketClient/<ConnectAsyncEx>d__22")]
+public Task ConnectAsyncEx(IDictionary`2<string, string> requestHeaders, CancellationToken cancellationToken);
+    public sealed virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest message, CancellationToken cancellationToken);
+    public sealed virtual void Disconnect();
+    public sealed virtual void Dispose();
+    internal Task ConnectInternalAsync(WebSocket socket);
+    protected virtual void Dispose(bool disposing);
+    private void OnConnectionDisconnected(object sender, EventArgs e);
+}
+public class Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketServer : object {
+    private RequestHandler _requestHandler;
+    private RequestManager _requestManager;
+    private ProtocolAdapter _protocolAdapter;
+    private IPayloadSender _sender;
+    private IPayloadReceiver _receiver;
+    private WebSocketTransport _webSocketTransport;
+    private TaskCompletionSource`1<string> _closedSignal;
+    private bool _isDisconnecting;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private DisconnectedEventHandler Disconnected;
+    public bool IsConnected { get; }
+    public WebSocketServer(WebSocket socket, RequestHandler requestHandler);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Disconnected(DisconnectedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Disconnected(DisconnectedEventHandler value);
+    public bool get_IsConnected();
+    public sealed virtual Task StartAsync();
+    public sealed virtual Task`1<ReceiveResponse> SendAsync(StreamingRequest request, CancellationToken cancellationToken);
+    public void Disconnect();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void OnConnectionDisconnected(object sender, EventArgs e);
+}
+public class Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketTransport : object {
+    private WebSocket _socket;
+    private bool _disposed;
+    public bool IsConnected { get; }
+    public WebSocketTransport(WebSocket socket);
+    public sealed virtual bool get_IsConnected();
+    public sealed virtual void Close();
+    public sealed virtual void Dispose();
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketTransport/<ReceiveAsync>d__7")]
+public sealed virtual Task`1<int> ReceiveAsync(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Transport.WebSockets.WebSocketTransport/<SendAsync>d__8")]
+public sealed virtual Task`1<int> SendAsync(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+}
+internal static class Microsoft.Bot.Streaming.Utilities.Background : object {
+    public static void Run(Func`1<Task> task, IDictionary`2<string, object> properties);
+    public static void Run(Func`2<CancellationToken, Task> task, IDictionary`2<string, object> properties);
+    public static void RunForever(Func`2<CancellationToken, TimeSpan> task, TimeSpan spanDelay, string eventName);
+    public static void RunForever(Func`2<CancellationToken, Task`1<TimeSpan>> task, TimeSpan spanDelay, string eventName);
+    [AsyncStateMachineAttribute("Microsoft.Bot.Streaming.Utilities.Background/<TrackAsRequestAsync>d__4")]
+private static Task TrackAsRequestAsync(Func`1<Task> task);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

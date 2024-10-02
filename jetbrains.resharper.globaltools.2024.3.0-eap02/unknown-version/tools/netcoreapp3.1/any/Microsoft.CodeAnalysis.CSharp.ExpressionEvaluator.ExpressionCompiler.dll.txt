@@ -1,0 +1,1201 @@
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CapturedVariableRewriter : BoundTreeRewriterWithStackGuardWithoutRecursionOnTheLeftOfBinaryOperator {
+    private GenerateThisReference _getThisReference;
+    private Conversions _conversions;
+    private ImmutableDictionary`2<string, DisplayClassVariable> _displayClassVariables;
+    private DiagnosticBag _diagnostics;
+    private CapturedVariableRewriter(GenerateThisReference getThisReference, Conversions conversions, ImmutableDictionary`2<string, DisplayClassVariable> displayClassVariables, DiagnosticBag diagnostics);
+    internal static BoundNode Rewrite(GenerateThisReference getThisReference, Conversions conversions, ImmutableDictionary`2<string, DisplayClassVariable> displayClassVariables, BoundNode node, DiagnosticBag diagnostics);
+    public virtual BoundNode VisitBlock(BoundBlock node);
+    public virtual BoundNode VisitLocal(BoundLocal node);
+    public virtual BoundNode VisitMethodGroup(BoundMethodGroup node);
+    public virtual BoundNode VisitThisReference(BoundThisReference node);
+    public virtual BoundNode VisitBaseReference(BoundBaseReference node);
+    private BoundExpression GenerateThisReference(BoundExpression node);
+    private DisplayClassVariable GetVariable(string name);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CompilationContext : object {
+    internal CSharpCompilation Compilation;
+    internal Binder NamespaceBinder;
+    private MethodSymbol _currentFrame;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<LocalSymbol> _locals;
+    private ImmutableDictionary`2<string, DisplayClassVariable> _displayClassVariables;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<string> _sourceMethodParametersInOrder;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<LocalSymbol> _localsForBindingOutside;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<LocalSymbol> _localsForBindingInside;
+    private bool _methodNotType;
+    internal CommonMessageProvider MessageProvider { get; }
+    internal CompilationContext(CSharpCompilation compilation, MethodSymbol currentFrame, MethodSymbol currentSourceMethod, ImmutableArray`1<LocalSymbol> locals, ImmutableSortedSet`1<int> inScopeHoistedLocalSlots, MethodDebugInfo`2<TypeSymbol, LocalSymbol> methodDebugInfo);
+    internal bool TryCompileExpressions(ImmutableArray`1<CSharpSyntaxNode> syntaxNodes, string typeNameBase, string methodName, DiagnosticBag diagnostics, CommonPEModuleBuilder& module);
+    internal bool TryCompileExpression(CSharpSyntaxNode syntax, string typeName, string methodName, ImmutableArray`1<Alias> aliases, CompilationTestData testData, ImmutableArray`1<NamespaceOrTypeAndUsingDirective> usings, DiagnosticBag diagnostics, CommonPEModuleBuilder& module, EEMethodSymbol& synthesizedMethod);
+    private EENamedTypeSymbol CreateSynthesizedType(CSharpSyntaxNode syntax, string typeName, string methodName, ImmutableArray`1<Alias> aliases, ImmutableArray`1<NamespaceOrTypeAndUsingDirective> usings);
+    internal bool TryCompileAssignment(ExpressionSyntax syntax, string typeName, string methodName, ImmutableArray`1<Alias> aliases, CompilationTestData testData, ImmutableArray`1<NamespaceOrTypeAndUsingDirective> usings, DiagnosticBag diagnostics, CommonPEModuleBuilder& module, EEMethodSymbol& synthesizedMethod);
+    private static EEMethodSymbol GetSynthesizedMethod(EENamedTypeSymbol synthesizedType);
+    private static string GetNextMethodName(ArrayBuilder`1<MethodSymbol> builder);
+    internal CommonPEModuleBuilder CompileGetLocals(string typeName, ArrayBuilder`1<LocalAndMethod> localBuilder, bool argumentsOnly, ImmutableArray`1<Alias> aliases, CompilationTestData testData, DiagnosticBag diagnostics);
+    private void AppendLocalAndMethod(ArrayBuilder`1<LocalAndMethod> localBuilder, ArrayBuilder`1<MethodSymbol> methodBuilder, LocalSymbol local, EENamedTypeSymbol container, int localIndex, DkmClrCompilationResultFlags resultFlags);
+    private void AppendParameterAndMethod(ArrayBuilder`1<LocalAndMethod> localBuilder, ArrayBuilder`1<MethodSymbol> methodBuilder, ParameterSymbol parameter, EENamedTypeSymbol container, bool isStaticMethod);
+    private void AppendParameterAndMethod(ArrayBuilder`1<LocalAndMethod> localBuilder, ArrayBuilder`1<MethodSymbol> methodBuilder, LocalSymbol local, EENamedTypeSymbol container, int localIndex, DkmClrCompilationResultFlags resultFlags);
+    private static LocalAndMethod MakeLocalAndMethod(LocalSymbol local, MethodSymbol method, DkmClrCompilationResultFlags flags);
+    private static EEAssemblyBuilder CreateModuleBuilder(CSharpCompilation compilation, ImmutableArray`1<NamedTypeSymbol> additionalTypes, CompilationTestData testData, DiagnosticBag diagnostics);
+    internal EEMethodSymbol CreateMethod(EENamedTypeSymbol container, string methodName, CSharpSyntaxNode syntax, GenerateMethodBody generateMethodBody);
+    private EEMethodSymbol GetLocalMethod(EENamedTypeSymbol container, string methodName, string localName, int localIndex);
+    private EEMethodSymbol GetParameterMethod(EENamedTypeSymbol container, string methodName, string parameterName, int parameterIndex);
+    private EEMethodSymbol GetThisMethod(EENamedTypeSymbol container, string methodName);
+    private EEMethodSymbol GetTypeVariablesMethod(EENamedTypeSymbol container, string methodName, NamedTypeSymbol typeVariablesType);
+    private static BoundStatement BindExpression(Binder binder, ExpressionSyntax syntax, DiagnosticBag diagnostics, ResultProperties& resultProperties);
+    private static bool IsDeconstruction(ExpressionSyntax syntax);
+    private static BoundStatement BindStatement(Binder binder, StatementSyntax syntax, DiagnosticBag diagnostics, ResultProperties& properties);
+    private static bool IsAssignableExpression(Binder binder, BoundExpression expression);
+    private static BoundStatement BindAssignment(Binder binder, ExpressionSyntax syntax, DiagnosticBag diagnostics);
+    private static Binder CreateBinderChain(CSharpCompilation compilation, NamespaceSymbol namespace, ImmutableArray`1<ImmutableArray`1<ImportRecord>> importRecordGroups, FileIdentifier fileIdentifier);
+    private static CSharpCompilation GetCompilationWithExternAliases(CSharpCompilation compilation, ImmutableArray`1<ExternAliasRecord> externAliasRecords);
+    private static int IndexOfMatchingAssembly(AssemblyIdentity referenceIdentity, ImmutableArray`1<Symbol> assembliesAndModules, AssemblyIdentityComparer assemblyIdentityComparer);
+    private static Binder ExtendBinderChain(CSharpSyntaxNode syntax, ImmutableArray`1<Alias> aliases, ImmutableArray`1<NamespaceOrTypeAndUsingDirective> usings, EEMethodSymbol method, Binder binder, bool hasDisplayClassThis, bool methodNotType, ImmutableArray`1& declaredLocals);
+    private static Imports BuildImports(CSharpCompilation compilation, ImmutableArray`1<ImportRecord> importRecords, InContainerBinder binder);
+    private static NamespaceSymbol BindNamespace(string namespaceName, NamespaceSymbol globalNamespace);
+    private static bool TryAddImport(string alias, NamespaceOrTypeSymbol targetSymbol, ArrayBuilder`1<NamespaceOrTypeAndUsingDirective> usingsBuilder, Builder<string, AliasAndUsingDirective> usingAliases, InContainerBinder binder, ImportRecord importRecord);
+    private static bool TryParseIdentifierNameSyntax(string name, IdentifierNameSyntax& syntax);
+    internal CommonMessageProvider get_MessageProvider();
+    private static DkmClrCompilationResultFlags GetLocalResultFlags(LocalSymbol local);
+    private static ImmutableArray`1<LocalSymbol> GetLocalsForBinding(ImmutableArray`1<LocalSymbol> locals, ImmutableArray`1<string> displayClassVariableNamesInOrder, ImmutableDictionary`2<string, DisplayClassVariable> displayClassVariables);
+    private static ImmutableArray`1<string> GetSourceMethodParametersInOrder(MethodSymbol method, MethodSymbol sourceMethod);
+    private static void GetDisplayClassVariables(MethodSymbol currentFrame, MethodSymbol currentSourceMethod, ImmutableArray`1<LocalSymbol> locals, ImmutableSortedSet`1<int> inScopeHoistedLocalSlots, bool isPrimaryConstructor, ImmutableArray`1<string> parameterNamesInOrder, ImmutableArray`1& displayClassVariableNamesOutsideInOrder, ImmutableArray`1& displayClassVariableNamesInsideInOrder, ImmutableDictionary`2& displayClassVariables);
+    private static void GetAdditionalDisplayClassInstances(HashSet`1<TypeSymbol> displayClassTypes, ArrayBuilder`1<DisplayClassInstanceAndFields> displayClassInstances);
+    private static void GetDisplayClassInstances(HashSet`1<TypeSymbol> displayClassTypes, ArrayBuilder`1<DisplayClassInstanceAndFields> displayClassInstances, DisplayClassInstanceAndFields instance);
+    private static bool IsDisplayClassParameter(ParameterSymbol parameter);
+    private static void GetDisplayClassVariables(ArrayBuilder`1<string> displayClassVariableNamesInOrderBuilder, Dictionary`2<string, DisplayClassVariable> displayClassVariablesBuilder, HashSet`1<string> parameterNames, ImmutableSortedSet`1<int> inScopeHoistedLocalSlots, DisplayClassInstanceAndFields instance);
+    private static void TryParseGeneratedName(string name, GeneratedNameKind& kind, String& part);
+    private static bool IsDisplayClassType(TypeSymbol type);
+    internal static DisplayClassVariable GetThisProxy(ImmutableDictionary`2<string, DisplayClassVariable> displayClassVariables);
+    private static NamedTypeSymbol GetNonDisplayClassContainer(NamedTypeSymbol type);
+    internal static MethodSymbol GetSubstitutedSourceMethod(MethodSymbol candidateSubstitutedSourceMethod, bool sourceMethodMustBeInstance);
+    private static bool IsViableSourceMethod(MethodSymbol candidateMethod, string desiredMethodName, ImmutableArray`1<TypeParameterSymbol> desiredTypeParameters, bool desiredMethodMustBeInstance);
+    private static bool HaveSameConstraints(ImmutableArray`1<TypeParameterSymbol> candidateTypeParameters, ImmutableArray`1<TypeParameterSymbol> desiredTypeParameters);
+    [CompilerGeneratedAttribute]
+internal static void <GetDisplayClassVariables>g__buildResult|45_1(ArrayBuilder`1<DisplayClassInstanceAndFields> displayClassInstances, ImmutableSortedSet`1<int> inScopeHoistedLocalSlots, ImmutableArray`1<string> parameterNamesInOrder, Dictionary`2<string, DisplayClassVariable> displayClassVariablesBuilder, ArrayBuilder`1<string> displayClassVariableNamesInOrderBuilder);
+    [CompilerGeneratedAttribute]
+internal static bool <GetDisplayClassVariables>g__tryAddCapturedPrimaryConstructorParameters|45_2(MethodSymbol currentFrame, ImmutableArray`1<string> shadowingParameterNames, TypeSymbol possiblyCapturingType, ValueTuple`2<DisplayClassInstance, ConsList`1<FieldSymbol>> possiblyCapturingTypeInstance, PooledDictionary`2<string, DisplayClassVariable> displayClassVariablesBuilder, ArrayBuilder`1<string> displayClassVariableNamesInOrderBuilder);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CompilationExtensions : object {
+    internal static AssemblyIdentityComparer IdentityComparer;
+    private static CSharpCompilationOptions s_compilationOptions;
+    private static CompilationExtensions();
+    private static PENamedTypeSymbol GetType(PEModuleSymbol module, TypeDefinitionHandle typeHandle);
+    [ExtensionAttribute]
+internal static PENamedTypeSymbol GetType(CSharpCompilation compilation, Guid moduleVersionId, int typeToken);
+    [ExtensionAttribute]
+internal static PEMethodSymbol GetSourceMethod(CSharpCompilation compilation, Guid moduleVersionId, MethodDefinitionHandle methodHandle);
+    [ExtensionAttribute]
+internal static PEMethodSymbol GetMethod(CSharpCompilation compilation, Guid moduleVersionId, MethodDefinitionHandle methodHandle);
+    [ExtensionAttribute]
+internal static PEModuleSymbol GetModule(CSharpCompilation compilation, Guid moduleVersionId);
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+internal static CSharpCompilation ToCompilationReferencedModulesOnly(ImmutableArray`1<MetadataBlock> metadataBlocks, Guid moduleVersionId);
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+internal static CSharpCompilation ToCompilation(ImmutableArray`1<MetadataBlock> metadataBlocks, Guid moduleVersionId, MakeAssemblyReferencesKind kind);
+    [ExtensionAttribute]
+internal static ReadOnlyCollection`1<byte> GetCustomTypeInfoPayload(CSharpCompilation compilation, TypeSymbol type, int customModifiersCount, RefKind refKind);
+    [ExtensionAttribute]
+private static ReadOnlyCollection`1<byte> GetDynamicTransforms(CSharpCompilation compilation, TypeSymbol type, int customModifiersCount, RefKind refKind);
+    [ExtensionAttribute]
+private static ReadOnlyCollection`1<string> GetTupleElementNames(CSharpCompilation compilation, TypeSymbol type);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CSharpCompileResult : CompileResult {
+    private MethodSymbol _method;
+    internal CSharpCompileResult(Byte[] assembly, MethodSymbol method, ReadOnlyCollection`1<string> formatSpecifiers);
+    [NullableContextAttribute("2")]
+public virtual Guid GetCustomTypeInfo(ReadOnlyCollection`1& payload);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CSharpEESymbolProvider : EESymbolProvider`2<TypeSymbol, LocalSymbol> {
+    private MetadataDecoder _metadataDecoder;
+    private SourceAssemblySymbol _sourceAssembly;
+    private PEMethodSymbol _method;
+    public CSharpEESymbolProvider(SourceAssemblySymbol sourceAssembly, PEModuleSymbol module, PEMethodSymbol method);
+    [NullableContextAttribute("0")]
+public virtual LocalSymbol GetLocalVariable(string name, int slotIndex, LocalInfo`1<TypeSymbol> info, ImmutableArray`1<bool> dynamicFlagsOpt, ImmutableArray`1<string> tupleElementNamesOpt);
+    public virtual LocalSymbol GetLocalConstant(string name, TypeSymbol type, ConstantValue value, ImmutableArray`1<bool> dynamicFlagsOpt, ImmutableArray`1<string> tupleElementNamesOpt);
+    [NullableContextAttribute("0")]
+public virtual TypeSymbol DecodeLocalVariableType(ImmutableArray`1<byte> signature);
+    public virtual TypeSymbol GetTypeSymbolForSerializedType(string typeName);
+    public virtual void DecodeLocalConstant(BlobReader& reader, TypeSymbol& type, ConstantValue& value);
+    public virtual IAssemblySymbolInternal GetReferencedAssembly(AssemblyReferenceHandle handle);
+    public virtual TypeSymbol GetType(EntityHandle handle);
+    private TypeSymbol IncludeDynamicAndTupleElementNamesIfAny(TypeSymbol type, RefKind refKind, ImmutableArray`1<bool> dynamicFlagsOpt, ImmutableArray`1<string> tupleElementNamesOpt);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CSharpLocalAndMethod : LocalAndMethod {
+    private MethodSymbol _method;
+    public CSharpLocalAndMethod(string name, string displayName, MethodSymbol method, DkmClrCompilationResultFlags flags);
+    [NullableContextAttribute("2")]
+public virtual Guid GetCustomTypeInfo(ReadOnlyCollection`1& payload);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[IsReadOnlyAttribute]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.CSharpMetadataContext : ValueType {
+    internal CSharpCompilation Compilation;
+    [NullableAttribute("2")]
+internal EvaluationContext EvaluationContext;
+    internal CSharpMetadataContext(CSharpCompilation compilation, EvaluationContext evaluationContext);
+}
+internal abstract class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.DisplayClassInstance : object {
+    internal Symbol ContainingSymbol { get; }
+    internal TypeSymbol Type { get; }
+    internal abstract virtual Symbol get_ContainingSymbol();
+    internal abstract virtual TypeSymbol get_Type();
+    internal abstract virtual DisplayClassInstance ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal abstract virtual BoundExpression ToBoundExpression(SyntaxNode syntax);
+    internal string GetDebuggerDisplay(ConsList`1<FieldSymbol> fields);
+    private static string GetDebuggerDisplay(string expr, ConsList`1<FieldSymbol> fields);
+    protected abstract virtual string GetInstanceName();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.DisplayClassInstanceFromLocal : DisplayClassInstance {
+    internal EELocalSymbol Local;
+    internal Symbol ContainingSymbol { get; }
+    internal TypeSymbol Type { get; }
+    internal DisplayClassInstanceFromLocal(EELocalSymbol local);
+    internal virtual Symbol get_ContainingSymbol();
+    internal virtual TypeSymbol get_Type();
+    internal virtual DisplayClassInstance ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal virtual BoundExpression ToBoundExpression(SyntaxNode syntax);
+    protected virtual string GetInstanceName();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.DisplayClassInstanceFromParameter : DisplayClassInstance {
+    internal ParameterSymbol Parameter;
+    internal Symbol ContainingSymbol { get; }
+    internal TypeSymbol Type { get; }
+    internal DisplayClassInstanceFromParameter(ParameterSymbol parameter);
+    internal virtual Symbol get_ContainingSymbol();
+    internal virtual TypeSymbol get_Type();
+    internal virtual DisplayClassInstance ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal virtual BoundExpression ToBoundExpression(SyntaxNode syntax);
+    protected virtual string GetInstanceName();
+}
+[DebuggerDisplayAttribute("{GetDebuggerDisplay(), nq}")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.DisplayClassVariable : object {
+    internal string Name;
+    internal DisplayClassVariableKind Kind;
+    internal DisplayClassInstance DisplayClassInstance;
+    internal ConsList`1<FieldSymbol> DisplayClassFields;
+    internal TypeSymbol Type { get; }
+    internal Symbol ContainingSymbol { get; }
+    internal DisplayClassVariable(string name, DisplayClassVariableKind kind, DisplayClassInstance displayClassInstance, ConsList`1<FieldSymbol> displayClassFields);
+    internal TypeSymbol get_Type();
+    internal Symbol get_ContainingSymbol();
+    internal DisplayClassVariable ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal BoundExpression ToBoundExpression(SyntaxNode syntax);
+    internal DisplayClassVariable SubstituteFields(DisplayClassInstance otherInstance, TypeMap typeMap);
+    private string GetDebuggerDisplay();
+    private static ConsList`1<FieldSymbol> SubstituteFields(ConsList`1<FieldSymbol> fields, TypeMap typeMap);
+    private static FieldSymbol SubstituteField(FieldSymbol field, TypeMap typeMap);
+}
+internal enum Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.DisplayClassVariableKind : Enum {
+    public int value__;
+    public static DisplayClassVariableKind Local;
+    public static DisplayClassVariableKind Parameter;
+    public static DisplayClassVariableKind This;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EEAssemblyBuilder : PEAssemblyBuilderBase {
+    private Func`2<NamedTypeSymbol, NamedTypeSymbol> _getDynamicOperationContextType;
+    internal bool IgnoreAccessibility { get; }
+    [NullableAttribute("2")]
+public EmitBaseline PreviousGeneration { get; }
+    [NullableAttribute("2")]
+public SymbolChanges EncSymbolChanges { get; }
+    public EEAssemblyBuilder(SourceAssemblySymbol sourceAssembly, EmitOptions emitOptions, ModulePropertiesForSerialization serializationProperties, ImmutableArray`1<NamedTypeSymbol> additionalTypes, Func`2<NamedTypeSymbol, NamedTypeSymbol> getDynamicOperationContextType, CompilationTestData testData);
+    protected virtual IModuleReference TranslateModule(ModuleSymbol symbol, DiagnosticBag diagnostics);
+    internal virtual bool get_IgnoreAccessibility();
+    [NullableContextAttribute("2")]
+public virtual EmitBaseline get_PreviousGeneration();
+    [NullableContextAttribute("2")]
+public virtual SymbolChanges get_EncSymbolChanges();
+    internal virtual NamedTypeSymbol GetDynamicOperationContextType(NamedTypeSymbol contextType);
+    internal virtual VariableSlotAllocator TryCreateVariableSlotAllocator(MethodSymbol symbol, MethodSymbol topLevelMethod, DiagnosticBag diagnostics);
+    private ImmutableArray`1<LocalDefinition> GetLocalDefinitions(ImmutableArray`1<LocalSymbol> locals, DiagnosticBag diagnostics);
+    private LocalDefinition ToLocalDefinition(LocalSymbol local, int index, DiagnosticBag diagnostics);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EECompilationContextMethod : WrappedMethodSymbol {
+    private MethodSymbol _underlyingMethod;
+    private CSharpCompilation _compilation;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<TypeParameterSymbol> _typeParameters;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<ParameterSymbol> _parameters;
+    public MethodSymbol UnderlyingMethod { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ImmutableArray`1<TypeParameterSymbol> TypeParameters { get; }
+    [NullableAttribute("0")]
+public ImmutableArray`1<TypeWithAnnotations> TypeArgumentsWithAnnotations { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ImmutableArray`1<ParameterSymbol> Parameters { get; }
+    public TypeWithAnnotations ReturnTypeWithAnnotations { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ImmutableArray`1<MethodSymbol> ExplicitInterfaceImplementations { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public ImmutableArray`1<CustomModifier> RefCustomModifiers { get; }
+    [NullableAttribute("2")]
+public Symbol AssociatedSymbol { get; }
+    public Symbol ContainingSymbol { get; }
+    internal CSharpCompilation DeclaringCompilation { get; }
+    public EECompilationContextMethod(CSharpCompilation compilation, MethodSymbol underlyingMethod);
+    public virtual MethodSymbol get_UnderlyingMethod();
+    public virtual ImmutableArray`1<TypeParameterSymbol> get_TypeParameters();
+    [NullableContextAttribute("0")]
+public virtual ImmutableArray`1<TypeWithAnnotations> get_TypeArgumentsWithAnnotations();
+    public virtual ImmutableArray`1<ParameterSymbol> get_Parameters();
+    public virtual TypeWithAnnotations get_ReturnTypeWithAnnotations();
+    public virtual ImmutableArray`1<MethodSymbol> get_ExplicitInterfaceImplementations();
+    public virtual ImmutableArray`1<CustomModifier> get_RefCustomModifiers();
+    [NullableContextAttribute("2")]
+public virtual Symbol get_AssociatedSymbol();
+    public virtual Symbol get_ContainingSymbol();
+    internal virtual int CalculateLocalSyntaxOffset(int localPosition, SyntaxTree localTree);
+    [NullableContextAttribute("2")]
+internal virtual UnmanagedCallersOnlyAttributeData GetUnmanagedCallersOnlyAttributeData(bool forceComplete);
+    internal virtual bool IsNullableAnalysisEnabled();
+    internal virtual CSharpCompilation get_DeclaringCompilation();
+    [NullableContextAttribute("2")]
+internal virtual bool TryGetThisParameter(ParameterSymbol& thisParameter);
+    [NullableContextAttribute("2")]
+internal sealed virtual bool HasAsyncMethodBuilderAttribute(TypeSymbol& builderArgument);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EEConstructorSymbol : SynthesizedInstanceConstructor {
+    internal EEConstructorSymbol(NamedTypeSymbol containingType);
+    internal virtual void GenerateMethodBody(TypeCompilationState compilationState, BindingDiagnosticBag diagnostics);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EEDisplayClassFieldLocalSymbol : EELocalSymbolBase {
+    private DisplayClassVariable _variable;
+    public string Name { get; }
+    internal LocalDeclarationKind DeclarationKind { get; }
+    internal SyntaxToken IdentifierToken { get; }
+    public Symbol ContainingSymbol { get; }
+    public TypeWithAnnotations TypeWithAnnotations { get; }
+    internal bool IsPinned { get; }
+    internal bool IsKnownToReferToTempIfReferenceType { get; }
+    internal bool IsCompilerGenerated { get; }
+    public RefKind RefKind { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public EEDisplayClassFieldLocalSymbol(DisplayClassVariable variable);
+    internal virtual EELocalSymbolBase ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    public virtual string get_Name();
+    internal virtual LocalDeclarationKind get_DeclarationKind();
+    internal virtual SyntaxToken get_IdentifierToken();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual TypeWithAnnotations get_TypeWithAnnotations();
+    internal virtual bool get_IsPinned();
+    internal virtual bool get_IsKnownToReferToTempIfReferenceType();
+    internal virtual bool get_IsCompilerGenerated();
+    public virtual RefKind get_RefKind();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EELocalConstantSymbol : EELocalSymbolBase {
+    private MethodSymbol _method;
+    private string _name;
+    private TypeWithAnnotations _type;
+    private ConstantValue _value;
+    public string Name { get; }
+    internal LocalDeclarationKind DeclarationKind { get; }
+    internal SyntaxToken IdentifierToken { get; }
+    public Symbol ContainingSymbol { get; }
+    public TypeWithAnnotations TypeWithAnnotations { get; }
+    internal bool IsPinned { get; }
+    internal bool IsKnownToReferToTempIfReferenceType { get; }
+    internal bool IsCompilerGenerated { get; }
+    public RefKind RefKind { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public EELocalConstantSymbol(MethodSymbol method, string name, TypeSymbol type, ConstantValue value);
+    public EELocalConstantSymbol(MethodSymbol method, string name, TypeWithAnnotations type, ConstantValue value);
+    internal virtual EELocalSymbolBase ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    public virtual string get_Name();
+    internal virtual LocalDeclarationKind get_DeclarationKind();
+    internal virtual SyntaxToken get_IdentifierToken();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual TypeWithAnnotations get_TypeWithAnnotations();
+    internal virtual bool get_IsPinned();
+    internal virtual bool get_IsKnownToReferToTempIfReferenceType();
+    internal virtual bool get_IsCompilerGenerated();
+    internal virtual ConstantValue GetConstantValue(SyntaxNode node, LocalSymbol inProgress, BindingDiagnosticBag diagnostics);
+    public virtual RefKind get_RefKind();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EELocalSymbol : EELocalSymbolBase {
+    private MethodSymbol _method;
+    private TypeWithAnnotations _type;
+    private LocalDeclarationKind _declarationKind;
+    private bool _isCompilerGenerated;
+    private ImmutableArray`1<Location> _locations;
+    private string _nameOpt;
+    private int _ordinal;
+    private bool _isPinned;
+    private RefKind _refKind;
+    private bool _canScheduleToStack;
+    internal LocalDeclarationKind DeclarationKind { get; }
+    internal bool CanScheduleToStack { get; }
+    internal int Ordinal { get; }
+    public string Name { get; }
+    internal SyntaxToken IdentifierToken { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public Symbol ContainingSymbol { get; }
+    public TypeWithAnnotations TypeWithAnnotations { get; }
+    internal bool IsPinned { get; }
+    internal bool IsKnownToReferToTempIfReferenceType { get; }
+    internal bool IsCompilerGenerated { get; }
+    public RefKind RefKind { get; }
+    public EELocalSymbol(MethodSymbol method, ImmutableArray`1<Location> locations, string nameOpt, int ordinal, LocalDeclarationKind declarationKind, TypeSymbol type, RefKind refKind, bool isPinned, bool isCompilerGenerated, bool canScheduleToStack);
+    public EELocalSymbol(MethodSymbol method, ImmutableArray`1<Location> locations, string nameOpt, int ordinal, LocalDeclarationKind declarationKind, TypeWithAnnotations type, RefKind refKind, bool isPinned, bool isCompilerGenerated, bool canScheduleToStack);
+    internal virtual EELocalSymbolBase ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal virtual LocalDeclarationKind get_DeclarationKind();
+    internal virtual bool get_CanScheduleToStack();
+    internal int get_Ordinal();
+    public virtual string get_Name();
+    internal virtual SyntaxToken get_IdentifierToken();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual TypeWithAnnotations get_TypeWithAnnotations();
+    internal virtual bool get_IsPinned();
+    internal virtual bool get_IsKnownToReferToTempIfReferenceType();
+    internal virtual bool get_IsCompilerGenerated();
+    public virtual RefKind get_RefKind();
+}
+internal abstract class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EELocalSymbolBase : LocalSymbol {
+    internal static ImmutableArray`1<Location> NoLocations;
+    internal SynthesizedLocalKind SynthesizedKind { get; }
+    internal SyntaxNode ScopeDesignatorOpt { get; }
+    internal bool IsImportedFromMetadata { get; }
+    internal bool HasSourceLocation { get; }
+    internal ScopedKind Scope { get; }
+    private static EELocalSymbolBase();
+    internal abstract virtual EELocalSymbolBase ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal virtual ConstantValue GetConstantValue(SyntaxNode node, LocalSymbol inProgress, BindingDiagnosticBag diagnostics);
+    internal virtual ReadOnlyBindingDiagnostic`1<AssemblySymbol> GetConstantValueDiagnostics(BoundExpression boundInitValue);
+    internal sealed virtual SynthesizedLocalKind get_SynthesizedKind();
+    internal virtual SyntaxNode get_ScopeDesignatorOpt();
+    internal sealed virtual LocalSymbol WithSynthesizedLocalKindAndSyntax(SynthesizedLocalKind kind, SyntaxNode syntax);
+    internal sealed virtual bool get_IsImportedFromMetadata();
+    internal virtual SyntaxNode GetDeclaratorSyntax();
+    internal virtual bool get_HasSourceLocation();
+    internal sealed virtual UseSiteInfo`1<AssemblySymbol> GetUseSiteInfo();
+    internal virtual ScopedKind get_Scope();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EEMethodBinder : Binder {
+    private MethodSymbol _containingMethod;
+    private int _parameterOffset;
+    private ImmutableArray`1<ParameterSymbol> _targetParameters;
+    private Binder _sourceBinder;
+    internal Symbol ContainingMemberOrLambda { get; }
+    internal EEMethodBinder(EEMethodSymbol method, MethodSymbol containingMethod, Binder next);
+    internal virtual void LookupSymbolsInSingleBinder(LookupResult result, string name, int arity, ConsList`1<TypeSymbol> basesBeingResolved, LookupOptions options, Binder originalBinder, bool diagnose, CompoundUseSiteInfo`1& useSiteInfo);
+    internal virtual void AddLookupSymbolsInfoInSingleBinder(LookupSymbolsInfo info, LookupOptions options, Binder originalBinder);
+    internal virtual Symbol get_ContainingMemberOrLambda();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EEMethodSymbol : MethodSymbol {
+    private static int _methodOrdinal;
+    internal TypeMap TypeMap;
+    internal MethodSymbol SubstitutedSourceMethod;
+    internal ImmutableArray`1<LocalSymbol> Locals;
+    internal ImmutableArray`1<LocalSymbol> LocalsForBindingOutside;
+    internal ImmutableArray`1<LocalSymbol> LocalsForBindingInside;
+    private EENamedTypeSymbol _container;
+    private string _name;
+    private ImmutableArray`1<Location> _locations;
+    private ImmutableArray`1<TypeParameterSymbol> _typeParameters;
+    private ImmutableArray`1<ParameterSymbol> _parameters;
+    private ParameterSymbol _thisParameter;
+    private ImmutableDictionary`2<string, DisplayClassVariable> _displayClassVariables;
+    private GenerateMethodBody _generateMethodBody;
+    private TypeWithAnnotations _lazyReturnType;
+    private ResultProperties _lazyResultProperties;
+    private ImmutableArray`1<TypeParameterSymbol> _allTypeParameters;
+    internal bool IsMetadataFinal { get; }
+    public MethodKind MethodKind { get; }
+    public string Name { get; }
+    public int Arity { get; }
+    public bool IsExtensionMethod { get; }
+    internal bool HasSpecialName { get; }
+    internal MethodImplAttributes ImplementationAttributes { get; }
+    internal bool HasDeclarativeSecurity { get; }
+    public bool AreLocalsZeroed { get; }
+    internal MarshalPseudoCustomAttributeData ReturnValueMarshallingInformation { get; }
+    internal bool RequiresSecurityObject { get; }
+    public bool HidesBaseMethodsByName { get; }
+    public bool IsVararg { get; }
+    public RefKind RefKind { get; }
+    public bool ReturnsVoid { get; }
+    public bool IsAsync { get; }
+    public TypeWithAnnotations ReturnTypeWithAnnotations { get; }
+    public FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations { get; }
+    public ImmutableHashSet`1<string> ReturnNotNullIfParameterNotNull { get; }
+    public FlowAnalysisAnnotations FlowAnalysisAnnotations { get; }
+    public ImmutableArray`1<TypeWithAnnotations> TypeArgumentsWithAnnotations { get; }
+    public ImmutableArray`1<TypeParameterSymbol> TypeParameters { get; }
+    public ImmutableArray`1<ParameterSymbol> Parameters { get; }
+    public ImmutableArray`1<MethodSymbol> ExplicitInterfaceImplementations { get; }
+    public ImmutableArray`1<CustomModifier> RefCustomModifiers { get; }
+    public Symbol AssociatedSymbol { get; }
+    internal CallingConvention CallingConvention { get; }
+    internal bool GenerateDebugInfo { get; }
+    public Symbol ContainingSymbol { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public Accessibility DeclaredAccessibility { get; }
+    public bool IsStatic { get; }
+    public bool IsVirtual { get; }
+    public bool IsOverride { get; }
+    public bool IsAbstract { get; }
+    public bool IsSealed { get; }
+    public bool IsExtern { get; }
+    internal bool IsDeclaredReadOnly { get; }
+    internal bool IsInitOnly { get; }
+    internal ObsoleteAttributeData ObsoleteAttributeData { get; }
+    internal bool HasUnscopedRefAttribute { get; }
+    internal bool UseUpdatedEscapeRules { get; }
+    internal ResultProperties ResultProperties { get; }
+    protected bool HasSetsRequiredMembersImpl { get; }
+    internal EEMethodSymbol(EENamedTypeSymbol container, string name, Location location, MethodSymbol sourceMethod, ImmutableArray`1<LocalSymbol> sourceLocals, ImmutableArray`1<LocalSymbol> sourceLocalsForBindingOutside, ImmutableArray`1<LocalSymbol> sourceLocalsForBindingInside, ImmutableDictionary`2<string, DisplayClassVariable> sourceDisplayClassVariables, GenerateMethodBody generateMethodBody);
+    private ParameterSymbol MakeParameterSymbol(int ordinal, string name, ParameterSymbol sourceParameter);
+    internal virtual bool IsMetadataNewSlot(bool ignoreInterfaceImplementationChanges);
+    internal virtual bool IsMetadataVirtual(bool ignoreInterfaceImplementationChanges);
+    internal virtual bool get_IsMetadataFinal();
+    public virtual MethodKind get_MethodKind();
+    public virtual string get_Name();
+    public virtual int get_Arity();
+    public virtual bool get_IsExtensionMethod();
+    internal virtual bool get_HasSpecialName();
+    internal virtual MethodImplAttributes get_ImplementationAttributes();
+    internal virtual bool get_HasDeclarativeSecurity();
+    public virtual DllImportData GetDllImportData();
+    public virtual bool get_AreLocalsZeroed();
+    internal virtual IEnumerable`1<SecurityAttribute> GetSecurityInformation();
+    internal virtual MarshalPseudoCustomAttributeData get_ReturnValueMarshallingInformation();
+    internal virtual bool get_RequiresSecurityObject();
+    internal virtual bool TryGetThisParameter(ParameterSymbol& thisParameter);
+    public virtual bool get_HidesBaseMethodsByName();
+    public virtual bool get_IsVararg();
+    public virtual RefKind get_RefKind();
+    public virtual bool get_ReturnsVoid();
+    public virtual bool get_IsAsync();
+    public virtual TypeWithAnnotations get_ReturnTypeWithAnnotations();
+    public virtual FlowAnalysisAnnotations get_ReturnTypeFlowAnalysisAnnotations();
+    public virtual ImmutableHashSet`1<string> get_ReturnNotNullIfParameterNotNull();
+    public virtual FlowAnalysisAnnotations get_FlowAnalysisAnnotations();
+    public virtual ImmutableArray`1<TypeWithAnnotations> get_TypeArgumentsWithAnnotations();
+    public virtual ImmutableArray`1<TypeParameterSymbol> get_TypeParameters();
+    public virtual ImmutableArray`1<ParameterSymbol> get_Parameters();
+    public virtual ImmutableArray`1<MethodSymbol> get_ExplicitInterfaceImplementations();
+    public virtual ImmutableArray`1<CustomModifier> get_RefCustomModifiers();
+    public virtual Symbol get_AssociatedSymbol();
+    internal virtual ImmutableArray`1<string> GetAppliedConditionalSymbols();
+    internal virtual CallingConvention get_CallingConvention();
+    internal virtual bool get_GenerateDebugInfo();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    public virtual Accessibility get_DeclaredAccessibility();
+    public virtual bool get_IsStatic();
+    public virtual bool get_IsVirtual();
+    public virtual bool get_IsOverride();
+    public virtual bool get_IsAbstract();
+    public virtual bool get_IsSealed();
+    public virtual bool get_IsExtern();
+    internal virtual bool get_IsDeclaredReadOnly();
+    internal virtual bool get_IsInitOnly();
+    internal virtual ObsoleteAttributeData get_ObsoleteAttributeData();
+    internal sealed virtual UnmanagedCallersOnlyAttributeData GetUnmanagedCallersOnlyAttributeData(bool forceComplete);
+    internal virtual bool get_HasUnscopedRefAttribute();
+    internal virtual bool get_UseUpdatedEscapeRules();
+    internal ResultProperties get_ResultProperties();
+    internal virtual void GenerateMethodBody(TypeCompilationState compilationState, BindingDiagnosticBag diagnostics);
+    private BoundExpression GenerateThisReference(SyntaxNode syntax);
+    private static TypeSymbol CalculateReturnType(CSharpCompilation compilation, BoundStatement bodyOpt);
+    internal virtual int CalculateLocalSyntaxOffset(int localPosition, SyntaxTree localTree);
+    internal virtual bool IsNullableAnalysisEnabled();
+    protected virtual bool get_HasSetsRequiredMembersImpl();
+    internal sealed virtual bool HasAsyncMethodBuilderAttribute(TypeSymbol& builderArgument);
+    [CompilerGeneratedAttribute]
+private TypeMap <.ctor>b__17_0();
+    [CompilerGeneratedAttribute]
+private ImmutableArray`1<LocalSymbol> <.ctor>g__remapLocalsForBinding|17_2(ImmutableArray`1<LocalSymbol> sourceLocalsForBinding, Dictionary`2<LocalSymbol, LocalSymbol> localsMap);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EENamedTypeSymbol : NamedTypeSymbol {
+    internal NamedTypeSymbol SubstitutedSourceType;
+    internal ImmutableArray`1<TypeParameterSymbol> SourceTypeParameters;
+    private NamespaceSymbol _container;
+    private NamedTypeSymbol _baseType;
+    private string _name;
+    private ImmutableArray`1<TypeParameterSymbol> _typeParameters;
+    private ImmutableArray`1<MethodSymbol> _methods;
+    internal ImmutableArray`1<MethodSymbol> Methods { get; }
+    public int Arity { get; }
+    public ImmutableArray`1<TypeParameterSymbol> TypeParameters { get; }
+    internal ImmutableArray`1<TypeWithAnnotations> TypeArgumentsWithAnnotationsNoUseSiteDiagnostics { get; }
+    public NamedTypeSymbol ConstructedFrom { get; }
+    public bool MightContainExtensionMethods { get; }
+    public string Name { get; }
+    internal bool MangleName { get; }
+    internal bool IsFileLocal { get; }
+    internal FileIdentifier AssociatedFileIdentifier { get; }
+    public IEnumerable`1<string> MemberNames { get; }
+    internal bool HasDeclaredRequiredMembers { get; }
+    public Accessibility DeclaredAccessibility { get; }
+    internal bool HasSpecialName { get; }
+    internal bool IsComImport { get; }
+    internal bool IsWindowsRuntimeImport { get; }
+    internal bool ShouldAddWinRTMembers { get; }
+    public bool IsSerializable { get; }
+    public bool AreLocalsZeroed { get; }
+    internal TypeLayout Layout { get; }
+    internal CharSet MarshallingCharSet { get; }
+    internal bool HasDeclarativeSecurity { get; }
+    internal NamedTypeSymbol BaseTypeNoUseSiteDiagnostics { get; }
+    public TypeKind TypeKind { get; }
+    public NamedTypeSymbol ContainingType { get; }
+    public Symbol ContainingSymbol { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public bool IsStatic { get; }
+    public bool IsAbstract { get; }
+    public bool IsRefLikeType { get; }
+    public bool IsReadOnly { get; }
+    public bool IsSealed { get; }
+    internal ObsoleteAttributeData ObsoleteAttributeData { get; }
+    internal bool IsInterface { get; }
+    internal bool HasCodeAnalysisEmbeddedAttribute { get; }
+    internal NamedTypeSymbol NativeIntegerUnderlyingType { get; }
+    internal bool IsRecord { get; }
+    internal bool IsRecordStruct { get; }
+    internal bool IsInterpolatedStringHandlerType { get; }
+    internal EENamedTypeSymbol(NamespaceSymbol container, NamedTypeSymbol baseType, CSharpSyntaxNode syntax, MethodSymbol currentFrame, string typeName, string methodName, CompilationContext context, GenerateMethodBody generateMethodBody);
+    internal EENamedTypeSymbol(NamespaceSymbol container, NamedTypeSymbol baseType, MethodSymbol currentFrame, string typeName, Func`3<MethodSymbol, EENamedTypeSymbol, ImmutableArray`1<MethodSymbol>> getMethods, ImmutableArray`1<TypeParameterSymbol> sourceTypeParameters, Func`3<NamedTypeSymbol, EENamedTypeSymbol, ImmutableArray`1<TypeParameterSymbol>> getTypeParameters);
+    internal EENamedTypeSymbol(NamespaceSymbol container, NamedTypeSymbol baseType, MethodSymbol currentFrame, string typeName, Func`3<MethodSymbol, EENamedTypeSymbol, ImmutableArray`1<MethodSymbol>> getMethods);
+    protected virtual NamedTypeSymbol WithTupleDataCore(TupleExtraData newData);
+    internal ImmutableArray`1<MethodSymbol> get_Methods();
+    internal virtual IEnumerable`1<FieldSymbol> GetFieldsToEmit();
+    internal virtual IEnumerable`1<MethodSymbol> GetMethodsToEmit();
+    internal virtual ImmutableArray`1<NamedTypeSymbol> GetInterfacesToEmit();
+    public virtual int get_Arity();
+    public virtual ImmutableArray`1<TypeParameterSymbol> get_TypeParameters();
+    internal virtual ImmutableArray`1<TypeWithAnnotations> get_TypeArgumentsWithAnnotationsNoUseSiteDiagnostics();
+    public virtual NamedTypeSymbol get_ConstructedFrom();
+    public virtual bool get_MightContainExtensionMethods();
+    internal virtual AttributeUsageInfo GetAttributeUsageInfo();
+    public virtual string get_Name();
+    internal virtual bool get_MangleName();
+    internal virtual bool get_IsFileLocal();
+    internal virtual FileIdentifier get_AssociatedFileIdentifier();
+    public virtual IEnumerable`1<string> get_MemberNames();
+    internal virtual bool get_HasDeclaredRequiredMembers();
+    public virtual ImmutableArray`1<Symbol> GetMembers();
+    public virtual ImmutableArray`1<Symbol> GetMembers(string name);
+    public virtual ImmutableArray`1<NamedTypeSymbol> GetTypeMembers();
+    public virtual ImmutableArray`1<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory`1<char> name);
+    public virtual ImmutableArray`1<NamedTypeSymbol> GetTypeMembers(ReadOnlyMemory`1<char> name, int arity);
+    public virtual Accessibility get_DeclaredAccessibility();
+    internal virtual ImmutableArray`1<Symbol> GetEarlyAttributeDecodingMembers();
+    internal virtual ImmutableArray`1<Symbol> GetEarlyAttributeDecodingMembers(string name);
+    internal virtual NamedTypeSymbol GetDeclaredBaseType(ConsList`1<TypeSymbol> basesBeingResolved);
+    internal virtual ImmutableArray`1<NamedTypeSymbol> GetDeclaredInterfaces(ConsList`1<TypeSymbol> basesBeingResolved);
+    internal virtual bool get_HasSpecialName();
+    internal virtual bool get_IsComImport();
+    internal virtual bool get_IsWindowsRuntimeImport();
+    internal virtual bool get_ShouldAddWinRTMembers();
+    public virtual bool get_IsSerializable();
+    public sealed virtual bool get_AreLocalsZeroed();
+    internal virtual TypeLayout get_Layout();
+    internal virtual CharSet get_MarshallingCharSet();
+    internal virtual bool get_HasDeclarativeSecurity();
+    internal virtual IEnumerable`1<SecurityAttribute> GetSecurityInformation();
+    internal virtual ImmutableArray`1<string> GetAppliedConditionalSymbols();
+    internal virtual NamedTypeSymbol get_BaseTypeNoUseSiteDiagnostics();
+    internal virtual ImmutableArray`1<NamedTypeSymbol> InterfacesNoUseSiteDiagnostics(ConsList`1<TypeSymbol> basesBeingResolved);
+    public virtual TypeKind get_TypeKind();
+    public virtual NamedTypeSymbol get_ContainingType();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    public virtual bool get_IsStatic();
+    public virtual bool get_IsAbstract();
+    public sealed virtual bool get_IsRefLikeType();
+    public sealed virtual bool get_IsReadOnly();
+    public virtual bool get_IsSealed();
+    internal virtual ObsoleteAttributeData get_ObsoleteAttributeData();
+    internal virtual bool get_IsInterface();
+    internal virtual bool get_HasCodeAnalysisEmbeddedAttribute();
+    internal sealed virtual NamedTypeSymbol AsNativeInteger();
+    internal sealed virtual NamedTypeSymbol get_NativeIntegerUnderlyingType();
+    internal virtual bool get_IsRecord();
+    internal virtual bool get_IsRecordStruct();
+    internal virtual bool HasPossibleWellKnownCloneMethod();
+    internal virtual bool get_IsInterpolatedStringHandlerType();
+    [ConditionalAttribute("DEBUG")]
+internal static void VerifyTypeParameters(Symbol container, ImmutableArray`1<TypeParameterSymbol> typeParameters);
+    internal virtual IEnumerable`1<ValueTuple`2<MethodSymbol, MethodSymbol>> SynthesizedInterfaceMethodImpls();
+    internal virtual bool GetGuidString(String& guidString);
+    internal virtual bool HasInlineArrayAttribute(Int32& length);
+    [NullableContextAttribute("2")]
+internal sealed virtual bool HasCollectionBuilderAttribute(TypeSymbol& builderType, String& methodName);
+    [NullableContextAttribute("2")]
+internal sealed virtual bool HasAsyncMethodBuilderAttribute(TypeSymbol& builderArgument);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EETypeNameDecoder : TypeNameDecoder`2<PEModuleSymbol, TypeSymbol> {
+    private CSharpCompilation _compilation;
+    private ModuleSymbol Module { get; }
+    internal EETypeNameDecoder(CSharpCompilation compilation, PEModuleSymbol moduleSymbol);
+    protected virtual int GetIndexOfReferencedAssembly(AssemblyIdentity identity);
+    protected virtual bool IsContainingAssembly(AssemblyIdentity identity);
+    protected virtual TypeSymbol LookupNestedTypeDefSymbol(TypeSymbol container, MetadataTypeName& emittedName);
+    protected virtual TypeSymbol LookupTopLevelTypeDefSymbol(int referencedAssemblyIndex, MetadataTypeName& emittedName);
+    protected virtual TypeSymbol LookupTopLevelTypeDefSymbol(MetadataTypeName& emittedName, Boolean& isNoPiaLocalType);
+    private static AssemblyIdentity GetComponentAssemblyIdentity(ModuleSymbol module);
+    private ModuleSymbol get_Module();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EETypeParameterSymbol : TypeParameterSymbol {
+    private Symbol _container;
+    private TypeParameterSymbol _sourceTypeParameter;
+    private int _ordinal;
+    private Func`1<TypeMap> _getTypeMap;
+    private TypeMap _lazyTypeMap;
+    public Symbol ContainingSymbol { get; }
+    public string Name { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public bool HasConstructorConstraint { get; }
+    public bool HasReferenceTypeConstraint { get; }
+    public bool IsReferenceTypeFromConstraintTypes { get; }
+    internal Nullable`1<bool> ReferenceTypeConstraintIsNullable { get; }
+    public bool HasNotNullConstraint { get; }
+    internal Nullable`1<bool> IsNotNullable { get; }
+    public bool HasValueTypeConstraint { get; }
+    public bool IsValueTypeFromConstraintTypes { get; }
+    public bool HasUnmanagedTypeConstraint { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public int Ordinal { get; }
+    public TypeParameterKind TypeParameterKind { get; }
+    public VarianceKind Variance { get; }
+    public bool IsImplicitlyDeclared { get; }
+    private TypeMap TypeMap { get; }
+    public EETypeParameterSymbol(Symbol container, TypeParameterSymbol sourceTypeParameter, int ordinal, Func`1<TypeMap> getTypeMap);
+    public virtual Symbol get_ContainingSymbol();
+    public virtual string get_Name();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    public virtual bool get_HasConstructorConstraint();
+    public virtual bool get_HasReferenceTypeConstraint();
+    public virtual bool get_IsReferenceTypeFromConstraintTypes();
+    internal virtual Nullable`1<bool> get_ReferenceTypeConstraintIsNullable();
+    public virtual bool get_HasNotNullConstraint();
+    internal virtual Nullable`1<bool> get_IsNotNullable();
+    public virtual bool get_HasValueTypeConstraint();
+    public virtual bool get_IsValueTypeFromConstraintTypes();
+    public virtual bool get_HasUnmanagedTypeConstraint();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual int get_Ordinal();
+    public virtual TypeParameterKind get_TypeParameterKind();
+    public virtual VarianceKind get_Variance();
+    public virtual bool get_IsImplicitlyDeclared();
+    internal virtual void EnsureAllConstraintsAreResolved();
+    internal virtual ImmutableArray`1<TypeWithAnnotations> GetConstraintTypes(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual TypeSymbol GetDeducedBaseType(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual NamedTypeSymbol GetEffectiveBaseClass(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual ImmutableArray`1<NamedTypeSymbol> GetInterfaces(ConsList`1<TypeParameterSymbol> inProgress);
+    private TypeMap get_TypeMap();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.EvaluationContext : EvaluationContextBase {
+    private static string TypeName;
+    private static string MethodName;
+    internal static bool IsLocalScopeEndInclusive;
+    internal Nullable`1<MethodContextReuseConstraints> MethodContextReuseConstraints;
+    internal CSharpCompilation Compilation;
+    private MethodSymbol _currentFrame;
+    [NullableAttribute("2")]
+private MethodSymbol _currentSourceMethod;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ImmutableArray`1<LocalSymbol> _locals;
+    private ImmutableSortedSet`1<int> _inScopeHoistedLocalSlots;
+    private MethodDebugInfo`2<TypeSymbol, LocalSymbol> _methodDebugInfo;
+    private static ReadOnlyCollection`1<byte> s_emptyBytes;
+    private EvaluationContext(Nullable`1<MethodContextReuseConstraints> methodContextReuseConstraints, CSharpCompilation compilation, MethodSymbol currentFrame, MethodSymbol currentSourceMethod, ImmutableArray`1<LocalSymbol> locals, ImmutableSortedSet`1<int> inScopeHoistedLocalSlots, MethodDebugInfo`2<TypeSymbol, LocalSymbol> methodDebugInfo);
+    private static EvaluationContext();
+    internal static EvaluationContext CreateTypeContext(CSharpCompilation compilation, Guid moduleVersionId, int typeToken);
+    internal static EvaluationContext CreateMethodContext(ImmutableArray`1<MetadataBlock> metadataBlocks, object symReader, Guid moduleVersionId, int methodToken, int methodVersion, UInt32 ilOffset, int localSignatureToken);
+    internal static EvaluationContext CreateMethodContext(CSharpCompilation compilation, object symReader, Guid moduleVersionId, int methodToken, int methodVersion, int ilOffset, int localSignatureToken);
+    internal static EvaluationContext CreateMethodContext(CSharpCompilation compilation, Guid moduleVersionId, int methodToken, int methodVersion, int ilOffset, int localSignatureToken, Func`2<CSharpEESymbolProvider, MethodDebugInfo`2<TypeSymbol, LocalSymbol>> debugInfoProvider);
+    internal CompilationContext CreateCompilationContext();
+    [NullableContextAttribute("0")]
+internal Byte[] CompileExpressions(ImmutableArray`1<string> expressions, ImmutableArray`1& methodTokens, ImmutableArray`1& errorMessages);
+    internal virtual CompileResult CompileExpression(string expr, DkmEvaluationFlags compilationFlags, ImmutableArray`1<Alias> aliases, ImmutableArray`1<string> additionalImports, DiagnosticBag diagnostics, ResultProperties& resultProperties, CompilationTestData testData);
+    private static CSharpSyntaxNode Parse(string expr, bool treatAsExpression, DiagnosticBag diagnostics, ReadOnlyCollection`1& formatSpecifiers);
+    internal virtual CompileResult CompileAssignment(string target, string expr, ImmutableArray`1<Alias> aliases, ImmutableArray`1<string> additionalImports, DiagnosticBag diagnostics, ResultProperties& resultProperties, CompilationTestData testData);
+    [NullableContextAttribute("0")]
+private static ImmutableArray`1<NamespaceOrTypeAndUsingDirective> GetUsings(CSharpCompilation compilation, ImmutableArray`1<string> usings);
+    internal virtual ReadOnlyCollection`1<byte> CompileGetLocals(ArrayBuilder`1<LocalAndMethod> locals, bool argumentsOnly, ImmutableArray`1<Alias> aliases, DiagnosticBag diagnostics, String& typeName, CompilationTestData testData);
+    internal virtual bool HasDuplicateTypesOrAssemblies(Diagnostic diagnostic);
+    internal virtual ImmutableArray`1<AssemblyIdentity> GetMissingAssemblyIdentities(Diagnostic diagnostic, AssemblyIdentity linqLibrary);
+    internal static ImmutableArray`1<AssemblyIdentity> GetMissingAssemblyIdentitiesHelper(ErrorCode code, IReadOnlyList`1<object> arguments, AssemblyIdentity linqLibrary);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ExceptionLocalSymbol : PlaceholderLocalSymbol {
+    private string _getExceptionMethodName;
+    internal bool IsWritableVariable { get; }
+    internal ExceptionLocalSymbol(MethodSymbol method, string name, string displayName, TypeSymbol type, string getExceptionMethodName);
+    internal virtual bool get_IsWritableVariable();
+    internal virtual BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, DiagnosticBag diagnostics);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.GenerateMethodBody : MulticastDelegate {
+    public GenerateMethodBody(object object, IntPtr method);
+    public virtual BoundStatement Invoke(EEMethodSymbol method, DiagnosticBag diagnostics, ImmutableArray`1& declaredLocals, ResultProperties& properties);
+    public virtual IAsyncResult BeginInvoke(EEMethodSymbol method, DiagnosticBag diagnostics, ImmutableArray`1& declaredLocals, ResultProperties& properties, AsyncCallback callback, object object);
+    public virtual BoundStatement EndInvoke(ImmutableArray`1& declaredLocals, ResultProperties& properties, IAsyncResult result);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.GenerateThisReference : MulticastDelegate {
+    public GenerateThisReference(object object, IntPtr method);
+    public virtual BoundExpression Invoke(SyntaxNode syntax);
+    public virtual IAsyncResult BeginInvoke(SyntaxNode syntax, AsyncCallback callback, object object);
+    public virtual BoundExpression EndInvoke(IAsyncResult result);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.LocalDeclarationRewriter : object {
+    internal static BoundStatement Rewrite(CSharpCompilation compilation, HashSet`1<LocalSymbol> declaredLocals, BoundStatement node, ImmutableArray`1<LocalSymbol> declaredLocalsArray, DiagnosticBag diagnostics);
+    private static void RewriteLocalDeclaration(ArrayBuilder`1<BoundStatement> statements, BoundLocalDeclaration node);
+    private static void CreateLocal(CSharpCompilation compilation, HashSet`1<LocalSymbol> declaredLocals, ArrayBuilder`1<BoundStatement> statements, LocalSymbol local, SyntaxNode syntax, DiagnosticBag diagnostics);
+    private static BoundExpression GetCustomTypeInfoPayloadId(SyntaxNode syntax, MethodSymbol guidConstructor, bool hasCustomTypeInfoPayload);
+    private static BoundExpression GetCustomTypeInfoPayload(LocalSymbol local, SyntaxNode syntax, CSharpCompilation compilation, Boolean& hasCustomTypeInfoPayload);
+}
+[ExtensionAttribute]
+internal static class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.LocalSymbolExtensions : object {
+    [ExtensionAttribute]
+internal static LocalSymbol ToOtherMethod(LocalSymbol local, MethodSymbol method, TypeMap typeMap);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.MayHaveSideEffectsVisitor : BoundTreeWalkerWithStackGuardWithoutRecursionOnTheLeftOfBinaryOperator {
+    private bool _mayHaveSideEffects;
+    internal static bool MayHaveSideEffects(BoundNode node);
+    public virtual BoundNode Visit(BoundNode node);
+    public virtual BoundNode VisitAssignmentOperator(BoundAssignmentOperator node);
+    public virtual BoundNode VisitDeconstructionAssignmentOperator(BoundDeconstructionAssignmentOperator node);
+    protected virtual void VisitArguments(BoundCall node);
+    public virtual BoundNode VisitDynamicInvocation(BoundDynamicInvocation node);
+    public virtual BoundNode VisitCompoundAssignmentOperator(BoundCompoundAssignmentOperator node);
+    public virtual BoundNode VisitEventAssignmentOperator(BoundEventAssignmentOperator node);
+    public virtual BoundNode VisitIncrementOperator(BoundIncrementOperator node);
+    public virtual BoundNode VisitObjectInitializerExpression(BoundObjectInitializerExpression node);
+    private BoundNode SetMayHaveSideEffects();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ObjectAddressLocalSymbol : PlaceholderLocalSymbol {
+    private ulong _address;
+    internal bool IsWritableVariable { get; }
+    internal ObjectAddressLocalSymbol(MethodSymbol method, string name, TypeSymbol type, ulong address);
+    internal virtual bool get_IsWritableVariable();
+    internal virtual BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, DiagnosticBag diagnostics);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ObjectIdLocalSymbol : PlaceholderLocalSymbol {
+    private bool _isWritable;
+    internal bool IsWritableVariable { get; }
+    internal ObjectIdLocalSymbol(MethodSymbol method, TypeSymbol type, string name, string displayName, bool isWritable);
+    internal virtual bool get_IsWritableVariable();
+    internal virtual BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, DiagnosticBag diagnostics);
+    internal static BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, LocalSymbol local);
+    private static BoundExpression RewriteLocalInternal(CSharpCompilation compilation, SyntaxNode syntax, LocalSymbol local);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.PlaceholderLocalBinder : LocalScopeBinder {
+    private CSharpSyntaxNode _syntax;
+    private ImmutableArray`1<LocalSymbol> _aliases;
+    private MethodSymbol _containingMethod;
+    private ImmutableDictionary`2<string, LocalSymbol> _lowercaseReturnValueAliases;
+    internal PlaceholderLocalBinder(CSharpSyntaxNode syntax, ImmutableArray`1<Alias> aliases, MethodSymbol containingMethod, EETypeNameDecoder typeNameDecoder, Binder next);
+    internal sealed virtual void LookupSymbolsInSingleBinder(LookupResult result, string name, int arity, ConsList`1<TypeSymbol> basesBeingResolved, LookupOptions options, Binder originalBinder, bool diagnose, CompoundUseSiteInfo`1& useSiteInfo);
+    internal sealed virtual void AddLookupSymbolsInfoInSingleBinder(LookupSymbolsInfo info, LookupOptions options, Binder originalBinder);
+    protected virtual ImmutableArray`1<LocalSymbol> BuildLocals();
+    internal virtual ImmutableArray`1<LocalSymbol> GetDeclaredLocalsForScope(SyntaxNode scopeDesignator);
+    internal virtual ImmutableArray`1<LocalFunctionSymbol> GetDeclaredLocalFunctionsForScope(CSharpSyntaxNode scopeDesignator);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.PlaceholderLocalRewriter : BoundTreeRewriterWithStackGuardWithoutRecursionOnTheLeftOfBinaryOperator {
+    private CSharpCompilation _compilation;
+    private HashSet`1<LocalSymbol> _declaredLocals;
+    private DiagnosticBag _diagnostics;
+    private PlaceholderLocalRewriter(CSharpCompilation compilation, HashSet`1<LocalSymbol> declaredLocals, DiagnosticBag diagnostics);
+    internal static BoundNode Rewrite(CSharpCompilation compilation, HashSet`1<LocalSymbol> declaredLocals, BoundNode node, DiagnosticBag diagnostics);
+    public virtual BoundNode VisitLocal(BoundLocal node);
+    private BoundExpression RewriteLocal(BoundLocal node);
+}
+internal abstract class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.PlaceholderLocalSymbol : EELocalSymbolBase {
+    private MethodSymbol _method;
+    private string _name;
+    private TypeWithAnnotations _type;
+    internal string DisplayName;
+    internal LocalDeclarationKind DeclarationKind { get; }
+    internal SyntaxToken IdentifierToken { get; }
+    public TypeWithAnnotations TypeWithAnnotations { get; }
+    internal bool IsPinned { get; }
+    internal bool IsKnownToReferToTempIfReferenceType { get; }
+    internal bool IsCompilerGenerated { get; }
+    public RefKind RefKind { get; }
+    public Symbol ContainingSymbol { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public string Name { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    internal bool IsWritableVariable { get; }
+    internal PlaceholderLocalSymbol(MethodSymbol method, string name, string displayName, TypeSymbol type);
+    internal static LocalSymbol Create(TypeNameDecoder`2<PEModuleSymbol, TypeSymbol> typeNameDecoder, MethodSymbol containingMethod, AssemblySymbol sourceAssembly, Alias alias);
+    internal virtual LocalDeclarationKind get_DeclarationKind();
+    internal virtual SyntaxToken get_IdentifierToken();
+    public virtual TypeWithAnnotations get_TypeWithAnnotations();
+    internal virtual bool get_IsPinned();
+    internal virtual bool get_IsKnownToReferToTempIfReferenceType();
+    internal virtual bool get_IsCompilerGenerated();
+    public virtual RefKind get_RefKind();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual string get_Name();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    internal abstract virtual bool get_IsWritableVariable();
+    internal virtual EELocalSymbolBase ToOtherMethod(MethodSymbol method, TypeMap typeMap);
+    internal abstract virtual BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, DiagnosticBag diagnostics);
+    internal static BoundExpression ConvertToLocalType(CSharpCompilation compilation, BoundExpression expr, TypeSymbol type, DiagnosticBag diagnostics);
+    private static BoundExpression ConvertToLocalTypeHelper(CSharpCompilation compilation, BoundExpression expr, TypeSymbol type, BindingDiagnosticBag diagnostics);
+    internal static MethodSymbol GetIntrinsicMethod(CSharpCompilation compilation, string methodName);
+    private static TypeSymbol DecodeDynamicTypes(TypeSymbol type, AssemblySymbol sourceAssembly, ReadOnlyCollection`1<byte> bytes);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.PlaceholderMethodSymbol : MethodSymbol {
+    private NamedTypeSymbol _container;
+    private string _name;
+    private ImmutableArray`1<TypeParameterSymbol> _typeParameters;
+    private TypeWithAnnotations _returnType;
+    private ImmutableArray`1<ParameterSymbol> _parameters;
+    public int Arity { get; }
+    public Symbol AssociatedSymbol { get; }
+    public Symbol ContainingSymbol { get; }
+    public Accessibility DeclaredAccessibility { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public ImmutableArray`1<MethodSymbol> ExplicitInterfaceImplementations { get; }
+    public bool HidesBaseMethodsByName { get; }
+    public bool IsAbstract { get; }
+    public bool IsAsync { get; }
+    public bool IsExtensionMethod { get; }
+    public bool IsExtern { get; }
+    public bool IsOverride { get; }
+    public bool IsSealed { get; }
+    public bool IsStatic { get; }
+    public bool IsVararg { get; }
+    public bool IsVirtual { get; }
+    internal bool IsDeclaredReadOnly { get; }
+    internal bool IsInitOnly { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public MethodKind MethodKind { get; }
+    public string Name { get; }
+    public ImmutableArray`1<ParameterSymbol> Parameters { get; }
+    public bool ReturnsVoid { get; }
+    public RefKind RefKind { get; }
+    public TypeWithAnnotations ReturnTypeWithAnnotations { get; }
+    public FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations { get; }
+    public ImmutableHashSet`1<string> ReturnNotNullIfParameterNotNull { get; }
+    public FlowAnalysisAnnotations FlowAnalysisAnnotations { get; }
+    public ImmutableArray`1<CustomModifier> RefCustomModifiers { get; }
+    public ImmutableArray`1<TypeWithAnnotations> TypeArgumentsWithAnnotations { get; }
+    public ImmutableArray`1<TypeParameterSymbol> TypeParameters { get; }
+    internal CallingConvention CallingConvention { get; }
+    internal bool GenerateDebugInfo { get; }
+    internal bool HasDeclarativeSecurity { get; }
+    internal bool HasSpecialName { get; }
+    internal MethodImplAttributes ImplementationAttributes { get; }
+    internal ObsoleteAttributeData ObsoleteAttributeData { get; }
+    internal bool HasUnscopedRefAttribute { get; }
+    internal bool UseUpdatedEscapeRules { get; }
+    internal bool RequiresSecurityObject { get; }
+    internal MarshalPseudoCustomAttributeData ReturnValueMarshallingInformation { get; }
+    public bool AreLocalsZeroed { get; }
+    internal bool IsMetadataFinal { get; }
+    protected bool HasSetsRequiredMembersImpl { get; }
+    private bool Microsoft.Cci.ISignature.ReturnValueIsByRef { get; }
+    private ImmutableArray`1<ICustomModifier> Microsoft.Cci.ISignature.RefCustomModifiers { get; }
+    internal PlaceholderMethodSymbol(NamedTypeSymbol container, string name, GetTypeParameters getTypeParameters, GetReturnType getReturnType, GetParameters getParameters);
+    public virtual int get_Arity();
+    public virtual Symbol get_AssociatedSymbol();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual Accessibility get_DeclaredAccessibility();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    public virtual ImmutableArray`1<MethodSymbol> get_ExplicitInterfaceImplementations();
+    public virtual bool get_HidesBaseMethodsByName();
+    public virtual bool get_IsAbstract();
+    public virtual bool get_IsAsync();
+    public virtual bool get_IsExtensionMethod();
+    public virtual bool get_IsExtern();
+    public virtual bool get_IsOverride();
+    public virtual bool get_IsSealed();
+    public virtual bool get_IsStatic();
+    public virtual bool get_IsVararg();
+    public virtual bool get_IsVirtual();
+    internal virtual bool get_IsDeclaredReadOnly();
+    internal virtual bool get_IsInitOnly();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual MethodKind get_MethodKind();
+    public virtual string get_Name();
+    public virtual ImmutableArray`1<ParameterSymbol> get_Parameters();
+    public virtual bool get_ReturnsVoid();
+    public virtual RefKind get_RefKind();
+    public virtual TypeWithAnnotations get_ReturnTypeWithAnnotations();
+    public virtual FlowAnalysisAnnotations get_ReturnTypeFlowAnalysisAnnotations();
+    public virtual ImmutableHashSet`1<string> get_ReturnNotNullIfParameterNotNull();
+    public virtual FlowAnalysisAnnotations get_FlowAnalysisAnnotations();
+    public virtual ImmutableArray`1<CustomModifier> get_RefCustomModifiers();
+    public virtual ImmutableArray`1<TypeWithAnnotations> get_TypeArgumentsWithAnnotations();
+    public virtual ImmutableArray`1<TypeParameterSymbol> get_TypeParameters();
+    internal virtual CallingConvention get_CallingConvention();
+    internal virtual bool get_GenerateDebugInfo();
+    internal virtual bool get_HasDeclarativeSecurity();
+    internal virtual bool get_HasSpecialName();
+    internal virtual MethodImplAttributes get_ImplementationAttributes();
+    internal virtual ObsoleteAttributeData get_ObsoleteAttributeData();
+    internal sealed virtual UnmanagedCallersOnlyAttributeData GetUnmanagedCallersOnlyAttributeData(bool forceComplete);
+    internal virtual bool get_HasUnscopedRefAttribute();
+    internal virtual bool get_UseUpdatedEscapeRules();
+    internal virtual bool get_RequiresSecurityObject();
+    internal virtual MarshalPseudoCustomAttributeData get_ReturnValueMarshallingInformation();
+    public virtual DllImportData GetDllImportData();
+    public virtual bool get_AreLocalsZeroed();
+    internal virtual ImmutableArray`1<string> GetAppliedConditionalSymbols();
+    internal virtual IEnumerable`1<SecurityAttribute> GetSecurityInformation();
+    internal virtual bool get_IsMetadataFinal();
+    internal virtual bool IsMetadataNewSlot(bool ignoreInterfaceImplementationChanges);
+    internal virtual bool IsMetadataVirtual(bool ignoreInterfaceImplementationChanges);
+    internal virtual int CalculateLocalSyntaxOffset(int localPosition, SyntaxTree localTree);
+    internal virtual bool IsNullableAnalysisEnabled();
+    protected virtual bool get_HasSetsRequiredMembersImpl();
+    internal sealed virtual bool HasAsyncMethodBuilderAttribute(TypeSymbol& builderArgument);
+    private sealed virtual override bool Microsoft.Cci.ISignature.get_ReturnValueIsByRef();
+    private sealed virtual override ImmutableArray`1<ICustomModifier> Microsoft.Cci.ISignature.get_RefCustomModifiers();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ReturnValueLocalSymbol : PlaceholderLocalSymbol {
+    private int _index;
+    internal bool IsWritableVariable { get; }
+    internal ReturnValueLocalSymbol(MethodSymbol method, string name, string displayName, TypeSymbol type, int index);
+    internal virtual bool get_IsWritableVariable();
+    internal virtual BoundExpression RewriteLocal(CSharpCompilation compilation, SyntaxNode syntax, DiagnosticBag diagnostics);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.SimpleTypeParameterSymbol : TypeParameterSymbol {
+    private Symbol _container;
+    private int _ordinal;
+    private string _name;
+    public string Name { get; }
+    public int Ordinal { get; }
+    public TypeParameterKind TypeParameterKind { get; }
+    public bool HasConstructorConstraint { get; }
+    public bool HasReferenceTypeConstraint { get; }
+    public bool IsReferenceTypeFromConstraintTypes { get; }
+    internal Nullable`1<bool> ReferenceTypeConstraintIsNullable { get; }
+    public bool HasNotNullConstraint { get; }
+    internal Nullable`1<bool> IsNotNullable { get; }
+    public bool HasValueTypeConstraint { get; }
+    public bool IsValueTypeFromConstraintTypes { get; }
+    public bool HasUnmanagedTypeConstraint { get; }
+    public VarianceKind Variance { get; }
+    public Symbol ContainingSymbol { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public ImmutableArray`1<SyntaxReference> DeclaringSyntaxReferences { get; }
+    public SimpleTypeParameterSymbol(Symbol container, int ordinal, string name);
+    public virtual string get_Name();
+    public virtual int get_Ordinal();
+    public virtual TypeParameterKind get_TypeParameterKind();
+    public virtual bool get_HasConstructorConstraint();
+    public virtual bool get_HasReferenceTypeConstraint();
+    public virtual bool get_IsReferenceTypeFromConstraintTypes();
+    internal virtual Nullable`1<bool> get_ReferenceTypeConstraintIsNullable();
+    public virtual bool get_HasNotNullConstraint();
+    internal virtual Nullable`1<bool> get_IsNotNullable();
+    public virtual bool get_HasValueTypeConstraint();
+    public virtual bool get_IsValueTypeFromConstraintTypes();
+    public virtual bool get_HasUnmanagedTypeConstraint();
+    public virtual VarianceKind get_Variance();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual ImmutableArray`1<SyntaxReference> get_DeclaringSyntaxReferences();
+    internal virtual void EnsureAllConstraintsAreResolved();
+    internal virtual ImmutableArray`1<TypeWithAnnotations> GetConstraintTypes(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual ImmutableArray`1<NamedTypeSymbol> GetInterfaces(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual NamedTypeSymbol GetEffectiveBaseClass(ConsList`1<TypeParameterSymbol> inProgress);
+    internal virtual TypeSymbol GetDeducedBaseType(ConsList`1<TypeParameterSymbol> inProgress);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.SymbolExtensions : object {
+    [ExtensionAttribute]
+internal static ImmutableArray`1<TypeParameterSymbol> GetAllTypeParameters(MethodSymbol method);
+    [ExtensionAttribute]
+internal static ReadOnlyCollection`1<byte> GetCustomTypeInfoPayload(MethodSymbol method);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.SyntaxHelpers : object {
+    internal static CSharpParseOptions PreviewParseOptions;
+    private static SyntaxHelpers();
+    [ExtensionAttribute]
+internal static ExpressionSyntax ParseExpression(string expr, DiagnosticBag diagnostics, bool allowFormatSpecifiers, ReadOnlyCollection`1& formatSpecifiers);
+    [ExtensionAttribute]
+internal static ExpressionSyntax ParseAssignment(string target, string expr, DiagnosticBag diagnostics);
+    [ExtensionAttribute]
+internal static StatementSyntax ParseStatement(string expr, DiagnosticBag diagnostics);
+    private static bool ParseFormatSpecifiers(ArrayBuilder`1<string> builder, string expr, int offset, DiagnosticBag diagnostics);
+    private static void ReportInvalidFormatSpecifier(string token, DiagnosticBag diagnostics);
+    private static bool RemoveSemicolonIfAny(String& str);
+    private static ExpressionSyntax ParseDebuggerExpression(string text, bool consumeFullText);
+    private static ExpressionSyntax ParseDebuggerExpressionInternal(SourceText source, bool consumeFullText);
+    private static StatementSyntax ParseDebuggerStatement(string text);
+    [ExtensionAttribute]
+private static SyntaxTree CreateSyntaxTree(CSharpSyntaxNode root, SourceText text);
+    [ExtensionAttribute]
+private static ExpressionSyntax MakeDebuggerExpression(ExpressionSyntax expression, SourceText text);
+    internal static string EscapeKeywordIdentifiers(string identifier);
+    internal static bool TryParseDottedName(string input, NameSyntax& output);
+    internal static NameSyntax PrependExternAlias(IdentifierNameSyntax externAliasSyntax, NameSyntax nameSyntax);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.SynthesizedContextMethodSymbol : SynthesizedInstanceMethodSymbol {
+    private NamedTypeSymbol _container;
+    public int Arity { get; }
+    public Symbol AssociatedSymbol { get; }
+    public Symbol ContainingSymbol { get; }
+    public Accessibility DeclaredAccessibility { get; }
+    public ImmutableArray`1<MethodSymbol> ExplicitInterfaceImplementations { get; }
+    public bool HidesBaseMethodsByName { get; }
+    public bool IsAbstract { get; }
+    public bool IsAsync { get; }
+    public bool IsExtensionMethod { get; }
+    public bool IsExtern { get; }
+    public bool IsOverride { get; }
+    public bool IsSealed { get; }
+    public bool IsStatic { get; }
+    public bool IsVararg { get; }
+    public bool IsVirtual { get; }
+    public ImmutableArray`1<Location> Locations { get; }
+    public MethodKind MethodKind { get; }
+    public ImmutableArray`1<ParameterSymbol> Parameters { get; }
+    public bool ReturnsVoid { get; }
+    public RefKind RefKind { get; }
+    public TypeWithAnnotations ReturnTypeWithAnnotations { get; }
+    public FlowAnalysisAnnotations ReturnTypeFlowAnalysisAnnotations { get; }
+    public ImmutableHashSet`1<string> ReturnNotNullIfParameterNotNull { get; }
+    public ImmutableArray`1<CustomModifier> RefCustomModifiers { get; }
+    public ImmutableArray`1<TypeWithAnnotations> TypeArgumentsWithAnnotations { get; }
+    public ImmutableArray`1<TypeParameterSymbol> TypeParameters { get; }
+    internal CallingConvention CallingConvention { get; }
+    internal bool GenerateDebugInfo { get; }
+    internal bool HasDeclarativeSecurity { get; }
+    internal bool HasSpecialName { get; }
+    internal MethodImplAttributes ImplementationAttributes { get; }
+    internal bool RequiresSecurityObject { get; }
+    internal MarshalPseudoCustomAttributeData ReturnValueMarshallingInformation { get; }
+    internal bool IsMetadataFinal { get; }
+    protected bool HasSetsRequiredMembersImpl { get; }
+    public SynthesizedContextMethodSymbol(NamedTypeSymbol container);
+    public virtual int get_Arity();
+    public virtual Symbol get_AssociatedSymbol();
+    public virtual Symbol get_ContainingSymbol();
+    public virtual Accessibility get_DeclaredAccessibility();
+    public virtual ImmutableArray`1<MethodSymbol> get_ExplicitInterfaceImplementations();
+    public virtual bool get_HidesBaseMethodsByName();
+    public virtual bool get_IsAbstract();
+    public virtual bool get_IsAsync();
+    public virtual bool get_IsExtensionMethod();
+    public virtual bool get_IsExtern();
+    public virtual bool get_IsOverride();
+    public virtual bool get_IsSealed();
+    public virtual bool get_IsStatic();
+    public virtual bool get_IsVararg();
+    public virtual bool get_IsVirtual();
+    public virtual ImmutableArray`1<Location> get_Locations();
+    public virtual MethodKind get_MethodKind();
+    public virtual ImmutableArray`1<ParameterSymbol> get_Parameters();
+    public virtual bool get_ReturnsVoid();
+    public virtual RefKind get_RefKind();
+    public virtual TypeWithAnnotations get_ReturnTypeWithAnnotations();
+    public virtual FlowAnalysisAnnotations get_ReturnTypeFlowAnalysisAnnotations();
+    public virtual ImmutableHashSet`1<string> get_ReturnNotNullIfParameterNotNull();
+    public virtual ImmutableArray`1<CustomModifier> get_RefCustomModifiers();
+    public virtual ImmutableArray`1<TypeWithAnnotations> get_TypeArgumentsWithAnnotations();
+    public virtual ImmutableArray`1<TypeParameterSymbol> get_TypeParameters();
+    internal virtual CallingConvention get_CallingConvention();
+    internal virtual bool get_GenerateDebugInfo();
+    internal virtual bool get_HasDeclarativeSecurity();
+    internal virtual bool get_HasSpecialName();
+    internal virtual MethodImplAttributes get_ImplementationAttributes();
+    internal virtual bool get_RequiresSecurityObject();
+    internal virtual MarshalPseudoCustomAttributeData get_ReturnValueMarshallingInformation();
+    public virtual DllImportData GetDllImportData();
+    internal virtual ImmutableArray`1<string> GetAppliedConditionalSymbols();
+    internal virtual IEnumerable`1<SecurityAttribute> GetSecurityInformation();
+    internal virtual bool get_IsMetadataFinal();
+    internal virtual bool IsMetadataNewSlot(bool ignoreInterfaceImplementationChanges);
+    internal virtual bool IsMetadataVirtual(bool ignoreInterfaceImplementationChanges);
+    protected virtual bool get_HasSetsRequiredMembersImpl();
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.TypeParameterChecker : AbstractTypeParameterChecker {
+    private TypeParameterChecker(ImmutableArray`1<TypeParameterSymbol> acceptableTypeParameters);
+    [ConditionalAttribute("DEBUG")]
+public static void Check(Symbol symbol, ImmutableArray`1<TypeParameterSymbol> acceptableTypeParameters);
+    [ConditionalAttribute("DEBUG")]
+public static void Check(BoundNode node, ImmutableArray`1<TypeParameterSymbol> acceptableTypeParameters);
+    public virtual IParameterSymbol GetThisParameter(IMethodSymbol method);
+}
+internal class Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.WithTypeArgumentsBinder : WithTypeParametersBinder {
+    private ImmutableArray`1<TypeWithAnnotations> _typeArguments;
+    private MultiDictionary`2<string, TypeParameterSymbol> _lazyTypeParameterMap;
+    protected MultiDictionary`2<string, TypeParameterSymbol> TypeParameterMap { get; }
+    internal WithTypeArgumentsBinder(ImmutableArray`1<TypeWithAnnotations> typeArguments, Binder next);
+    protected virtual MultiDictionary`2<string, TypeParameterSymbol> get_TypeParameterMap();
+    internal virtual void AddLookupSymbolsInfoInSingleBinder(LookupSymbolsInfo result, LookupOptions options, Binder originalBinder);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

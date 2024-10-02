@@ -1,0 +1,867 @@
+public abstract class JWT.Algorithms.CertificateAlgorithm`1 : object {
+    protected T _publicKey;
+    protected T _privateKey;
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    protected CertificateAlgorithm`1(T publicKey, T privateKey);
+    protected CertificateAlgorithm`1(T publicKey);
+    protected CertificateAlgorithm`1(X509Certificate2 cert);
+    public abstract virtual string get_Name();
+    public abstract virtual HashAlgorithmName get_HashAlgorithmName();
+    public sealed virtual Byte[] Sign(Byte[] key, Byte[] bytesToSign);
+    public Byte[] Sign(Byte[] bytesToSign);
+    public sealed virtual bool Verify(Byte[] bytesToSign, Byte[] signature);
+    protected abstract virtual T GetPublicKey(X509Certificate2 cert);
+    protected abstract virtual T GetPrivateKey(X509Certificate2 cert);
+    protected abstract virtual Byte[] SignData(Byte[] bytesToSign);
+    protected abstract virtual bool VerifyData(Byte[] bytesToSign, Byte[] signature);
+}
+public class JWT.Algorithms.DelegateAlgorithmFactory : object {
+    private Func`2<JwtDecoderContext, IJwtAlgorithm> _algFactory;
+    public DelegateAlgorithmFactory(Func`2<JwtDecoderContext, IJwtAlgorithm> algFactory);
+    public DelegateAlgorithmFactory(Func`1<IJwtAlgorithm> algFactory);
+    public DelegateAlgorithmFactory(IAlgorithmFactory algFactory);
+    public DelegateAlgorithmFactory(IJwtAlgorithm algorithm);
+    public sealed virtual IJwtAlgorithm Create(JwtDecoderContext context);
+}
+public abstract class JWT.Algorithms.ECDSAAlgorithm : CertificateAlgorithm`1<ECDsa> {
+    protected ECDSAAlgorithm(ECDsa publicKey, ECDsa privateKey);
+    protected ECDSAAlgorithm(ECDsa publicKey);
+    protected ECDSAAlgorithm(X509Certificate2 cert);
+    protected virtual ECDsa GetPublicKey(X509Certificate2 cert);
+    protected virtual ECDsa GetPrivateKey(X509Certificate2 cert);
+    protected virtual Byte[] SignData(Byte[] bytesToSign);
+    protected virtual bool VerifyData(Byte[] bytesToSign, Byte[] signature);
+}
+public class JWT.Algorithms.ECDSAAlgorithmFactory : HMACSHAAlgorithmFactory {
+    private Func`1<X509Certificate2> _certFactory;
+    private ECDsa _publicKey;
+    private ECDsa _privateKey;
+    public ECDSAAlgorithmFactory(Func`1<X509Certificate2> certFactory);
+    public ECDSAAlgorithmFactory(ECDsa publicKey);
+    public ECDSAAlgorithmFactory(ECDsa publicKey, ECDsa privateKey);
+    protected virtual IJwtAlgorithm Create(JwtAlgorithmName algorithm);
+    private IJwtAlgorithm CreateES256Algorithm();
+    private IJwtAlgorithm CreateES384Algorithm();
+    private IJwtAlgorithm CreateES512Algorithm();
+}
+public class JWT.Algorithms.ES256Algorithm : ECDSAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public ES256Algorithm(ECDsa publicKey, ECDsa privateKey);
+    public ES256Algorithm(ECDsa publicKey);
+    public ES256Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.ES384Algorithm : ECDSAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public ES384Algorithm(ECDsa publicKey, ECDsa privateKey);
+    public ES384Algorithm(ECDsa publicKey);
+    public ES384Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.ES512Algorithm : ECDSAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public ES512Algorithm(ECDsa publicKey, ECDsa privateKey);
+    public ES512Algorithm(ECDsa publicKey);
+    public ES512Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.GenericAlgorithmFactory`1 : object {
+    public sealed virtual IJwtAlgorithm Create(JwtDecoderContext context);
+}
+public class JWT.Algorithms.HMACSHA256Algorithm : HMACSHAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+    protected virtual HMAC CreateAlgorithm(Byte[] key);
+}
+public class JWT.Algorithms.HMACSHA384Algorithm : HMACSHAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+    protected virtual HMAC CreateAlgorithm(Byte[] key);
+}
+public class JWT.Algorithms.HMACSHA512Algorithm : HMACSHAAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+    protected virtual HMAC CreateAlgorithm(Byte[] key);
+}
+public abstract class JWT.Algorithms.HMACSHAAlgorithm : object {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual HashAlgorithmName get_HashAlgorithmName();
+    public sealed virtual Byte[] Sign(Byte[] key, Byte[] bytesToSign);
+    protected abstract virtual HMAC CreateAlgorithm(Byte[] key);
+}
+public class JWT.Algorithms.HMACSHAAlgorithmFactory : JwtAlgorithmFactory {
+    protected virtual IJwtAlgorithm Create(JwtAlgorithmName algorithm);
+}
+public interface JWT.Algorithms.IAlgorithmFactory {
+    public abstract virtual IJwtAlgorithm Create(JwtDecoderContext context);
+}
+public interface JWT.Algorithms.IAsymmetricAlgorithm {
+    public abstract virtual bool Verify(Byte[] bytesToSign, Byte[] signature);
+}
+public interface JWT.Algorithms.IJwtAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public abstract virtual Byte[] Sign(Byte[] key, Byte[] bytesToSign);
+    public abstract virtual string get_Name();
+    public abstract virtual HashAlgorithmName get_HashAlgorithmName();
+}
+[ExtensionAttribute]
+public static class JWT.Algorithms.JwtAlgorithmExtensions : object {
+    [ExtensionAttribute]
+public static bool IsAsymmetric(IJwtAlgorithm alg);
+}
+public abstract class JWT.Algorithms.JwtAlgorithmFactory : object {
+    public virtual IJwtAlgorithm Create(JwtDecoderContext context);
+    protected abstract virtual IJwtAlgorithm Create(JwtAlgorithmName algorithm);
+}
+public enum JWT.Algorithms.JwtAlgorithmName : Enum {
+    public int value__;
+    public static JwtAlgorithmName HS256;
+    public static JwtAlgorithmName HS384;
+    public static JwtAlgorithmName HS512;
+    public static JwtAlgorithmName RS256;
+    public static JwtAlgorithmName RS384;
+    public static JwtAlgorithmName RS512;
+    public static JwtAlgorithmName RS1024;
+    public static JwtAlgorithmName RS2048;
+    public static JwtAlgorithmName RS4096;
+    public static JwtAlgorithmName ES256;
+    public static JwtAlgorithmName ES384;
+    public static JwtAlgorithmName ES512;
+    public static JwtAlgorithmName None;
+}
+public class JWT.Algorithms.NoneAlgorithm : object {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public sealed virtual string get_Name();
+    public sealed virtual HashAlgorithmName get_HashAlgorithmName();
+    public sealed virtual Byte[] Sign(Byte[] key, Byte[] bytesToSign);
+}
+public class JWT.Algorithms.RS1024Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS1024Algorithm(RSA publicKey, RSA privateKey);
+    public RS1024Algorithm(RSA publicKey);
+    public RS1024Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.RS2048Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS2048Algorithm(RSA publicKey, RSA privateKey);
+    public RS2048Algorithm(RSA publicKey);
+    public RS2048Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.RS256Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS256Algorithm(RSA publicKey, RSA privateKey);
+    public RS256Algorithm(RSA publicKey);
+    public RS256Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.RS384Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS384Algorithm(RSA publicKey, RSA privateKey);
+    public RS384Algorithm(RSA publicKey);
+    public RS384Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.RS4096Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS4096Algorithm(RSA publicKey, RSA privateKey);
+    public RS4096Algorithm(RSA publicKey);
+    public RS4096Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public class JWT.Algorithms.RS512Algorithm : RSAlgorithm {
+    public string Name { get; }
+    public HashAlgorithmName HashAlgorithmName { get; }
+    public RS512Algorithm(RSA publicKey, RSA privateKey);
+    public RS512Algorithm(RSA publicKey);
+    public RS512Algorithm(X509Certificate2 cert);
+    public virtual string get_Name();
+    public virtual HashAlgorithmName get_HashAlgorithmName();
+}
+public abstract class JWT.Algorithms.RSAlgorithm : CertificateAlgorithm`1<RSA> {
+    protected RSAlgorithm(RSA publicKey, RSA privateKey);
+    protected RSAlgorithm(RSA publicKey);
+    protected RSAlgorithm(X509Certificate2 cert);
+    protected virtual RSA GetPublicKey(X509Certificate2 cert);
+    protected virtual RSA GetPrivateKey(X509Certificate2 cert);
+    protected virtual Byte[] SignData(Byte[] bytesToSign);
+    protected virtual bool VerifyData(Byte[] bytesToSign, Byte[] signature);
+}
+public class JWT.Algorithms.RSAlgorithmFactory : JwtAlgorithmFactory {
+    private Func`1<X509Certificate2> _certFactory;
+    private RSA _publicKey;
+    private RSA _privateKey;
+    public RSAlgorithmFactory(Func`1<X509Certificate2> certFactory);
+    public RSAlgorithmFactory(RSA publicKey);
+    public RSAlgorithmFactory(RSA publicKey, RSA privateKey);
+    protected virtual IJwtAlgorithm Create(JwtAlgorithmName algorithm);
+    private RS256Algorithm CreateRS256Algorithm();
+    private RS384Algorithm CreateRS384Algorithm();
+    private RS512Algorithm CreateRS512Algorithm();
+    private RS1024Algorithm CreateRS1024Algorithm();
+    private RS2048Algorithm CreateRS2048Algorithm();
+    private RS4096Algorithm CreateRS4096Algorithm();
+}
+internal static class JWT.AssemblyInfo : object {
+    public static string PublicKey;
+}
+public enum JWT.Builder.ClaimName : Enum {
+    public int value__;
+    [DescriptionAttribute("iss")]
+public static ClaimName Issuer;
+    [DescriptionAttribute("sub")]
+public static ClaimName Subject;
+    [DescriptionAttribute("aud")]
+public static ClaimName Audience;
+    [DescriptionAttribute("exp")]
+public static ClaimName ExpirationTime;
+    [DescriptionAttribute("nbf")]
+public static ClaimName NotBefore;
+    [DescriptionAttribute("iat")]
+public static ClaimName IssuedAt;
+    [DescriptionAttribute("jti")]
+public static ClaimName JwtId;
+    [DescriptionAttribute("name")]
+public static ClaimName FullName;
+    [DescriptionAttribute("given_name")]
+public static ClaimName GivenName;
+    [DescriptionAttribute("family_name")]
+public static ClaimName FamilyName;
+    [DescriptionAttribute("middle_name")]
+public static ClaimName MiddleName;
+    [DescriptionAttribute("nickname")]
+public static ClaimName CasualName;
+    [DescriptionAttribute("preferred_username")]
+public static ClaimName PreferredUsername;
+    [DescriptionAttribute("profile")]
+public static ClaimName ProfilePageUrl;
+    [DescriptionAttribute("picture")]
+public static ClaimName ProfilePictureUrl;
+    [DescriptionAttribute("website")]
+public static ClaimName Website;
+    [DescriptionAttribute("email")]
+public static ClaimName PreferredEmail;
+    [DescriptionAttribute("email_verified")]
+public static ClaimName VerifiedEmail;
+    [DescriptionAttribute("gender")]
+public static ClaimName Gender;
+    [DescriptionAttribute("birthdate")]
+public static ClaimName Birthday;
+    [DescriptionAttribute("zoneinfo")]
+public static ClaimName TimeZone;
+    [DescriptionAttribute("locale")]
+public static ClaimName Locale;
+    [DescriptionAttribute("phone_number")]
+public static ClaimName PreferredPhoneNumber;
+    [DescriptionAttribute("phone_number_verified")]
+public static ClaimName VerifiedPhoneNumber;
+    [DescriptionAttribute("address")]
+public static ClaimName Address;
+    [DescriptionAttribute("update_at")]
+public static ClaimName UpdatedAt;
+    [DescriptionAttribute("azp")]
+public static ClaimName AuthorizedParty;
+    [DescriptionAttribute("nonce")]
+public static ClaimName Nonce;
+    [DescriptionAttribute("auth_time")]
+public static ClaimName AuthenticationTime;
+    [DescriptionAttribute("at_hash")]
+public static ClaimName AccessTokenHash;
+    [DescriptionAttribute("c_hash")]
+public static ClaimName CodeHashValue;
+    [DescriptionAttribute("acr")]
+public static ClaimName Acr;
+    [DescriptionAttribute("amr")]
+public static ClaimName Amr;
+    [DescriptionAttribute("sub_jwk")]
+public static ClaimName PublicKey;
+    [DescriptionAttribute("cnf")]
+public static ClaimName Confirmation;
+    [DescriptionAttribute("sip_from_tag")]
+public static ClaimName SipFromTag;
+    [DescriptionAttribute("sip_date")]
+public static ClaimName SipDate;
+    [DescriptionAttribute("sip_callid")]
+public static ClaimName SipCallId;
+    [DescriptionAttribute("sip_cseq_num")]
+public static ClaimName SipCseqNumber;
+    [DescriptionAttribute("sip_via_branch")]
+public static ClaimName SipViaBranch;
+    [DescriptionAttribute("orig")]
+public static ClaimName OriginatingIdentityString;
+    [DescriptionAttribute("dest")]
+public static ClaimName DestinationIdentityString;
+    [DescriptionAttribute("mky")]
+public static ClaimName MediaKeyFingerprintString;
+}
+[ExtensionAttribute]
+internal static class JWT.Builder.EnumExtensions : object {
+    [ExtensionAttribute]
+public static string GetHeaderName(HeaderName value);
+    [ExtensionAttribute]
+public static string GetPublicClaimName(ClaimName value);
+    private static string GetDescription(T value);
+}
+public enum JWT.Builder.HeaderName : Enum {
+    public int value__;
+    [DescriptionAttribute("typ")]
+public static HeaderName Type;
+    [DescriptionAttribute("cty")]
+public static HeaderName ContentType;
+    [DescriptionAttribute("alg")]
+public static HeaderName Algorithm;
+    [DescriptionAttribute("kid")]
+public static HeaderName KeyId;
+    [DescriptionAttribute("x5u")]
+public static HeaderName X5u;
+    [DescriptionAttribute("x5c")]
+public static HeaderName X5c;
+    [DescriptionAttribute("x5t")]
+public static HeaderName X5t;
+}
+public class JWT.Builder.JwtBuilder : object {
+    private JwtData _jwt;
+    private IJwtEncoder _encoder;
+    private IJwtDecoder _decoder;
+    private IJwtValidator _validator;
+    private IJsonSerializerFactory _jsonSerializerFactory;
+    private IBase64UrlEncoder _urlEncoder;
+    private IDateTimeProvider _dateTimeProvider;
+    private ValidationParameters _valParams;
+    private IJwtAlgorithm _algorithm;
+    private IAlgorithmFactory _algFactory;
+    private Byte[][] _secrets;
+    public static JwtBuilder Create();
+    public JwtBuilder AddHeader(HeaderName name, object value);
+    public JwtBuilder AddHeader(string name, object value);
+    public JwtBuilder AddClaim(string name, object value);
+    public JwtBuilder WithJsonSerializer(IJsonSerializer serializer);
+    public JwtBuilder WithJsonSerializer(Func`1<IJsonSerializer> factory);
+    public JwtBuilder WithJsonSerializerFactory(IJsonSerializerFactory jsonSerializerFactory);
+    public JwtBuilder WithDateTimeProvider(IDateTimeProvider provider);
+    public JwtBuilder WithEncoder(IJwtEncoder encoder);
+    public JwtBuilder WithDecoder(IJwtDecoder decoder);
+    public JwtBuilder WithValidator(IJwtValidator validator);
+    public JwtBuilder WithUrlEncoder(IBase64UrlEncoder urlEncoder);
+    public JwtBuilder WithAlgorithmFactory(IAlgorithmFactory algFactory);
+    public JwtBuilder WithAlgorithm(IJwtAlgorithm algorithm);
+    public JwtBuilder WithSecret(String[] secrets);
+    public JwtBuilder WithSecret(Byte[][] secrets);
+    public JwtBuilder MustVerifySignature();
+    public JwtBuilder DoNotVerifySignature();
+    public JwtBuilder WithVerifySignature(bool verify);
+    public JwtBuilder WithValidationParameters(ValidationParameters valParams);
+    public JwtBuilder WithValidationParameters(Action`1<ValidationParameters> action);
+    public string Encode();
+    public string Encode(object payload);
+    public string Decode(string token);
+    public string DecodeHeader(string token);
+    public T DecodeHeader(string token);
+    public object Decode(string token, Type type);
+    public T Decode(string token);
+    private void TryCreateEncoder();
+    private void TryCreateDecoder();
+    private void TryCreateDecoderForHeader();
+    private void TryCreateValidator();
+    private void EnsureCanEncode();
+    private void EnsureCanDecode();
+    private void EnsureCanDecodeHeader();
+    private bool CanEncode();
+    private bool CanDecode();
+    private bool CanDecodeHeader();
+    private string GetPropName(MemberInfo prop);
+}
+[ExtensionAttribute]
+public static class JWT.Builder.JwtBuilderExtensions : object {
+    [ExtensionAttribute]
+public static JwtBuilder AddClaim(JwtBuilder builder, ClaimName name, object value);
+    [ExtensionAttribute]
+public static JwtBuilder AddClaim(JwtBuilder builder, ClaimName name, T value);
+    [ExtensionAttribute]
+public static JwtBuilder AddClaim(JwtBuilder builder, string name, T value);
+    [ExtensionAttribute]
+public static JwtBuilder AddClaims(JwtBuilder builder, IEnumerable`1<KeyValuePair`2<string, object>> claims);
+    [ExtensionAttribute]
+public static JwtBuilder ExpirationTime(JwtBuilder builder, DateTime time);
+    [ExtensionAttribute]
+public static JwtBuilder ExpirationTime(JwtBuilder builder, long time);
+    [ExtensionAttribute]
+public static JwtBuilder Issuer(JwtBuilder builder, string issuer);
+    [ExtensionAttribute]
+public static JwtBuilder Subject(JwtBuilder builder, string subject);
+    [ExtensionAttribute]
+public static JwtBuilder Audience(JwtBuilder builder, string audience);
+    [ExtensionAttribute]
+public static JwtBuilder NotBefore(JwtBuilder builder, DateTime time);
+    [ExtensionAttribute]
+public static JwtBuilder NotBefore(JwtBuilder builder, long time);
+    [ExtensionAttribute]
+public static JwtBuilder IssuedAt(JwtBuilder builder, DateTime time);
+    [ExtensionAttribute]
+public static JwtBuilder IssuedAt(JwtBuilder builder, long time);
+    [ExtensionAttribute]
+public static JwtBuilder Id(JwtBuilder builder, Guid id);
+    [ExtensionAttribute]
+public static JwtBuilder Id(JwtBuilder builder, long id);
+    [ExtensionAttribute]
+public static JwtBuilder Id(JwtBuilder builder, string id);
+    [ExtensionAttribute]
+public static JwtBuilder GivenName(JwtBuilder builder, string name);
+    [ExtensionAttribute]
+public static JwtBuilder FamilyName(JwtBuilder builder, string lastname);
+    [ExtensionAttribute]
+public static JwtBuilder MiddleName(JwtBuilder builder, string middleName);
+}
+public class JWT.Builder.JwtData : object {
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, object> <Header>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, object> <Payload>k__BackingField;
+    public IDictionary`2<string, object> Header { get; }
+    public IDictionary`2<string, object> Payload { get; }
+    public JwtData(IDictionary`2<string, object> payload);
+    public JwtData(IDictionary`2<string, object> header, IDictionary`2<string, object> payload);
+    public JwtData(string token);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, object> get_Header();
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, object> get_Payload();
+}
+public class JWT.Builder.JwtHeader : object {
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Algorithm>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <KeyId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <X5u>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <X5c>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <X5t>k__BackingField;
+    [JsonPropertyAttribute("typ")]
+[JsonPropertyNameAttribute("typ")]
+public string Type { get; public set; }
+    [JsonPropertyAttribute("cty")]
+[JsonPropertyNameAttribute("cty")]
+public string ContentType { get; public set; }
+    [JsonPropertyAttribute("alg")]
+[JsonPropertyNameAttribute("alg")]
+public string Algorithm { get; public set; }
+    [JsonPropertyAttribute("kid")]
+[JsonPropertyNameAttribute("kid")]
+public string KeyId { get; public set; }
+    [JsonPropertyAttribute("x5u")]
+[JsonPropertyNameAttribute("x5u")]
+public string X5u { get; public set; }
+    [JsonPropertyAttribute("x5c")]
+[JsonPropertyNameAttribute("x5c")]
+public String[] X5c { get; public set; }
+    [JsonPropertyAttribute("x5t")]
+[JsonPropertyNameAttribute("x5t")]
+public string X5t { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    [CompilerGeneratedAttribute]
+public string get_ContentType();
+    [CompilerGeneratedAttribute]
+public void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public string get_Algorithm();
+    [CompilerGeneratedAttribute]
+public void set_Algorithm(string value);
+    [CompilerGeneratedAttribute]
+public string get_KeyId();
+    [CompilerGeneratedAttribute]
+public void set_KeyId(string value);
+    [CompilerGeneratedAttribute]
+public string get_X5u();
+    [CompilerGeneratedAttribute]
+public void set_X5u(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_X5c();
+    [CompilerGeneratedAttribute]
+public void set_X5c(String[] value);
+    [CompilerGeneratedAttribute]
+public string get_X5t();
+    [CompilerGeneratedAttribute]
+public void set_X5t(string value);
+}
+public class JWT.Exceptions.InvalidTokenPartsException : ArgumentOutOfRangeException {
+    public InvalidTokenPartsException(string paramName);
+}
+public class JWT.Exceptions.SignatureVerificationException : Exception {
+    private static string ExpectedKey;
+    private static string ReceivedKey;
+    public string Expected { get; internal set; }
+    public string Received { get; internal set; }
+    public SignatureVerificationException(string message);
+    public SignatureVerificationException(string decodedCrypto, String[] decodedSignatures);
+    public string get_Expected();
+    internal void set_Expected(string value);
+    public string get_Received();
+    internal void set_Received(string value);
+    protected T GetOrDefault(string key);
+}
+public class JWT.Exceptions.TokenExpiredException : SignatureVerificationException {
+    private static string PayloadDataKey;
+    private static string ExpirationKey;
+    public IReadOnlyDictionary`2<string, object> PayloadData { get; internal set; }
+    public Nullable`1<DateTime> Expiration { get; internal set; }
+    public TokenExpiredException(string message);
+    public IReadOnlyDictionary`2<string, object> get_PayloadData();
+    internal void set_PayloadData(IReadOnlyDictionary`2<string, object> value);
+    public Nullable`1<DateTime> get_Expiration();
+    internal void set_Expiration(Nullable`1<DateTime> value);
+}
+public class JWT.Exceptions.TokenNotYetValidException : SignatureVerificationException {
+    private static string PayloadDataKey;
+    private static string NotBeforeKey;
+    public IReadOnlyDictionary`2<string, object> PayloadData { get; internal set; }
+    public Nullable`1<DateTime> NotBefore { get; internal set; }
+    public TokenNotYetValidException(string message);
+    public IReadOnlyDictionary`2<string, object> get_PayloadData();
+    internal void set_PayloadData(IReadOnlyDictionary`2<string, object> value);
+    public Nullable`1<DateTime> get_NotBefore();
+    internal void set_NotBefore(Nullable`1<DateTime> value);
+}
+public interface JWT.IBase64UrlEncoder {
+    public abstract virtual string Encode(Byte[] input);
+    public abstract virtual Byte[] Decode(string input);
+}
+public interface JWT.IDateTimeProvider {
+    public abstract virtual DateTimeOffset GetNow();
+}
+public interface JWT.IJsonSerializer {
+    public abstract virtual string Serialize(object obj);
+    public abstract virtual object Deserialize(Type type, string json);
+}
+public interface JWT.IJwtDecoder {
+    public abstract virtual string DecodeHeader(string token);
+    public abstract virtual T DecodeHeader(JwtParts jwt);
+    public abstract virtual string Decode(JwtParts jwt, bool verify);
+    public abstract virtual string Decode(JwtParts jwt, Byte[] key, bool verify);
+    public abstract virtual string Decode(JwtParts jwt, Byte[][] keys, bool verify);
+    public abstract virtual object DecodeToObject(Type type, JwtParts jwt, bool verify);
+    public abstract virtual object DecodeToObject(Type type, JwtParts jwt, Byte[] key, bool verify);
+    public abstract virtual object DecodeToObject(Type type, JwtParts jwt, Byte[][] keys, bool verify);
+}
+public interface JWT.IJwtEncoder {
+    public abstract virtual string Encode(IDictionary`2<string, object> extraHeaders, object payload, Byte[] key);
+}
+public interface JWT.IJwtValidator {
+    public abstract virtual void Validate(string decodedPayload, string signature, String[] decodedSignatures);
+    public abstract virtual void Validate(string decodedPayload, IAsymmetricAlgorithm alg, Byte[] bytesToSign, Byte[] decodedSignature);
+    public abstract virtual bool TryValidate(string payloadJson, string signature, string decodedSignature, Exception& ex);
+    public abstract virtual bool TryValidate(string payloadJson, string signature, String[] decodedSignature, Exception& ex);
+    public abstract virtual bool TryValidate(string payloadJson, IAsymmetricAlgorithm alg, Byte[] bytesToSign, Byte[] decodedSignature, Exception& ex);
+}
+internal static class JWT.Internal.EncodingHelper : object {
+    private static UTF8Encoding _utf8Encoding;
+    private static EncodingHelper();
+    public static Byte[] GetBytes(string input);
+    public static Byte[] GetBytes(string input1, char separator, string input2);
+    public static Byte[] GetBytes(string input1, byte separator, string input2);
+    public static Byte[][] GetBytes(String[] input);
+    public static string GetString(Byte[] bytes);
+}
+[ExtensionAttribute]
+internal static class JWT.Internal.StringHelper : object {
+    [ExtensionAttribute]
+public static string FirstSegment(string input, char separator);
+    [ExtensionAttribute]
+public static int Count(string input, char character);
+}
+[ExtensionAttribute]
+public static class JWT.JsonSerializerExtensions : object {
+    [ExtensionAttribute]
+public static T Deserialize(IJsonSerializer jsonSerializer, string json);
+}
+public class JWT.JwtBase64UrlEncoder : object {
+    public sealed virtual string Encode(Byte[] input);
+    public sealed virtual Byte[] Decode(string input);
+}
+public class JWT.JwtDecoder : object {
+    private IJsonSerializer _jsonSerializer;
+    private IJwtValidator _jwtValidator;
+    private IBase64UrlEncoder _urlEncoder;
+    private IAlgorithmFactory _algFactory;
+    public JwtDecoder(IJsonSerializer jsonSerializer, IBase64UrlEncoder urlEncoder);
+    public JwtDecoder(IJsonSerializer jsonSerializer, IJwtValidator jwtValidator, IBase64UrlEncoder urlEncoder, IAlgorithmFactory algFactory);
+    public JwtDecoder(IJsonSerializer jsonSerializer, IJwtValidator jwtValidator, IBase64UrlEncoder urlEncoder, IJwtAlgorithm algorithm);
+    public sealed virtual string DecodeHeader(string token);
+    public sealed virtual T DecodeHeader(JwtParts jwt);
+    public sealed virtual string Decode(JwtParts jwt, bool verify);
+    public sealed virtual string Decode(JwtParts jwt, Byte[] key, bool verify);
+    public sealed virtual string Decode(JwtParts jwt, Byte[][] keys, bool verify);
+    public sealed virtual object DecodeToObject(Type type, JwtParts jwt, bool verify);
+    public sealed virtual object DecodeToObject(Type type, JwtParts jwt, Byte[] key, bool verify);
+    public sealed virtual object DecodeToObject(Type type, JwtParts jwt, Byte[][] keys, bool verify);
+    public void Validate(String[] parts, Byte[] key);
+    public void Validate(String[] parts, Byte[][] keys);
+    public void Validate(JwtParts jwt, Byte[][] keys);
+    private string Decode(JwtParts jwt);
+    private void ValidSymmetricAlgorithm(Byte[][] keys, string decodedPayload, IJwtAlgorithm algorithm, Byte[] bytesToSign, Byte[] decodedSignature);
+    private static bool AllKeysHaveValues(Byte[][] keys);
+    private static bool KeyHasValue(Byte[] key);
+    private void ValidateNoneAlgorithm(JwtParts jwt);
+}
+public class JWT.JwtDecoderContext : object {
+    [CompilerGeneratedAttribute]
+private JwtParts <Token>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JwtHeader <Header>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Payload>k__BackingField;
+    public JwtParts Token { get; public set; }
+    public JwtHeader Header { get; public set; }
+    public string Payload { get; public set; }
+    [CompilerGeneratedAttribute]
+public JwtParts get_Token();
+    [CompilerGeneratedAttribute]
+public void set_Token(JwtParts value);
+    [CompilerGeneratedAttribute]
+public JwtHeader get_Header();
+    [CompilerGeneratedAttribute]
+public void set_Header(JwtHeader value);
+    [CompilerGeneratedAttribute]
+public string get_Payload();
+    [CompilerGeneratedAttribute]
+public void set_Payload(string value);
+    public static JwtDecoderContext Create(JwtHeader header, string decodedPayload, JwtParts jwt);
+}
+[ExtensionAttribute]
+public static class JWT.JwtDecoderExtensions : object {
+    [ExtensionAttribute]
+public static T DecodeHeader(IJwtDecoder decoder, string token);
+    [ExtensionAttribute]
+public static IDictionary`2<string, string> DecodeHeaderToDictionary(IJwtDecoder decoder, string token);
+    [ExtensionAttribute]
+public static string Decode(IJwtDecoder decoder, string token, bool verify);
+    [ExtensionAttribute]
+public static string Decode(IJwtDecoder decoder, string token, Byte[] key, bool verify);
+    [ExtensionAttribute]
+public static string Decode(IJwtDecoder decoder, string token, Byte[][] keys, bool verify);
+    [ExtensionAttribute]
+public static string Decode(IJwtDecoder decoder, string token, string key, bool verify);
+    [ExtensionAttribute]
+public static string Decode(IJwtDecoder decoder, string token, String[] keys, bool verify);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> DecodeToObject(IJwtDecoder decoder, string token, bool verify);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> DecodeToObject(IJwtDecoder decoder, string token, string key, bool verify);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> DecodeToObject(IJwtDecoder decoder, string token, String[] keys, bool verify);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> DecodeToObject(IJwtDecoder decoder, string token, Byte[] key, bool verify);
+    [ExtensionAttribute]
+public static IDictionary`2<string, object> DecodeToObject(IJwtDecoder decoder, string token, Byte[][] keys, bool verify);
+    [ExtensionAttribute]
+public static object DecodeToObject(IJwtDecoder decoder, Type type, string token, Byte[] key, bool verify);
+    [ExtensionAttribute]
+public static object DecodeToObject(IJwtDecoder decoder, Type type, string token, Byte[][] keys, bool verify);
+    [ExtensionAttribute]
+public static object DecodeToObject(IJwtDecoder decoder, Type type, string token, string key, bool verify);
+    [ExtensionAttribute]
+public static object DecodeToObject(IJwtDecoder decoder, Type type, string token, String[] keys, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, JwtParts jwt, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, JwtParts jwt, Byte[] key, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, JwtParts jwt, Byte[][] keys, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, string token);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, string token, string key, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, string token, Byte[] key, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, string token, Byte[][] keys, bool verify);
+    [ExtensionAttribute]
+public static T DecodeToObject(IJwtDecoder decoder, string token, String[] keys, bool verify);
+}
+public class JWT.JwtEncoder : object {
+    private IAlgorithmFactory _algFactory;
+    private IJsonSerializer _jsonSerializer;
+    private IBase64UrlEncoder _urlEncoder;
+    public JwtEncoder(IAlgorithmFactory algFactory, IJsonSerializer jsonSerializer, IBase64UrlEncoder urlEncoder);
+    public JwtEncoder(IJwtAlgorithm algorithm, IJsonSerializer jsonSerializer, IBase64UrlEncoder urlEncoder);
+    public sealed virtual string Encode(IDictionary`2<string, object> extraHeaders, object payload, Byte[] key);
+    private string GetSignatureSegment(IJwtAlgorithm algorithm, Byte[] key, Byte[] bytesToSign);
+}
+[ExtensionAttribute]
+public static class JWT.JwtEncoderExtensions : object {
+    [ExtensionAttribute]
+public static string Encode(IJwtEncoder encoder, object payload, string key);
+    [ExtensionAttribute]
+public static string Encode(IJwtEncoder encoder, object payload, Byte[] key);
+    [ExtensionAttribute]
+public static string Encode(IJwtEncoder encoder, IDictionary`2<string, object> extraHeaders, object payload, string key);
+}
+public class JWT.JwtParts : object {
+    [CompilerGeneratedAttribute]
+private String[] <Parts>k__BackingField;
+    public string Header { get; }
+    public string Payload { get; }
+    public string Signature { get; }
+    public String[] Parts { get; }
+    public JwtParts(string token);
+    public JwtParts(String[] parts);
+    public string get_Header();
+    public string get_Payload();
+    public string get_Signature();
+    [CompilerGeneratedAttribute]
+public String[] get_Parts();
+}
+public class JWT.JwtValidator : object {
+    private IJsonSerializer _jsonSerializer;
+    private IDateTimeProvider _dateTimeProvider;
+    private IBase64UrlEncoder _urlEncoder;
+    private ValidationParameters _valParams;
+    public JwtValidator(IJsonSerializer jsonSerializer, IDateTimeProvider dateTimeProvider);
+    public JwtValidator(IJsonSerializer jsonSerializer, IDateTimeProvider dateTimeProvider, ValidationParameters valParams);
+    public JwtValidator(IJsonSerializer jsonSerializer, IDateTimeProvider dateTimeProvider, ValidationParameters valParams, IBase64UrlEncoder urlEncoder);
+    public sealed virtual void Validate(string decodedPayload, string signature, String[] decodedSignatures);
+    public sealed virtual void Validate(string decodedPayload, IAsymmetricAlgorithm alg, Byte[] bytesToSign, Byte[] decodedSignature);
+    public sealed virtual bool TryValidate(string payloadJson, string signature, string decodedSignature, Exception& ex);
+    public sealed virtual bool TryValidate(string payloadJson, string signature, String[] decodedSignature, Exception& ex);
+    public sealed virtual bool TryValidate(string payloadJson, IAsymmetricAlgorithm alg, Byte[] bytesToSign, Byte[] decodedSignature, Exception& ex);
+    public Exception GetValidationException(JwtParts parts);
+    public Exception GetValidationException(Byte[] bytes);
+    private Exception GetValidationException(string payloadJson, string decodedCrypto, String[] decodedSignatures);
+    private Exception GetValidationException(IAsymmetricAlgorithm alg, string payloadJson, Byte[] bytesToSign, Byte[] decodedSignature);
+    private Exception GetValidationException(string payloadJson);
+    private static bool AreAllDecodedSignaturesNullOrWhiteSpace(String[] decodedSignatures);
+    private static bool IsAnySignatureValid(string decodedCrypto, String[] decodedSignatures);
+    private static bool CompareCryptoWithSignature(string decodedCrypto, string decodedSignature);
+    private Exception ValidateExpClaim(IReadOnlyDictionary`2<string, object> payloadData, double secondsSinceEpoch);
+    private Exception ValidateNbfClaim(IReadOnlyDictionary`2<string, object> payloadData, double secondsSinceEpoch);
+}
+public class JWT.Serializers.Converters.DictionaryStringObjectJsonConverterCustomWrite : JsonConverter`1<Dictionary`2<string, object>> {
+    public virtual Dictionary`2<string, object> Read(Utf8JsonReader& reader, Type typeToConvert, JsonSerializerOptions options);
+    public virtual void Write(Utf8JsonWriter writer, Dictionary`2<string, object> value, JsonSerializerOptions options);
+    private object ExtractValue(Utf8JsonReader& reader, JsonSerializerOptions options);
+}
+public class JWT.Serializers.DefaultJsonSerializerFactory : object {
+    private IJsonSerializer _jsonSerializer;
+    public sealed virtual IJsonSerializer Create();
+}
+internal class JWT.Serializers.DelegateJsonSerializerFactory : object {
+    private Func`1<IJsonSerializer> _factory;
+    public DelegateJsonSerializerFactory(IJsonSerializer jsonSerializer);
+    public DelegateJsonSerializerFactory(IJsonSerializerFactory factory);
+    public DelegateJsonSerializerFactory(Func`1<IJsonSerializer> factory);
+    public sealed virtual IJsonSerializer Create();
+}
+public interface JWT.Serializers.IJsonSerializerFactory {
+    public abstract virtual IJsonSerializer Create();
+}
+public class JWT.Serializers.JsonNetSerializer : object {
+    private JsonSerializer _serializer;
+    public JsonNetSerializer(JsonSerializer serializer);
+    public sealed virtual string Serialize(object obj);
+    public sealed virtual object Deserialize(Type type, string json);
+}
+public class JWT.Serializers.SystemTextSerializer : object {
+    private static JsonSerializerOptions _optionsForSerialize;
+    private static JsonSerializerOptions _optionsForDeserialize;
+    private static SystemTextSerializer();
+    public sealed virtual string Serialize(object obj);
+    public sealed virtual object Deserialize(Type type, string json);
+}
+public static class JWT.UnixEpoch : object {
+    [CompilerGeneratedAttribute]
+private static DateTime <Value>k__BackingField;
+    public static DateTime Value { get; }
+    private static UnixEpoch();
+    [CompilerGeneratedAttribute]
+public static DateTime get_Value();
+    public static double GetSecondsSince(DateTimeOffset time);
+}
+public class JWT.UtcDateTimeProvider : object {
+    public sealed virtual DateTimeOffset GetNow();
+}
+public class JWT.ValidationParameters : object {
+    [CompilerGeneratedAttribute]
+private bool <ValidateSignature>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ValidateExpirationTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ValidateIssuedTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <TimeMargin>k__BackingField;
+    public bool ValidateSignature { get; public set; }
+    public bool ValidateExpirationTime { get; public set; }
+    public bool ValidateIssuedTime { get; public set; }
+    public int TimeMargin { get; public set; }
+    public static ValidationParameters Default { get; }
+    public static ValidationParameters None { get; }
+    [CompilerGeneratedAttribute]
+public bool get_ValidateSignature();
+    [CompilerGeneratedAttribute]
+public void set_ValidateSignature(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ValidateExpirationTime();
+    [CompilerGeneratedAttribute]
+public void set_ValidateExpirationTime(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ValidateIssuedTime();
+    [CompilerGeneratedAttribute]
+public void set_ValidateIssuedTime(bool value);
+    [CompilerGeneratedAttribute]
+public int get_TimeMargin();
+    [CompilerGeneratedAttribute]
+public void set_TimeMargin(int value);
+    public static ValidationParameters get_Default();
+    public static ValidationParameters get_None();
+}
+[ExtensionAttribute]
+public static class JWT.ValidationParametersExtensions : object {
+    [ExtensionAttribute]
+public static ValidationParameters With(ValidationParameters this, Action`1<ValidationParameters> action);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

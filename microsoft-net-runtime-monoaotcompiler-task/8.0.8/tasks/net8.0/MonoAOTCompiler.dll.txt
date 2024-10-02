@@ -1,0 +1,463 @@
+internal class CompilerCache : object {
+    [CompilerGeneratedAttribute]
+private ConcurrentDictionary`2<string, string> <FileHashes>k__BackingField;
+    [JsonPropertyNameAttribute("file_hashes")]
+public ConcurrentDictionary`2<string, string> FileHashes { get; public set; }
+    public CompilerCache(IDictionary`2<string, string> oldHashes);
+    [CompilerGeneratedAttribute]
+public ConcurrentDictionary`2<string, string> get_FileHashes();
+    [CompilerGeneratedAttribute]
+public void set_FileHashes(ConcurrentDictionary`2<string, string> value);
+}
+internal class FileCache : object {
+    private CompilerCache _newCache;
+    private CompilerCache _oldCache;
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TaskLoggingHelper <Log>k__BackingField;
+    public bool Enabled { get; }
+    public TaskLoggingHelper Log { get; }
+    public FileCache(string cacheFilePath, TaskLoggingHelper log);
+    [CompilerGeneratedAttribute]
+public bool get_Enabled();
+    [CompilerGeneratedAttribute]
+public TaskLoggingHelper get_Log();
+    public bool UpdateAndCheckHasFileChanged(string filePath, string newHash);
+    public bool ShouldCopy(ProxyFile proxyFile, String& cause);
+    public bool Save(string cacheFilePath);
+    public ProxyFile NewFile(string targetFile);
+}
+public class LogAsErrorException : Exception {
+    [NullableContextAttribute("1")]
+public LogAsErrorException(string message);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class MonoAOTCompiler : Task {
+    [CompilerGeneratedAttribute]
+private string <CompilerBinaryPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <Assemblies>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <AdditionalAssemblySearchPaths>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OutputDir>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Triple>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <CompiledAssemblies>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DisableParallelAot>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseLLVM>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseAotDataFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseStaticLinking>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseDirectIcalls>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseDirectPInvoke>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <DirectPInvokes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <DirectPInvokeLists>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseDwarfDebug>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CollectTrimmingEligibleMethods>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TrimmingEligibleMethodsOutputDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <AotProfilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <MibcProfilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Profilers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AotModulesTablePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AotModulesTableLanguage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Mode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OutputType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LibraryFormat>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LibraryFilePrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EnableUnmanagedCallersOnlyMethodsExport>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LLVMPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ToolPrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AsPrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MsymPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DedupAssembly>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LLVMDebug>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheFilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AotArguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TempPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LdName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LdFlags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WorkingDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <IntermediateOutputPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <FileWrites>k__BackingField;
+    private static Encoding s_utf8Encoding;
+    private static string s_originalFullPathMetadataName;
+    private List`1<string> _fileWrites;
+    private IList`1<ITaskItem> _assembliesToCompile;
+    private ConcurrentDictionary`2<string, ITaskItem> compiledAssemblies;
+    private MonoAotMode parsedAotMode;
+    private MonoAotOutputType parsedOutputType;
+    private MonoAotLibraryFormat parsedLibraryFormat;
+    private MonoAotModulesTableLanguage parsedAotModulesTableLanguage;
+    private FileCache _cache;
+    private int _numCompiled;
+    private int _totalNumAssemblies;
+    private Dictionary`2<string, string> _symbolNameFixups;
+    private static Char[] s_semicolon;
+    [NullableAttribute("1")]
+[RequiredAttribute]
+public string CompilerBinaryPath { get; public set; }
+    [NullableAttribute("1")]
+[RequiredAttribute]
+public ITaskItem[] Assemblies { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public String[] AdditionalAssemblySearchPaths { get; public set; }
+    [RequiredAttribute]
+public string OutputDir { get; public set; }
+    public string Triple { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[OutputAttribute]
+public ITaskItem[] CompiledAssemblies { get; public set; }
+    public bool DisableParallelAot { get; public set; }
+    public bool UseLLVM { get; public set; }
+    public bool UseAotDataFile { get; public set; }
+    public bool UseStaticLinking { get; public set; }
+    public bool UseDirectIcalls { get; public set; }
+    public bool UseDirectPInvoke { get; public set; }
+    [NullableAttribute("1")]
+public ITaskItem[] DirectPInvokes { get; public set; }
+    [NullableAttribute("1")]
+public ITaskItem[] DirectPInvokeLists { get; public set; }
+    public bool UseDwarfDebug { get; public set; }
+    public bool CollectTrimmingEligibleMethods { get; public set; }
+    public string TrimmingEligibleMethodsOutputDirectory { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public String[] AotProfilePath { get; public set; }
+    [NullableAttribute("1")]
+public String[] MibcProfilePath { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public String[] Profilers { get; public set; }
+    public string AotModulesTablePath { get; public set; }
+    public string AotModulesTableLanguage { get; public set; }
+    [NullableAttribute("1")]
+public string Mode { get; public set; }
+    [NullableAttribute("1")]
+public string OutputType { get; public set; }
+    public string LibraryFormat { get; public set; }
+    [NullableAttribute("1")]
+public string LibraryFilePrefix { get; public set; }
+    public bool EnableUnmanagedCallersOnlyMethodsExport { get; public set; }
+    public string LLVMPath { get; public set; }
+    public string ToolPrefix { get; public set; }
+    public string AsPrefix { get; public set; }
+    public string MsymPath { get; public set; }
+    public string DedupAssembly { get; public set; }
+    public string LLVMDebug { get; public set; }
+    public string CacheFilePath { get; public set; }
+    public string AotArguments { get; public set; }
+    public string TempPath { get; public set; }
+    public string LdName { get; public set; }
+    public string LdFlags { get; public set; }
+    public string WorkingDirectory { get; public set; }
+    [NullableAttribute("1")]
+[RequiredAttribute]
+public string IntermediateOutputPath { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[OutputAttribute]
+public String[] FileWrites { get; private set; }
+    private static MonoAOTCompiler();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_CompilerBinaryPath();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_CompilerBinaryPath(string value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public ITaskItem[] get_Assemblies();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_Assemblies(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_AdditionalAssemblySearchPaths();
+    [CompilerGeneratedAttribute]
+public void set_AdditionalAssemblySearchPaths(String[] value);
+    [CompilerGeneratedAttribute]
+public string get_OutputDir();
+    [CompilerGeneratedAttribute]
+public void set_OutputDir(string value);
+    [CompilerGeneratedAttribute]
+public string get_Triple();
+    [CompilerGeneratedAttribute]
+public void set_Triple(string value);
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_CompiledAssemblies();
+    [CompilerGeneratedAttribute]
+public void set_CompiledAssemblies(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public bool get_DisableParallelAot();
+    [CompilerGeneratedAttribute]
+public void set_DisableParallelAot(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseLLVM();
+    [CompilerGeneratedAttribute]
+public void set_UseLLVM(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseAotDataFile();
+    [CompilerGeneratedAttribute]
+public void set_UseAotDataFile(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseStaticLinking();
+    [CompilerGeneratedAttribute]
+public void set_UseStaticLinking(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseDirectIcalls();
+    [CompilerGeneratedAttribute]
+public void set_UseDirectIcalls(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseDirectPInvoke();
+    [CompilerGeneratedAttribute]
+public void set_UseDirectPInvoke(bool value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public ITaskItem[] get_DirectPInvokes();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_DirectPInvokes(ITaskItem[] value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public ITaskItem[] get_DirectPInvokeLists();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_DirectPInvokeLists(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public bool get_UseDwarfDebug();
+    [CompilerGeneratedAttribute]
+public void set_UseDwarfDebug(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_CollectTrimmingEligibleMethods();
+    [CompilerGeneratedAttribute]
+public void set_CollectTrimmingEligibleMethods(bool value);
+    [CompilerGeneratedAttribute]
+public string get_TrimmingEligibleMethodsOutputDirectory();
+    [CompilerGeneratedAttribute]
+public void set_TrimmingEligibleMethodsOutputDirectory(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_AotProfilePath();
+    [CompilerGeneratedAttribute]
+public void set_AotProfilePath(String[] value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public String[] get_MibcProfilePath();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_MibcProfilePath(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_Profilers();
+    [CompilerGeneratedAttribute]
+public void set_Profilers(String[] value);
+    [CompilerGeneratedAttribute]
+public string get_AotModulesTablePath();
+    [CompilerGeneratedAttribute]
+public void set_AotModulesTablePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AotModulesTableLanguage();
+    [CompilerGeneratedAttribute]
+public void set_AotModulesTableLanguage(string value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_Mode();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_Mode(string value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_OutputType();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_OutputType(string value);
+    [CompilerGeneratedAttribute]
+public string get_LibraryFormat();
+    [CompilerGeneratedAttribute]
+public void set_LibraryFormat(string value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_LibraryFilePrefix();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_LibraryFilePrefix(string value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableUnmanagedCallersOnlyMethodsExport();
+    [CompilerGeneratedAttribute]
+public void set_EnableUnmanagedCallersOnlyMethodsExport(bool value);
+    [CompilerGeneratedAttribute]
+public string get_LLVMPath();
+    [CompilerGeneratedAttribute]
+public void set_LLVMPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_ToolPrefix();
+    [CompilerGeneratedAttribute]
+public void set_ToolPrefix(string value);
+    [CompilerGeneratedAttribute]
+public string get_AsPrefix();
+    [CompilerGeneratedAttribute]
+public void set_AsPrefix(string value);
+    [CompilerGeneratedAttribute]
+public string get_MsymPath();
+    [CompilerGeneratedAttribute]
+public void set_MsymPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_DedupAssembly();
+    [CompilerGeneratedAttribute]
+public void set_DedupAssembly(string value);
+    [CompilerGeneratedAttribute]
+public string get_LLVMDebug();
+    [CompilerGeneratedAttribute]
+public void set_LLVMDebug(string value);
+    [CompilerGeneratedAttribute]
+public string get_CacheFilePath();
+    [CompilerGeneratedAttribute]
+public void set_CacheFilePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AotArguments();
+    [CompilerGeneratedAttribute]
+public void set_AotArguments(string value);
+    [CompilerGeneratedAttribute]
+public string get_TempPath();
+    [CompilerGeneratedAttribute]
+public void set_TempPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_LdName();
+    [CompilerGeneratedAttribute]
+public void set_LdName(string value);
+    [CompilerGeneratedAttribute]
+public string get_LdFlags();
+    [CompilerGeneratedAttribute]
+public void set_LdFlags(string value);
+    [CompilerGeneratedAttribute]
+public string get_WorkingDirectory();
+    [CompilerGeneratedAttribute]
+public void set_WorkingDirectory(string value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_IntermediateOutputPath();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public void set_IntermediateOutputPath(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_FileWrites();
+    [CompilerGeneratedAttribute]
+private void set_FileWrites(String[] value);
+    private bool ProcessAndValidateArguments();
+    public virtual bool Execute();
+    private bool ExecuteInternal();
+    private static bool CheckAllUpToDate(IList`1<PrecompileArguments> argsList);
+    private List`1<ITaskItem> FilterOutUnmanagedAssemblies(IEnumerable`1<ITaskItem> assemblies);
+    private static bool ShouldSkipForAOT(ITaskItem asmItem);
+    private IEnumerable`1<ITaskItem> EnsureAllAssembliesInTheSameDir(IEnumerable`1<ITaskItem> assemblies);
+    private PrecompileArguments GetPrecompileArgumentsFor(ITaskItem assemblyItem, string monoPaths);
+    private bool PrecompileLibrary(PrecompileArguments args);
+    private void PrecompileLibraryParallel(PrecompileArguments args, ParallelLoopState state);
+    private bool GenerateAotModulesTable(IEnumerable`1<ITaskItem> assemblies, String[] profilers, string outputFile);
+    private bool TryGetAssemblyName(string asmPath, String& assemblyName);
+    private void CheckExportSymbolsFile(IList`1<ITaskItem> assemblies);
+    private static List`1<ITaskItem> ConvertAssembliesDictToOrderedList(ConcurrentDictionary`2<string, ITaskItem> dict, IList`1<ITaskItem> originalAssemblies);
+    private string FixupSymbolName(string name);
+}
+public enum MonoAotLibraryFormat : Enum {
+    public int value__;
+    public static MonoAotLibraryFormat Dll;
+    public static MonoAotLibraryFormat Dylib;
+    public static MonoAotLibraryFormat So;
+}
+public enum MonoAotMode : Enum {
+    public int value__;
+    public static MonoAotMode Normal;
+    public static MonoAotMode JustInterp;
+    public static MonoAotMode Full;
+    public static MonoAotMode FullInterp;
+    public static MonoAotMode Hybrid;
+    public static MonoAotMode LLVMOnly;
+    public static MonoAotMode LLVMOnlyInterp;
+}
+public enum MonoAotModulesTableLanguage : Enum {
+    public int value__;
+    public static MonoAotModulesTableLanguage C;
+    public static MonoAotModulesTableLanguage ObjC;
+}
+public enum MonoAotOutputType : Enum {
+    public int value__;
+    public static MonoAotOutputType ObjectFile;
+    public static MonoAotOutputType AsmOnly;
+    public static MonoAotOutputType Library;
+}
+internal class ProxyFile : object {
+    [CompilerGeneratedAttribute]
+private string <TargetFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TempFile>k__BackingField;
+    private FileCache _cache;
+    public string TargetFile { get; }
+    public string TempFile { get; }
+    public ProxyFile(string targetFile, FileCache cache);
+    [CompilerGeneratedAttribute]
+public string get_TargetFile();
+    [CompilerGeneratedAttribute]
+public string get_TempFile();
+    public bool CopyOutputFileIfChanged();
+}
+internal static class Utils : object {
+    public static string WebcilInWasmExtension;
+    private static object s_SyncObj;
+    private static Utils();
+    public static string GetEmbeddedResource(string file);
+    public static bool IsNewerThan(string inFile, string outFile);
+    public static ValueTuple`2<int, string> RunShellCommand(TaskLoggingHelper logger, string command, IDictionary`2<string, string> envVars, string workingDir, bool silent, bool logStdErrAsMessage, MessageImportance debugMessageImportance, string label);
+    public static string RunProcess(TaskLoggingHelper logger, string path, string args, IDictionary`2<string, string> envVars, string workingDir, bool ignoreErrors, bool silent, MessageImportance debugMessageImportance);
+    public static ValueTuple`2<int, string> TryRunProcess(TaskLoggingHelper logger, string path, string args, IDictionary`2<string, string> envVars, string workingDir, bool silent, bool logStdErrAsMessage, MessageImportance debugMessageImportance, string label, Action`1<Stream> inputProvider);
+    public static bool CopyIfDifferent(string src, string dst, bool useHash);
+    private static string ToBase64SafeString(Byte[] data);
+    private static Byte[] ComputeHashFromStream(Stream stream, HashAlgorithmType algorithm);
+    private static string EncodeHash(Byte[] data, HashEncodingType encoding);
+    public static string ComputeHash(string filepath);
+    public static string ComputeHashEx(string filepath, HashAlgorithmType algorithm, HashEncodingType encoding);
+    public static string ComputeIntegrity(string filepath);
+    public static string ComputeIntegrity(Byte[] bytes);
+    public static string ComputeTextIntegrity(string str);
+    public static void DirectoryCopy(string sourceDir, string destDir, Func`2<string, bool> predicate);
+    public static bool IsWindows();
+    public static bool IsMacOS();
+    public static bool IsLinux();
+    public static bool IsManagedAssembly(string filePath);
+    public static bool IsManagedAssembly(Byte[] bytes);
+    private static bool IsManagedAssembly(PEReader peReader);
+    [CompilerGeneratedAttribute]
+internal static string <RunShellCommand>g__CreateTemporaryBatchFile|6_0(string command);
+}

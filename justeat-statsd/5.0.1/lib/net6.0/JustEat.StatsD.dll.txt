@@ -1,0 +1,618 @@
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+internal class JustEat.StatsD.Buffered.Buffer`1 : ValueType {
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Span`1<T> Tail;
+    public int Written;
+    public Buffer`1(Span`1<T> source);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.Buffered.BufferBasedStatsDPublisher : object {
+    private static double DefaultSampleRate;
+    private static int SafeUdpPacketSize;
+    [NullableAttribute("2")]
+[ThreadStaticAttribute]
+private static Byte[] _buffer;
+    [NullableAttribute("2")]
+[ThreadStaticAttribute]
+private static Random _random;
+    private StatsDUtf8Formatter _formatter;
+    private IStatsDTransport _transport;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private Func`2<Exception, bool> _onError;
+    private static Byte[] Buffer { get; }
+    private static Random Random { get; }
+    internal BufferBasedStatsDPublisher(StatsDConfiguration configuration, IStatsDTransport transport);
+    private static Byte[] get_Buffer();
+    private static Random get_Random();
+    public sealed virtual void Increment(long value, double sampleRate, string bucket);
+    public sealed virtual void Gauge(double value, string bucket);
+    public sealed virtual void Timing(long duration, double sampleRate, string bucket);
+    public sealed virtual void Increment(long value, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    public sealed virtual void Gauge(double value, string bucket, Dictionary`2<string, string> tags);
+    public sealed virtual void Timing(long duration, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    private void SendMessage(double sampleRate, StatsDMessage& msg);
+}
+[ExtensionAttribute]
+[EditorBrowsableAttribute("1")]
+internal static class JustEat.StatsD.Buffered.BufferExtensions : object {
+    [NullableContextAttribute("2")]
+[ExtensionAttribute]
+public static bool TryWrite(Buffer`1& src, ReadOnlySpan`1<T> destination);
+    [ExtensionAttribute]
+public static bool TryWriteUtf8String(Buffer`1& src, string str);
+    [ExtensionAttribute]
+public static bool TryWriteUtf8Chars(Buffer`1& src, ReadOnlySpan`1<char> chars);
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+public static bool TryWrite(Buffer`1& src, T ch);
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+public static bool TryWrite(Buffer`1& src, T ch1, T ch2);
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+public static bool TryWrite(Buffer`1& src, T ch1, T ch2, T ch3);
+    [ExtensionAttribute]
+public static bool TryWriteInt64(Buffer`1& src, long val);
+    [ExtensionAttribute]
+public static bool TryWriteDouble(Buffer`1& src, double val);
+    [ExtensionAttribute]
+public static bool TryWriteString(Buffer`1& src, string str);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[IsReadOnlyAttribute]
+internal class JustEat.StatsD.Buffered.StatsDMessage : ValueType {
+    public string StatBucket;
+    public double Magnitude;
+    public StatsDMessageKind MessageKind;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Dictionary`2<string, string> Tags;
+    private StatsDMessage(string statBucket, double magnitude, StatsDMessageKind messageKind, Dictionary`2<string, string> tags);
+    public static StatsDMessage Timing(long milliseconds, string statBucket, Dictionary`2<string, string> tags);
+    public static StatsDMessage Counter(long magnitude, string statBucket, Dictionary`2<string, string> tags);
+    public static StatsDMessage Gauge(double magnitude, string statBucket, Dictionary`2<string, string> tags);
+}
+internal enum JustEat.StatsD.Buffered.StatsDMessageKind : Enum {
+    public int value__;
+    public static StatsDMessageKind Counter;
+    public static StatsDMessageKind Timing;
+    public static StatsDMessageKind Gauge;
+}
+internal class JustEat.StatsD.Buffered.StatsDUtf8Formatter : object {
+    [NullableAttribute("1")]
+private Byte[] _utf8Prefix;
+    [NullableAttribute("1")]
+private IStatsDTagsFormatter _tagsFormatter;
+    private bool _endWithLineFeedSymbol;
+    [NullableContextAttribute("1")]
+public StatsDUtf8Formatter(string prefix, IStatsDTagsFormatter tagsFormatter, bool endWithLineFeedSymbol);
+    public int GetMaxBufferSize(StatsDMessage& msg);
+    public bool TryFormat(StatsDMessage& msg, double sampleRate, Span`1<byte> destination, Int32& written);
+    private bool TryWriteBucketNameWithColon(Buffer`1& buffer, StatsDMessage& msg);
+    private static bool TryWritePayloadWithMessageKindSuffix(Buffer`1& buffer, StatsDMessage& msg);
+    private static bool TryWriteSampleRateIfNeeded(Buffer`1& buffer, double sampleRate);
+    private int GetTagsBufferSize(Dictionary`2& tags);
+    private bool TryWriteBucketNameTagsIfNeeded(Buffer`1& buffer, Dictionary`2& tags);
+    private bool TryWriteTrailingTagsIfNeeded(Buffer`1& buffer, Dictionary`2& tags);
+    private static bool AreTagsPresent(Dictionary`2& tags);
+    private bool TryWriteLineFeedSymbolIfNeeded(Buffer`1& buffer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.ConnectedSocketPool : object {
+    private bool _disposed;
+    private ConcurrentBag`1<Socket> _pool;
+    private SocketProtocol _socketProtocol;
+    [CompilerGeneratedAttribute]
+private EndPoint <EndPoint>k__BackingField;
+    public EndPoint EndPoint { get; }
+    public ConnectedSocketPool(EndPoint endPoint, SocketProtocol socketProtocol, int initialSize);
+    [CompilerGeneratedAttribute]
+public EndPoint get_EndPoint();
+    private void PrePopulateSocketPool(int initialSize);
+    private Socket CreateSocket();
+    [NullableContextAttribute("2")]
+private Socket Pop();
+    internal Socket PopOrCreate();
+    public void Push(Socket item);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    private void Dispose(bool disposing);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.DisposableTimer : object {
+    [NullableAttribute("2")]
+private IStatsDPublisher _publisher;
+    [NullableAttribute("2")]
+private IStatsDPublisherWithTags _publisherWithTags;
+    private Stopwatch _stopwatch;
+    private bool _disposed;
+    [CompilerGeneratedAttribute]
+private string <Bucket>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Tags>k__BackingField;
+    public string Bucket { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Dictionary`2<string, string> Tags { get; public set; }
+    public DisposableTimer(IStatsDPublisher publisher, string bucket);
+    public DisposableTimer(IStatsDPublisherWithTags publisher, string bucket, Dictionary`2<string, string> tags);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Bucket();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Bucket(string value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Tags();
+    [CompilerGeneratedAttribute]
+public void set_Tags(Dictionary`2<string, string> value);
+    public sealed virtual void Dispose();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.EndpointLookups.CachedEndpointSource : object {
+    private IEndPointSource _inner;
+    private TimeSpan _cacheDuration;
+    [NullableAttribute("2")]
+private EndPoint _cachedValue;
+    private DateTime _expiry;
+    public CachedEndpointSource(IEndPointSource inner, TimeSpan cacheDuration);
+    public sealed virtual EndPoint GetEndpoint();
+    private bool NeedsRead();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.EndpointLookups.DnsLookupIpEndpointSource : object {
+    private string _hostName;
+    private int _port;
+    public DnsLookupIpEndpointSource(string hostName, int port);
+    public sealed virtual EndPoint GetEndpoint();
+    private static IPAddress GetIpAddressOfHost(string hostName);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class JustEat.StatsD.EndpointLookups.EndPointFactory : object {
+    public static IEndPointSource MakeEndPointSource(EndPoint endpoint, Nullable`1<TimeSpan> endpointCacheDuration);
+    public static IEndPointSource MakeEndPointSource(string host, int port, Nullable`1<TimeSpan> endpointCacheDuration);
+}
+[NullableContextAttribute("1")]
+public interface JustEat.StatsD.EndpointLookups.IEndPointSource {
+    public abstract virtual EndPoint GetEndpoint();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.EndpointLookups.SimpleEndpointSource : object {
+    private EndPoint _value;
+    public SimpleEndpointSource(EndPoint value);
+    public sealed virtual EndPoint GetEndpoint();
+}
+[NullableContextAttribute("1")]
+public interface JustEat.StatsD.IDisposableTimer {
+    public string Bucket { get; public set; }
+    public abstract virtual string get_Bucket();
+    public abstract virtual void set_Bucket(string value);
+}
+[NullableContextAttribute("1")]
+public interface JustEat.StatsD.IStatsDPublisher {
+    public abstract virtual void Increment(long value, double sampleRate, string bucket);
+    public abstract virtual void Gauge(double value, string bucket);
+    public abstract virtual void Timing(long duration, double sampleRate, string bucket);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+[EditorBrowsableAttribute("1")]
+public static class JustEat.StatsD.IStatsDPublisherExtensions : object {
+    private static double DefaultSampleRate;
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisher publisher, string bucket);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisher publisher, long value, string bucket);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisher publisher, long value, double sampleRate, IEnumerable`1<string> buckets);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisher publisher, long value, double sampleRate, String[] buckets);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisher publisher, string bucket);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisher publisher, long value, string bucket);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisher publisher, long value, double sampleRate, string bucket);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisher publisher, long value, double sampleRate, IEnumerable`1<string> buckets);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisher publisher, long value, double sampleRate, String[] buckets);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisher publisher, TimeSpan duration, string bucket);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisher publisher, TimeSpan duration, double sampleRate, string bucket);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisher publisher, long duration, string bucket);
+}
+[NullableContextAttribute("1")]
+public interface JustEat.StatsD.IStatsDPublisherWithTags {
+    public abstract virtual void Increment(long value, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    public abstract virtual void Gauge(double value, string bucket, Dictionary`2<string, string> tags);
+    public abstract virtual void Timing(long duration, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+[EditorBrowsableAttribute("1")]
+public static class JustEat.StatsD.IStatsDPublisherWithTagsExtensions : object {
+    private static double DefaultSampleRate;
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisherWithTags publisher, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisherWithTags publisher, long value, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisherWithTags publisher, long value, double sampleRate, IEnumerable`1<string> buckets, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Increment(IStatsDPublisherWithTags publisher, long value, double sampleRate, Dictionary`2<string, string> tags, String[] buckets);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisherWithTags publisher, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisherWithTags publisher, long value, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisherWithTags publisher, long value, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisherWithTags publisher, long value, double sampleRate, IEnumerable`1<string> buckets, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Decrement(IStatsDPublisherWithTags publisher, long value, double sampleRate, Dictionary`2<string, string> tags, String[] buckets);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisherWithTags publisher, TimeSpan duration, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisherWithTags publisher, TimeSpan duration, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Timing(IStatsDPublisherWithTags publisher, long duration, string bucket, Dictionary`2<string, string> tags);
+}
+public interface JustEat.StatsD.IStatsDTransport {
+    public abstract virtual void Send(ArraySegment`1& modreq(System.Runtime.InteropServices.InAttribute) metric);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+[EditorBrowsableAttribute("1")]
+public static class JustEat.StatsD.IStatsDTransportExtensions : object {
+    [ExtensionAttribute]
+public static void Send(IStatsDTransport transport, IEnumerable`1<string> metrics);
+    [ExtensionAttribute]
+public static void Send(IStatsDTransport transport, string metric);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal static class JustEat.StatsD.SocketFactory : object {
+    internal static Socket For(SocketProtocol socketProtocol);
+    internal static Socket ForUdp();
+    internal static Socket ForIp();
+    internal static Socket ForTcp();
+}
+public enum JustEat.StatsD.SocketProtocol : Enum {
+    public int value__;
+    public static SocketProtocol Udp;
+    public static SocketProtocol IP;
+    public static SocketProtocol Tcp;
+}
+public class JustEat.StatsD.SocketTransport : object {
+    [NullableAttribute("1")]
+private IEndPointSource _endpointSource;
+    private SocketProtocol _socketProtocol;
+    [NullableAttribute("2")]
+private ConnectedSocketPool _pool;
+    [NullableContextAttribute("1")]
+public SocketTransport(IEndPointSource endPointSource, SocketProtocol socketProtocol);
+    public void Send(ArraySegment`1& metric);
+    public sealed virtual void Dispose();
+    [NullableContextAttribute("1")]
+private ConnectedSocketPool GetPool(EndPoint endPoint);
+    private sealed virtual override void JustEat.StatsD.IStatsDTransport.Send(ArraySegment`1& modreq(System.Runtime.InteropServices.InAttribute) metric);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.StatsDConfiguration : object {
+    public static int DefaultPort;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Port>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <DnsLookupInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SocketProtocol <SocketProtocol>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Prefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IStatsDTagsFormatter <TagsFormatter>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Func`2<Exception, bool> <OnError>k__BackingField;
+    public static TimeSpan DefaultDnsLookupInterval { get; }
+    [NullableAttribute("2")]
+public string Host { get; public set; }
+    public int Port { get; public set; }
+    public Nullable`1<TimeSpan> DnsLookupInterval { get; public set; }
+    public SocketProtocol SocketProtocol { get; public set; }
+    public string Prefix { get; public set; }
+    public IStatsDTagsFormatter TagsFormatter { get; public set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Func`2<Exception, bool> OnError { get; public set; }
+    public static TimeSpan get_DefaultDnsLookupInterval();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public string get_Host();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public void set_Host(string value);
+    [CompilerGeneratedAttribute]
+public int get_Port();
+    [CompilerGeneratedAttribute]
+public void set_Port(int value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_DnsLookupInterval();
+    [CompilerGeneratedAttribute]
+public void set_DnsLookupInterval(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public SocketProtocol get_SocketProtocol();
+    [CompilerGeneratedAttribute]
+public void set_SocketProtocol(SocketProtocol value);
+    [CompilerGeneratedAttribute]
+public string get_Prefix();
+    [CompilerGeneratedAttribute]
+public void set_Prefix(string value);
+    [CompilerGeneratedAttribute]
+public IStatsDTagsFormatter get_TagsFormatter();
+    [CompilerGeneratedAttribute]
+public void set_TagsFormatter(IStatsDTagsFormatter value);
+    [CompilerGeneratedAttribute]
+public Func`2<Exception, bool> get_OnError();
+    [CompilerGeneratedAttribute]
+public void set_OnError(Func`2<Exception, bool> value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.StatsDPublisher : object {
+    private BufferBasedStatsDPublisher _inner;
+    private IStatsDTransport _transport;
+    private bool _disposeTransport;
+    private bool _disposed;
+    public StatsDPublisher(StatsDConfiguration configuration, IStatsDTransport transport);
+    public StatsDPublisher(StatsDConfiguration configuration);
+    public sealed virtual void Increment(long value, double sampleRate, string bucket);
+    public sealed virtual void Gauge(double value, string bucket);
+    public sealed virtual void Timing(long duration, double sampleRate, string bucket);
+    public sealed virtual void Increment(long value, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    public sealed virtual void Gauge(double value, string bucket, Dictionary`2<string, string> tags);
+    public sealed virtual void Timing(long duration, double sampleRate, string bucket, Dictionary`2<string, string> tags);
+    public sealed virtual void Dispose();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class JustEat.StatsD.StatsDServiceCollectionExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddStatsD(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddStatsD(IServiceCollection services, string host, string prefix);
+    [ExtensionAttribute]
+public static IServiceCollection AddStatsD(IServiceCollection services, Func`2<IServiceProvider, StatsDConfiguration> configurationFactory);
+    [ExtensionAttribute]
+private static IServiceCollection AddStatsDCore(IServiceCollection services);
+    private static IEndPointSource ResolveEndPointSource(IServiceProvider provider);
+    private static StatsDPublisher ResolveStatsDPublisher(IServiceProvider provider);
+    private static IStatsDTransport ResolveStatsDTransport(IServiceProvider provider);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class JustEat.StatsD.TagsFormatter : object {
+    public static IStatsDTagsFormatter CloudWatch { get; }
+    public static IStatsDTagsFormatter DataDog { get; }
+    public static IStatsDTagsFormatter InfluxDb { get; }
+    public static IStatsDTagsFormatter Librato { get; }
+    public static IStatsDTagsFormatter SignalFx { get; }
+    public static IStatsDTagsFormatter Splunk { get; }
+    public static IStatsDTagsFormatter get_CloudWatch();
+    public static IStatsDTagsFormatter get_DataDog();
+    public static IStatsDTagsFormatter get_InfluxDb();
+    public static IStatsDTagsFormatter get_Librato();
+    public static IStatsDTagsFormatter get_SignalFx();
+    public static IStatsDTagsFormatter get_Splunk();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.TagsFormatters.InfluxDbTagsFormatter : StatsDTagsFormatter {
+    private static string Prefix;
+    private static bool AreTrailingTags;
+    private static string TagsSeparator;
+    private static string KeyValueSeparator;
+}
+public interface JustEat.StatsD.TagsFormatters.IStatsDTagsFormatter {
+    public bool AreTrailing { get; }
+    public abstract virtual bool get_AreTrailing();
+    public abstract virtual int GetTagsBufferSize(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+    public abstract virtual ReadOnlySpan`1<char> FormatTags(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.TagsFormatters.LibratoTagsFormatter : StatsDTagsFormatter {
+    private static string Prefix;
+    private static bool AreTrailingTags;
+    private static string TagsSeparator;
+    private static string KeyValueSeparator;
+}
+internal class JustEat.StatsD.TagsFormatters.NoOpTagsFormatter : object {
+    public bool AreTrailing { get; }
+    public sealed virtual bool get_AreTrailing();
+    public int GetTagsBufferSize(Dictionary`2& tags);
+    public ReadOnlySpan`1<char> FormatTags(Dictionary`2& tags);
+    private sealed virtual override int JustEat.StatsD.TagsFormatters.IStatsDTagsFormatter.GetTagsBufferSize(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+    private sealed virtual override ReadOnlySpan`1<char> JustEat.StatsD.TagsFormatters.IStatsDTagsFormatter.FormatTags(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.TagsFormatters.SignalFxTagsFormatter : StatsDTagsFormatter {
+    private static string Prefix;
+    private static string Suffix;
+    private static bool AreTrailingTags;
+    private static string TagsSeparator;
+    private static string KeyValueSeparator;
+}
+public abstract class JustEat.StatsD.TagsFormatters.StatsDTagsFormatter : object {
+    private static int SafeUdpPacketSize;
+    [NullableAttribute("2")]
+[ThreadStaticAttribute]
+private static Char[] _buffer;
+    [NullableAttribute("1")]
+private Char[] _prefix;
+    [NullableAttribute("1")]
+private Char[] _suffix;
+    [NullableAttribute("1")]
+private Char[] _tagsSeparator;
+    [NullableAttribute("1")]
+private Char[] _keyValueSeparator;
+    private int _prefixSize;
+    private int _suffixSize;
+    private int _tagsSeparatorSize;
+    private int _keyValueSeparatorSize;
+    [CompilerGeneratedAttribute]
+private bool <AreTrailing>k__BackingField;
+    [NullableAttribute("1")]
+private static Char[] Buffer { get; }
+    public bool AreTrailing { get; }
+    [NullableContextAttribute("1")]
+protected StatsDTagsFormatter(StatsDTagsFormatterConfiguration configuration);
+    [NullableContextAttribute("1")]
+private static Char[] get_Buffer();
+    [CompilerGeneratedAttribute]
+public virtual bool get_AreTrailing();
+    public virtual int GetTagsBufferSize(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+    public virtual ReadOnlySpan`1<char> FormatTags(Dictionary`2& modreq(System.Runtime.InteropServices.InAttribute) tags);
+    private bool TryFormatTags(Span`1<char> destination, Dictionary`2& tags, Int32& written);
+    private bool TryWriteTags(Buffer`1& buffer, Dictionary`2& tags);
+    private bool TryWriteTagsSeparator(Buffer`1& buffer, int index, Dictionary`2& tags);
+    private static bool IsLastTag(int index, Dictionary`2& tags);
+    private bool TryWriteTag(Buffer`1& buffer, KeyValuePair`2& tag);
+    private bool TryWriteTagValueIfNeeded(Buffer`1& buffer, KeyValuePair`2<string, string> tag);
+    private static bool AreTagsPresent(Dictionary`2& tags);
+    private int GetTagsSize(Dictionary`2& tags);
+    private int GetTagSize(KeyValuePair`2<string, string> tag);
+    private int GetTagValueSize(KeyValuePair`2<string, string> tag);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JustEat.StatsD.TagsFormatters.StatsDTagsFormatterConfiguration : object {
+    [CompilerGeneratedAttribute]
+private string <Prefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Suffix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTrailing>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TagsSeparator>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <KeyValueSeparator>k__BackingField;
+    public string Prefix { get; public set; }
+    public string Suffix { get; public set; }
+    public bool AreTrailing { get; public set; }
+    public string TagsSeparator { get; public set; }
+    public string KeyValueSeparator { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Prefix();
+    [CompilerGeneratedAttribute]
+public void set_Prefix(string value);
+    [CompilerGeneratedAttribute]
+public string get_Suffix();
+    [CompilerGeneratedAttribute]
+public void set_Suffix(string value);
+    [CompilerGeneratedAttribute]
+public bool get_AreTrailing();
+    [CompilerGeneratedAttribute]
+public void set_AreTrailing(bool value);
+    [CompilerGeneratedAttribute]
+public string get_TagsSeparator();
+    [CompilerGeneratedAttribute]
+public void set_TagsSeparator(string value);
+    [CompilerGeneratedAttribute]
+public string get_KeyValueSeparator();
+    [CompilerGeneratedAttribute]
+public void set_KeyValueSeparator(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class JustEat.StatsD.TagsFormatters.TrailingTagsFormatter : StatsDTagsFormatter {
+    private static string Prefix;
+    private static bool AreTrailingTags;
+    private static string TagsSeparator;
+    private static string KeyValueSeparator;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+[EditorBrowsableAttribute("1")]
+public static class JustEat.StatsD.TimerExtensions : object {
+    [ExtensionAttribute]
+public static IDisposableTimer StartTimer(IStatsDPublisher publisher, string bucket);
+    [ExtensionAttribute]
+public static void Time(IStatsDPublisher publisher, string bucket, Action action);
+    [ExtensionAttribute]
+public static void Time(IStatsDPublisher publisher, string bucket, Action`1<IDisposableTimer> action);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__3")]
+[ExtensionAttribute]
+public static Task Time(IStatsDPublisher publisher, string bucket, Func`1<Task> action);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__4")]
+[ExtensionAttribute]
+public static Task Time(IStatsDPublisher publisher, string bucket, Func`2<IDisposableTimer, Task> action);
+    [ExtensionAttribute]
+public static T Time(IStatsDPublisher publisher, string bucket, Func`1<T> func);
+    [ExtensionAttribute]
+public static T Time(IStatsDPublisher publisher, string bucket, Func`2<IDisposableTimer, T> func);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__7`1")]
+[ExtensionAttribute]
+public static Task`1<T> Time(IStatsDPublisher publisher, string bucket, Func`1<Task`1<T>> func);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__8`1")]
+[ExtensionAttribute]
+public static Task`1<T> Time(IStatsDPublisher publisher, string bucket, Func`2<IDisposableTimer, Task`1<T>> func);
+    [ExtensionAttribute]
+public static IDisposableTimer StartTimer(IStatsDPublisherWithTags publisher, string bucket, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Time(IStatsDPublisherWithTags publisher, string bucket, Action action, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static void Time(IStatsDPublisherWithTags publisher, string bucket, Action`1<IDisposableTimer> action, Dictionary`2<string, string> tags);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__12")]
+[ExtensionAttribute]
+public static Task Time(IStatsDPublisherWithTags publisher, string bucket, Func`1<Task> action, Dictionary`2<string, string> tags);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__13")]
+[ExtensionAttribute]
+public static Task Time(IStatsDPublisherWithTags publisher, string bucket, Func`2<IDisposableTimer, Task> action, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static T Time(IStatsDPublisherWithTags publisher, string bucket, Func`1<T> func, Dictionary`2<string, string> tags);
+    [ExtensionAttribute]
+public static T Time(IStatsDPublisherWithTags publisher, string bucket, Func`2<IDisposableTimer, T> func, Dictionary`2<string, string> tags);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__16`1")]
+[ExtensionAttribute]
+public static Task`1<T> Time(IStatsDPublisherWithTags publisher, string bucket, Func`1<Task`1<T>> func, Dictionary`2<string, string> tags);
+    [AsyncStateMachineAttribute("JustEat.StatsD.TimerExtensions/<Time>d__17`1")]
+[ExtensionAttribute]
+public static Task`1<T> Time(IStatsDPublisherWithTags publisher, string bucket, Func`2<IDisposableTimer, Task`1<T>> func, Dictionary`2<string, string> tags);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

@@ -1,0 +1,132 @@
+public class JsonSubTypes.JsonSubtypes : JsonConverter {
+    protected string JsonDiscriminatorPropertyName;
+    [ThreadStaticAttribute]
+private static bool _isInsideRead;
+    [ThreadStaticAttribute]
+private static JsonReader _reader;
+    private static ConcurrentDictionary`2<TypeInfo, IEnumerable`1<object>> _attributesCache;
+    private static Func`2<TypeInfo, IEnumerable`1<object>> _getCustomAttributes;
+    public bool CanRead { get; }
+    public bool CanWrite { get; }
+    public JsonSubtypes(string jsonDiscriminatorPropertyName);
+    private static JsonSubtypes();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanWrite();
+    public virtual bool CanConvert(Type objectType);
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    private object ReadJson(JsonReader reader, Type objectType, JsonSerializer serializer);
+    private static JsonReaderException CreateJsonReaderException(JsonReader reader, string message);
+    private IList ReadArray(JsonReader reader, Type targetType, Type elementType, JsonSerializer serializer);
+    private static IList CreateCompatibleList(Type targetContainerType, Type elementType);
+    private static Type GetElementType(Type arrayOrGenericContainer);
+    private object ReadObject(JsonReader reader, Type objectType, JsonSerializer serializer);
+    private static JsonReader CreateAnotherReader(JToken jToken, JsonReader reader);
+    private Type ResolveType(JObject jObject, Type parentType, JsonSerializer serializer);
+    private Type GetType(JObject jObject, Type parentType, JsonSerializer serializer);
+    private JsonSubtypes GetTypeResolver(TypeInfo targetType, IEnumerable`1<JsonSubtypes> jsonConverterCollection);
+    private Type GetTypeByPropertyPresence(JObject jObject, Type parentType);
+    internal virtual List`1<TypeWithPropertyMatchingAttributes> GetTypesByPropertyPresence(Type parentType);
+    private Type GetTypeFromDiscriminatorValue(JObject jObject, Type parentType, JsonSerializer serializer);
+    private static bool TryGetValueInJson(IDictionary`2<string, JToken> jObject, string propertyName, JToken& value);
+    private static Type GetTypeByName(string typeName, TypeInfo parentType);
+    private static bool IsSubclassOfRawGeneric(TypeInfo generic, TypeInfo toCheck);
+    private static Type GetTypeFromMapping(NullableDictionary`2<object, Type> typeMapping, JToken discriminatorToken, JsonSerializer serializer);
+    internal virtual NullableDictionary`2<object, Type> GetSubTypeMapping(Type type);
+    internal virtual Type GetFallbackSubType(Type type);
+    private static object ThreadStaticReadObject(JsonReader reader, JsonSerializer serializer, JToken jToken, Type targetType);
+    private static IEnumerable`1<object> GetAttributes(TypeInfo typeInfo);
+    private static IEnumerable`1<T> GetAttributes(TypeInfo typeInfo);
+    private static T GetAttribute(TypeInfo typeInfo);
+    private static IEnumerable`1<Type> GetGenericTypeArguments(Type type);
+    internal static TypeInfo ToTypeInfo(Type type);
+    internal static Type ToType(TypeInfo typeInfo);
+}
+internal class JsonSubTypes.JsonSubtypesByDiscriminatorValueConverter : JsonSubtypesConverter {
+    [ThreadStaticAttribute]
+private static bool _isInsideWrite;
+    [ThreadStaticAttribute]
+private static bool _allowNextWrite;
+    private bool _addDiscriminatorFirst;
+    private bool _serializeDiscriminatorProperty;
+    private Dictionary`2<Type, object> _supportedTypes;
+    private NullableDictionary`2<object, Type> _subTypeMapping;
+    public bool CanWrite { get; }
+    internal JsonSubtypesByDiscriminatorValueConverter(Type baseType, string discriminatorProperty, NullableDictionary`2<object, Type> subTypeMapping, bool serializeDiscriminatorProperty, bool addDiscriminatorFirst, Type fallbackType);
+    internal virtual NullableDictionary`2<object, Type> GetSubTypeMapping(Type type);
+    public virtual bool CanConvert(Type objectType);
+    public virtual bool get_CanWrite();
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+}
+internal class JsonSubTypes.JsonSubtypesByPropertyPresenceConverter : JsonSubtypesConverter {
+    private List`1<TypeWithPropertyMatchingAttributes> _jsonPropertyName2Type;
+    internal JsonSubtypesByPropertyPresenceConverter(Type baseType, List`1<TypeWithPropertyMatchingAttributes> jsonProperty2Type, Type fallbackType);
+    internal virtual List`1<TypeWithPropertyMatchingAttributes> GetTypesByPropertyPresence(Type parentType);
+}
+internal class JsonSubTypes.JsonSubtypesConverter : JsonSubtypes {
+    private Type _baseType;
+    private Type _fallbackType;
+    public JsonSubtypesConverter(Type baseType, Type fallbackType);
+    public JsonSubtypesConverter(Type baseType, string jsonDiscriminatorPropertyName, Type fallbackType);
+    internal virtual Type GetFallbackSubType(Type type);
+    public virtual bool CanConvert(Type objectType);
+}
+public class JsonSubTypes.JsonSubtypesConverterBuilder : object {
+    private Type _baseType;
+    private string _discriminatorProperty;
+    private NullableDictionary`2<object, Type> _subTypeMapping;
+    private bool _serializeDiscriminatorProperty;
+    private bool _addDiscriminatorFirst;
+    private Type _fallbackSubtype;
+    public static JsonSubtypesConverterBuilder Of(Type baseType, string discriminatorProperty);
+    public static JsonSubtypesConverterBuilder Of(string discriminatorProperty);
+    public JsonSubtypesConverterBuilder SerializeDiscriminatorProperty();
+    public JsonSubtypesConverterBuilder SerializeDiscriminatorProperty(bool addDiscriminatorFirst);
+    public JsonSubtypesConverterBuilder RegisterSubtype(Type subtype, object value);
+    public JsonSubtypesConverterBuilder RegisterSubtype(object value);
+    public JsonSubtypesConverterBuilder SetFallbackSubtype(Type fallbackSubtype);
+    public JsonSubtypesConverterBuilder SetFallbackSubtype();
+    public JsonConverter Build();
+}
+public class JsonSubTypes.JsonSubtypesWithPropertyConverterBuilder : object {
+    private Type _baseType;
+    private Dictionary`2<string, TypeWithPropertyMatchingAttributes> _subTypeMapping;
+    private Type _fallbackSubtype;
+    private JsonSubtypesWithPropertyConverterBuilder(Type baseType);
+    public static JsonSubtypesWithPropertyConverterBuilder Of(Type baseType);
+    public static JsonSubtypesWithPropertyConverterBuilder Of();
+    public JsonSubtypesWithPropertyConverterBuilder RegisterSubtypeWithProperty(Type subtype, string jsonPropertyName, bool stopLookupOnMatch);
+    public JsonSubtypesWithPropertyConverterBuilder RegisterSubtypeWithProperty(Type subtype, string jsonPropertyName);
+    public JsonSubtypesWithPropertyConverterBuilder RegisterSubtypeWithProperty(string jsonPropertyName);
+    public JsonSubtypesWithPropertyConverterBuilder SetFallbackSubtype(Type fallbackSubtype);
+    public JsonSubtypesWithPropertyConverterBuilder SetFallbackSubtype();
+    public JsonConverter Build();
+}
+public class JsonSubTypes.NullableDictionary`2 : object {
+    private bool _hasNullKey;
+    private TValue _nullKeyValue;
+    private Dictionary`2<TKey, TValue> _dictionary;
+    public bool TryGetValue(TKey key, TValue& value);
+    public void Add(TKey key, TValue value);
+    public IEnumerable`1<TKey> NotNullKeys();
+    [IteratorStateMachineAttribute("JsonSubTypes.NullableDictionary`2/<Entries>d__6")]
+public IEnumerable`1<KeyValuePair`2<TKey, TValue>> Entries();
+}
+internal class JsonSubTypes.TypeWithPropertyMatchingAttributes : object {
+    [CompilerGeneratedAttribute]
+private Type <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <JsonPropertyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <StopLookupOnMatch>k__BackingField;
+    internal Type Type { get; }
+    internal string JsonPropertyName { get; }
+    internal bool StopLookupOnMatch { get; }
+    public TypeWithPropertyMatchingAttributes(Type type, string jsonPropertyName, bool stopLookupOnMatch);
+    [CompilerGeneratedAttribute]
+internal Type get_Type();
+    [CompilerGeneratedAttribute]
+internal string get_JsonPropertyName();
+    [CompilerGeneratedAttribute]
+internal bool get_StopLookupOnMatch();
+}

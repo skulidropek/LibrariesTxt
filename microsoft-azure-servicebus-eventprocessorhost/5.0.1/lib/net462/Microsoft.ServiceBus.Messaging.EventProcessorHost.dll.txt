@@ -1,0 +1,357 @@
+internal class Microsoft.ServiceBus.Messaging.BlobLease : Lease {
+    [CompilerGeneratedAttribute]
+private CloudBlockBlob <Blob>k__BackingField;
+    [JsonIgnoreAttribute]
+internal CloudBlockBlob Blob { get; internal set; }
+    public BlobLease(CloudBlockBlob leaseBlob);
+    public BlobLease(BlobLease source);
+    [CompilerGeneratedAttribute]
+internal CloudBlockBlob get_Blob();
+    [CompilerGeneratedAttribute]
+internal void set_Blob(CloudBlockBlob value);
+    public virtual bool IsExpired();
+}
+internal class Microsoft.ServiceBus.Messaging.BlobLeaseManager : object {
+    private static string EventHubInfoBlobName;
+    private static TimeSpan StorageMaximumExecutionTime;
+    private string blobPrefix;
+    private string leaseContainerName;
+    private string consumerGroupName;
+    private bool skipBlobContainerCreation;
+    private TimeSpan leaseInterval;
+    private TimeSpan renewInterval;
+    private CloudBlobClient storageClient;
+    private BlobRequestOptions renewRequestOptions;
+    private CloudBlobContainer eventHubContainer;
+    private CloudBlobDirectory consumerGroupDirectory;
+    private CloudBlockBlob eventHubInfoBlob;
+    public BlobLeaseManager(string leaseContainerName, string blobPrefix, string consumerGroupName, CloudBlobClient storageClient, TimeSpan leaseInterval, TimeSpan renewInterval, bool skipBlobContainerCreation);
+    private static BlobLeaseManager();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<LeaseStoreExistsAsync>d__14")]
+public sealed virtual Task`1<bool> LeaseStoreExistsAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<CreateLeaseStoreIfNotExistsAsync>d__15")]
+public sealed virtual Task`1<bool> CreateLeaseStoreIfNotExistsAsync(EventHubInfo eventHubInfo);
+    [IteratorStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<ListLeases>d__16")]
+public sealed virtual IEnumerable`1<Task`1<BlobLease>> ListLeases();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<CreateLeaseIfNotExistAsync>d__17")]
+public sealed virtual Task CreateLeaseIfNotExistAsync(string paritionId);
+    public sealed virtual Task`1<BlobLease> GetLeaseAsync(string paritionId);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<RenewAsync>d__19")]
+public sealed virtual Task`1<bool> RenewAsync(BlobLease lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<AcquireAsync>d__20")]
+public sealed virtual Task`1<bool> AcquireAsync(BlobLease lease, string owner);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<ReleaseAsync>d__21")]
+public sealed virtual Task`1<bool> ReleaseAsync(BlobLease lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<DeleteAsync>d__22")]
+public sealed virtual Task DeleteAsync(BlobLease lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<DeleteAllAsync>d__23")]
+public sealed virtual Task DeleteAllAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<UpdateAsync>d__24")]
+public sealed virtual Task`1<bool> UpdateAsync(BlobLease lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<CheckpointAsync>d__25")]
+public sealed virtual Task CheckpointAsync(Lease lease, string offset, long sequenceNumber);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<CreateEventHubInfoIfNotExistAsync>d__26")]
+public Task CreateEventHubInfoIfNotExistAsync(EventHubInfo eventHubInfo);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<IsStaleLeaseStore>d__27")]
+internal Task`1<bool> IsStaleLeaseStore(EventHubInfo eventHubInfo);
+    private void Initialize();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<GetEventHubInfoAsync>d__29")]
+private Task`1<EventHubInfo> GetEventHubInfoAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.BlobLeaseManager/<DownloadLeaseBlob>d__30")]
+private Task`1<BlobLease> DownloadLeaseBlob(CloudBlockBlob blob);
+    private Exception HandleStorageException(Lease lease, StorageException storageException, bool ignoreLeaseLost);
+}
+[ExtensionAttribute]
+internal static class Microsoft.ServiceBus.Messaging.Enumerable : object {
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.Enumerable/<ParallelForEachAsync>d__0`1")]
+[ExtensionAttribute]
+public static Task ParallelForEachAsync(IEnumerable`1<TSource> enumerable, Func`2<TSource, Task> createTask);
+}
+internal class Microsoft.ServiceBus.Messaging.EventHubInfo : object {
+    [CompilerGeneratedAttribute]
+private string <EventHubPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <PartitionCount>k__BackingField;
+    public string EventHubPath { get; public set; }
+    public DateTime CreatedAt { get; private set; }
+    public int PartitionCount { get; private set; }
+    public EventHubInfo(string eventHubPath, DateTime createdAt, int partitionCount);
+    [CompilerGeneratedAttribute]
+public string get_EventHubPath();
+    [CompilerGeneratedAttribute]
+public void set_EventHubPath(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedAt();
+    [CompilerGeneratedAttribute]
+private void set_CreatedAt(DateTime value);
+    [CompilerGeneratedAttribute]
+public int get_PartitionCount();
+    [CompilerGeneratedAttribute]
+private void set_PartitionCount(int value);
+}
+public class Microsoft.ServiceBus.Messaging.EventProcessorHost : object {
+    private static TimeSpan CloseWaitTime;
+    private string eventHubPath;
+    private string consumerGroupName;
+    private string leaseContainerName;
+    private string leaseBlobPrefix;
+    private ConcurrentBag`1<Tuple`3<MessagingFactory, EventHubClient, EventHubConsumerGroup>> clients;
+    private ConcurrentDictionary`2<Lease, IPoolItem`1<EventHubConsumerGroup>> leaseToConsumerMap;
+    private PartitionManager`1<BlobLease> partitionManager;
+    private BlobLeaseManager leaseManager;
+    private IEventProcessorFactory processorFactory;
+    private EventProcessorOptions processorOptions;
+    private Pool`1<EventHubConsumerGroup> consumerGroupPool;
+    private EventHubClient runtimeInfoClient;
+    private MessagingFactory runtimeClientFactory;
+    private bool isDisposed;
+    [CompilerGeneratedAttribute]
+private string <HostName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PartitionManagerOptions <PartitionManagerOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventHubRuntimeInformation <EventHubRuntimeInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CloudBlobClient <CloudBlobClient>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`1<CloudBlobClient> <StorageClientFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<EventProcessorOptions, MessagingFactory> <EventHubClientFactory>k__BackingField;
+    public string HostName { get; private set; }
+    public PartitionManagerOptions PartitionManagerOptions { get; public set; }
+    private EventHubRuntimeInformation EventHubRuntimeInfo { get; private set; }
+    private CloudBlobClient CloudBlobClient { get; private set; }
+    private Func`1<CloudBlobClient> StorageClientFactory { get; private set; }
+    private Func`2<EventProcessorOptions, MessagingFactory> EventHubClientFactory { get; private set; }
+    public EventProcessorHost(string eventHubPath, string consumerGroupName, string eventHubConnectionString, string storageConnectionString);
+    public EventProcessorHost(string hostName, string eventHubPath, string consumerGroupName, string eventHubConnectionString, string storageConnectionString);
+    public EventProcessorHost(string hostName, string eventHubPath, string consumerGroupName, string eventHubConnectionString, string storageConnectionString, string leaseContainerName, string leaseBlobPrefix);
+    public EventProcessorHost(string hostName, string eventHubPath, string consumerGroupName, Func`2<EventProcessorOptions, MessagingFactory> eventHubClientFactory, Func`1<CloudBlobClient> storageClientFactory);
+    public EventProcessorHost(string hostName, string eventHubPath, string consumerGroupName, Func`2<EventProcessorOptions, MessagingFactory> eventHubClientFactory, Func`1<CloudBlobClient> storageClientFactory, string leaseContainerName, string leaseBlobPrefix);
+    private static EventProcessorHost();
+    [CompilerGeneratedAttribute]
+public string get_HostName();
+    [CompilerGeneratedAttribute]
+private void set_HostName(string value);
+    [CompilerGeneratedAttribute]
+public PartitionManagerOptions get_PartitionManagerOptions();
+    [CompilerGeneratedAttribute]
+public void set_PartitionManagerOptions(PartitionManagerOptions value);
+    [CompilerGeneratedAttribute]
+private EventHubRuntimeInformation get_EventHubRuntimeInfo();
+    [CompilerGeneratedAttribute]
+private void set_EventHubRuntimeInfo(EventHubRuntimeInformation value);
+    [CompilerGeneratedAttribute]
+private CloudBlobClient get_CloudBlobClient();
+    [CompilerGeneratedAttribute]
+private void set_CloudBlobClient(CloudBlobClient value);
+    [CompilerGeneratedAttribute]
+private Func`1<CloudBlobClient> get_StorageClientFactory();
+    [CompilerGeneratedAttribute]
+private void set_StorageClientFactory(Func`1<CloudBlobClient> value);
+    [CompilerGeneratedAttribute]
+private Func`2<EventProcessorOptions, MessagingFactory> get_EventHubClientFactory();
+    [CompilerGeneratedAttribute]
+private void set_EventHubClientFactory(Func`2<EventProcessorOptions, MessagingFactory> value);
+    public Task RegisterEventProcessorAsync();
+    public Task RegisterEventProcessorAsync(EventProcessorOptions processorOptions);
+    public Task RegisterEventProcessorFactoryAsync(IEventProcessorFactory factory);
+    public Task RegisterEventProcessorFactoryAsync(IEventProcessorFactory factory, EventProcessorOptions processorOptions);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<UnregisterEventProcessorAsync>d__48")]
+public Task UnregisterEventProcessorAsync();
+    public void ResetConnection(string partitionId);
+    public void ResetAllConnections();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<InitializeAsync>d__53")]
+private Task InitializeAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<StartAsync>d__54")]
+private Task StartAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<StopAsync>d__55")]
+private Task StopAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<Microsoft-ServiceBus-Messaging-IPartitionObserver<Microsoft-ServiceBus-Messaging-BlobLease>-OnPartitionAcquiredAsync>d__56")]
+private sealed virtual override Task Microsoft.ServiceBus.Messaging.IPartitionObserver<Microsoft.ServiceBus.Messaging.BlobLease>.OnPartitionAcquiredAsync(BlobLease l);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<Microsoft-ServiceBus-Messaging-IPartitionObserver<Microsoft-ServiceBus-Messaging-BlobLease>-OnPartitionReleasedAsync>d__57")]
+private sealed virtual override Task Microsoft.ServiceBus.Messaging.IPartitionObserver<Microsoft.ServiceBus.Messaging.BlobLease>.OnPartitionReleasedAsync(BlobLease l, CloseReason reason);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.EventProcessorHost/<OnEventProcessorLifeCycleManagerFaulted>d__58")]
+private void OnEventProcessorLifeCycleManagerFaulted(object sender, EventProcessorFaultedEventArgs eventArgs);
+    private static void ValidateContainerName(string paramValue, string paramName);
+    private static void ValidateEventHubClient(MessagingFactory messagingFactory);
+    private static string CreateAmqpConnectionString(string eventHubConnectionString);
+    private static CloudBlobClient DefaultStorageClientFactory(string storageConnectionString);
+    private static MessagingFactory DefaultEventHubClientFactory(string eventHubConnectionString, EventProcessorOptions processorOptions);
+    private static string DefaultHostName();
+    [CompilerGeneratedAttribute]
+private EventHubConsumerGroup <InitializeAsync>b__53_0();
+}
+internal interface Microsoft.ServiceBus.Messaging.ILeaseManager`1 {
+    public abstract virtual Task`1<bool> LeaseStoreExistsAsync();
+    public abstract virtual Task`1<bool> CreateLeaseStoreIfNotExistsAsync(EventHubInfo eventHubInfo);
+    public abstract virtual IEnumerable`1<Task`1<T>> ListLeases();
+    public abstract virtual Task CreateLeaseIfNotExistAsync(string paritionId);
+    public abstract virtual Task`1<T> GetLeaseAsync(string paritionId);
+    public abstract virtual Task`1<bool> RenewAsync(T lease);
+    public abstract virtual Task`1<bool> AcquireAsync(T lease, string owner);
+    public abstract virtual Task`1<bool> ReleaseAsync(T lease);
+    public abstract virtual Task DeleteAsync(T lease);
+    public abstract virtual Task DeleteAllAsync();
+    public abstract virtual Task`1<bool> UpdateAsync(T lease);
+}
+internal interface Microsoft.ServiceBus.Messaging.IPartitionManager`1 {
+    public abstract virtual Task StartAsync();
+    public abstract virtual Task StopAsync();
+    public abstract virtual IDisposable Subscribe(IPartitionObserver`1<T> observer);
+}
+internal interface Microsoft.ServiceBus.Messaging.IPartitionObserver`1 {
+    public abstract virtual Task OnPartitionAcquiredAsync(T l);
+    public abstract virtual Task OnPartitionReleasedAsync(T l, CloseReason reason);
+}
+internal interface Microsoft.ServiceBus.Messaging.IPoolItem`1 {
+    public T Item { get; }
+    public abstract virtual T get_Item();
+}
+internal class Microsoft.ServiceBus.Messaging.PartitionManager`1 : object {
+    private string workerName;
+    private ILeaseManager`1<T> leaseManager;
+    private PartitionManagerOptions options;
+    private ConcurrentDictionary`2<string, T> currentlyOwnedShards;
+    private ConcurrentDictionary`2<string, T> keepRenewingDuringClose;
+    private PartitionObserverManager<T> partitionObserverManager;
+    private int isStarted;
+    private bool shutdownComplete;
+    private Task renewTask;
+    private Task takerTask;
+    private CancellationTokenSource leaseTakerCancellationTokenSource;
+    private CancellationTokenSource leaseRenewerCancellationTokenSource;
+    public PartitionManager`1(string workerName, ILeaseManager`1<T> leaseManager, PartitionManagerOptions options);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<InitializeAsync>d__13")]
+public Task InitializeAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<StartAsync>d__14")]
+public Task StartAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<StopAsync>d__15")]
+public Task StopAsync();
+    public Task`1<IDisposable> SubscribeAsync(IPartitionObserver`1<T> observer);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<TryReleasePartitionAsync>d__17")]
+public Task TryReleasePartitionAsync(string partitionId, string leaseToken);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<LeaseRenewer>d__18")]
+private Task LeaseRenewer();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<LeaseTakerAsync>d__19")]
+private Task LeaseTakerAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<TakeLeasesAsync>d__20")]
+private Task`1<IDictionary`2<string, T>> TakeLeasesAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<ShutdownAsync>d__21")]
+private Task ShutdownAsync();
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<RenewLeaseAsync>d__22")]
+private Task`1<bool> RenewLeaseAsync(T lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<AcquireLeaseAsync>d__23")]
+private Task`1<bool> AcquireLeaseAsync(T lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<StealLeaseAsync>d__24")]
+private Task`1<bool> StealLeaseAsync(T lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<AddLeaseAsync>d__25")]
+private Task AddLeaseAsync(T lease);
+    [AsyncStateMachineAttribute("Microsoft.ServiceBus.Messaging.PartitionManager`1/<RemoveLeaseAsync>d__26")]
+private Task RemoveLeaseAsync(T lease, bool hasOwnership);
+    [CompilerGeneratedAttribute]
+private Task <StartAsync>b__14_0();
+    [CompilerGeneratedAttribute]
+private Task <StartAsync>b__14_1();
+    [CompilerGeneratedAttribute]
+private Task <LeaseRenewer>b__18_0(T lease);
+    [CompilerGeneratedAttribute]
+private Task <ShutdownAsync>b__21_0(T lease);
+}
+public class Microsoft.ServiceBus.Messaging.PartitionManagerOptions : object {
+    private static TimeSpan DefaultRenewInterval;
+    private static TimeSpan DefaultAcquireInterval;
+    private static TimeSpan DefaultLeaseInterval;
+    private static int DefaultPartitionCount;
+    [CompilerGeneratedAttribute]
+private TimeSpan <RenewInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <AcquireInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <LeaseInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxReceiveClients>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SkipBlobContainerCreation>k__BackingField;
+    public TimeSpan RenewInterval { get; public set; }
+    public TimeSpan AcquireInterval { get; public set; }
+    public TimeSpan LeaseInterval { get; public set; }
+    public int MaxReceiveClients { get; public set; }
+    public bool SkipBlobContainerCreation { get; public set; }
+    public static PartitionManagerOptions DefaultOptions { get; }
+    private static PartitionManagerOptions();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_RenewInterval();
+    [CompilerGeneratedAttribute]
+public void set_RenewInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_AcquireInterval();
+    [CompilerGeneratedAttribute]
+public void set_AcquireInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_LeaseInterval();
+    [CompilerGeneratedAttribute]
+public void set_LeaseInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public int get_MaxReceiveClients();
+    [CompilerGeneratedAttribute]
+public void set_MaxReceiveClients(int value);
+    [CompilerGeneratedAttribute]
+public bool get_SkipBlobContainerCreation();
+    [CompilerGeneratedAttribute]
+public void set_SkipBlobContainerCreation(bool value);
+    public static PartitionManagerOptions get_DefaultOptions();
+}
+internal class Microsoft.ServiceBus.Messaging.Pool`1 : object {
+    private int maxObjects;
+    private ConcurrentBag`1<PoolItemReference<T>> objectPool;
+    private Func`1<T> objectGenerator;
+    private object lockObject;
+    public Pool`1(int maxObjects, Func`1<T> objectGenerator);
+    public IPoolItem`1<T> GetObject();
+    public void Clear();
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.ServiceBus.Messaging.Properties.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string CheckpointNotSupported { get; }
+    internal static string UnsupportedTransportType { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_CheckpointNotSupported();
+    internal static string get_UnsupportedTransportType();
+}
+internal class Microsoft.ServiceBus.Messaging.SR : Resources {
+    internal static string GetString(string value, Object[] args);
+}
+[EventSourceAttribute]
+internal class Microsoft.ServiceBus.Messaging.Tracing.MessagingEventSource : EventSource {
+    public static MessagingEventSource Log;
+    private static MessagingEventSource();
+    [EventAttribute("101")]
+public void Informational(string message);
+    [EventAttribute("102")]
+public void Warning(string message);
+    [EventAttribute("103")]
+public void Error(string message);
+    [EventAttribute("104")]
+public void Critical(string message);
+    [NonEventAttribute]
+public void LogException(Exception ex);
+    [NonEventAttribute]
+public void LogCriticalException(Exception ex);
+    [NonEventAttribute]
+private static string GetExceptionText(Exception ex);
+}

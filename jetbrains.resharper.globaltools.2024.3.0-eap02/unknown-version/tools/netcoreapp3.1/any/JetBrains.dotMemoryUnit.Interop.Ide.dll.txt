@@ -1,0 +1,141 @@
+[ShellComponentAttribute("16")]
+internal class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitDetector : object {
+    private object myLock;
+    private IDictionary`2<FileSystemPath, PackageInfo> myPackageInfoDictionary;
+    private IDictionary`2<string, IDictionary`2<FileSystemPath, int>> myAssemblyReferencesDictionary;
+    private IDotMemoryUnitPackageInfoProvider myPackageInfoProvider;
+    private IDotMemoryUnitStartInfoProvider myStartInfoProvider;
+    private Property`1<bool> myIsDotMemoryUnitAvailable;
+    public IProperty`1<bool> DotMemoryUnitAvailable { get; }
+    public DotMemoryUnitDetector(IDotMemoryUnitPackageInfoProvider packageInfoProvider, IDotMemoryUnitStartInfoProvider startInfoProvider);
+    private void HandleAssemblyAdded(FileSystemPath assemblyPath);
+    private void HandleAssemblyRemoved(FileSystemPath assemblyPath);
+    public void HandleReferenceAdded(string projectId, FileSystemPath assemblyPath);
+    public void HandleReferenceRemoved(string projectId, FileSystemPath assemblyPath);
+    public void HandleProjectRemoved(string projectId);
+    public void HandleSolutionUnloaded();
+    public sealed virtual IProperty`1<bool> get_DotMemoryUnitAvailable();
+    public sealed virtual DotMemoryUnitServerStartInfo GetServerStartInfo(DotMemoryUnitTestRuntimeInfo runtimeInfo);
+    private void UpdateAvailability();
+    private PackageInfo GetSuitablePackage();
+}
+[ShellComponentAttribute("16")]
+internal class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitPackageInfoProvider : object {
+    private static string DotMemoryUnitPackageName;
+    private static string DotMemoryUnitPackageMask;
+    private static string DotMemoryUnitPackagePrefix;
+    private static string DotMemoryUnitPackageSuffix;
+    private static string ToolsDirectory;
+    public static string DotMemoryUnitExecutableFileName;
+    private static string DotMemoryUnitOldExecutableFileName;
+    public static string DotMemoryUnitConfigXsltFileName;
+    public sealed virtual PackageInfo GetPackageInfo(FileSystemPath assemblyPath);
+    private static bool TryGetVersion(FileSystemPath directory, Version& version);
+    private static FileSystemPath GetPathOrNull(FileSystemPath directory, string fileName);
+}
+[SolutionComponentAttribute("10")]
+internal class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitReferenceTracker : object {
+    private static string DotMemoryUnitFrameworkAssemblyName;
+    private static Guid ourDotMemoryUnitFrameworkProjectGuid;
+    [NotNullAttribute]
+private Lifetime myLifetime;
+    [NotNullAttribute]
+private ISolution mySolution;
+    private DotMemoryUnitDetector myDotMemoryUnitDetector;
+    [NotNullAttribute]
+private NuGetPackageReferenceTracker myNuGetPackageReferenceTracker;
+    private ILogger myLogger;
+    public DotMemoryUnitReferenceTracker(Lifetime lifetime, ISolution solution, ChangeManager changeManager, DotMemoryUnitDetector dotMemoryUnitDetector, NuGetPackageReferenceTracker nuGetPackageReferenceTracker);
+    private static DotMemoryUnitReferenceTracker();
+    private void HandleModelChanged(ProjectModelChange change);
+    private void HandleAssemblyReference(ProjectModelChange change, IProjectToAssemblyReference projectToAssemblyReference);
+    private void HandleItemChanged(ProjectItemChange change);
+    private void AddJetBrainsInternalDotMemoryUnitPath(IProjectToProjectReference projectToProjectReference);
+    [AsyncStateMachineAttribute("JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitReferenceTracker/<AddJetBrainsInternalDotMemoryUnitPathAsync>d__12")]
+private Task AddJetBrainsInternalDotMemoryUnitPathAsync(IProject project);
+}
+[DataContractAttribute]
+public class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitServerStartInfo : object {
+    [DataMemberAttribute]
+public string Executable;
+    [DataMemberAttribute]
+public string Arguments;
+}
+[ShellComponentAttribute("16")]
+internal class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitStartInfoProvider : object {
+    private DataContractSerializer myTestRuntimeInfoSerializer;
+    private DataContractSerializer myServerStartInfoSerializer;
+    private ILogger myLogger;
+    public sealed virtual DotMemoryUnitServerStartInfo TransformRuntimeInfoToStartInfo(FileSystemPath xsltPath, DotMemoryUnitTestRuntimeInfo runtimeInfo);
+    public sealed virtual DotMemoryUnitServerStartInfo CreateStartInfo(FileSystemPath obsoleteExecutablePath);
+}
+[DataContractAttribute]
+public class JetBrains.dotMemoryUnit.Interop.Ide.DotMemoryUnitTestRuntimeInfo : object {
+    [DataMemberAttribute]
+public string Architecture;
+    [DataMemberAttribute]
+public string TargetFramework;
+    [DataMemberAttribute]
+public Version TargetFrameworkVersion;
+    [DataMemberAttribute]
+public string Os;
+    [DataMemberAttribute]
+public Version OsVersion;
+    [DataMemberAttribute]
+public Version ReSharperVersion;
+}
+public interface JetBrains.dotMemoryUnit.Interop.Ide.IDotMemoryUnitDetector {
+    public IProperty`1<bool> DotMemoryUnitAvailable { get; }
+    public abstract virtual IProperty`1<bool> get_DotMemoryUnitAvailable();
+    public abstract virtual DotMemoryUnitServerStartInfo GetServerStartInfo(DotMemoryUnitTestRuntimeInfo runtimeInfo);
+}
+internal interface JetBrains.dotMemoryUnit.Interop.Ide.IDotMemoryUnitPackageInfoProvider {
+    public abstract virtual PackageInfo GetPackageInfo(FileSystemPath assemblyPath);
+}
+internal interface JetBrains.dotMemoryUnit.Interop.Ide.IDotMemoryUnitStartInfoProvider {
+    public abstract virtual DotMemoryUnitServerStartInfo TransformRuntimeInfoToStartInfo(FileSystemPath xsltPath, DotMemoryUnitTestRuntimeInfo runtimeInfo);
+    public abstract virtual DotMemoryUnitServerStartInfo CreateStartInfo(FileSystemPath obsoleteExecutablePath);
+}
+internal class JetBrains.dotMemoryUnit.Interop.Ide.PackageInfo : object {
+    [NotNullAttribute]
+public Version Version;
+    [CanBeNullAttribute]
+public FileSystemPath XsltPath;
+    [CanBeNullAttribute]
+public FileSystemPath ObsoleteExecutablePath;
+    public bool IsObsoleteExecutableUnsupported;
+    public int ReferencesCount;
+    public PackageInfo(Version version, FileSystemPath xsltPath, FileSystemPath obsoleteExecutablePath, bool isObsoleteExecutableUnsupported);
+}
+public class JetBrains.dotMemoryUnit.Interop.Ide.VersionMismatchException : Exception {
+    public VersionMismatchException(string message);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.dotMemoryUnit.Interop.Ide.ZoneMarker : object {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

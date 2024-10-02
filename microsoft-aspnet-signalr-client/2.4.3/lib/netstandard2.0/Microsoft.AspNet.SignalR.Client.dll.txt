@@ -1,0 +1,1668 @@
+public class Microsoft.AspNet.SignalR.Client.Connection : object {
+    internal static TimeSpan DefaultAbortTimeout;
+    private static Version MinimumSupportedVersion;
+    private static Version MaximumSupportedVersion;
+    private static Version MinimumSupportedNegotiateRedirectVersion;
+    private static int MaxRedirects;
+    private static Version _assemblyVersion;
+    private IClientTransport _transport;
+    private CancellationTokenSource _disconnectCts;
+    private TimeSpan _disconnectTimeout;
+    private TimeSpan _totalTransportConnectTimeout;
+    private IDisposable _disconnectTimeoutOperation;
+    private ConnectionState _state;
+    private KeepAliveData _keepAliveData;
+    private TimeSpan _reconnectWindow;
+    private Task _connectTask;
+    private TextWriter _traceWriter;
+    private string _connectionData;
+    private TaskQueue _receiveQueue;
+    private TaskQueueMonitor _receiveQueueMonitor;
+    private Task _lastQueuedReceiveTask;
+    private DispatchingTaskCompletionSource`1<object> _startTcs;
+    private object _stateLock;
+    private object _startLock;
+    private object _traceLock;
+    private DateTime _lastMessageAt;
+    private DateTime _lastActiveAt;
+    private JsonSerializer _jsonSerializer;
+    private X509CertificateCollection _certCollection;
+    private string _userUrl;
+    private string _actualUrl;
+    private string _userQueryString;
+    private string _actualQueryString;
+    [CompilerGeneratedAttribute]
+private HeartbeatMonitor <Monitor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<string> Received;
+    [CompilerGeneratedAttribute]
+private Action`1<Exception> Error;
+    [CompilerGeneratedAttribute]
+private Action Closed;
+    [CompilerGeneratedAttribute]
+private Action Reconnecting;
+    [CompilerGeneratedAttribute]
+private Action Reconnected;
+    [CompilerGeneratedAttribute]
+private Action`1<StateChange> StateChanged;
+    [CompilerGeneratedAttribute]
+private Action ConnectionSlow;
+    [CompilerGeneratedAttribute]
+private TimeSpan <TransportConnectTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <DeadlockErrorTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Version <Protocol>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <LastError>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TraceLevels <TraceLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CookieContainer <CookieContainer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICredentials <Credentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <Headers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IWebProxy <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MessageId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <GroupsToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, object> <Items>k__BackingField;
+    internal HeartbeatMonitor Monitor { get; private set; }
+    public TimeSpan TransportConnectTimeout { get; public set; }
+    public TimeSpan DeadlockErrorTimeout { get; public set; }
+    private TimeSpan Microsoft.AspNet.SignalR.Client.IConnection.TotalTransportConnectTimeout { get; }
+    public Version Protocol { get; public set; }
+    public Exception LastError { get; private set; }
+    private TimeSpan Microsoft.AspNet.SignalR.Client.IConnection.ReconnectWindow { get; private set; }
+    private KeepAliveData Microsoft.AspNet.SignalR.Client.IConnection.KeepAliveData { get; private set; }
+    private DateTime Microsoft.AspNet.SignalR.Client.IConnection.LastMessageAt { get; }
+    private DateTime Microsoft.AspNet.SignalR.Client.IConnection.LastActiveAt { get; }
+    private X509CertificateCollection Microsoft.AspNet.SignalR.Client.IConnection.Certificates { get; }
+    public TraceLevels TraceLevel { get; public set; }
+    public TextWriter TraceWriter { get; public set; }
+    public JsonSerializer JsonSerializer { get; public set; }
+    public CookieContainer CookieContainer { get; public set; }
+    public ICredentials Credentials { get; public set; }
+    public IDictionary`2<string, string> Headers { get; private set; }
+    public IWebProxy Proxy { get; public set; }
+    public string Url { get; }
+    private string Microsoft.AspNet.SignalR.Client.IConnection.Url { get; }
+    public string MessageId { get; public set; }
+    public string ConnectionId { get; public set; }
+    public string ConnectionToken { get; public set; }
+    public string GroupsToken { get; public set; }
+    public IDictionary`2<string, object> Items { get; private set; }
+    public string QueryString { get; }
+    private string Microsoft.AspNet.SignalR.Client.IConnection.QueryString { get; }
+    public IClientTransport Transport { get; }
+    public ConnectionState State { get; private set; }
+    public Connection(string url);
+    public Connection(string url, IDictionary`2<string, string> queryString);
+    public Connection(string url, string queryString);
+    private static Connection();
+    [CompilerGeneratedAttribute]
+internal virtual HeartbeatMonitor get_Monitor();
+    [CompilerGeneratedAttribute]
+private void set_Monitor(HeartbeatMonitor value);
+    [CompilerGeneratedAttribute]
+public void add_Received(Action`1<string> value);
+    [CompilerGeneratedAttribute]
+public void remove_Received(Action`1<string> value);
+    [CompilerGeneratedAttribute]
+public void add_Error(Action`1<Exception> value);
+    [CompilerGeneratedAttribute]
+public void remove_Error(Action`1<Exception> value);
+    [CompilerGeneratedAttribute]
+public void add_Closed(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_Closed(Action value);
+    [CompilerGeneratedAttribute]
+public void add_Reconnecting(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_Reconnecting(Action value);
+    [CompilerGeneratedAttribute]
+public void add_Reconnected(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_Reconnected(Action value);
+    [CompilerGeneratedAttribute]
+public void add_StateChanged(Action`1<StateChange> value);
+    [CompilerGeneratedAttribute]
+public void remove_StateChanged(Action`1<StateChange> value);
+    [CompilerGeneratedAttribute]
+public void add_ConnectionSlow(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_ConnectionSlow(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual TimeSpan get_TransportConnectTimeout();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TransportConnectTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_DeadlockErrorTimeout();
+    [CompilerGeneratedAttribute]
+public void set_DeadlockErrorTimeout(TimeSpan value);
+    private sealed virtual override TimeSpan Microsoft.AspNet.SignalR.Client.IConnection.get_TotalTransportConnectTimeout();
+    [CompilerGeneratedAttribute]
+public sealed virtual Version get_Protocol();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Protocol(Version value);
+    [CompilerGeneratedAttribute]
+public Exception get_LastError();
+    [CompilerGeneratedAttribute]
+private void set_LastError(Exception value);
+    private sealed virtual override TimeSpan Microsoft.AspNet.SignalR.Client.IConnection.get_ReconnectWindow();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.set_ReconnectWindow(TimeSpan value);
+    private sealed virtual override KeepAliveData Microsoft.AspNet.SignalR.Client.IConnection.get_KeepAliveData();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.set_KeepAliveData(KeepAliveData value);
+    private sealed virtual override DateTime Microsoft.AspNet.SignalR.Client.IConnection.get_LastMessageAt();
+    private sealed virtual override DateTime Microsoft.AspNet.SignalR.Client.IConnection.get_LastActiveAt();
+    private sealed virtual override X509CertificateCollection Microsoft.AspNet.SignalR.Client.IConnection.get_Certificates();
+    [CompilerGeneratedAttribute]
+public TraceLevels get_TraceLevel();
+    [CompilerGeneratedAttribute]
+public void set_TraceLevel(TraceLevels value);
+    public TextWriter get_TraceWriter();
+    public void set_TraceWriter(TextWriter value);
+    public sealed virtual JsonSerializer get_JsonSerializer();
+    public void set_JsonSerializer(JsonSerializer value);
+    [CompilerGeneratedAttribute]
+public sealed virtual CookieContainer get_CookieContainer();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_CookieContainer(CookieContainer value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICredentials get_Credentials();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Credentials(ICredentials value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDictionary`2<string, string> get_Headers();
+    [CompilerGeneratedAttribute]
+private void set_Headers(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IWebProxy get_Proxy();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Proxy(IWebProxy value);
+    public string get_Url();
+    private sealed virtual override string Microsoft.AspNet.SignalR.Client.IConnection.get_Url();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MessageId();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_MessageId(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConnectionToken();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionToken(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_GroupsToken();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_GroupsToken(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDictionary`2<string, object> get_Items();
+    [CompilerGeneratedAttribute]
+private void set_Items(IDictionary`2<string, object> value);
+    public string get_QueryString();
+    private sealed virtual override string Microsoft.AspNet.SignalR.Client.IConnection.get_QueryString();
+    public sealed virtual IClientTransport get_Transport();
+    public sealed virtual ConnectionState get_State();
+    private void set_State(ConnectionState value);
+    public Task Start();
+    public Task Start(IHttpClient httpClient);
+    public Task Start(IClientTransport transport);
+    protected virtual string OnSending();
+    private Task Negotiate(IClientTransport transport);
+    private Task StartTransport();
+    private bool ChangeState(ConnectionState oldState, ConnectionState newState);
+    private sealed virtual override bool Microsoft.AspNet.SignalR.Client.IConnection.ChangeState(ConnectionState oldState, ConnectionState newState);
+    private Version VerifyProtocolVersion(string versionString);
+    public sealed virtual void Stop();
+    public sealed virtual void Stop(Exception error);
+    public void Stop(Exception error, TimeSpan timeout);
+    public void Stop(TimeSpan timeout);
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.Disconnect();
+    private void Disconnect();
+    protected virtual void OnClosed();
+    public virtual Task Send(string data);
+    public Task Send(object value);
+    public void AddClientCertificate(X509Certificate certificate);
+    public sealed virtual void Trace(TraceLevels level, string format, Object[] args);
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.OnReceived(JToken message);
+    protected virtual void OnMessageReceived(JToken message);
+    private void OnError(Exception error);
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.OnError(Exception error);
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.OnReconnecting();
+    internal virtual void OnReconnecting();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.OnReconnected();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.OnConnectionSlow();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.MarkLastMessage();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.MarkActive();
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.IConnection.PrepareRequest(IRequest request);
+    private static string CreateUserAgentString(string client);
+    private static bool TryParseVersion(string versionString, Version& version);
+    private static string CreateQueryString(IDictionary`2<string, string> queryString);
+    private static IDisposable SetTimeout(TimeSpan delay, Action operation);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+private void <StartTransport>b__154_0();
+    [CompilerGeneratedAttribute]
+private Task <StartTransport>b__154_1();
+    [CompilerGeneratedAttribute]
+private void <OnReconnecting>b__174_0();
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNet.SignalR.Client.ConnectionExtensions : object {
+    [ExtensionAttribute]
+public static T GetValue(IConnection connection, string key);
+    [ExtensionAttribute]
+public static string JsonSerializeObject(IConnection connection, object value);
+    [ExtensionAttribute]
+public static T JsonDeserializeObject(IConnection connection, string jsonValue);
+    [ExtensionAttribute]
+public static bool EnsureReconnecting(IConnection connection);
+    [ExtensionAttribute]
+public static IObservable`1<string> AsObservable(Connection connection);
+    [ExtensionAttribute]
+public static IObservable`1<T> AsObservable(Connection connection);
+    [ExtensionAttribute]
+public static IObservable`1<T> AsObservable(Connection connection, Func`2<string, T> selector);
+}
+public enum Microsoft.AspNet.SignalR.Client.ConnectionState : Enum {
+    public int value__;
+    public static ConnectionState Connecting;
+    public static ConnectionState Connected;
+    public static ConnectionState Reconnecting;
+    public static ConnectionState Disconnected;
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNet.SignalR.Client.ErrorExtensions : object {
+    [ExtensionAttribute]
+public static SignalRError GetError(Exception ex);
+    private static SignalRError GetHttpClientException(Exception ex);
+    private static Stream Clone(Stream source);
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.AspNet.SignalR.Client.HeaderDictionary : object {
+    private IDictionary`2<string, string> _dictionary;
+    private IConnection _connection;
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<string> Values { get; }
+    public string Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public HeaderDictionary(IConnection connection);
+    public sealed virtual void Add(string key, string value);
+    public sealed virtual bool ContainsKey(string key);
+    public sealed virtual ICollection`1<string> get_Keys();
+    public sealed virtual bool Remove(string key);
+    public sealed virtual bool TryGetValue(string key, String& value);
+    public sealed virtual ICollection`1<string> get_Values();
+    public sealed virtual string get_Item(string key);
+    public sealed virtual void set_Item(string key, string value);
+    public sealed virtual void Add(KeyValuePair`2<string, string> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<string, string> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual bool Remove(KeyValuePair`2<string, string> item);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, string>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Microsoft.AspNet.SignalR.Client.HeartbeatMonitor : object {
+    private Timer _timer;
+    private object _connectionStateLock;
+    private IConnection _connection;
+    private TimeSpan _beatInterval;
+    private bool _monitorKeepAlive;
+    [CompilerGeneratedAttribute]
+private bool <HasBeenWarned>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <TimedOut>k__BackingField;
+    public bool HasBeenWarned { get; private set; }
+    public bool TimedOut { get; private set; }
+    public HeartbeatMonitor(IConnection connection, object connectionStateLock, TimeSpan beatInterval);
+    [CompilerGeneratedAttribute]
+public bool get_HasBeenWarned();
+    [CompilerGeneratedAttribute]
+private void set_HasBeenWarned(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_TimedOut();
+    [CompilerGeneratedAttribute]
+private void set_TimedOut(bool value);
+    public void Start();
+    private void ClearFlags();
+    private void Beat();
+    public void Beat(TimeSpan timeElapsed);
+    private void CheckKeepAlive(TimeSpan timeElapsed);
+    internal virtual void Reconnected();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+private void <Start>b__14_0(object _);
+}
+public class Microsoft.AspNet.SignalR.Client.Http.DefaultHttpClient : object {
+    private HttpClient _longRunningClient;
+    private HttpClient _shortRunningClient;
+    private IConnection _connection;
+    public sealed virtual void Initialize(IConnection connection);
+    protected virtual HttpMessageHandler CreateHandler();
+    public sealed virtual Task`1<IResponse> Get(string url, Action`1<IRequest> prepareRequest, bool isLongRunning);
+    public sealed virtual Task`1<IResponse> Post(string url, Action`1<IRequest> prepareRequest, IDictionary`2<string, string> postData, bool isLongRunning);
+    private protected virtual HttpClient GetHttpClient(bool isLongRunning);
+}
+public class Microsoft.AspNet.SignalR.Client.Http.DefaultHttpHandler : HttpClientHandler {
+    private IConnection _connection;
+    public DefaultHttpHandler(IConnection connection);
+}
+internal static class Microsoft.AspNet.SignalR.Client.Http.HttpHelper : object {
+    public static Byte[] ProcessPostData(IDictionary`2<string, string> postData);
+}
+public class Microsoft.AspNet.SignalR.Client.Http.HttpRequestMessageWrapper : object {
+    private HttpRequestMessage _httpRequestMessage;
+    private Action _cancel;
+    [CompilerGeneratedAttribute]
+private string <UserAgent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Accept>k__BackingField;
+    public string UserAgent { get; public set; }
+    public string Accept { get; public set; }
+    public HttpRequestMessageWrapper(HttpRequestMessage httpRequestMessage, Action cancel);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_UserAgent();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_UserAgent(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Accept();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Accept(string value);
+    public sealed virtual void Abort();
+    public sealed virtual void SetRequestHeaders(IDictionary`2<string, string> headers);
+}
+public class Microsoft.AspNet.SignalR.Client.Http.HttpResponseMessageWrapper : object {
+    private HttpResponseMessage _httpResponseMessage;
+    public HttpResponseMessageWrapper(HttpResponseMessage httpResponseMessage);
+    public string ReadAsString();
+    public sealed virtual Stream GetStream();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+public interface Microsoft.AspNet.SignalR.Client.Http.IHttpClient {
+    public abstract virtual void Initialize(IConnection connection);
+    public abstract virtual Task`1<IResponse> Get(string url, Action`1<IRequest> prepareRequest, bool isLongRunning);
+    public abstract virtual Task`1<IResponse> Post(string url, Action`1<IRequest> prepareRequest, IDictionary`2<string, string> postData, bool isLongRunning);
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNet.SignalR.Client.Http.IHttpClientExtensions : object {
+    [ExtensionAttribute]
+public static Task`1<IResponse> Post(IHttpClient client, string url, Action`1<IRequest> prepareRequest, bool isLongRunning);
+}
+public interface Microsoft.AspNet.SignalR.Client.Http.IRequest {
+    public string UserAgent { get; public set; }
+    public string Accept { get; public set; }
+    public abstract virtual string get_UserAgent();
+    public abstract virtual void set_UserAgent(string value);
+    public abstract virtual string get_Accept();
+    public abstract virtual void set_Accept(string value);
+    public abstract virtual void Abort();
+    public abstract virtual void SetRequestHeaders(IDictionary`2<string, string> headers);
+}
+public interface Microsoft.AspNet.SignalR.Client.Http.IResponse {
+    public abstract virtual Stream GetStream();
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNet.SignalR.Client.Http.IResponseExtensions : object {
+    [ExtensionAttribute]
+public static Task`1<string> ReadAsString(IResponse response, Func`2<ArraySegment`1<byte>, bool> onChunk);
+    [ExtensionAttribute]
+public static Task`1<string> ReadAsString(IResponse response);
+}
+public class Microsoft.AspNet.SignalR.Client.HttpClientException : Exception {
+    [CompilerGeneratedAttribute]
+private HttpResponseMessage <Response>k__BackingField;
+    public HttpResponseMessage Response { get; private set; }
+    public HttpClientException(string message);
+    public HttpClientException(string message, Exception ex);
+    public HttpClientException(HttpResponseMessage responseMessage);
+    [CompilerGeneratedAttribute]
+public HttpResponseMessage get_Response();
+    [CompilerGeneratedAttribute]
+private void set_Response(HttpResponseMessage value);
+    private static string GetExceptionMessage(HttpResponseMessage responseMessage);
+}
+public class Microsoft.AspNet.SignalR.Client.HubConnection : Connection {
+    private Dictionary`2<string, HubProxy> _hubs;
+    internal Dictionary`2<string, Action`1<HubResult>> _callbacks;
+    private int _callbackId;
+    public HubConnection(string url);
+    public HubConnection(string url, bool useDefaultUrl);
+    public HubConnection(string url, string queryString);
+    public HubConnection(string url, string queryString, bool useDefaultUrl);
+    public HubConnection(string url, IDictionary`2<string, string> queryString);
+    public HubConnection(string url, IDictionary`2<string, string> queryString, bool useDefaultUrl);
+    internal virtual void OnReconnecting();
+    protected virtual void OnMessageReceived(JToken message);
+    protected virtual string OnSending();
+    protected virtual void OnClosed();
+    public IHubProxy CreateHubProxy(string hubName);
+    private sealed virtual override string Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RegisterCallback(Action`1<HubResult> callback);
+    private sealed virtual override void Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection.RemoveCallback(string callbackId);
+    private static string GetUrl(string url, bool useDefaultUrl);
+    private void ClearInvocationCallbacks(string error);
+}
+public class Microsoft.AspNet.SignalR.Client.HubException : Exception {
+    [CompilerGeneratedAttribute]
+private object <ErrorData>k__BackingField;
+    public object ErrorData { get; private set; }
+    public HubException(string message);
+    public HubException(string message, object errorData);
+    [CompilerGeneratedAttribute]
+public object get_ErrorData();
+    [CompilerGeneratedAttribute]
+private void set_ErrorData(object value);
+}
+[ExtensionAttribute]
+public static class Microsoft.AspNet.SignalR.Client.HubProxyExtensions : object {
+    [ExtensionAttribute]
+public static T GetValue(IHubProxy proxy, string name);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`1<T> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`2<T1, T2> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`3<T1, T2, T3> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`4<T1, T2, T3, T4> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`1<object> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`5<T1, T2, T3, T4, T5> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`6<T1, T2, T3, T4, T5, T6> onData);
+    [ExtensionAttribute]
+public static IDisposable On(IHubProxy proxy, string eventName, Action`7<T1, T2, T3, T4, T5, T6, T7> onData);
+    [ExtensionAttribute]
+public static IObservable`1<IList`1<JToken>> Observe(IHubProxy proxy, string eventName);
+    private static void ExecuteCallback(string eventName, int actualArgs, int expectedArgs, Action action);
+    private static T Convert(JToken obj, JsonSerializer serializer);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.HubInvocation : object {
+    [CompilerGeneratedAttribute]
+private string <CallbackId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Hub>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken[] <Args>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, JToken> <State>k__BackingField;
+    [JsonPropertyAttribute("I")]
+public string CallbackId { get; public set; }
+    [JsonPropertyAttribute("H")]
+public string Hub { get; public set; }
+    [JsonPropertyAttribute("M")]
+public string Method { get; public set; }
+    [JsonPropertyAttribute("A")]
+public JToken[] Args { get; public set; }
+    [JsonPropertyAttribute]
+public Dictionary`2<string, JToken> State { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_CallbackId();
+    [CompilerGeneratedAttribute]
+public void set_CallbackId(string value);
+    [CompilerGeneratedAttribute]
+public string get_Hub();
+    [CompilerGeneratedAttribute]
+public void set_Hub(string value);
+    [CompilerGeneratedAttribute]
+public string get_Method();
+    [CompilerGeneratedAttribute]
+public void set_Method(string value);
+    [CompilerGeneratedAttribute]
+public JToken[] get_Args();
+    [CompilerGeneratedAttribute]
+public void set_Args(JToken[] value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, JToken> get_State();
+    [CompilerGeneratedAttribute]
+public void set_State(Dictionary`2<string, JToken> value);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.HubProgressUpdate : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Data>k__BackingField;
+    [JsonPropertyAttribute("I")]
+public string Id { get; public set; }
+    [JsonPropertyAttribute("D")]
+public JToken Data { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public JToken get_Data();
+    [CompilerGeneratedAttribute]
+public void set_Data(JToken value);
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.AspNet.SignalR.Client.Hubs.HubProxy : object {
+    private string _hubName;
+    private IHubConnection _connection;
+    private Dictionary`2<string, JToken> _state;
+    private Dictionary`2<string, Subscription> _subscriptions;
+    public JToken Item { get; public set; }
+    public JsonSerializer JsonSerializer { get; }
+    public HubProxy(IHubConnection connection, string hubName);
+    public sealed virtual JToken get_Item(string name);
+    public sealed virtual void set_Item(string name, JToken value);
+    public sealed virtual JsonSerializer get_JsonSerializer();
+    public sealed virtual Subscription Subscribe(string eventName);
+    public sealed virtual Task Invoke(string method, Object[] args);
+    public sealed virtual Task`1<T> Invoke(string method, Object[] args);
+    public sealed virtual Task Invoke(string method, Action`1<T> onProgress, Object[] args);
+    public sealed virtual Task`1<TResult> Invoke(string method, Action`1<TProgress> onProgress, Object[] args);
+    public void InvokeEvent(string eventName, IList`1<JToken> args);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.HubRegistrationData : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    public string Name { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.HubResult : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HubProgressUpdate <ProgressUpdate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Result>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <IsHubException>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Error>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <ErrorData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, JToken> <State>k__BackingField;
+    [JsonPropertyAttribute("I")]
+public string Id { get; public set; }
+    [JsonPropertyAttribute("P")]
+public HubProgressUpdate ProgressUpdate { get; public set; }
+    [JsonPropertyAttribute("R")]
+public JToken Result { get; public set; }
+    [JsonPropertyAttribute("H")]
+public Nullable`1<bool> IsHubException { get; public set; }
+    [JsonPropertyAttribute("E")]
+public string Error { get; public set; }
+    [JsonPropertyAttribute("D")]
+public object ErrorData { get; public set; }
+    [JsonPropertyAttribute("S")]
+public IDictionary`2<string, JToken> State { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public HubProgressUpdate get_ProgressUpdate();
+    [CompilerGeneratedAttribute]
+public void set_ProgressUpdate(HubProgressUpdate value);
+    [CompilerGeneratedAttribute]
+public JToken get_Result();
+    [CompilerGeneratedAttribute]
+public void set_Result(JToken value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_IsHubException();
+    [CompilerGeneratedAttribute]
+public void set_IsHubException(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public string get_Error();
+    [CompilerGeneratedAttribute]
+public void set_Error(string value);
+    [CompilerGeneratedAttribute]
+public object get_ErrorData();
+    [CompilerGeneratedAttribute]
+public void set_ErrorData(object value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, JToken> get_State();
+    [CompilerGeneratedAttribute]
+public void set_State(IDictionary`2<string, JToken> value);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.Hubservable : object {
+    private string _eventName;
+    private IHubProxy _proxy;
+    public Hubservable(IHubProxy proxy, string eventName);
+    public sealed virtual IDisposable Subscribe(IObserver`1<IList`1<JToken>> observer);
+}
+public interface Microsoft.AspNet.SignalR.Client.Hubs.IHubConnection {
+    public abstract virtual string RegisterCallback(Action`1<HubResult> callback);
+    public abstract virtual void RemoveCallback(string callbackId);
+}
+public class Microsoft.AspNet.SignalR.Client.Hubs.Subscription : object {
+    [CompilerGeneratedAttribute]
+private Action`1<IList`1<JToken>> Received;
+    [CompilerGeneratedAttribute]
+public void add_Received(Action`1<IList`1<JToken>> value);
+    [CompilerGeneratedAttribute]
+public void remove_Received(Action`1<IList`1<JToken>> value);
+    internal void OnReceived(IList`1<JToken> data);
+}
+public interface Microsoft.AspNet.SignalR.Client.IConnection {
+    public Version Protocol { get; public set; }
+    public TimeSpan TransportConnectTimeout { get; public set; }
+    public TimeSpan TotalTransportConnectTimeout { get; }
+    public TimeSpan ReconnectWindow { get; public set; }
+    public KeepAliveData KeepAliveData { get; public set; }
+    public string MessageId { get; public set; }
+    public string GroupsToken { get; public set; }
+    public IDictionary`2<string, object> Items { get; }
+    public string ConnectionId { get; }
+    public string ConnectionToken { get; }
+    public string Url { get; }
+    public string QueryString { get; }
+    public ConnectionState State { get; }
+    public IClientTransport Transport { get; }
+    public DateTime LastMessageAt { get; }
+    public DateTime LastActiveAt { get; }
+    public IWebProxy Proxy { get; public set; }
+    public X509CertificateCollection Certificates { get; }
+    public IDictionary`2<string, string> Headers { get; }
+    public ICredentials Credentials { get; public set; }
+    public CookieContainer CookieContainer { get; public set; }
+    public JsonSerializer JsonSerializer { get; }
+    public abstract virtual Version get_Protocol();
+    public abstract virtual void set_Protocol(Version value);
+    public abstract virtual TimeSpan get_TransportConnectTimeout();
+    public abstract virtual void set_TransportConnectTimeout(TimeSpan value);
+    public abstract virtual TimeSpan get_TotalTransportConnectTimeout();
+    public abstract virtual TimeSpan get_ReconnectWindow();
+    public abstract virtual void set_ReconnectWindow(TimeSpan value);
+    public abstract virtual KeepAliveData get_KeepAliveData();
+    public abstract virtual void set_KeepAliveData(KeepAliveData value);
+    public abstract virtual string get_MessageId();
+    public abstract virtual void set_MessageId(string value);
+    public abstract virtual string get_GroupsToken();
+    public abstract virtual void set_GroupsToken(string value);
+    public abstract virtual IDictionary`2<string, object> get_Items();
+    public abstract virtual string get_ConnectionId();
+    public abstract virtual string get_ConnectionToken();
+    public abstract virtual string get_Url();
+    public abstract virtual string get_QueryString();
+    public abstract virtual ConnectionState get_State();
+    public abstract virtual IClientTransport get_Transport();
+    public abstract virtual DateTime get_LastMessageAt();
+    public abstract virtual DateTime get_LastActiveAt();
+    public abstract virtual IWebProxy get_Proxy();
+    public abstract virtual void set_Proxy(IWebProxy value);
+    public abstract virtual X509CertificateCollection get_Certificates();
+    public abstract virtual bool ChangeState(ConnectionState oldState, ConnectionState newState);
+    public abstract virtual IDictionary`2<string, string> get_Headers();
+    public abstract virtual ICredentials get_Credentials();
+    public abstract virtual void set_Credentials(ICredentials value);
+    public abstract virtual CookieContainer get_CookieContainer();
+    public abstract virtual void set_CookieContainer(CookieContainer value);
+    public abstract virtual JsonSerializer get_JsonSerializer();
+    public abstract virtual void Stop();
+    public abstract virtual void Stop(Exception error);
+    public abstract virtual void Disconnect();
+    public abstract virtual Task Send(string data);
+    public abstract virtual void OnReceived(JToken data);
+    public abstract virtual void OnError(Exception ex);
+    public abstract virtual void OnReconnecting();
+    public abstract virtual void OnReconnected();
+    public abstract virtual void OnConnectionSlow();
+    public abstract virtual void PrepareRequest(IRequest request);
+    public abstract virtual void MarkLastMessage();
+    public abstract virtual void MarkActive();
+    public abstract virtual void Trace(TraceLevels level, string format, Object[] args);
+}
+[DefaultMemberAttribute("Item")]
+public interface Microsoft.AspNet.SignalR.Client.IHubProxy {
+    public JToken Item { get; public set; }
+    public JsonSerializer JsonSerializer { get; }
+    public abstract virtual JToken get_Item(string name);
+    public abstract virtual void set_Item(string name, JToken value);
+    public abstract virtual Task Invoke(string method, Object[] args);
+    public abstract virtual Task`1<T> Invoke(string method, Object[] args);
+    public abstract virtual Task Invoke(string method, Action`1<T> onProgress, Object[] args);
+    public abstract virtual Task`1<TResult> Invoke(string method, Action`1<TProgress> onProgress, Object[] args);
+    public abstract virtual Subscription Subscribe(string eventName);
+    public abstract virtual JsonSerializer get_JsonSerializer();
+}
+internal static class Microsoft.AspNet.SignalR.Client.Infrastructure.ExceptionHelper : object {
+    internal static bool IsRequestAborted(Exception exception);
+}
+internal interface Microsoft.AspNet.SignalR.Client.Infrastructure.ITaskMonitor {
+    public abstract virtual void TaskStarted();
+    public abstract virtual void TaskCompleted();
+}
+public class Microsoft.AspNet.SignalR.Client.Infrastructure.SlowCallbackException : Exception {
+    public SlowCallbackException(string message);
+    public SlowCallbackException(string message, Exception inner);
+    protected SlowCallbackException(SerializationInfo info, StreamingContext context);
+}
+public class Microsoft.AspNet.SignalR.Client.Infrastructure.StartException : Exception {
+    public StartException(string message);
+    public StartException(string message, Exception inner);
+    protected StartException(SerializationInfo info, StreamingContext context);
+}
+internal class Microsoft.AspNet.SignalR.Client.Infrastructure.TaskQueueMonitor : object {
+    private Timer _timer;
+    private IConnection _connection;
+    private TimeSpan _deadlockErrorTimeout;
+    private object _lockObj;
+    private UInt32 _currTaskId;
+    private UInt32 _prevTaskId;
+    private bool _isTaskRunning;
+    private bool _errorRaised;
+    public TaskQueueMonitor(IConnection connection, TimeSpan deadlockErrorTimeout);
+    public sealed virtual void TaskStarted();
+    public sealed virtual void TaskCompleted();
+    internal void Beat();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__8_0(object _);
+}
+internal class Microsoft.AspNet.SignalR.Client.Infrastructure.ThreadSafeInvoker : object {
+    private int _invoked;
+    public bool Invoke(Action action);
+    public bool Invoke(Action`1<T> action, T arg);
+    public bool Invoke();
+}
+public class Microsoft.AspNet.SignalR.Client.Infrastructure.TransportAbortHandler : object {
+    private string _transportName;
+    private IHttpClient _httpClient;
+    private ManualResetEvent _abortResetEvent;
+    private bool _startedAbort;
+    private object _abortLock;
+    private bool _disposed;
+    private object _disposeLock;
+    public TransportAbortHandler(IHttpClient httpClient, string transportName);
+    public virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData);
+    public void CompleteAbort();
+    public bool TryCompleteAbort();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+internal class Microsoft.AspNet.SignalR.Client.Infrastructure.TransportInitializationHandler : object {
+    private ThreadSafeInvoker _initializationInvoker;
+    private DispatchingTaskCompletionSource`1<object> _initializationTask;
+    private IConnection _connection;
+    private IHttpClient _httpClient;
+    private string _connectionData;
+    private string _transport;
+    private IDisposable _tokenCleanup;
+    private TransportHelper _transportHelper;
+    private int _state;
+    [CompilerGeneratedAttribute]
+private Action OnFailure;
+    public Task Task { get; }
+    public TransportInitializationHandler(IHttpClient httpClient, IConnection connection, string connectionData, string transport, CancellationToken disconnectToken, TransportHelper transportHelper);
+    [CompilerGeneratedAttribute]
+public void add_OnFailure(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_OnFailure(Action value);
+    public Task get_Task();
+    public bool TryFailStart();
+    public bool TryFailStart(Exception ex);
+    public void InitReceived();
+    private void CompleteStart();
+    private void CompleteFail(Exception ex);
+    private static void Dispatch(Action callback);
+    [CompilerGeneratedAttribute]
+private void <InitReceived>b__18_0(string response);
+    [CompilerGeneratedAttribute]
+private void <InitReceived>b__18_1(AggregateException ex);
+    [CompilerGeneratedAttribute]
+private void <CompleteStart>b__19_0();
+}
+public static class Microsoft.AspNet.SignalR.Client.Infrastructure.UrlBuilder : object {
+    public static string BuildNegotiate(IConnection connection, string connectionData);
+    public static string BuildStart(IConnection connection, string transport, string connectionData);
+    public static string BuildConnect(IConnection connection, string transport, string connectionData);
+    public static string BuildReconnect(IConnection connection, string transport, string connectionData);
+    public static string BuildPoll(IConnection connection, string transport, string connectionData);
+    public static string BuildSend(IConnection connection, string transport, string connectionData);
+    public static string BuildAbort(IConnection connection, string transport, string connectionData);
+    private static StringBuilder CreateBaseUrl(string command, IConnection connection, string transport, string connectionData);
+    private static void AppendCommonParameters(StringBuilder urlStringBuilder, IConnection connection, string transport, string connectionData);
+    private static void AppendReceiveParameters(StringBuilder urlStringBuilder, IConnection connection);
+    internal static string Trim(StringBuilder urlStringBuilder);
+    private static void AppendClientProtocol(StringBuilder urlStringBuilder, IConnection connection);
+    private static void AppendTransport(StringBuilder urlStringBuilder, string transportName);
+    private static void AppendConnectionToken(StringBuilder urlStringBuilder, IConnection connection);
+    private static void AppendMessageId(StringBuilder urlStringBuilder, IConnection connection);
+    private static void AppendGroupsToken(StringBuilder urlStringBuilder, IConnection connection);
+    private static void AppendConnectionData(StringBuilder urlStringBuilder, string connectionData);
+    internal static void AppendCustomQueryString(StringBuilder urlStringBuilder, string queryString);
+    public static Uri ConvertToWebSocketUri(string uriString);
+}
+public class Microsoft.AspNet.SignalR.Client.KeepAliveData : object {
+    private static double _keepAliveWarnAt;
+    [CompilerGeneratedAttribute]
+private TimeSpan <Timeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <TimeoutWarning>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <CheckInterval>k__BackingField;
+    public TimeSpan Timeout { get; private set; }
+    public TimeSpan TimeoutWarning { get; private set; }
+    public TimeSpan CheckInterval { get; private set; }
+    public KeepAliveData(TimeSpan timeout);
+    public KeepAliveData(TimeSpan timeout, TimeSpan timeoutWarning, TimeSpan checkInterval);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_Timeout();
+    [CompilerGeneratedAttribute]
+private void set_Timeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_TimeoutWarning();
+    [CompilerGeneratedAttribute]
+private void set_TimeoutWarning(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_CheckInterval();
+    [CompilerGeneratedAttribute]
+private void set_CheckInterval(TimeSpan value);
+}
+[DebuggerDisplayAttribute("{ConnectionId} {Url} -> {ProtocolVersion}")]
+public class Microsoft.AspNet.SignalR.Client.NegotiationResponse : object {
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProtocolVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <DisconnectTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <TryWebSockets>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <KeepAliveTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <TransportConnectTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RedirectUrl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AccessToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Error>k__BackingField;
+    public string ConnectionId { get; public set; }
+    public string ConnectionToken { get; public set; }
+    public string Url { get; public set; }
+    public string ProtocolVersion { get; public set; }
+    public double DisconnectTimeout { get; public set; }
+    public bool TryWebSockets { get; public set; }
+    public Nullable`1<double> KeepAliveTimeout { get; public set; }
+    public double TransportConnectTimeout { get; public set; }
+    public string RedirectUrl { get; public set; }
+    public string AccessToken { get; public set; }
+    public string Error { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionToken();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionToken(string value);
+    [CompilerGeneratedAttribute]
+public string get_Url();
+    [CompilerGeneratedAttribute]
+public void set_Url(string value);
+    [CompilerGeneratedAttribute]
+public string get_ProtocolVersion();
+    [CompilerGeneratedAttribute]
+public void set_ProtocolVersion(string value);
+    [CompilerGeneratedAttribute]
+public double get_DisconnectTimeout();
+    [CompilerGeneratedAttribute]
+public void set_DisconnectTimeout(double value);
+    [CompilerGeneratedAttribute]
+public bool get_TryWebSockets();
+    [CompilerGeneratedAttribute]
+public void set_TryWebSockets(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_KeepAliveTimeout();
+    [CompilerGeneratedAttribute]
+public void set_KeepAliveTimeout(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public double get_TransportConnectTimeout();
+    [CompilerGeneratedAttribute]
+public void set_TransportConnectTimeout(double value);
+    [CompilerGeneratedAttribute]
+public string get_RedirectUrl();
+    [CompilerGeneratedAttribute]
+public void set_RedirectUrl(string value);
+    [CompilerGeneratedAttribute]
+public string get_AccessToken();
+    [CompilerGeneratedAttribute]
+public void set_AccessToken(string value);
+    [CompilerGeneratedAttribute]
+public string get_Error();
+    [CompilerGeneratedAttribute]
+public void set_Error(string value);
+}
+public class Microsoft.AspNet.SignalR.Client.ObservableConnection`1 : object {
+    private Connection _connection;
+    private Func`2<string, T> _convert;
+    public ObservableConnection`1(Connection connection, Func`2<string, T> convert);
+    public sealed virtual IDisposable Subscribe(IObserver`1<T> observer);
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.AspNet.SignalR.Client.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string Error_CertsCanOnlyBeAddedWhenDisconnected { get; }
+    internal static string Error_ClientCallbackArgumentTypeMismatch { get; }
+    internal static string Error_ClientCallbackInvalidNumberOfArguments { get; }
+    internal static string Error_ConnectionCancelled { get; }
+    internal static string Error_ConnectionHasNotBeenEstablished { get; }
+    internal static string Error_DataCannotBeSentConnectionDisconnected { get; }
+    internal static string Error_DataCannotBeSentDuringWebSocketReconnect { get; }
+    internal static string Error_IncompatibleProtocolVersion { get; }
+    internal static string Error_InvalidUriScheme { get; }
+    internal static string Error_NegotiationLimitExceeded { get; }
+    internal static string Error_NoCompatibleTransportFound { get; }
+    internal static string Error_PossibleDeadlockDetected { get; }
+    internal static string Error_ProcessResponseBeforeStart { get; }
+    internal static string Error_ProxiesCannotBeAddedConnectionStarted { get; }
+    internal static string Error_ReconnectTimeout { get; }
+    internal static string Error_ReconnectWindowTimeout { get; }
+    internal static string Error_ServerNegotiationFailed { get; }
+    internal static string Error_StartFailed { get; }
+    internal static string Error_TaskCancelledException { get; }
+    internal static string Error_TransportCannotBeReused { get; }
+    internal static string Error_TransportDisconnectedBeforeConnectionFullyInitialized { get; }
+    internal static string Error_TransportFailedToConnect { get; }
+    internal static string Error_TransportTimedOutTryingToConnect { get; }
+    internal static string Error_UrlCantContainQueryStringDirectly { get; }
+    internal static string Error_ErrorFromServer { get; }
+    internal static string Message_ConnectionClosed { get; }
+    internal static string Message_Reconnecting { get; }
+    internal static string Error_AspNetCoreServerDetected { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_Error_CertsCanOnlyBeAddedWhenDisconnected();
+    internal static string get_Error_ClientCallbackArgumentTypeMismatch();
+    internal static string get_Error_ClientCallbackInvalidNumberOfArguments();
+    internal static string get_Error_ConnectionCancelled();
+    internal static string get_Error_ConnectionHasNotBeenEstablished();
+    internal static string get_Error_DataCannotBeSentConnectionDisconnected();
+    internal static string get_Error_DataCannotBeSentDuringWebSocketReconnect();
+    internal static string get_Error_IncompatibleProtocolVersion();
+    internal static string get_Error_InvalidUriScheme();
+    internal static string get_Error_NegotiationLimitExceeded();
+    internal static string get_Error_NoCompatibleTransportFound();
+    internal static string get_Error_PossibleDeadlockDetected();
+    internal static string get_Error_ProcessResponseBeforeStart();
+    internal static string get_Error_ProxiesCannotBeAddedConnectionStarted();
+    internal static string get_Error_ReconnectTimeout();
+    internal static string get_Error_ReconnectWindowTimeout();
+    internal static string get_Error_ServerNegotiationFailed();
+    internal static string get_Error_StartFailed();
+    internal static string get_Error_TaskCancelledException();
+    internal static string get_Error_TransportCannotBeReused();
+    internal static string get_Error_TransportDisconnectedBeforeConnectionFullyInitialized();
+    internal static string get_Error_TransportFailedToConnect();
+    internal static string get_Error_TransportTimedOutTryingToConnect();
+    internal static string get_Error_UrlCantContainQueryStringDirectly();
+    internal static string get_Error_ErrorFromServer();
+    internal static string get_Message_ConnectionClosed();
+    internal static string get_Message_Reconnecting();
+    internal static string get_Error_AspNetCoreServerDetected();
+}
+public class Microsoft.AspNet.SignalR.Client.SignalRError : object {
+    private IDisposable _response;
+    [CompilerGeneratedAttribute]
+private HttpStatusCode <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ResponseBody>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    public HttpStatusCode StatusCode { get; public set; }
+    public string ResponseBody { get; public set; }
+    public Exception Exception { get; private set; }
+    public SignalRError(Exception exception);
+    internal void SetResponse(IDisposable response);
+    [CompilerGeneratedAttribute]
+public HttpStatusCode get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(HttpStatusCode value);
+    [CompilerGeneratedAttribute]
+public string get_ResponseBody();
+    [CompilerGeneratedAttribute]
+public void set_ResponseBody(string value);
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+    [CompilerGeneratedAttribute]
+private void set_Exception(Exception value);
+    public virtual string ToString();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+public class Microsoft.AspNet.SignalR.Client.StateChange : object {
+    [CompilerGeneratedAttribute]
+private ConnectionState <OldState>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConnectionState <NewState>k__BackingField;
+    public ConnectionState OldState { get; private set; }
+    public ConnectionState NewState { get; private set; }
+    public StateChange(ConnectionState oldState, ConnectionState newState);
+    [CompilerGeneratedAttribute]
+public ConnectionState get_OldState();
+    [CompilerGeneratedAttribute]
+private void set_OldState(ConnectionState value);
+    [CompilerGeneratedAttribute]
+public ConnectionState get_NewState();
+    [CompilerGeneratedAttribute]
+private void set_NewState(ConnectionState value);
+}
+[FlagsAttribute]
+public enum Microsoft.AspNet.SignalR.Client.TraceLevels : Enum {
+    public int value__;
+    public static TraceLevels None;
+    public static TraceLevels Messages;
+    public static TraceLevels Events;
+    public static TraceLevels StateChanges;
+    public static TraceLevels All;
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.AsyncStreamReader : object {
+    private object _bufferLock;
+    private Stream _stream;
+    private Byte[] _readBuffer;
+    private int _reading;
+    private Action _setOpened;
+    [CompilerGeneratedAttribute]
+private Action <Opened>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<Exception> <Closed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<ArraySegment`1<byte>> <Data>k__BackingField;
+    protected object BufferLock { get; }
+    public Action Opened { get; public set; }
+    public Action`1<Exception> Closed { get; public set; }
+    public Action`1<ArraySegment`1<byte>> Data { get; public set; }
+    private bool Processing { get; }
+    public AsyncStreamReader(Stream stream);
+    protected object get_BufferLock();
+    [CompilerGeneratedAttribute]
+public Action get_Opened();
+    [CompilerGeneratedAttribute]
+public void set_Opened(Action value);
+    [CompilerGeneratedAttribute]
+public Action`1<Exception> get_Closed();
+    [CompilerGeneratedAttribute]
+public void set_Closed(Action`1<Exception> value);
+    [CompilerGeneratedAttribute]
+public Action`1<ArraySegment`1<byte>> get_Data();
+    [CompilerGeneratedAttribute]
+public void set_Data(Action`1<ArraySegment`1<byte>> value);
+    private bool get_Processing();
+    public void Start();
+    private void Close();
+    private void Process();
+    private void ReadAsync(Task`1<int> readTask);
+    private bool TryProcessRead(int read);
+    private void Close(Exception exception);
+    private void OnOpened();
+    private void OnData(ArraySegment`1<byte> buffer);
+    [CompilerGeneratedAttribute]
+private void <Start>b__22_0();
+    [CompilerGeneratedAttribute]
+private void <ReadAsync>b__25_0(Task`1<int> task);
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.AutoTransport : object {
+    private IHttpClient _httpClient;
+    private List`1<IClientTransport> _transports;
+    private IClientTransport _transport;
+    private bool _tryWebSockets;
+    public bool SupportsKeepAlive { get; }
+    public string Name { get; }
+    public AutoTransport(IHttpClient httpClient);
+    public AutoTransport(IHttpClient httpClient, IList`1<IClientTransport> transports);
+    public sealed virtual bool get_SupportsKeepAlive();
+    public sealed virtual string get_Name();
+    public sealed virtual Task`1<NegotiationResponse> Negotiate(IConnection connection, string connectionData);
+    public virtual Task`1<NegotiationResponse> GetNegotiateResponse(IConnection connection, string connectionData);
+    public sealed virtual Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    private void ResolveTransport(IConnection connection, string data, CancellationToken disconnectToken, DispatchingTaskCompletionSource`1<object> tcs, Exception lastError, int index);
+    public sealed virtual Task Send(IConnection connection, string data, string connectionData);
+    public sealed virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData);
+    public sealed virtual void LostConnection(IConnection connection);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+private NegotiationResponse <Negotiate>b__10_0(NegotiationResponse response);
+}
+public abstract class Microsoft.AspNet.SignalR.Client.Transports.ClientTransportBase : object {
+    private IHttpClient _httpClient;
+    private string _transportName;
+    private TransportHelper _transportHelper;
+    private TransportAbortHandler _abortHandler;
+    private bool _finished;
+    private TransportInitializationHandler _initializationHandler;
+    protected IHttpClient HttpClient { get; }
+    protected TransportHelper TransportHelper { get; }
+    protected TransportAbortHandler AbortHandler { get; }
+    public string Name { get; }
+    public bool SupportsKeepAlive { get; }
+    protected ClientTransportBase(IHttpClient httpClient, string transportName);
+    internal ClientTransportBase(IHttpClient httpClient, string transportName, TransportHelper transportHelper, TransportAbortHandler abortHandler);
+    protected IHttpClient get_HttpClient();
+    protected TransportHelper get_TransportHelper();
+    protected TransportAbortHandler get_AbortHandler();
+    public sealed virtual string get_Name();
+    public abstract virtual bool get_SupportsKeepAlive();
+    public sealed virtual Task`1<NegotiationResponse> Negotiate(IConnection connection, string connectionData);
+    public sealed virtual Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    protected abstract virtual void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    protected abstract virtual void OnStartFailed();
+    protected internal bool TryFailStart(Exception ex);
+    public abstract virtual Task Send(IConnection connection, string data, string connectionData);
+    public virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData);
+    public abstract virtual void LostConnection(IConnection connection);
+    protected internal virtual bool ProcessResponse(IConnection connection, string response);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+public abstract class Microsoft.AspNet.SignalR.Client.Transports.HttpBasedTransport : ClientTransportBase {
+    protected HttpBasedTransport(IHttpClient httpClient, string transportName);
+    public virtual Task Send(IConnection connection, string data, string connectionData);
+}
+public interface Microsoft.AspNet.SignalR.Client.Transports.IClientTransport {
+    public string Name { get; }
+    public bool SupportsKeepAlive { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual bool get_SupportsKeepAlive();
+    public abstract virtual Task`1<NegotiationResponse> Negotiate(IConnection connection, string connectionData);
+    public abstract virtual Task Start(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    public abstract virtual Task Send(IConnection connection, string data, string connectionData);
+    public abstract virtual void Abort(IConnection connection, TimeSpan timeout, string connectionData);
+    public abstract virtual void LostConnection(IConnection connection);
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.LongPollingTransport : HttpBasedTransport {
+    private IRequest _currentRequest;
+    private int _running;
+    private object _stopLock;
+    private ThreadSafeInvoker _reconnectInvoker;
+    private IDisposable _disconnectRegistration;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ReconnectDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ErrorDelay>k__BackingField;
+    public TimeSpan ReconnectDelay { get; public set; }
+    public TimeSpan ErrorDelay { get; public set; }
+    public bool SupportsKeepAlive { get; }
+    public LongPollingTransport(IHttpClient httpClient);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ReconnectDelay();
+    [CompilerGeneratedAttribute]
+public void set_ReconnectDelay(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ErrorDelay();
+    [CompilerGeneratedAttribute]
+public void set_ErrorDelay(TimeSpan value);
+    public virtual bool get_SupportsKeepAlive();
+    protected virtual void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    protected virtual void OnStartFailed();
+    private void Poll(IConnection connection, string connectionData);
+    internal void StartPolling(IConnection connection, string connectionData);
+    private void StopPolling();
+    private string ResolveUrl(IConnection connection, string connectionData);
+    private void OnMessage(IConnection connection, string message);
+    private Task OnAfterPoll(Exception exception);
+    internal virtual void OnError(IConnection connection, Exception exception);
+    private static bool OnChunk(IConnection connection, ArraySegment`1<byte> readBuffer);
+    private static bool IsKeepAlive(ArraySegment`1<byte> readBuffer);
+    public virtual void LostConnection(IConnection connection);
+    private void TryDelayedReconnect(IConnection connection, ThreadSafeInvoker reconnectInvoker);
+    private static void TryReconnect(IConnection connection, ThreadSafeInvoker reconnectInvoker);
+    private static void FireReconnected(IConnection connection);
+    private static bool IsReconnecting(IConnection connection);
+    [CompilerGeneratedAttribute]
+private void <OnStart>b__17_0(object state);
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.ChunkBuffer : object {
+    private int _offset;
+    private StringBuilder _buffer;
+    private StringBuilder _lineBuilder;
+    public bool HasChunks { get; }
+    public bool get_HasChunks();
+    public void Add(Byte[] buffer, int length);
+    public void Add(ArraySegment`1<byte> buffer);
+    public string ReadLine();
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventSourceStreamReader : AsyncStreamReader {
+    private ChunkBuffer _buffer;
+    private IConnection _connection;
+    [CompilerGeneratedAttribute]
+private Action`1<SseEvent> <Message>k__BackingField;
+    public Action`1<SseEvent> Message { get; public set; }
+    public EventSourceStreamReader(IConnection connection, Stream stream);
+    [CompilerGeneratedAttribute]
+public Action`1<SseEvent> get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(Action`1<SseEvent> value);
+    private void ProcessBuffer(ArraySegment`1<byte> readBuffer);
+    private void OnMessage(SseEvent sseEvent);
+}
+public enum Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.EventType : Enum {
+    public int value__;
+    public static EventType Id;
+    public static EventType Data;
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.ServerSentEvents.SseEvent : object {
+    [CompilerGeneratedAttribute]
+private EventType <EventType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Data>k__BackingField;
+    public EventType EventType { get; private set; }
+    public string Data { get; private set; }
+    public SseEvent(EventType type, string data);
+    [CompilerGeneratedAttribute]
+public EventType get_EventType();
+    [CompilerGeneratedAttribute]
+private void set_EventType(EventType value);
+    [CompilerGeneratedAttribute]
+public string get_Data();
+    [CompilerGeneratedAttribute]
+private void set_Data(string value);
+    public virtual string ToString();
+    public static bool TryParse(string line, SseEvent& sseEvent);
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.ServerSentEventsTransport : HttpBasedTransport {
+    private IRequest _request;
+    private bool _stop;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ReconnectDelay>k__BackingField;
+    public bool SupportsKeepAlive { get; }
+    public TimeSpan ReconnectDelay { get; public set; }
+    public ServerSentEventsTransport(IHttpClient httpClient);
+    public virtual bool get_SupportsKeepAlive();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ReconnectDelay();
+    [CompilerGeneratedAttribute]
+public void set_ReconnectDelay(TimeSpan value);
+    protected virtual void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    protected virtual void OnStartFailed();
+    private void Reconnect(IConnection connection, string data, CancellationToken disconnectToken);
+    internal void OpenConnection(IConnection connection, string data, CancellationToken disconnectToken, bool reconnecting);
+    public virtual void LostConnection(IConnection connection);
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.TransportHelper : object {
+    public virtual Task`1<NegotiationResponse> GetNegotiationResponse(IHttpClient httpClient, IConnection connection, string connectionData);
+    public virtual Task`1<string> GetStartResponse(IHttpClient httpClient, IConnection connection, string connectionData, string transport);
+    public static bool VerifyLastActive(IConnection connection);
+}
+internal class Microsoft.AspNet.SignalR.Client.Transports.WebSockets.ClientWebSocketHandler : WebSocketHandler {
+    private WebSocketTransport _webSocketTransport;
+    public ClientWebSocketHandler(WebSocketTransport webSocketTransport);
+    public virtual void OnMessage(string message);
+    public virtual void OnOpen();
+    public virtual void OnClose();
+    public virtual void OnError();
+}
+public class Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport : ClientTransportBase {
+    private ClientWebSocketHandler _webSocketHandler;
+    private CancellationToken _disconnectToken;
+    private IConnection _connection;
+    private string _connectionData;
+    private CancellationTokenSource _webSocketTokenSource;
+    private ClientWebSocket _webSocket;
+    private int _disposed;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ReconnectDelay>k__BackingField;
+    public TimeSpan ReconnectDelay { get; public set; }
+    public bool SupportsKeepAlive { get; }
+    public WebSocketTransport(IHttpClient client);
+    internal WebSocketTransport(ClientWebSocketHandler webSocketHandler);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ReconnectDelay();
+    [CompilerGeneratedAttribute]
+public void set_ReconnectDelay(TimeSpan value);
+    public virtual bool get_SupportsKeepAlive();
+    protected virtual void OnStart(IConnection connection, string connectionData, CancellationToken disconnectToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport/<ConnectAndHandleConnection>d__17")]
+private Task ConnectAndHandleConnection();
+    public virtual Task PerformConnect(CancellationToken token);
+    private CancellationToken CreateLinkedCancellationToken();
+    [AsyncStateMachineAttribute("Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport/<PerformConnect>d__20")]
+private Task PerformConnect(string url, CancellationToken token);
+    protected virtual void OnStartFailed();
+    public virtual Task Send(IConnection connection, string data, string connectionData);
+    internal virtual void OnMessage(string message);
+    internal virtual void OnOpen();
+    internal virtual void OnClose();
+    [AsyncStateMachineAttribute("Microsoft.AspNet.SignalR.Client.Transports.WebSocketTransport/<DoReconnect>d__26")]
+private Task DoReconnect();
+    internal virtual void OnError(Exception error);
+    public virtual void LostConnection(IConnection connection);
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+private void <OnStart>b__16_0(Task task);
+}
+internal class Microsoft.AspNet.SignalR.Client.Transports.WebSocketWrapperRequest : object {
+    private ClientWebSocket _clientWebSocket;
+    private IConnection _connection;
+    public string UserAgent { get; public set; }
+    public ICredentials Credentials { get; public set; }
+    public CookieContainer CookieContainer { get; public set; }
+    public IWebProxy Proxy { get; public set; }
+    public string Accept { get; public set; }
+    public WebSocketWrapperRequest(ClientWebSocket clientWebSocket, IConnection connection);
+    public sealed virtual string get_UserAgent();
+    public sealed virtual void set_UserAgent(string value);
+    public ICredentials get_Credentials();
+    public void set_Credentials(ICredentials value);
+    public CookieContainer get_CookieContainer();
+    public void set_CookieContainer(CookieContainer value);
+    public IWebProxy get_Proxy();
+    public void set_Proxy(IWebProxy value);
+    public sealed virtual string get_Accept();
+    public sealed virtual void set_Accept(string value);
+    public sealed virtual void SetRequestHeaders(IDictionary`2<string, string> headers);
+    public void AddClientCerts(X509CertificateCollection certificates);
+    public sealed virtual void Abort();
+    private void PrepareRequest();
+}
+internal class Microsoft.AspNet.SignalR.Infrastructure.ByteBuffer : object {
+    private int _currentLength;
+    private Nullable`1<int> _maxLength;
+    private List`1<Byte[]> _segments;
+    public ByteBuffer(Nullable`1<int> maxLength);
+    public void Append(Byte[] segment);
+    public Byte[] GetByteArray();
+    public string GetString();
+}
+[ExtensionAttribute]
+internal static class Microsoft.AspNet.SignalR.Infrastructure.CancellationTokenExtensions : object {
+    private static RegisterDelegate _tokenRegister;
+    private static CancellationTokenExtensions();
+    [ExtensionAttribute]
+public static IDisposable SafeRegister(CancellationToken cancellationToken, Action`1<object> callback, object state);
+    private static void InvokeCallback(object state);
+    private static void Dispose(object state);
+    private static RegisterDelegate ResolveRegisterDelegate();
+}
+internal class Microsoft.AspNet.SignalR.Infrastructure.DispatchingTaskCompletionSource`1 : object {
+    private TaskCompletionSource`1<TResult> _tcs;
+    public Task`1<TResult> Task { get; }
+    public Task`1<TResult> get_Task();
+    public void SetCanceled();
+    public void SetException(Exception exception);
+    public void SetException(IEnumerable`1<Exception> exceptions);
+    public void SetResult(TResult result);
+    public void TrySetCanceled();
+    public void TrySetException(Exception exception);
+    public void TrySetException(IEnumerable`1<Exception> exceptions);
+    public void SetUnwrappedException(Exception e);
+    public void TrySetUnwrappedException(Exception e);
+    public void TrySetResult(TResult result);
+    [CompilerGeneratedAttribute]
+private void <SetCanceled>b__3_0();
+    [CompilerGeneratedAttribute]
+private void <TrySetCanceled>b__7_0();
+}
+internal class Microsoft.AspNet.SignalR.Infrastructure.DisposableAction : object {
+    public static DisposableAction Empty;
+    private Action`1<object> _action;
+    private object _state;
+    public DisposableAction(Action action);
+    public DisposableAction(Action`1<object> action, object state);
+    private static DisposableAction();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+internal class Microsoft.AspNet.SignalR.Infrastructure.Disposer : object {
+    private static object _disposedSentinel;
+    private object _disposable;
+    private static Disposer();
+    public void Set(IDisposable disposable);
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+[ExtensionAttribute]
+internal static class Microsoft.AspNet.SignalR.Infrastructure.ExceptionsExtensions : object {
+    [ExtensionAttribute]
+internal static Exception Unwrap(Exception ex);
+}
+internal class Microsoft.AspNet.SignalR.Infrastructure.TaskQueue : object {
+    private object _lockObj;
+    private Task _lastQueuedTask;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _drained;
+    private Nullable`1<int> _maxSize;
+    private long _size;
+    private ITaskMonitor _taskMonitor;
+    public bool IsDrained { get; }
+    public TaskQueue(Task initialTask);
+    public TaskQueue(Task initialTask, int maxSize);
+    public TaskQueue(Task initialTask, ITaskMonitor taskMonitor);
+    public bool get_IsDrained();
+    public Task Enqueue(Func`2<object, Task> taskFunc, object state);
+    private Task InvokeNext(Func`2<object, Task> next, object nextState);
+    private void Dequeue();
+    public Task Enqueue(Func`1<Task> taskFunc);
+    public Task Drain();
+}
+internal static class Microsoft.AspNet.SignalR.Infrastructure.UrlEncoder : object {
+    public static string UrlEncode(string str);
+    private static Byte[] UrlEncode(Byte[] bytes, int offset, int count, bool alwaysCreateNewReturnValue);
+    private static Byte[] UrlEncode(Byte[] bytes, int offset, int count);
+    private static char IntToHex(int n);
+    private static bool IsUrlSafeChar(char ch);
+    private static bool ValidateUrlEncodingParameters(Byte[] bytes, int offset, int count);
+}
+[ExtensionAttribute]
+internal static class Microsoft.AspNet.SignalR.TaskAsyncHelper : object {
+    private static Task _emptyTask;
+    private static Task`1<bool> _trueTask;
+    private static Task`1<bool> _falseTask;
+    public static Task Empty { get; }
+    public static Task`1<bool> True { get; }
+    public static Task`1<bool> False { get; }
+    private static TaskAsyncHelper();
+    private static Task`1<T> MakeTask(T value);
+    public static Task get_Empty();
+    public static Task`1<bool> get_True();
+    public static Task`1<bool> get_False();
+    [ExtensionAttribute]
+public static Task OrEmpty(Task task);
+    [ExtensionAttribute]
+public static Task`1<T> OrEmpty(Task`1<T> task);
+    public static Task FromAsync(Func`3<AsyncCallback, object, IAsyncResult> beginMethod, Action`1<IAsyncResult> endMethod, object state);
+    public static Task`1<T> FromAsync(Func`3<AsyncCallback, object, IAsyncResult> beginMethod, Func`2<IAsyncResult, T> endMethod, object state);
+    [ExtensionAttribute]
+public static TTask Catch(TTask task, IConnection connection);
+    [ExtensionAttribute]
+public static TTask Catch(TTask task, Action`2<AggregateException, object> handler, object state, IConnection connection);
+    private static void AttachFaultedContinuation(TTask task, Action`2<AggregateException, object> handler, object state, IConnection connection);
+    private static void ExecuteOnFaulted(Action`2<AggregateException, object> handler, object state, AggregateException exception, IConnection connection);
+    [ExtensionAttribute]
+public static TTask Catch(TTask task, Action`1<AggregateException> handler, IConnection connection);
+    [ExtensionAttribute]
+public static Task ContinueWithNotComplete(Task task, Action action);
+    [ExtensionAttribute]
+public static void ContinueWithNotComplete(Task task, DispatchingTaskCompletionSource`1<object> tcs);
+    [ExtensionAttribute]
+public static Task ContinueWith(Task task, DispatchingTaskCompletionSource`1<object> tcs);
+    [ExtensionAttribute]
+public static void ContinueWith(Task`1<T> task, TaskCompletionSource`1<T> tcs);
+    [ExtensionAttribute]
+public static Task Then(Task task, Action successor);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task task, Func`1<TResult> successor);
+    [ExtensionAttribute]
+public static Task Then(Task task, Action`1<T1> successor, T1 arg1);
+    [ExtensionAttribute]
+public static Task Then(Task task, Action`2<T1, T2> successor, T1 arg1, T2 arg2);
+    [ExtensionAttribute]
+public static Task Then(Task task, Func`2<T1, Task> successor, T1 arg1);
+    [ExtensionAttribute]
+public static Task Then(Task task, Func`3<T1, T2, Task> successor, T1 arg1, T2 arg2);
+    [ExtensionAttribute]
+public static Task Then(Task task, Func`4<T1, T2, T3, Task> successor, T1 arg1, T2 arg2, T3 arg3);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task`1<T> task, Func`2<T, Task`1<TResult>> successor);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task`1<T> task, Func`2<T, TResult> successor);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task`1<T> task, Func`3<T, T1, TResult> successor, T1 arg1);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task`1<T> task, Func`4<T, T1, T2, TResult> successor, T1 arg1, T2 arg2);
+    [ExtensionAttribute]
+public static Task Then(Task task, Func`1<Task> successor);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task task, Func`1<Task`1<TResult>> successor);
+    [ExtensionAttribute]
+public static Task Then(Task`1<TResult> task, Action`1<TResult> successor);
+    [ExtensionAttribute]
+public static Task Then(Task`1<T> task, Action`2<T, T1> successor, T1 arg1);
+    [ExtensionAttribute]
+public static Task Then(Task`1<TResult> task, Func`2<TResult, Task> successor);
+    [ExtensionAttribute]
+public static Task`1<TResult> Then(Task`1<TResult> task, Func`3<Task`1<TResult>, T1, Task`1<TResult>> successor, T1 arg1);
+    [ExtensionAttribute]
+public static Task Finally(Task task, Action`1<object> next, object state);
+    [ExtensionAttribute]
+public static Task RunSynchronously(Task task, Action successor);
+    [ExtensionAttribute]
+public static Task FastUnwrap(Task`1<Task> task);
+    [ExtensionAttribute]
+public static Task`1<T> FastUnwrap(Task`1<Task`1<T>> task);
+    public static Task Delay(TimeSpan timeOut);
+    public static Task FromMethod(Action func);
+    public static Task FromMethod(Action`1<T1> func, T1 arg);
+    public static Task FromMethod(Action`2<T1, T2> func, T1 arg1, T2 arg2);
+    public static Task FromMethod(Func`1<Task> func);
+    public static Task`1<TResult> FromMethod(Func`1<Task`1<TResult>> func);
+    public static Task`1<TResult> FromMethod(Func`1<TResult> func);
+    public static Task FromMethod(Func`2<T1, Task> func, T1 arg);
+    public static Task FromMethod(Func`3<T1, T2, Task> func, T1 arg1, T2 arg2);
+    public static Task FromMethod(Func`4<T1, T2, T3, Task> func, T1 arg1, T2 arg2, T3 arg3);
+    public static Task`1<TResult> FromMethod(Func`2<T1, Task`1<TResult>> func, T1 arg);
+    public static Task`1<TResult> FromMethod(Func`2<T1, TResult> func, T1 arg);
+    public static Task`1<TResult> FromMethod(Func`3<T1, T2, Task`1<TResult>> func, T1 arg1, T2 arg2);
+    public static Task`1<TResult> FromMethod(Func`3<T1, T2, TResult> func, T1 arg1, T2 arg2);
+    public static Task`1<TResult> FromMethod(Func`4<T1, T2, T3, TResult> func, T1 arg1, T2 arg2, T3 arg3);
+    public static Task`1<T> FromResult(T value);
+    internal static Task FromError(Exception e);
+    internal static Task`1<T> FromError(Exception e);
+    [ExtensionAttribute]
+internal static void SetUnwrappedException(TaskCompletionSource`1<T> tcs, Exception e);
+    [ExtensionAttribute]
+internal static bool TrySetUnwrappedException(TaskCompletionSource`1<T> tcs, Exception e);
+    private static Task Canceled();
+    private static Task`1<T> Canceled();
+    internal static CulturePair SaveCulture();
+    internal static TResult RunWithPreservedCulture(CulturePair preservedCulture, Func`3<T1, T2, TResult> func, T1 arg1, T2 arg2);
+    internal static TResult RunWithPreservedCulture(CulturePair preservedCulture, Func`2<T, TResult> func, T arg);
+    internal static void RunWithPreservedCulture(CulturePair preservedCulture, Action`1<T> action, T arg);
+    internal static void RunWithPreservedCulture(CulturePair preservedCulture, Action action);
+    [ExtensionAttribute]
+internal static Task ContinueWithPreservedCulture(Task task, Action`1<Task> continuationAction, TaskContinuationOptions continuationOptions);
+    [ExtensionAttribute]
+internal static Task ContinueWithPreservedCulture(Task`1<T> task, Action`1<Task`1<T>> continuationAction, TaskContinuationOptions continuationOptions);
+    [ExtensionAttribute]
+internal static Task`1<TResult> ContinueWithPreservedCulture(Task`1<T> task, Func`2<Task`1<T>, TResult> continuationAction, TaskContinuationOptions continuationOptions);
+    [ExtensionAttribute]
+internal static Task ContinueWithPreservedCulture(Task task, Action`1<Task> continuationAction);
+    [ExtensionAttribute]
+internal static Task ContinueWithPreservedCulture(Task`1<T> task, Action`1<Task`1<T>> continuationAction);
+    [ExtensionAttribute]
+internal static Task`1<TResult> ContinueWithPreservedCulture(Task`1<T> task, Func`2<Task`1<T>, TResult> continuationAction);
+    private static Task RunTask(Task task, Action successor);
+    private static Task RunTaskSynchronously(Task task, Action`1<object> next, object state, bool onlyOnSuccess);
+    public static void Dispatch(Action action);
+}
+[ExtensionAttribute]
+internal static class Microsoft.AspNet.SignalR.TaskAwaiterHelper : object {
+    [ExtensionAttribute]
+internal static PreserveCultureAwaiter PreserveCulture(Task task);
+    [ExtensionAttribute]
+internal static PreserveCultureAwaiter PreserveCultureNotContext(Task task);
+    [ExtensionAttribute]
+internal static PreserveCultureAwaiter`1<T> PreserveCulture(Task`1<T> task);
+    [ExtensionAttribute]
+internal static PreserveCultureAwaiter`1<T> PreserveCultureNotContext(Task`1<T> task);
+    private static void PreserveCultureUnsafeOnCompleted(ICriticalNotifyCompletion notifier, Action continuation, bool useSyncContext);
+}
+public abstract class Microsoft.AspNet.SignalR.WebSockets.WebSocketHandler : object {
+    private static TimeSpan _closeTimeout;
+    private static int _receiveLoopBufferSize;
+    private Nullable`1<int> _maxIncomingMessageSize;
+    private TaskQueue _sendQueue;
+    [CompilerGeneratedAttribute]
+private WebSocket <WebSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Error>k__BackingField;
+    public Nullable`1<int> MaxIncomingMessageSize { get; }
+    internal WebSocket WebSocket { get; internal set; }
+    public Exception Error { get; public set; }
+    protected WebSocketHandler(Nullable`1<int> maxIncomingMessageSize);
+    private static WebSocketHandler();
+    public virtual void OnOpen();
+    public virtual void OnMessage(string message);
+    public virtual void OnMessage(Byte[] message);
+    public virtual void OnError();
+    public virtual void OnClose();
+    public virtual Task Send(string message);
+    internal Task SendAsync(string message);
+    internal virtual Task SendAsync(ArraySegment`1<byte> message, WebSocketMessageType messageType, bool endOfMessage);
+    public virtual Task CloseAsync();
+    public Nullable`1<int> get_MaxIncomingMessageSize();
+    [CompilerGeneratedAttribute]
+internal WebSocket get_WebSocket();
+    [CompilerGeneratedAttribute]
+internal void set_WebSocket(WebSocket value);
+    [CompilerGeneratedAttribute]
+public Exception get_Error();
+    [CompilerGeneratedAttribute]
+public void set_Error(Exception value);
+    internal Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken);
+    [AsyncStateMachineAttribute("Microsoft.AspNet.SignalR.WebSockets.WebSocketHandler/<ProcessWebSocketRequestAsync>d__25")]
+internal Task ProcessWebSocketRequestAsync(WebSocket webSocket, CancellationToken disconnectToken, Func`2<object, Task`1<WebSocketMessage>> messageRetriever, object state);
+    private static bool IsFatalException(Exception ex);
+    private static bool IsClosedOrClosedSent(WebSocket webSocket);
+    private static WebSocketState GetWebSocketState(WebSocket webSocket);
+}
+internal class Microsoft.AspNet.SignalR.WebSockets.WebSocketMessage : object {
+    public static WebSocketMessage EmptyTextMessage;
+    public static WebSocketMessage EmptyBinaryMessage;
+    public static WebSocketMessage CloseMessage;
+    public object Data;
+    public WebSocketMessageType MessageType;
+    public WebSocketMessage(object data, WebSocketMessageType messageType);
+    private static WebSocketMessage();
+}
+internal static class Microsoft.AspNet.SignalR.WebSockets.WebSocketMessageReader : object {
+    private static ArraySegment`1<byte> _emptyArraySegment;
+    private static WebSocketMessageReader();
+    private static Byte[] BufferSliceToByteArray(Byte[] buffer, int count);
+    private static string BufferSliceToString(Byte[] buffer, int count);
+    [AsyncStateMachineAttribute("Microsoft.AspNet.SignalR.WebSockets.WebSocketMessageReader/<ReadMessageAsync>d__3")]
+public static Task`1<WebSocketMessage> ReadMessageAsync(WebSocket webSocket, int bufferSize, Nullable`1<int> maxMessageSize, CancellationToken disconnectToken);
+    private static bool TryGetMessage(WebSocketReceiveResult receiveResult, Byte[] buffer, WebSocketMessage& message);
+}

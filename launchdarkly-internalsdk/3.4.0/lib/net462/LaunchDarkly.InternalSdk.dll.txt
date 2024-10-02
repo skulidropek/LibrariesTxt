@@ -1,0 +1,524 @@
+public static class LaunchDarkly.Sdk.Internal.AssemblyVersions : object {
+    public static string GetAssemblyVersionStringForType(Type t);
+    public static Version GetAssemblyVersionForType(Type t);
+}
+public static class LaunchDarkly.Sdk.Internal.Concurrent.AsyncUtils : object {
+    private static TaskFactory _taskFactory;
+    private static AsyncUtils();
+    public static void WaitSafely(Func`1<Task> taskFn);
+    public static bool WaitSafely(Func`1<Task> taskFn, TimeSpan timeout);
+    public static T WaitSafely(Func`1<Task`1<T>> taskFn);
+    public static Exception UnwrapAggregateException(AggregateException e);
+}
+public class LaunchDarkly.Sdk.Internal.Concurrent.AtomicBoolean : object {
+    private Int32 modreq(System.Runtime.CompilerServices.IsVolatile) _value;
+    public AtomicBoolean(bool value);
+    public bool Get();
+    public bool GetAndSet(bool newValue);
+}
+public class LaunchDarkly.Sdk.Internal.Concurrent.StateMonitor`2 : object {
+    private Func`3<StateT, UpdateT, Nullable`1<StateT>> _updateFn;
+    private object _stateLock;
+    private Logger _log;
+    private StateT _current;
+    private LinkedList`1<Awaiter<StateT, UpdateT>> _awaiters;
+    public StateT Current { get; }
+    public StateMonitor`2(StateT initial, Func`3<StateT, UpdateT, Nullable`1<StateT>> updateFn, Logger log);
+    public StateT get_Current();
+    public bool Update(UpdateT update, StateT& newState);
+    internal void Forget(Awaiter<StateT, UpdateT> awaiter);
+    public Nullable`1<StateT> WaitFor(Func`2<StateT, bool> testFn, TimeSpan timeout);
+    [AsyncStateMachineAttribute("LaunchDarkly.Sdk.Internal.Concurrent.StateMonitor`2/<WaitForAsync>d__12")]
+public Task`1<Nullable`1<StateT>> WaitForAsync(Func`2<StateT, bool> testFn, TimeSpan timeout);
+    public sealed virtual void Dispose();
+}
+public class LaunchDarkly.Sdk.Internal.Events.DefaultEventSender : object {
+    public static TimeSpan DefaultRetryInterval;
+    private static int MaxAttempts;
+    private static string CurrentSchemaVersion;
+    private HttpClient _httpClient;
+    private HttpProperties _httpProperties;
+    private Uri _eventsUri;
+    private Uri _diagnosticUri;
+    private TimeSpan _timeout;
+    private TimeSpan _retryInterval;
+    private Logger _logger;
+    public DefaultEventSender(HttpProperties httpProperties, EventsConfiguration config, Logger logger);
+    private static DefaultEventSender();
+    public sealed virtual void Dispose();
+    private void Dispose(bool disposing);
+    [AsyncStateMachineAttribute("LaunchDarkly.Sdk.Internal.Events.DefaultEventSender/<SendEventDataAsync>d__13")]
+public sealed virtual Task`1<EventSenderResult> SendEventDataAsync(EventDataKind kind, Byte[] data, int eventCount);
+    private HttpRequestMessage PrepareRequest(Uri uri, string payloadId);
+}
+public enum LaunchDarkly.Sdk.Internal.Events.DeliveryStatus : Enum {
+    public int value__;
+    public static DeliveryStatus Succeeded;
+    public static DeliveryStatus Failed;
+    public static DeliveryStatus FailedAndMustShutDown;
+}
+[ExtensionAttribute]
+public static class LaunchDarkly.Sdk.Internal.Events.DiagnosticConfigProperties : object {
+    [ExtensionAttribute]
+public static ObjectBuilder WithEventProperties(ObjectBuilder builder, EventsConfiguration config, bool customEventsBaseUri);
+    [ExtensionAttribute]
+public static ObjectBuilder WithHttpProperties(ObjectBuilder builder, HttpProperties props);
+    [ExtensionAttribute]
+public static ObjectBuilder WithStartWaitTime(ObjectBuilder builder, TimeSpan value);
+    [ExtensionAttribute]
+public static ObjectBuilder WithStreamingProperties(ObjectBuilder builder, bool customStreamingBaseUri, bool customPollingBaseUri, TimeSpan initialReconnectDelay);
+    [ExtensionAttribute]
+public static ObjectBuilder WithPollingProperties(ObjectBuilder builder, bool customPollingBaseUri, TimeSpan pollingInterval);
+    private static bool DetectProxy(HttpProperties props);
+    private static bool DetectProxyAuth(HttpProperties props);
+}
+public class LaunchDarkly.Sdk.Internal.Events.DiagnosticEvent : ValueType {
+    private LdValue _jsonValue;
+    public LdValue JsonValue { get; }
+    public DiagnosticEvent(LdValue jsonValue);
+    public LdValue get_JsonValue();
+}
+public class LaunchDarkly.Sdk.Internal.Events.DiagnosticId : object {
+    public Guid Id;
+    public string SdkKeySuffix;
+    public DiagnosticId(string sdkKey, Guid diagnosticId);
+}
+public abstract class LaunchDarkly.Sdk.Internal.Events.DiagnosticStoreBase : object {
+    private DateTime _initTime;
+    private DiagnosticId _diagnosticId;
+    private long _dataSince;
+    private long _droppedEvents;
+    private long _deduplicatedUsers;
+    private long _eventsInLastBatch;
+    private object _streamInitsLock;
+    private ArrayBuilder _streamInits;
+    public Nullable`1<DiagnosticEvent> InitEvent { get; }
+    public Nullable`1<DiagnosticEvent> PersistedUnsentEvent { get; }
+    public DateTime DataSince { get; }
+    protected string SdkKeyOrMobileKey { get; }
+    protected string SdkName { get; }
+    protected IEnumerable`1<LdValue> ConfigProperties { get; }
+    protected string DotNetTargetFramework { get; }
+    protected HttpProperties HttpProperties { get; }
+    protected Type TypeOfLdClient { get; }
+    public sealed virtual Nullable`1<DiagnosticEvent> get_InitEvent();
+    public sealed virtual Nullable`1<DiagnosticEvent> get_PersistedUnsentEvent();
+    public sealed virtual DateTime get_DataSince();
+    protected abstract virtual string get_SdkKeyOrMobileKey();
+    protected abstract virtual string get_SdkName();
+    protected abstract virtual IEnumerable`1<LdValue> get_ConfigProperties();
+    protected abstract virtual string get_DotNetTargetFramework();
+    protected abstract virtual HttpProperties get_HttpProperties();
+    protected abstract virtual Type get_TypeOfLdClient();
+    public sealed virtual void IncrementDeduplicatedUsers();
+    public sealed virtual void IncrementDroppedEvents();
+    public sealed virtual void AddStreamInit(DateTime timestamp, TimeSpan duration, bool failed);
+    public sealed virtual void RecordEventsInBatch(long eventsInBatch);
+    public sealed virtual DiagnosticEvent CreateEventAndReset();
+    private DiagnosticId GetDiagnosticId();
+    private void AddDiagnosticCommonFields(ObjectBuilder fieldsBuilder, string kind, DateTime creationDate);
+    private LdValue EncodeDiagnosticId(DiagnosticId id);
+    private DiagnosticEvent MakeInitEvent();
+    private LdValue InitEventPlatform();
+    private LdValue InitEventSdk();
+    internal static string GetOSName();
+    internal static string GetOSVersion();
+    internal static string GetOSArch();
+}
+public class LaunchDarkly.Sdk.Internal.Events.DisabledChangedArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private bool <Disabled>k__BackingField;
+    public bool Disabled { get; }
+    public DisabledChangedArgs(bool disabled);
+    [CompilerGeneratedAttribute]
+public bool get_Disabled();
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventContextFormatter : object {
+    private bool _allAttributesPrivate;
+    private IEnumerable`1<AttributeRef> _globalPrivateAttributes;
+    public EventContextFormatter(EventsConfiguration config);
+    public void Write(Context& c, Utf8JsonWriter w, bool redactAnonymous);
+    private void WriteSingle(Context& c, Utf8JsonWriter w, bool includeKind, bool redactAnonymous);
+    private void WriteOrRedact(string attrName, Context& c, Utf8JsonWriter obj, IEnumerable`1<AttributeRef> privateRefs, List`1& redactedList);
+    private void WriteRedactedValue(LdValue& value, Utf8JsonWriter obj, IEnumerable`1<AttributeRef> allPrivate, int depth, string pathComponent, List`1& redactedList);
+    private void AddRedacted(List`1& redactedList, string attrName);
+}
+public enum LaunchDarkly.Sdk.Internal.Events.EventDataKind : Enum {
+    public int value__;
+    public static EventDataKind AnalyticsEvents;
+    public static EventDataKind DiagnosticEvent;
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventOutputFormatter : object {
+    private EventsConfiguration _config;
+    private EventContextFormatter _contextFormatter;
+    public EventOutputFormatter(EventsConfiguration config);
+    public Byte[] SerializeOutputEvents(Object[] events, EventSummary summary, Int32& eventCountOut);
+    public int WriteOutputEvents(Object[] events, EventSummary summary, Utf8JsonWriter w);
+    public void WriteOutputEvent(object e, Utf8JsonWriter w);
+    private void WriteEvaluationEvent(EvaluationEvent& ee, Utf8JsonWriter obj, bool debug);
+    public void WriteSummaryEvent(EventSummary summary, Utf8JsonWriter w);
+    private void WriteBase(string kind, Utf8JsonWriter obj, UnixMillisecondTime creationDate, string key);
+    private void WriteContextKeys(Context& context, Utf8JsonWriter obj);
+    private void WriteContext(Context& context, Utf8JsonWriter obj, bool redactAnonymous);
+    private static void WriteReason(Nullable`1<EvaluationReason> reason, Utf8JsonWriter obj);
+    private void WriteMigrationOpEvent(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteMigrationEvaluation(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteMeasurements(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteInvokedMeasurement(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteLatencyMeasurement(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteErrorMeasurement(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+    private static void WriteConsistentMeasurement(MigrationOpEvent migrationOpEvent, Utf8JsonWriter obj);
+}
+public class LaunchDarkly.Sdk.Internal.Events.EventProcessor : object {
+    private BlockingCollection`1<IEventMessage> _messageQueue;
+    private EventProcessorInternal _processorInternal;
+    private IDiagnosticStore _diagnosticStore;
+    private Timer _flushTimer;
+    private Timer _flushUsersTimer;
+    private TimeSpan _diagnosticRecordingInterval;
+    private object _diagnosticTimerLock;
+    private Logger _logger;
+    private Timer _diagnosticTimer;
+    private AtomicBoolean _stopped;
+    private AtomicBoolean _offline;
+    private AtomicBoolean _sentInitialDiagnostics;
+    private AtomicBoolean _inputCapacityExceeded;
+    public EventProcessor(EventsConfiguration config, IEventSender eventSender, IContextDeduplicator contextDeduplicator, IDiagnosticStore diagnosticStore, IDiagnosticDisabler diagnosticDisabler, Logger logger, Action testActionOnDiagnosticSend);
+    public void RecordEvaluationEvent(EvaluationEvent& e);
+    public void RecordIdentifyEvent(IdentifyEvent& e);
+    public void RecordCustomEvent(CustomEvent& e);
+    public void RecordMigrationOpEvent(MigrationOpEvent& e);
+    public void SetOffline(bool offline);
+    public void Flush();
+    public bool FlushAndWait(TimeSpan timeout);
+    public Task`1<bool> FlushAndWaitAsync(TimeSpan timeout);
+    public sealed virtual void Dispose();
+    private void Dispose(bool disposing);
+    private bool SubmitMessage(IEventMessage message);
+    private void SetupDiagnosticInit(bool enabled);
+    internal void WaitUntilInactive();
+    private void DoBackgroundFlush(object stateInfo);
+    private void DoUserKeysFlush(object stateInfo);
+    internal void DoDiagnosticSend(object stateInfo);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__13_0(object sender, DisabledChangedArgs args);
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventProcessorInternal : object {
+    private static int MaxFlushWorkers;
+    private EventsConfiguration _config;
+    private IDiagnosticStore _diagnosticStore;
+    private IContextDeduplicator _contextDeduplicator;
+    private CountdownEvent _flushWorkersCounter;
+    private Action _testActionOnDiagnosticSend;
+    private IEventSender _eventSender;
+    private Logger _logger;
+    private long _lastKnownPastTime;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disabled;
+    internal EventProcessorInternal(EventsConfiguration config, BlockingCollection`1<IEventMessage> messageQueue, IEventSender eventSender, IContextDeduplicator contextDeduplicator, IDiagnosticStore diagnosticStore, Logger logger, Action testActionOnDiagnosticSend);
+    private static EventProcessorInternal();
+    public void Dispose();
+    private void Dispose(bool disposing);
+    private void RunMainLoop(BlockingCollection`1<IEventMessage> messageQueue, EventBuffer buffer);
+    private void SendAndResetDiagnostics(EventBuffer buffer);
+    private void WaitForFlushes();
+    private void ProcessEvent(object e, EventBuffer buffer);
+    private bool ShouldDebugEvent(EvaluationEvent fe);
+    private void StartFlush(EventBuffer buffer, SynchronousMessage message);
+    [AsyncStateMachineAttribute("LaunchDarkly.Sdk.Internal.Events.EventProcessorInternal/<FlushEventsAsync>d__31")]
+private Task FlushEventsAsync(FlushPayload payload);
+    [AsyncStateMachineAttribute("LaunchDarkly.Sdk.Internal.Events.EventProcessorInternal/<SendDiagnosticEventAsync>d__32")]
+internal Task SendDiagnosticEventAsync(DiagnosticEvent diagnostic);
+    [CompilerGeneratedAttribute]
+private Task <SendAndResetDiagnostics>b__26_0();
+}
+public class LaunchDarkly.Sdk.Internal.Events.EventsConfiguration : object {
+    [CompilerGeneratedAttribute]
+private bool <AllAttributesPrivate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <DiagnosticRecordingInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <DiagnosticUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <EventCapacity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <EventFlushInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <EventsUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IImmutableSet`1<AttributeRef> <PrivateAttributes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <RetryInterval>k__BackingField;
+    public bool AllAttributesPrivate { get; public set; }
+    public TimeSpan DiagnosticRecordingInterval { get; public set; }
+    public Uri DiagnosticUri { get; public set; }
+    public int EventCapacity { get; public set; }
+    public TimeSpan EventFlushInterval { get; public set; }
+    public Uri EventsUri { get; public set; }
+    public IImmutableSet`1<AttributeRef> PrivateAttributes { get; public set; }
+    public Nullable`1<TimeSpan> RetryInterval { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_AllAttributesPrivate();
+    [CompilerGeneratedAttribute]
+public void set_AllAttributesPrivate(bool value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_DiagnosticRecordingInterval();
+    [CompilerGeneratedAttribute]
+public void set_DiagnosticRecordingInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public Uri get_DiagnosticUri();
+    [CompilerGeneratedAttribute]
+public void set_DiagnosticUri(Uri value);
+    [CompilerGeneratedAttribute]
+public int get_EventCapacity();
+    [CompilerGeneratedAttribute]
+public void set_EventCapacity(int value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_EventFlushInterval();
+    [CompilerGeneratedAttribute]
+public void set_EventFlushInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public Uri get_EventsUri();
+    [CompilerGeneratedAttribute]
+public void set_EventsUri(Uri value);
+    [CompilerGeneratedAttribute]
+public IImmutableSet`1<AttributeRef> get_PrivateAttributes();
+    [CompilerGeneratedAttribute]
+public void set_PrivateAttributes(IImmutableSet`1<AttributeRef> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_RetryInterval();
+    [CompilerGeneratedAttribute]
+public void set_RetryInterval(Nullable`1<TimeSpan> value);
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventsCounterKey : object {
+    public Nullable`1<int> Version;
+    public Nullable`1<int> Variation;
+    public EventsCounterKey(Nullable`1<int> version, Nullable`1<int> variation);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventsCounterValue : object {
+    public int Count;
+    public LdValue FlagValue;
+    public EventsCounterValue(int count, LdValue& flagValue);
+    public void Increment();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class LaunchDarkly.Sdk.Internal.Events.EventSenderResult : ValueType {
+    [CompilerGeneratedAttribute]
+private DeliveryStatus <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <TimeFromServer>k__BackingField;
+    public DeliveryStatus Status { get; private set; }
+    public Nullable`1<DateTime> TimeFromServer { get; private set; }
+    public EventSenderResult(DeliveryStatus status, Nullable`1<DateTime> timeFromServer);
+    [CompilerGeneratedAttribute]
+public DeliveryStatus get_Status();
+    [CompilerGeneratedAttribute]
+private void set_Status(DeliveryStatus value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_TimeFromServer();
+    [CompilerGeneratedAttribute]
+private void set_TimeFromServer(Nullable`1<DateTime> value);
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventSummarizer : object {
+    private EventSummary _eventsState;
+    public void SummarizeEvent(UnixMillisecondTime timestamp, string flagKey, Nullable`1<int> flagVersion, Nullable`1<int> variation, LdValue& value, LdValue& defaultValue, Context& context);
+    public EventSummary Snapshot();
+    public void Clear();
+}
+internal class LaunchDarkly.Sdk.Internal.Events.EventSummary : object {
+    public Dictionary`2<string, FlagSummary> Flags;
+    [CompilerGeneratedAttribute]
+private UnixMillisecondTime <StartDate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UnixMillisecondTime <EndDate>k__BackingField;
+    public UnixMillisecondTime StartDate { get; private set; }
+    public UnixMillisecondTime EndDate { get; private set; }
+    public bool Empty { get; }
+    [CompilerGeneratedAttribute]
+public UnixMillisecondTime get_StartDate();
+    [CompilerGeneratedAttribute]
+private void set_StartDate(UnixMillisecondTime value);
+    [CompilerGeneratedAttribute]
+public UnixMillisecondTime get_EndDate();
+    [CompilerGeneratedAttribute]
+private void set_EndDate(UnixMillisecondTime value);
+    public bool get_Empty();
+    public void IncrementCounter(string key, Nullable`1<int> variation, Nullable`1<int> version, LdValue flagValue, LdValue defaultVal, Context& context);
+    public void NoteTimestamp(UnixMillisecondTime timestamp);
+}
+public static class LaunchDarkly.Sdk.Internal.Events.EventTypes : object {
+}
+internal class LaunchDarkly.Sdk.Internal.Events.FlagSummary : object {
+    public string Key;
+    public LdValue Default;
+    public HashSet`1<string> ContextKinds;
+    public Dictionary`2<EventsCounterKey, EventsCounterValue> Counters;
+    public FlagSummary(string key, LdValue defaultVal);
+}
+public interface LaunchDarkly.Sdk.Internal.Events.IContextDeduplicator {
+    public Nullable`1<TimeSpan> FlushInterval { get; }
+    public abstract virtual Nullable`1<TimeSpan> get_FlushInterval();
+    public abstract virtual bool ProcessContext(Context& modreq(System.Runtime.InteropServices.InAttribute) context);
+    public abstract virtual void Flush();
+}
+public interface LaunchDarkly.Sdk.Internal.Events.IDiagnosticDisabler {
+    public bool Disabled { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_DisabledChanged(EventHandler`1<DisabledChangedArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_DisabledChanged(EventHandler`1<DisabledChangedArgs> value);
+    public abstract virtual bool get_Disabled();
+}
+public interface LaunchDarkly.Sdk.Internal.Events.IDiagnosticStore {
+    public DateTime DataSince { get; }
+    public Nullable`1<DiagnosticEvent> InitEvent { get; }
+    public Nullable`1<DiagnosticEvent> PersistedUnsentEvent { get; }
+    public abstract virtual DateTime get_DataSince();
+    public abstract virtual Nullable`1<DiagnosticEvent> get_InitEvent();
+    public abstract virtual Nullable`1<DiagnosticEvent> get_PersistedUnsentEvent();
+    public abstract virtual void IncrementDeduplicatedUsers();
+    public abstract virtual void IncrementDroppedEvents();
+    public abstract virtual void AddStreamInit(DateTime timestamp, TimeSpan duration, bool failed);
+    public abstract virtual void RecordEventsInBatch(long eventsInBatch);
+    public abstract virtual DiagnosticEvent CreateEventAndReset();
+}
+public interface LaunchDarkly.Sdk.Internal.Events.IEventSender {
+    public abstract virtual Task`1<EventSenderResult> SendEventDataAsync(EventDataKind kind, Byte[] data, int eventCount);
+}
+public static class LaunchDarkly.Sdk.Internal.Events.Sampler : object {
+    private static Random Rand;
+    private static object RandLock;
+    private static Sampler();
+    public static bool Sample(long samplingRatio);
+}
+public class LaunchDarkly.Sdk.Internal.HashCodeBuilder : ValueType {
+    [CompilerGeneratedAttribute]
+private int <Value>k__BackingField;
+    public int Value { get; }
+    private HashCodeBuilder(int value);
+    [CompilerGeneratedAttribute]
+public int get_Value();
+    public static HashCodeBuilder New();
+    public HashCodeBuilder With(object o);
+}
+public static class LaunchDarkly.Sdk.Internal.Http.HttpErrors : object {
+    public static bool IsRecoverable(int status);
+    public static string ErrorMessage(int status, string context, string recoverableMessage);
+    public static string ErrorMessageBase(int status);
+}
+public class LaunchDarkly.Sdk.Internal.Http.HttpProperties : ValueType {
+    public static TimeSpan DefaultConnectTimeout;
+    public static TimeSpan DefaultReadTimeout;
+    [CompilerGeneratedAttribute]
+private ImmutableList`1<KeyValuePair`2<string, string>> <BaseHeaders>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ConnectTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<Exception, Exception> <HttpExceptionConverter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<HttpProperties, HttpMessageHandler> <HttpMessageHandlerFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IWebProxy <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ReadTimeout>k__BackingField;
+    public ImmutableList`1<KeyValuePair`2<string, string>> BaseHeaders { get; }
+    public TimeSpan ConnectTimeout { get; }
+    public Func`2<Exception, Exception> HttpExceptionConverter { get; }
+    public Func`2<HttpProperties, HttpMessageHandler> HttpMessageHandlerFactory { get; }
+    public IWebProxy Proxy { get; }
+    public TimeSpan ReadTimeout { get; }
+    public static HttpProperties Default { get; }
+    private HttpProperties(ImmutableList`1<KeyValuePair`2<string, string>> baseHeaders, TimeSpan connectTimeout, Func`2<Exception, Exception> httpExceptionConverter, Func`2<HttpProperties, HttpMessageHandler> httpMessageHandlerFactory, IWebProxy proxy, TimeSpan readTimeout);
+    private static HttpProperties();
+    [CompilerGeneratedAttribute]
+public ImmutableList`1<KeyValuePair`2<string, string>> get_BaseHeaders();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ConnectTimeout();
+    [CompilerGeneratedAttribute]
+public Func`2<Exception, Exception> get_HttpExceptionConverter();
+    [CompilerGeneratedAttribute]
+public Func`2<HttpProperties, HttpMessageHandler> get_HttpMessageHandlerFactory();
+    [CompilerGeneratedAttribute]
+public IWebProxy get_Proxy();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ReadTimeout();
+    public static HttpProperties get_Default();
+    public HttpProperties WithConnectTimeout(TimeSpan newConnectTimeout);
+    public HttpProperties WithHttpMessageHandlerFactory(Func`2<HttpProperties, HttpMessageHandler> factory);
+    public HttpProperties WithHttpExceptionConverter(Func`2<Exception, Exception> newHttpExceptionConverter);
+    public HttpProperties WithProxy(IWebProxy newProxy);
+    public HttpProperties WithReadTimeout(TimeSpan newReadTimeout);
+    public HttpProperties WithAuthorizationKey(string key);
+    public HttpProperties WithUserAgent(string userAgent);
+    public HttpProperties WithUserAgent(string userAgentName, string userAgentVersion);
+    public HttpProperties WithWrapper(string wrapperName, string wrapperVersion);
+    public HttpProperties WithApplicationTags(ApplicationInfo applicationInfo);
+    public HttpProperties WithHeader(string name, string value);
+    public void AddHeaders(HttpRequestMessage req);
+    public HttpClient NewHttpClient();
+    public HttpMessageHandler NewHttpMessageHandler();
+    private static HttpMessageHandler DefaultHttpMessageHandlerFactory(HttpProperties props);
+    private static string ApplicationTagHeaderValue(ApplicationInfo applicationInfo);
+}
+public class LaunchDarkly.Sdk.Internal.Http.UnsuccessfulResponseException : Exception {
+    [CompilerGeneratedAttribute]
+private int <StatusCode>k__BackingField;
+    public int StatusCode { get; private set; }
+    public UnsuccessfulResponseException(int statusCode);
+    [CompilerGeneratedAttribute]
+public int get_StatusCode();
+    [CompilerGeneratedAttribute]
+private void set_StatusCode(int value);
+}
+public static class LaunchDarkly.Sdk.Internal.JsonConverterHelpers : object {
+    public static void RequireTokenType(Utf8JsonReader& reader, JsonTokenType expectedType);
+    public static Nullable`1<int> GetIntOrNull(Utf8JsonReader& reader);
+    public static Nullable`1<long> GetLongOrNull(Utf8JsonReader& reader);
+    public static Nullable`1<UnixMillisecondTime> GetTimeOrNull(Utf8JsonReader& reader);
+    public static string WriteJsonAsString(Action`1<Utf8JsonWriter> action);
+    public static void WriteIntIfNotNull(Utf8JsonWriter w, string name, Nullable`1<int> value);
+    public static void WriteTimeIfNotNull(Utf8JsonWriter w, string name, Nullable`1<UnixMillisecondTime> value);
+    public static void WriteStringIfNotNull(Utf8JsonWriter w, string name, string value);
+    public static void WriteBooleanIfTrue(Utf8JsonWriter w, string name, bool value);
+    public static void WriteLdValue(Utf8JsonWriter w, string name, LdValue value);
+    public static void WriteLdValueIfNotNull(Utf8JsonWriter w, string name, LdValue value);
+    public static ArrayHelper RequireArray(Utf8JsonReader& reader);
+    public static ArrayHelper RequireArrayOrNull(Utf8JsonReader& reader);
+    public static ObjectHelper RequireObject(Utf8JsonReader& reader);
+    public static ObjectHelper RequireObjectOrNull(Utf8JsonReader& reader);
+}
+public static class LaunchDarkly.Sdk.Internal.LogHelpers : object {
+    public static void LogException(Logger logger, string message, Exception e);
+}
+public class LaunchDarkly.Sdk.Internal.TaskExecutor : object {
+    private object _eventSender;
+    private Action`1<Action> _eventHandlerDispatcher;
+    private Logger _log;
+    public TaskExecutor(object eventSender, Logger log);
+    public TaskExecutor(object eventSender, Action`1<Action> eventHandlerDispatcher, Logger log);
+    public void ScheduleEvent(T eventArgs, EventHandler`1<T> handlers);
+    private static void DefaultEventHandlerDispatcher(Action invokeHandler);
+    public CancellationTokenSource StartRepeatingTask(TimeSpan initialDelay, TimeSpan interval, Func`1<Task> taskFn);
+}
+[ExtensionAttribute]
+public static class LaunchDarkly.Sdk.Internal.UriExtensions : object {
+    [ExtensionAttribute]
+public static Uri AddPath(Uri baseUri, string path);
+    [ExtensionAttribute]
+public static Uri AddQuery(Uri baseUri, string query);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsByRefLikeAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}

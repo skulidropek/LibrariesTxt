@@ -1,0 +1,718 @@
+internal class Loggly.EnvironmentProvider : object {
+    private int _processId;
+    private string _machineName;
+    public int ProcessId { get; }
+    public string MachineName { get; }
+    public sealed virtual int get_ProcessId();
+    public sealed virtual string get_MachineName();
+}
+public class Loggly.EventOptions : object {
+    [CompilerGeneratedAttribute]
+private List`1<ITag> <Tags>k__BackingField;
+    public List`1<ITag> Tags { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<ITag> get_Tags();
+    [CompilerGeneratedAttribute]
+public void set_Tags(List`1<ITag> value);
+}
+public class Loggly.FieldQuery : SearchQuery {
+    [CompilerGeneratedAttribute]
+private string <FieldName>k__BackingField;
+    public string FieldName { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_FieldName();
+    [CompilerGeneratedAttribute]
+public void set_FieldName(string value);
+    public virtual IDictionary`2<string, object> ToParameters();
+}
+internal class Loggly.HttpMessageTransport : TransportBase {
+    private static string _urlSingle;
+    private static string _urlBulk;
+    private static string _userAgent;
+    protected HttpClient HttpClient;
+    private static string UrlSingle { get; }
+    private static string UrlBulk { get; }
+    private static HttpMessageTransport();
+    internal HttpMessageTransport(HttpMessageHandler messageHandler);
+    private static string get_UrlSingle();
+    private static string get_UrlBulk();
+    [AsyncStateMachineAttribute("Loggly.HttpMessageTransport/<Send>d__11")]
+public sealed virtual Task`1<LogResponse> Send(IEnumerable`1<LogglyMessage> messages);
+    private Task`1<HttpResponseMessage> PostUsingHttpClient(List`1<LogglyMessage> messages);
+    private string GetRenderedTags(List`1<LogglyMessage> messages);
+}
+public enum Loggly.HttpRequestType : Enum {
+    public int value__;
+    public static HttpRequestType Get;
+    public static HttpRequestType Post;
+}
+public interface Loggly.IEnvironmentProvider {
+    public int ProcessId { get; }
+    public string MachineName { get; }
+    public abstract virtual int get_ProcessId();
+    public abstract virtual string get_MachineName();
+}
+public interface Loggly.ILogglyClient {
+    public abstract virtual Task`1<LogResponse> Log(LogglyEvent logglyEvent);
+    public abstract virtual Task`1<LogResponse> Log(IEnumerable`1<LogglyEvent> logglyEvents);
+}
+[DefaultMemberAttribute("Item")]
+public interface Loggly.IMessageData {
+    public List`1<string> KeyList { get; }
+    public object Item { get; public set; }
+    public abstract virtual List`1<string> get_KeyList();
+    public abstract virtual object get_Item(string key);
+    public abstract virtual void set_Item(string key, object value);
+    public abstract virtual void AddIfAbsent(string key, object value);
+    public abstract virtual void Add(string key, object value);
+    public abstract virtual void Add(string key, string valueFormat, Object[] valueArgs);
+}
+internal interface Loggly.IMessageTransport {
+    public abstract virtual Task`1<LogResponse> Send(IEnumerable`1<LogglyMessage> messages);
+}
+public interface Loggly.ISearchClient {
+    public abstract virtual Task`1<SearchResponse> Search(string query);
+    public abstract virtual Task`1<SearchResponse> Search(string query, DateTime start, DateTime until);
+    public abstract virtual Task`1<SearchResponse> Search(string query, DateTime start, DateTime until, int size);
+    public abstract virtual Task`1<SearchResponse> Search(SearchQuery query);
+    public abstract virtual Task`1<SearchResponse`1<TMessage>> Search(string query);
+    public abstract virtual Task`1<SearchResponse`1<TMessage>> Search(string query, DateTime start, DateTime until);
+    public abstract virtual Task`1<SearchResponse`1<TMessage>> Search(string query, DateTime start, DateTime until, int size);
+    public abstract virtual Task`1<SearchResponse`1<TMessage>> Search(SearchQuery query);
+    public abstract virtual Task`1<FieldResponse> Field(FieldQuery query);
+}
+public interface Loggly.ISearchTransport {
+    public abstract virtual Task`1<SearchResponse> Search(SearchQuery query);
+    public abstract virtual Task`1<EntryJsonResponseBase> Search(EventQuery query);
+    public abstract virtual Task`1<SearchResponse`1<T>> Search(SearchQuery query);
+    public abstract virtual Task`1<FieldResponse> Search(FieldQuery query);
+}
+public class Loggly.LogglyClient : object {
+    private IMessageTransport _transport;
+    private Func`2<LogglyEvent, LogglyMessage> _buildMessage;
+    private JsonSerializer _jsonSerializer;
+    private JsonSerializer JsonSerializer { get; }
+    internal LogglyClient(IMessageTransport transport);
+    private JsonSerializer get_JsonSerializer();
+    public sealed virtual Task`1<LogResponse> Log(LogglyEvent logglyEvent);
+    public sealed virtual Task`1<LogResponse> Log(IEnumerable`1<LogglyEvent> logglyEvents);
+    [AsyncStateMachineAttribute("Loggly.LogglyClient/<LogWorker>d__9")]
+private Task`1<LogResponse> LogWorker(IEnumerable`1<LogglyEvent> events);
+    protected virtual LogglyMessage BuildMessage(LogglyEvent logglyEvent);
+    private string ToJson(object value);
+    private static JsonSerializerSettings CreateJsonSerializerSettings();
+    private static IMessageTransport TransportFactory();
+    [CompilerGeneratedAttribute]
+private LogglyMessage <.ctor>b__5_0(LogglyEvent e);
+}
+public class Loggly.LogglyEvent : object {
+    [CompilerGeneratedAttribute]
+private DateTimeOffset <Timestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SyslogHeader <Syslog>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMessageData <Data>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventOptions <Options>k__BackingField;
+    public DateTimeOffset Timestamp { get; public set; }
+    public SyslogHeader Syslog { get; public set; }
+    public IMessageData Data { get; public set; }
+    public EventOptions Options { get; public set; }
+    public LogglyEvent(MessageData data);
+    [CompilerGeneratedAttribute]
+public DateTimeOffset get_Timestamp();
+    [CompilerGeneratedAttribute]
+public void set_Timestamp(DateTimeOffset value);
+    [CompilerGeneratedAttribute]
+public SyslogHeader get_Syslog();
+    [CompilerGeneratedAttribute]
+public void set_Syslog(SyslogHeader value);
+    [CompilerGeneratedAttribute]
+public IMessageData get_Data();
+    [CompilerGeneratedAttribute]
+public void set_Data(IMessageData value);
+    [CompilerGeneratedAttribute]
+public EventOptions get_Options();
+    [CompilerGeneratedAttribute]
+public void set_Options(EventOptions value);
+}
+internal class Loggly.LogglyEventSource : EventSource {
+    private static int _counterNonThreadSafe;
+    private static Lazy`1<LogglyEventSource> _instance;
+    public static LogglyEventSource Instance { get; }
+    private static LogglyEventSource();
+    public static LogglyEventSource get_Instance();
+    public void Log(LogglyMessage message, LogResponse result);
+}
+public class Loggly.LogglyException : Exception {
+    protected LogglyException(string message);
+    protected LogglyException(string message, Exception innerException);
+    public static void Throw(string message);
+    public static void Throw(Exception innerException, string message);
+    public static void Throw(Exception innerException);
+    private static void Throw(LogglyException exception);
+}
+[ExtensionAttribute]
+public static class Loggly.LogglyExtensions : object {
+    [ExtensionAttribute]
+public static string ToJsonIso8601(DateTime date);
+    [ExtensionAttribute]
+public static string ToSyslog(DateTime date);
+    [ExtensionAttribute]
+public static string ToSyslog(DateTimeOffset date);
+}
+public class Loggly.LogglyMessage : object {
+    [CompilerGeneratedAttribute]
+private DateTimeOffset <Timestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SyslogHeader <Syslog>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Content>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<ITag> <CustomTags>k__BackingField;
+    public DateTimeOffset Timestamp { get; public set; }
+    public SyslogHeader Syslog { get; public set; }
+    public MessageType Type { get; public set; }
+    public string Content { get; public set; }
+    public List`1<ITag> CustomTags { get; public set; }
+    public LogglyMessage(List`1<ITag> customTags, SyslogHeader syslog);
+    [CompilerGeneratedAttribute]
+public DateTimeOffset get_Timestamp();
+    [CompilerGeneratedAttribute]
+public void set_Timestamp(DateTimeOffset value);
+    [CompilerGeneratedAttribute]
+public SyslogHeader get_Syslog();
+    [CompilerGeneratedAttribute]
+public void set_Syslog(SyslogHeader value);
+    [CompilerGeneratedAttribute]
+public MessageType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(MessageType value);
+    [CompilerGeneratedAttribute]
+public string get_Content();
+    [CompilerGeneratedAttribute]
+public void set_Content(string value);
+    [CompilerGeneratedAttribute]
+public List`1<ITag> get_CustomTags();
+    [CompilerGeneratedAttribute]
+public void set_CustomTags(List`1<ITag> value);
+    public virtual string ToString();
+}
+public class Loggly.LogglySearchClient : object {
+    private ISearchTransport _transport;
+    public LogglySearchClient(ISearchConfiguration config);
+    public sealed virtual Task`1<SearchResponse> Search(string query);
+    public sealed virtual Task`1<SearchResponse> Search(string query, DateTime start, DateTime until);
+    public sealed virtual Task`1<SearchResponse> Search(string query, DateTime start, DateTime until, int size);
+    public sealed virtual Task`1<SearchResponse> Search(SearchQuery query);
+    public sealed virtual Task`1<SearchResponse`1<TMessage>> Search(string query);
+    public sealed virtual Task`1<SearchResponse`1<TMessage>> Search(string query, DateTime start, DateTime until);
+    public sealed virtual Task`1<SearchResponse`1<TMessage>> Search(string query, DateTime start, DateTime until, int size);
+    public sealed virtual Task`1<SearchResponse`1<TMessage>> Search(SearchQuery query);
+    public sealed virtual Task`1<FieldResponse> Field(FieldQuery query);
+}
+public class Loggly.LogResponse : object {
+    [CompilerGeneratedAttribute]
+private ResponseCode <Code>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    public ResponseCode Code { get; public set; }
+    public string Message { get; public set; }
+    [CompilerGeneratedAttribute]
+public ResponseCode get_Code();
+    [CompilerGeneratedAttribute]
+public void set_Code(ResponseCode value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    public virtual string ToString();
+}
+public class Loggly.MessageData : Dictionary`2<string, object> {
+    public List`1<string> KeyList { get; }
+    public MessageData(int capacity);
+    public sealed virtual List`1<string> get_KeyList();
+    public void AddFromDictionary(IDictionary`2<object, object> source);
+    public void AddFromDictionary(IDictionary`2<string, object> source);
+    public static MessageData FromDictionary(IDictionary`2<object, object> source);
+    public static MessageData FromDictionary(IDictionary`2<string, object> source);
+    public sealed virtual void AddIfAbsent(string key, object value);
+    public void Add(string key, string value);
+    public sealed virtual void Add(string key, string valueFormat, Object[] valueArgs);
+    public string ToString(string delimiter);
+    public virtual string ToString();
+}
+public enum Loggly.MessageType : Enum {
+    public int value__;
+    public static MessageType Plain;
+    public static MessageType Json;
+}
+public enum Loggly.ResponseCode : Enum {
+    public int value__;
+    public static ResponseCode Unknown;
+    public static ResponseCode Success;
+    public static ResponseCode Error;
+    public static ResponseCode AssumedSuccess;
+    public static ResponseCode SendDisabled;
+}
+public class Loggly.Responses.EntryJsonResponse : EntryJsonResponseBase {
+    [CompilerGeneratedAttribute]
+private EventMessage[] <Events>k__BackingField;
+    [JsonPropertyAttribute("events")]
+public EventMessage[] Events { get; public set; }
+    [CompilerGeneratedAttribute]
+public EventMessage[] get_Events();
+    [CompilerGeneratedAttribute]
+public void set_Events(EventMessage[] value);
+}
+public class Loggly.Responses.EntryJsonResponse`1 : EntryJsonResponseBase {
+    [CompilerGeneratedAttribute]
+private EventMessage`1[] <Events>k__BackingField;
+    [JsonPropertyAttribute("events")]
+public EventMessage`1[] Events { get; public set; }
+    [CompilerGeneratedAttribute]
+public EventMessage`1[] get_Events();
+    [CompilerGeneratedAttribute]
+public void set_Events(EventMessage`1[] value);
+}
+public abstract class Loggly.Responses.EntryJsonResponseBase : object {
+    [CompilerGeneratedAttribute]
+private int <TotalEvents>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Page>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <TimeStamp>k__BackingField;
+    [JsonPropertyAttribute("total_events")]
+public int TotalEvents { get; public set; }
+    [JsonPropertyAttribute("page")]
+public int Page { get; public set; }
+    [JsonPropertyAttribute("timestamp")]
+public int TimeStamp { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_TotalEvents();
+    [CompilerGeneratedAttribute]
+public void set_TotalEvents(int value);
+    [CompilerGeneratedAttribute]
+public int get_Page();
+    [CompilerGeneratedAttribute]
+public void set_Page(int value);
+    [CompilerGeneratedAttribute]
+public int get_TimeStamp();
+    [CompilerGeneratedAttribute]
+public void set_TimeStamp(int value);
+}
+public class Loggly.Responses.ErrorMessage : object {
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <InnerException>k__BackingField;
+    public string Message { get; public set; }
+    public Exception InnerException { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    [CompilerGeneratedAttribute]
+public Exception get_InnerException();
+    [CompilerGeneratedAttribute]
+public void set_InnerException(Exception value);
+}
+public abstract class Loggly.Responses.EventBase : object {
+    [CompilerGeneratedAttribute]
+private String[] <Tags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <Id>k__BackingField;
+    [JsonPropertyAttribute("tags")]
+public String[] Tags { get; public set; }
+    [JsonPropertyAttribute("id")]
+public Guid Id { get; public set; }
+    [CompilerGeneratedAttribute]
+public String[] get_Tags();
+    [CompilerGeneratedAttribute]
+public void set_Tags(String[] value);
+    [CompilerGeneratedAttribute]
+public Guid get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(Guid value);
+}
+public class Loggly.Responses.EventMessage : EventBase {
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [JsonPropertyAttribute("logmsg")]
+public string Message { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    public virtual string ToString();
+}
+public class Loggly.Responses.EventMessage`1 : EventBase {
+    [CompilerGeneratedAttribute]
+private string <Json>k__BackingField;
+    [JsonPropertyAttribute("logmsg")]
+public string Json { get; public set; }
+    [JsonIgnoreAttribute]
+public TMessage Message { get; }
+    [CompilerGeneratedAttribute]
+public string get_Json();
+    [CompilerGeneratedAttribute]
+public void set_Json(string value);
+    public TMessage get_Message();
+    public virtual string ToString();
+}
+public class Loggly.Responses.EventQuery : object {
+    [CompilerGeneratedAttribute]
+private string <Rsid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Page>k__BackingField;
+    public string Rsid { get; public set; }
+    public int Page { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Rsid();
+    [CompilerGeneratedAttribute]
+public void set_Rsid(string value);
+    [CompilerGeneratedAttribute]
+public int get_Page();
+    [CompilerGeneratedAttribute]
+public void set_Page(int value);
+    public virtual IDictionary`2<string, object> ToParameters();
+}
+public class Loggly.Responses.Field : object {
+    [CompilerGeneratedAttribute]
+private string <Term>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Count>k__BackingField;
+    [JsonPropertyAttribute("term")]
+public string Term { get; public set; }
+    [JsonPropertyAttribute("count")]
+public int Count { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Term();
+    [CompilerGeneratedAttribute]
+public void set_Term(string value);
+    [CompilerGeneratedAttribute]
+public int get_Count();
+    [CompilerGeneratedAttribute]
+public void set_Count(int value);
+}
+[JsonObjectAttribute]
+public class Loggly.Responses.FieldResponse : object {
+    [CompilerGeneratedAttribute]
+private Field[] <Fields>k__BackingField;
+    public Field[] Fields { get; private set; }
+    public FieldResponse(JObject json, string fieldName);
+    [CompilerGeneratedAttribute]
+public Field[] get_Fields();
+    [CompilerGeneratedAttribute]
+private void set_Fields(Field[] value);
+}
+public class Loggly.Responses.Response : object {
+    [CompilerGeneratedAttribute]
+private bool <Success>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Raw>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ErrorMessage <Error>k__BackingField;
+    public bool Success { get; public set; }
+    public string Raw { get; public set; }
+    public ErrorMessage Error { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_Success();
+    [CompilerGeneratedAttribute]
+public void set_Success(bool value);
+    [CompilerGeneratedAttribute]
+public string get_Raw();
+    [CompilerGeneratedAttribute]
+public void set_Raw(string value);
+    [CompilerGeneratedAttribute]
+public ErrorMessage get_Error();
+    [CompilerGeneratedAttribute]
+public void set_Error(ErrorMessage value);
+    public static Response CreateSuccess(string raw);
+    public static Response CreateError(ErrorMessage error);
+}
+[JsonObjectAttribute]
+public class Loggly.Responses.Rsid : object {
+    [CompilerGeneratedAttribute]
+private string <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <From>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <To>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <ElapsedTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [JsonPropertyAttribute("status")]
+public string Status { get; public set; }
+    [JsonPropertyAttribute("date_from")]
+public long From { get; public set; }
+    [JsonPropertyAttribute("date_to")]
+public long To { get; public set; }
+    [JsonPropertyAttribute("elapsed_time")]
+public double ElapsedTime { get; public set; }
+    [JsonPropertyAttribute("id")]
+public string Id { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Status();
+    [CompilerGeneratedAttribute]
+public void set_Status(string value);
+    [CompilerGeneratedAttribute]
+public long get_From();
+    [CompilerGeneratedAttribute]
+public void set_From(long value);
+    [CompilerGeneratedAttribute]
+public long get_To();
+    [CompilerGeneratedAttribute]
+public void set_To(long value);
+    [CompilerGeneratedAttribute]
+public double get_ElapsedTime();
+    [CompilerGeneratedAttribute]
+public void set_ElapsedTime(double value);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    public virtual string ToString();
+}
+[JsonObjectAttribute]
+public class Loggly.Responses.SearchResponse : SearchResponseBase {
+    [IteratorStateMachineAttribute("Loggly.Responses.SearchResponse/<GetEnumerator>d__0")]
+public sealed virtual IEnumerator`1<EventMessage> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    [AsyncStateMachineAttribute("Loggly.Responses.SearchResponse/<GetEntryJsonResponse>d__2")]
+protected virtual Task`1<EntryJsonResponseBase> GetEntryJsonResponse(int page);
+}
+[JsonObjectAttribute]
+public class Loggly.Responses.SearchResponse`1 : SearchResponseBase {
+    [IteratorStateMachineAttribute("Loggly.Responses.SearchResponse`1/<GetEnumerator>d__0")]
+public sealed virtual IEnumerator`1<EventMessage`1<TMessage>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    [AsyncStateMachineAttribute("Loggly.Responses.SearchResponse`1/<GetEntryJsonResponse>d__2")]
+protected virtual Task`1<EntryJsonResponseBase> GetEntryJsonResponse(int page);
+}
+public abstract class Loggly.Responses.SearchResponseBase : object {
+    [CompilerGeneratedAttribute]
+private EntryJsonResponseBase <FirstEntryResponse>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISearchTransport <Transport>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Rsid <Rsid>k__BackingField;
+    protected EntryJsonResponseBase FirstEntryResponse { get; protected set; }
+    [JsonIgnoreAttribute]
+internal ISearchTransport Transport { get; internal set; }
+    [JsonPropertyAttribute("rsid")]
+public Rsid Rsid { get; public set; }
+    [JsonIgnoreAttribute]
+public int TotalEvents { get; }
+    [CompilerGeneratedAttribute]
+protected EntryJsonResponseBase get_FirstEntryResponse();
+    [CompilerGeneratedAttribute]
+protected void set_FirstEntryResponse(EntryJsonResponseBase value);
+    [CompilerGeneratedAttribute]
+internal ISearchTransport get_Transport();
+    [CompilerGeneratedAttribute]
+internal void set_Transport(ISearchTransport value);
+    [CompilerGeneratedAttribute]
+public Rsid get_Rsid();
+    [CompilerGeneratedAttribute]
+public void set_Rsid(Rsid value);
+    public int get_TotalEvents();
+    protected abstract virtual Task`1<EntryJsonResponseBase> GetEntryJsonResponse(int page);
+    public virtual string ToString();
+}
+public class Loggly.SearchQuery : object {
+    [CompilerGeneratedAttribute]
+private string <Query>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <From>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <Until>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Size>k__BackingField;
+    public string Query { get; public set; }
+    public Nullable`1<DateTime> From { get; public set; }
+    public Nullable`1<DateTime> Until { get; public set; }
+    public Nullable`1<int> Size { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Query();
+    [CompilerGeneratedAttribute]
+public void set_Query(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_From();
+    [CompilerGeneratedAttribute]
+public void set_From(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_Until();
+    [CompilerGeneratedAttribute]
+public void set_Until(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_Size();
+    [CompilerGeneratedAttribute]
+public void set_Size(Nullable`1<int> value);
+    public virtual IDictionary`2<string, object> ToParameters();
+}
+internal class Loggly.SearchTransport : object {
+    private ISearchConfiguration _config;
+    private HttpClient _httpClient;
+    public SearchTransport(ISearchConfiguration config);
+    [AsyncStateMachineAttribute("Loggly.SearchTransport/<Search>d__3")]
+public sealed virtual Task`1<SearchResponse> Search(SearchQuery query);
+    [AsyncStateMachineAttribute("Loggly.SearchTransport/<Search>d__4`1")]
+public sealed virtual Task`1<SearchResponse`1<T>> Search(SearchQuery query);
+    [AsyncStateMachineAttribute("Loggly.SearchTransport/<Search>d__5")]
+public sealed virtual Task`1<EntryJsonResponseBase> Search(EventQuery query);
+    [AsyncStateMachineAttribute("Loggly.SearchTransport/<Search>d__6")]
+public sealed virtual Task`1<FieldResponse> Search(FieldQuery query);
+    [AsyncStateMachineAttribute("Loggly.SearchTransport/<Search>d__7`1")]
+private Task`1<T> Search(string endPoint, IDictionary`2<string, object> parameters);
+    private string GetUrl(string endPoint, ICollection`1<KeyValuePair`2<string, object>> parameters);
+}
+public class Loggly.SyslogHeader : object {
+    [CompilerGeneratedAttribute]
+private int <MessageId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Level <Level>k__BackingField;
+    public int MessageId { get; public set; }
+    public Level Level { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_MessageId();
+    [CompilerGeneratedAttribute]
+public void set_MessageId(int value);
+    [CompilerGeneratedAttribute]
+public Level get_Level();
+    [CompilerGeneratedAttribute]
+public void set_Level(Level value);
+}
+public enum Loggly.Transports.Syslog.Facility : Enum {
+    public int value__;
+    public static Facility Kernel;
+    public static Facility User;
+    public static Facility Mail;
+    public static Facility Daemon;
+    public static Facility Auth;
+    public static Facility Syslog;
+    public static Facility Lpr;
+    public static Facility News;
+    public static Facility Uucp;
+    public static Facility Cron;
+    public static Facility Local0;
+    public static Facility Local1;
+    public static Facility Local2;
+    public static Facility Local3;
+    public static Facility Local4;
+    public static Facility Local5;
+    public static Facility Local6;
+    public static Facility Local7;
+}
+public enum Loggly.Transports.Syslog.Level : Enum {
+    public int value__;
+    public static Level Emergency;
+    public static Level Alert;
+    public static Level Critical;
+    public static Level Error;
+    public static Level Warning;
+    public static Level Notice;
+    public static Level Information;
+    public static Level Debug;
+}
+public class Loggly.Transports.Syslog.SyslogMessage : object {
+    private static IEnvironmentProvider DefaultEnvironment;
+    [CompilerGeneratedAttribute]
+private DateTimeOffset <Timestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MessageId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Facility <Facility>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Level <Level>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AppName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnvironmentProvider <EnvironmentProvider>k__BackingField;
+    public DateTimeOffset Timestamp { get; public set; }
+    public int MessageId { get; public set; }
+    public Facility Facility { get; public set; }
+    public Level Level { get; public set; }
+    public string Text { get; public set; }
+    public string AppName { get; public set; }
+    public IEnvironmentProvider EnvironmentProvider { get; public set; }
+    public SyslogMessage(Facility facility, Level level, string text);
+    private static SyslogMessage();
+    [CompilerGeneratedAttribute]
+public DateTimeOffset get_Timestamp();
+    [CompilerGeneratedAttribute]
+public void set_Timestamp(DateTimeOffset value);
+    [CompilerGeneratedAttribute]
+public int get_MessageId();
+    [CompilerGeneratedAttribute]
+public void set_MessageId(int value);
+    [CompilerGeneratedAttribute]
+public Facility get_Facility();
+    [CompilerGeneratedAttribute]
+public void set_Facility(Facility value);
+    [CompilerGeneratedAttribute]
+public Level get_Level();
+    [CompilerGeneratedAttribute]
+public void set_Level(Level value);
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    [CompilerGeneratedAttribute]
+public void set_Text(string value);
+    [CompilerGeneratedAttribute]
+public string get_AppName();
+    [CompilerGeneratedAttribute]
+public void set_AppName(string value);
+    [CompilerGeneratedAttribute]
+public IEnvironmentProvider get_EnvironmentProvider();
+    [CompilerGeneratedAttribute]
+public void set_EnvironmentProvider(IEnvironmentProvider value);
+    internal string GetMessageAsString();
+    public Byte[] GetBytes();
+}
+internal class Loggly.Transports.Syslog.SyslogSecureTransport : SyslogTcpTransport {
+    private static bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
+    [AsyncStateMachineAttribute("Loggly.Transports.Syslog.SyslogSecureTransport/<GetNetworkStream>d__1")]
+protected virtual Task`1<Stream> GetNetworkStream(TcpClient client);
+}
+internal class Loggly.Transports.Syslog.SyslogTcpTransport : SyslogTransportBase {
+    private Stream _networkStream;
+    private TcpClient _tcpClient;
+    private SemaphoreSlim _semaphore;
+    protected string Hostname { get; }
+    protected string get_Hostname();
+    protected virtual Task`1<Stream> GetNetworkStream(TcpClient client);
+    [AsyncStateMachineAttribute("Loggly.Transports.Syslog.SyslogTcpTransport/<Send>d__6")]
+protected virtual Task`1<LogResponse> Send(SyslogMessage syslogMessage);
+    public sealed virtual void Dispose();
+}
+internal abstract class Loggly.Transports.Syslog.SyslogTransportBase : TransportBase {
+    [AsyncStateMachineAttribute("Loggly.Transports.Syslog.SyslogTransportBase/<Send>d__0")]
+public sealed virtual Task`1<LogResponse> Send(IEnumerable`1<LogglyMessage> messages);
+    internal SyslogMessage ConstructSyslog(LogglyMessage message);
+    protected abstract virtual Task`1<LogResponse> Send(SyslogMessage syslogMessage);
+    private string GetRenderedTags(List`1<ITag> customTags);
+}
+internal class Loggly.Transports.Syslog.SyslogUdpTransport : SyslogTransportBase {
+    private UdpClientEx _udpClient;
+    public bool IsActive { get; }
+    public bool get_IsActive();
+    public void Close();
+    [AsyncStateMachineAttribute("Loggly.Transports.Syslog.SyslogUdpTransport/<Send>d__5")]
+protected virtual Task`1<LogResponse> Send(SyslogMessage syslogMessage);
+}
+public class Loggly.Transports.Syslog.UdpClientEx : UdpClient {
+    public bool IsActive { get; }
+    public UdpClientEx(IPEndPoint ipe);
+    protected virtual override void Finalize();
+    public bool get_IsActive();
+}
+internal abstract class Loggly.Transports.TransportBase : object {
+    private static ICollection`1<string> EmptyCollection;
+    private static TransportBase();
+    public ICollection`1<string> GetLegalTagUnion(List`1<ITag> customTags);
+}
