@@ -1,0 +1,705 @@
+public class MongoDB.Driver.GridFS.DelegatingStream : Stream {
+    private Stream _wrappedStream;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanTimeout { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int ReadTimeout { get; public set; }
+    public int WriteTimeout { get; public set; }
+    internal DelegatingStream(Stream wrappedStream);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanTimeout();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual int get_ReadTimeout();
+    public virtual void set_ReadTimeout(int value);
+    public virtual int get_WriteTimeout();
+    public virtual void set_WriteTimeout(int value);
+    public virtual IAsyncResult BeginRead(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual IAsyncResult BeginWrite(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual void Close();
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    [ObsoleteAttribute("Not supported by DelegatingStream.")]
+protected virtual WaitHandle CreateWaitHandle();
+    protected virtual void Dispose(bool disposing);
+    public virtual int EndRead(IAsyncResult asyncResult);
+    public virtual void EndWrite(IAsyncResult asyncResult);
+    public virtual bool Equals(object obj);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual int GetHashCode();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual int ReadByte();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual string ToString();
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void WriteByte(byte value);
+}
+public class MongoDB.Driver.GridFS.GridFSBucket : GridFSBucket`1<ObjectId> {
+    private GridFSBucket`1<BsonValue> _bsonValueBucket;
+    public GridFSBucket(IMongoDatabase database, GridFSBucketOptions options);
+    public void Delete(BsonValue id, CancellationToken cancellationToken);
+    public Task DeleteAsync(BsonValue id, CancellationToken cancellationToken);
+    public Byte[] DownloadAsBytes(BsonValue id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public Task`1<Byte[]> DownloadAsBytesAsync(BsonValue id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public void DownloadToStream(BsonValue id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public Task DownloadToStreamAsync(BsonValue id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public sealed virtual IAsyncCursor`1<GridFSFileInfo> Find(FilterDefinition`1<GridFSFileInfo> filter, GridFSFindOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket/<FindAsync>d__9")]
+public sealed virtual Task`1<IAsyncCursor`1<GridFSFileInfo>> FindAsync(FilterDefinition`1<GridFSFileInfo> filter, GridFSFindOptions options, CancellationToken cancellationToken);
+    public GridFSDownloadStream OpenDownloadStream(BsonValue id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket/<OpenDownloadStreamAsync>d__11")]
+public Task`1<GridFSDownloadStream> OpenDownloadStreamAsync(BsonValue id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public sealed virtual GridFSUploadStream OpenUploadStream(string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket/<OpenUploadStreamAsync>d__13")]
+public sealed virtual Task`1<GridFSUploadStream> OpenUploadStreamAsync(string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public void Rename(BsonValue id, string newFilename, CancellationToken cancellationToken);
+    public Task RenameAsync(BsonValue id, string newFilename, CancellationToken cancellationToken);
+    public sealed virtual ObjectId UploadFromBytes(string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket/<UploadFromBytesAsync>d__17")]
+public sealed virtual Task`1<ObjectId> UploadFromBytesAsync(string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public sealed virtual ObjectId UploadFromStream(string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket/<UploadFromStreamAsync>d__19")]
+public sealed virtual Task`1<ObjectId> UploadFromStreamAsync(string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    private IEnumerable`1<GridFSFileInfo> TransformFileInfos(IEnumerable`1<GridFSFileInfo`1<ObjectId>> fileInfos);
+    private FilterDefinition`1<GridFSFileInfo`1<ObjectId>> WrapFilter(FilterDefinition`1<GridFSFileInfo> filter);
+    private GridFSFindOptions`1<ObjectId> WrapFindOptions(GridFSFindOptions options);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task`1<IAsyncCursor`1<GridFSFileInfo`1<ObjectId>>> <>n__0(FilterDefinition`1<GridFSFileInfo`1<ObjectId>> filter, GridFSFindOptions`1<ObjectId> options, CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task`1<GridFSUploadStream`1<ObjectId>> <>n__1(ObjectId id, string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+}
+public class MongoDB.Driver.GridFS.GridFSBucket`1 : object {
+    private ICluster _cluster;
+    private IMongoDatabase _database;
+    private bool _ensureIndexesDone;
+    private SemaphoreSlim _ensureIndexesSemaphore;
+    private IBsonSerializer`1<GridFSFileInfo`1<TFileId>> _fileInfoSerializer;
+    private BsonSerializationInfo _idSerializationInfo;
+    private ImmutableGridFSBucketOptions _options;
+    public IMongoDatabase Database { get; }
+    public ImmutableGridFSBucketOptions Options { get; }
+    public GridFSBucket`1(IMongoDatabase database, GridFSBucketOptions options);
+    public sealed virtual IMongoDatabase get_Database();
+    public sealed virtual ImmutableGridFSBucketOptions get_Options();
+    public sealed virtual void Delete(TFileId id, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DeleteAsync>d__13")]
+public sealed virtual Task DeleteAsync(TFileId id, CancellationToken cancellationToken);
+    public sealed virtual Byte[] DownloadAsBytes(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadAsBytesAsync>d__15")]
+public sealed virtual Task`1<Byte[]> DownloadAsBytesAsync(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public sealed virtual Byte[] DownloadAsBytesByName(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadAsBytesByNameAsync>d__17")]
+public sealed virtual Task`1<Byte[]> DownloadAsBytesByNameAsync(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public sealed virtual void DownloadToStream(TFileId id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadToStreamAsync>d__19")]
+public sealed virtual Task DownloadToStreamAsync(TFileId id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public sealed virtual void DownloadToStreamByName(string filename, Stream destination, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadToStreamByNameAsync>d__21")]
+public sealed virtual Task DownloadToStreamByNameAsync(string filename, Stream destination, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public sealed virtual void Drop(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DropAsync>d__23")]
+public sealed virtual Task DropAsync(CancellationToken cancellationToken);
+    public sealed virtual IAsyncCursor`1<GridFSFileInfo`1<TFileId>> Find(FilterDefinition`1<GridFSFileInfo`1<TFileId>> filter, GridFSFindOptions`1<TFileId> options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<FindAsync>d__25")]
+public sealed virtual Task`1<IAsyncCursor`1<GridFSFileInfo`1<TFileId>>> FindAsync(FilterDefinition`1<GridFSFileInfo`1<TFileId>> filter, GridFSFindOptions`1<TFileId> options, CancellationToken cancellationToken);
+    public sealed virtual GridFSDownloadStream`1<TFileId> OpenDownloadStream(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<OpenDownloadStreamAsync>d__27")]
+public sealed virtual Task`1<GridFSDownloadStream`1<TFileId>> OpenDownloadStreamAsync(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public sealed virtual GridFSDownloadStream`1<TFileId> OpenDownloadStreamByName(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<OpenDownloadStreamByNameAsync>d__29")]
+public sealed virtual Task`1<GridFSDownloadStream`1<TFileId>> OpenDownloadStreamByNameAsync(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public sealed virtual GridFSUploadStream`1<TFileId> OpenUploadStream(TFileId id, string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<OpenUploadStreamAsync>d__31")]
+public sealed virtual Task`1<GridFSUploadStream`1<TFileId>> OpenUploadStreamAsync(TFileId id, string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public sealed virtual void Rename(TFileId id, string newFilename, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<RenameAsync>d__33")]
+public sealed virtual Task RenameAsync(TFileId id, string newFilename, CancellationToken cancellationToken);
+    public sealed virtual void UploadFromBytes(TFileId id, string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<UploadFromBytesAsync>d__35")]
+public sealed virtual Task UploadFromBytesAsync(TFileId id, string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public sealed virtual void UploadFromStream(TFileId id, string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<UploadFromStreamAsync>d__37")]
+public sealed virtual Task UploadFromStreamAsync(TFileId id, string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    private bool ChunksCollectionIndexesExist(List`1<BsonDocument> indexes);
+    private bool ChunksCollectionIndexesExist(IReadBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<ChunksCollectionIndexesExistAsync>d__40")]
+private Task`1<bool> ChunksCollectionIndexesExistAsync(IReadBindingHandle binding, CancellationToken cancellationToken);
+    private void CreateChunksCollectionIndexes(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<CreateChunksCollectionIndexesAsync>d__42")]
+private Task CreateChunksCollectionIndexesAsync(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    internal CreateIndexesOperation CreateCreateChunksCollectionIndexesOperation();
+    internal CreateIndexesOperation CreateCreateFilesCollectionIndexesOperation();
+    private BulkMixedWriteOperation CreateDeleteChunksOperation(TFileId id);
+    private GridFSDownloadStream`1<TFileId> CreateDownloadStream(IReadBindingHandle binding, GridFSFileInfo`1<TFileId> fileInfo, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    internal DropCollectionOperation CreateDropCollectionOperation(CollectionNamespace collectionNamespace, MessageEncoderSettings messageEncoderSettings);
+    private BulkMixedWriteOperation CreateDeleteFileOperation(TFileId id);
+    private void CreateFilesCollectionIndexes(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<CreateFilesCollectionIndexesAsync>d__50")]
+private Task CreateFilesCollectionIndexesAsync(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    private FindOperation`1<GridFSFileInfo`1<TFileId>> CreateFindOperation(FilterDefinition`1<GridFSFileInfo`1<TFileId>> filter, GridFSFindOptions`1<TFileId> options);
+    private FindOperation`1<GridFSFileInfo`1<TFileId>> CreateGetFileInfoByNameOperation(string filename, int revision);
+    private FindOperation`1<GridFSFileInfo`1<TFileId>> CreateGetFileInfoOperation(TFileId id);
+    private FindOperation`1<BsonDocument> CreateIsFilesCollectionEmptyOperation();
+    private ListIndexesOperation CreateListIndexesOperation(CollectionNamespace collectionNamespace);
+    private BulkMixedWriteOperation CreateRenameOperation(TFileId id, string newFilename);
+    private GridFSUploadStream`1<TFileId> CreateUploadStream(IReadWriteBindingHandle binding, TFileId id, string filename, GridFSUploadOptions options);
+    private Byte[] DownloadAsBytesHelper(IReadBindingHandle binding, GridFSFileInfo`1<TFileId> fileInfo, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadAsBytesHelperAsync>d__59")]
+private Task`1<Byte[]> DownloadAsBytesHelperAsync(IReadBindingHandle binding, GridFSFileInfo`1<TFileId> fileInfo, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    private void DownloadToStreamHelper(IReadBindingHandle binding, GridFSFileInfo`1<TFileId> fileInfo, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<DownloadToStreamHelperAsync>d__61")]
+private Task DownloadToStreamHelperAsync(IReadBindingHandle binding, GridFSFileInfo`1<TFileId> fileInfo, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    private void EnsureIndexes(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<EnsureIndexesAsync>d__63")]
+private Task EnsureIndexesAsync(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    private bool FilesCollectionIndexesExist(List`1<BsonDocument> indexes);
+    private bool FilesCollectionIndexesExist(IReadBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<FilesCollectionIndexesExistAsync>d__66")]
+private Task`1<bool> FilesCollectionIndexesExistAsync(IReadBindingHandle binding, CancellationToken cancellationToken);
+    private GridFSFileInfo`1<TFileId> GetFileInfo(IReadBindingHandle binding, TFileId id, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<GetFileInfoAsync>d__68")]
+private Task`1<GridFSFileInfo`1<TFileId>> GetFileInfoAsync(IReadBindingHandle binding, TFileId id, CancellationToken cancellationToken);
+    private GridFSFileInfo`1<TFileId> GetFileInfoByName(IReadBindingHandle binding, string filename, int revision, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<GetFileInfoByNameAsync>d__70")]
+private Task`1<GridFSFileInfo`1<TFileId>> GetFileInfoByNameAsync(IReadBindingHandle binding, string filename, int revision, CancellationToken cancellationToken);
+    private ReadConcern GetReadConcern();
+    private IReadBindingHandle GetSingleServerReadBinding(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<GetSingleServerReadBindingAsync>d__73")]
+private Task`1<IReadBindingHandle> GetSingleServerReadBindingAsync(CancellationToken cancellationToken);
+    private IReadWriteBindingHandle GetSingleServerReadWriteBinding(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<GetSingleServerReadWriteBindingAsync>d__75")]
+private Task`1<IReadWriteBindingHandle> GetSingleServerReadWriteBindingAsync(CancellationToken cancellationToken);
+    private bool IndexExists(List`1<BsonDocument> indexes, BsonDocument key);
+    private bool IsFilesCollectionEmpty(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<IsFilesCollectionEmptyAsync>d__78")]
+private Task`1<bool> IsFilesCollectionEmptyAsync(IReadWriteBindingHandle binding, CancellationToken cancellationToken);
+    private List`1<BsonDocument> ListIndexes(IReadBinding binding, CollectionNamespace collectionNamespace, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSBucket`1/<ListIndexesAsync>d__80")]
+private Task`1<List`1<BsonDocument>> ListIndexesAsync(IReadBinding binding, CollectionNamespace collectionNamespace, CancellationToken cancellationToken);
+}
+public class MongoDB.Driver.GridFS.GridFSBucketOptions : object {
+    private string _bucketName;
+    private int _chunkSizeBytes;
+    private bool _disableMD5;
+    private ReadConcern _readConcern;
+    private ReadPreference _readPreference;
+    private WriteConcern _writeConcern;
+    public string BucketName { get; public set; }
+    public int ChunkSizeBytes { get; public set; }
+    public bool DisableMD5 { get; public set; }
+    public ReadConcern ReadConcern { get; public set; }
+    public ReadPreference ReadPreference { get; public set; }
+    public WriteConcern WriteConcern { get; public set; }
+    public GridFSBucketOptions(GridFSBucketOptions other);
+    public GridFSBucketOptions(ImmutableGridFSBucketOptions other);
+    public string get_BucketName();
+    public void set_BucketName(string value);
+    public int get_ChunkSizeBytes();
+    public void set_ChunkSizeBytes(int value);
+    public bool get_DisableMD5();
+    public void set_DisableMD5(bool value);
+    public ReadConcern get_ReadConcern();
+    public void set_ReadConcern(ReadConcern value);
+    public ReadPreference get_ReadPreference();
+    public void set_ReadPreference(ReadPreference value);
+    public WriteConcern get_WriteConcern();
+    public void set_WriteConcern(WriteConcern value);
+}
+public class MongoDB.Driver.GridFS.GridFSChunkException : GridFSException {
+    public GridFSChunkException(BsonValue id, long n, string reason);
+    public GridFSChunkException(SerializationInfo info, StreamingContext context);
+    private static string FormatMessage(BsonValue id, long n, string reason);
+}
+public class MongoDB.Driver.GridFS.GridFSDownloadByNameOptions : GridFSDownloadOptions {
+    private int _revision;
+    public int Revision { get; public set; }
+    public int get_Revision();
+    public void set_Revision(int value);
+}
+public class MongoDB.Driver.GridFS.GridFSDownloadOptions : object {
+    private Nullable`1<bool> _checkMD5;
+    private Nullable`1<bool> _seekable;
+    public Nullable`1<bool> CheckMD5 { get; public set; }
+    public Nullable`1<bool> Seekable { get; public set; }
+    public Nullable`1<bool> get_CheckMD5();
+    public void set_CheckMD5(Nullable`1<bool> value);
+    public Nullable`1<bool> get_Seekable();
+    public void set_Seekable(Nullable`1<bool> value);
+}
+public class MongoDB.Driver.GridFS.GridFSDownloadStream : DelegatingStream {
+    private GridFSDownloadStream`1<BsonValue> _wrappedStream;
+    public GridFSFileInfo FileInfo { get; }
+    public GridFSDownloadStream(GridFSDownloadStream`1<BsonValue> wrappedStream);
+    public GridFSFileInfo get_FileInfo();
+}
+public abstract class MongoDB.Driver.GridFS.GridFSDownloadStream`1 : Stream {
+    public GridFSFileInfo`1<TFileId> FileInfo { get; }
+    public abstract virtual GridFSFileInfo`1<TFileId> get_FileInfo();
+    public abstract virtual void Close(CancellationToken cancellationToken);
+    public abstract virtual Task CloseAsync(CancellationToken cancellationToken);
+}
+internal abstract class MongoDB.Driver.GridFS.GridFSDownloadStreamBase`1 : GridFSDownloadStream`1<TFileId> {
+    private IReadBinding _binding;
+    private IGridFSBucket`1<TFileId> _bucket;
+    private bool _closed;
+    private bool _disposed;
+    private GridFSFileInfo`1<TFileId> _fileInfo;
+    public bool CanRead { get; }
+    public bool CanWrite { get; }
+    public GridFSFileInfo`1<TFileId> FileInfo { get; }
+    public long Length { get; }
+    protected IReadBinding Binding { get; }
+    protected IGridFSBucket`1<TFileId> Bucket { get; }
+    protected GridFSDownloadStreamBase`1(IGridFSBucket`1<TFileId> bucket, IReadBinding binding, GridFSFileInfo`1<TFileId> fileInfo);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanWrite();
+    public virtual GridFSFileInfo`1<TFileId> get_FileInfo();
+    public virtual long get_Length();
+    protected IReadBinding get_Binding();
+    protected IGridFSBucket`1<TFileId> get_Bucket();
+    public virtual void Close(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSDownloadStreamBase`1/<CloseAsync>d__19")]
+public virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    protected void CloseIfNotAlreadyClosedFromDispose(bool disposing);
+    protected virtual void CloseImplementation(CancellationToken cancellationToken);
+    protected virtual Task CloseImplementationAsync(CancellationToken cancellationToken);
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ThrowIfDisposed();
+    private void CloseIfNotAlreadyClosed(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSDownloadStreamBase`1/<CloseIfNotAlreadyClosedAsync>d__31")]
+private Task CloseIfNotAlreadyClosedAsync(CancellationToken cancellationToken);
+}
+public class MongoDB.Driver.GridFS.GridFSException : MongoException {
+    public GridFSException(string message);
+    public GridFSException(string message, Exception innerException);
+    public GridFSException(SerializationInfo info, StreamingContext context);
+}
+[BsonSerializerAttribute("MongoDB.Driver.GridFS.GridFSFileInfoSerializer")]
+public class MongoDB.Driver.GridFS.GridFSFileInfo : BsonDocumentBackedClass {
+    [ObsoleteAttribute("Place aliases inside metadata instead.")]
+public IEnumerable`1<string> Aliases { get; }
+    public BsonDocument BackingDocument { get; }
+    public int ChunkSizeBytes { get; }
+    [ObsoleteAttribute("Place contentType inside metadata instead.")]
+public string ContentType { get; }
+    public string Filename { get; }
+    public ObjectId Id { get; }
+    [ObsoleteAttribute("All new GridFS files should use an ObjectId as the Id.")]
+public BsonValue IdAsBsonValue { get; }
+    public long Length { get; }
+    [ObsoleteAttribute("MD5 support will be removed soon.")]
+public string MD5 { get; }
+    public BsonDocument Metadata { get; }
+    public DateTime UploadDateTime { get; }
+    public GridFSFileInfo(BsonDocument backingDocument);
+    public IEnumerable`1<string> get_Aliases();
+    public BsonDocument get_BackingDocument();
+    public int get_ChunkSizeBytes();
+    public string get_ContentType();
+    public string get_Filename();
+    public ObjectId get_Id();
+    public BsonValue get_IdAsBsonValue();
+    public long get_Length();
+    public string get_MD5();
+    public BsonDocument get_Metadata();
+    public DateTime get_UploadDateTime();
+}
+[BsonSerializerAttribute("MongoDB.Driver.GridFS.GridFSFileInfoSerializer`1")]
+public class MongoDB.Driver.GridFS.GridFSFileInfo`1 : BsonDocumentBackedClass {
+    [ObsoleteAttribute("Place aliases inside metadata instead.")]
+public IEnumerable`1<string> Aliases { get; }
+    public BsonDocument BackingDocument { get; }
+    public int ChunkSizeBytes { get; }
+    [ObsoleteAttribute("Place contentType inside metadata instead.")]
+public string ContentType { get; }
+    public string Filename { get; }
+    public TFileId Id { get; }
+    public long Length { get; }
+    public string MD5 { get; }
+    public BsonDocument Metadata { get; }
+    public DateTime UploadDateTime { get; }
+    public GridFSFileInfo`1(BsonDocument backingDocument, IGridFSFileInfoSerializer`1<TFileId> fileInfoSerializer);
+    public IEnumerable`1<string> get_Aliases();
+    public BsonDocument get_BackingDocument();
+    public int get_ChunkSizeBytes();
+    public string get_ContentType();
+    public string get_Filename();
+    public TFileId get_Id();
+    public long get_Length();
+    public string get_MD5();
+    public BsonDocument get_Metadata();
+    public DateTime get_UploadDateTime();
+}
+public class MongoDB.Driver.GridFS.GridFSFileInfoSerializer : BsonDocumentBackedClassSerializer`1<GridFSFileInfo> {
+    private static GridFSFileInfoSerializer __instance;
+    public static GridFSFileInfoSerializer Instance { get; }
+    private static GridFSFileInfoSerializer();
+    public static GridFSFileInfoSerializer get_Instance();
+    protected virtual GridFSFileInfo CreateInstance(BsonDocument backingDocument);
+}
+public class MongoDB.Driver.GridFS.GridFSFileInfoSerializer`1 : BsonDocumentBackedClassSerializer`1<GridFSFileInfo`1<TFileId>> {
+    public GridFSFileInfoSerializer`1(IBsonSerializer`1<TFileId> idSerializer);
+    protected virtual GridFSFileInfo`1<TFileId> CreateInstance(BsonDocument backingDocument);
+}
+public class MongoDB.Driver.GridFS.GridFSFileNotFoundException : GridFSException {
+    public GridFSFileNotFoundException(BsonValue id);
+    public GridFSFileNotFoundException(string filename, int revision);
+    public GridFSFileNotFoundException(SerializationInfo info, StreamingContext context);
+    private static string FormatMessage(BsonValue id);
+    private static string FormatMessage(string filename, int revision);
+}
+public class MongoDB.Driver.GridFS.GridFSFindOptions : GridFSFindOptions`1<ObjectId> {
+    private SortDefinition`1<GridFSFileInfo> _sort;
+    public SortDefinition`1<GridFSFileInfo> Sort { get; public set; }
+    public SortDefinition`1<GridFSFileInfo> get_Sort();
+    public void set_Sort(SortDefinition`1<GridFSFileInfo> value);
+}
+public class MongoDB.Driver.GridFS.GridFSFindOptions`1 : object {
+    private Nullable`1<bool> _allowDiskUse;
+    private Nullable`1<int> _batchSize;
+    private Nullable`1<int> _limit;
+    private Nullable`1<TimeSpan> _maxTime;
+    private Nullable`1<bool> _noCursorTimeout;
+    private Nullable`1<int> _skip;
+    private SortDefinition`1<GridFSFileInfo`1<TFileId>> _sort;
+    public Nullable`1<bool> AllowDiskUse { get; public set; }
+    public Nullable`1<int> BatchSize { get; public set; }
+    public Nullable`1<int> Limit { get; public set; }
+    public Nullable`1<TimeSpan> MaxTime { get; public set; }
+    public Nullable`1<bool> NoCursorTimeout { get; public set; }
+    public Nullable`1<int> Skip { get; public set; }
+    public SortDefinition`1<GridFSFileInfo`1<TFileId>> Sort { get; public set; }
+    public Nullable`1<bool> get_AllowDiskUse();
+    public void set_AllowDiskUse(Nullable`1<bool> value);
+    public Nullable`1<int> get_BatchSize();
+    public void set_BatchSize(Nullable`1<int> value);
+    public Nullable`1<int> get_Limit();
+    public void set_Limit(Nullable`1<int> value);
+    public Nullable`1<TimeSpan> get_MaxTime();
+    public void set_MaxTime(Nullable`1<TimeSpan> value);
+    public Nullable`1<bool> get_NoCursorTimeout();
+    public void set_NoCursorTimeout(Nullable`1<bool> value);
+    public Nullable`1<int> get_Skip();
+    public void set_Skip(Nullable`1<int> value);
+    public SortDefinition`1<GridFSFileInfo`1<TFileId>> get_Sort();
+    public void set_Sort(SortDefinition`1<GridFSFileInfo`1<TFileId>> value);
+}
+internal class MongoDB.Driver.GridFS.GridFSForwardOnlyDownloadStream`1 : GridFSDownloadStreamBase`1<TFileId> {
+    private List`1<BsonDocument> _batch;
+    private long _batchPosition;
+    private bool _checkMD5;
+    private IAsyncCursor`1<BsonDocument> _cursor;
+    private bool _disposed;
+    private BsonValue _idAsBsonValue;
+    private int _lastChunkNumber;
+    private int _lastChunkSize;
+    private IncrementalHash _md5;
+    private int _nextChunkNumber;
+    private long _position;
+    private bool _retryReads;
+    public bool CanSeek { get; }
+    public long Position { get; public set; }
+    public bool RetryReads { get; public set; }
+    public GridFSForwardOnlyDownloadStream`1(GridFSBucket`1<TFileId> bucket, IReadBinding binding, GridFSFileInfo`1<TFileId> fileInfo, bool checkMD5);
+    public virtual bool get_CanSeek();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public bool get_RetryReads();
+    public void set_RetryReads(bool value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyDownloadStream`1/<ReadAsync>d__22")]
+public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    protected virtual void CloseImplementation(CancellationToken cancellationToken);
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ThrowIfDisposed();
+    private FindOperation`1<BsonDocument> CreateFirstBatchOperation();
+    private void GetFirstBatch(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyDownloadStream`1/<GetFirstBatchAsync>d__29")]
+private Task GetFirstBatchAsync(CancellationToken cancellationToken);
+    private void GetNextBatch(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyDownloadStream`1/<GetNextBatchAsync>d__31")]
+private Task GetNextBatchAsync(CancellationToken cancellationToken);
+    private void ProcessNextBatch(List`1<BsonDocument> batch);
+    private ArraySegment`1<byte> GetSegment(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyDownloadStream`1/<GetSegmentAsync>d__34")]
+private Task`1<ArraySegment`1<byte>> GetSegmentAsync(CancellationToken cancellationToken);
+    private ArraySegment`1<byte> GetSegmentHelper(int batchIndex);
+}
+internal class MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1 : GridFSUploadStream`1<TFileId> {
+    private static Task __completedTask;
+    private bool _aborted;
+    private List`1<string> _aliases;
+    private List`1<Byte[]> _batch;
+    private long _batchPosition;
+    private int _batchSize;
+    private IWriteBinding _binding;
+    private GridFSBucket`1<TFileId> _bucket;
+    private int _chunkSizeBytes;
+    private bool _closed;
+    private string _contentType;
+    private bool _disableMD5;
+    private bool _disposed;
+    private string _filename;
+    private TFileId _id;
+    private BsonValue _idAsBsonValue;
+    private long _length;
+    private IncrementalHash _md5;
+    private BsonDocument _metadata;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public TFileId Id { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public GridFSForwardOnlyUploadStream`1(GridFSBucket`1<TFileId> bucket, IWriteBinding binding, TFileId id, string filename, BsonDocument metadata, IEnumerable`1<string> aliases, string contentType, int chunkSizeBytes, int batchSize, bool disableMD5);
+    private static GridFSForwardOnlyUploadStream`1();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual TFileId get_Id();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Abort(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<AbortAsync>d__34")]
+public virtual Task AbortAsync(CancellationToken cancellationToken);
+    public virtual void Close(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<CloseAsync>d__36")]
+public virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<WriteAsync>d__44")]
+public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    private void CloseIfNotAlreadyClosed(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<CloseIfNotAlreadyClosedAsync>d__46")]
+private Task CloseIfNotAlreadyClosedAsync(CancellationToken cancellationToken);
+    private void CloseIfNotAlreadyClosedFromDispose(bool disposing);
+    private void CloseImplementation(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<CloseImplementationAsync>d__49")]
+private Task CloseImplementationAsync(CancellationToken cancellationToken);
+    private BulkMixedWriteOperation CreateAbortOperation();
+    private BsonDocument CreateFilesCollectionDocument();
+    private IEnumerable`1<BsonDocument> CreateWriteBatchChunkDocuments();
+    protected virtual void Dispose(bool disposing);
+    private void ExecuteOrSetAbortedOnException(Action action);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<ExecuteOrSetAbortedOnExceptionAsync>d__55")]
+private Task ExecuteOrSetAbortedOnExceptionAsync(Func`1<Task> action);
+    private IMongoCollection`1<BsonDocument> GetChunksCollection();
+    private IMongoCollection`1<BsonDocument> GetCollection(string suffix);
+    private ArraySegment`1<byte> GetCurrentChunk(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<GetCurrentChunkAsync>d__59")]
+private Task`1<ArraySegment`1<byte>> GetCurrentChunkAsync(CancellationToken cancellationToken);
+    private ArraySegment`1<byte> GetCurrentChunkSegment(int batchIndex);
+    private IMongoCollection`1<BsonDocument> GetFilesCollection();
+    private void ThrowIfAbortedClosedOrDisposed();
+    private void ThrowIfClosedOrDisposed();
+    private void ThrowIfDisposed();
+    private void TruncateFinalChunk();
+    private void WriteBatch(CancellationToken cancellationToken);
+    private Task WriteBatchAsync(CancellationToken cancellationToken);
+    private void WriteFilesCollectionDocument(CancellationToken cancellationToken);
+    private Task WriteFilesCollectionDocumentAsync(CancellationToken cancellationToken);
+    private void WriteFinalBatch(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSForwardOnlyUploadStream`1/<WriteFinalBatchAsync>d__71")]
+private Task WriteFinalBatchAsync(CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+private BsonValue <CreateFilesCollectionDocument>b__51_0();
+    [CompilerGeneratedAttribute]
+private BsonValue <CreateFilesCollectionDocument>b__51_1();
+}
+public class MongoDB.Driver.GridFS.GridFSMD5Exception : GridFSException {
+    public GridFSMD5Exception(BsonValue id);
+    public GridFSMD5Exception(SerializationInfo info, StreamingContext context);
+    private static string FormatMessage(BsonValue id);
+}
+internal class MongoDB.Driver.GridFS.GridFSSeekableDownloadStream`1 : GridFSDownloadStreamBase`1<TFileId> {
+    private Byte[] _chunk;
+    private BsonValue _idAsBsonValue;
+    private long _n;
+    private long _position;
+    private bool _retryReads;
+    public bool CanSeek { get; }
+    public long Position { get; public set; }
+    public bool RetryReads { get; public set; }
+    public GridFSSeekableDownloadStream`1(GridFSBucket`1<TFileId> bucket, IReadBinding binding, GridFSFileInfo`1<TFileId> fileInfo);
+    public virtual bool get_CanSeek();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public bool get_RetryReads();
+    public void set_RetryReads(bool value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSSeekableDownloadStream`1/<ReadAsync>d__15")]
+public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    private FindOperation`1<BsonDocument> CreateGetChunkOperation(long n);
+    private void GetChunk(long n, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSSeekableDownloadStream`1/<GetChunkAsync>d__19")]
+private Task GetChunkAsync(long n, CancellationToken cancellationToken);
+    private Byte[] GetChunkHelper(long n, List`1<BsonDocument> documents);
+    private ArraySegment`1<byte> GetSegment(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.GridFSSeekableDownloadStream`1/<GetSegmentAsync>d__22")]
+private Task`1<ArraySegment`1<byte>> GetSegmentAsync(CancellationToken cancellationToken);
+}
+public class MongoDB.Driver.GridFS.GridFSUploadOptions : object {
+    private IEnumerable`1<string> _aliases;
+    private Nullable`1<int> _batchSize;
+    private Nullable`1<int> _chunkSizeBytes;
+    private string _contentType;
+    private bool _disableMD5;
+    private BsonDocument _metadata;
+    [ObsoleteAttribute("Place aliases inside metadata instead.")]
+public IEnumerable`1<string> Aliases { get; public set; }
+    public Nullable`1<int> BatchSize { get; public set; }
+    public Nullable`1<int> ChunkSizeBytes { get; public set; }
+    [ObsoleteAttribute("Place contentType inside metadata instead.")]
+public string ContentType { get; public set; }
+    public bool DisableMD5 { get; public set; }
+    public BsonDocument Metadata { get; public set; }
+    public IEnumerable`1<string> get_Aliases();
+    public void set_Aliases(IEnumerable`1<string> value);
+    public Nullable`1<int> get_BatchSize();
+    public void set_BatchSize(Nullable`1<int> value);
+    public Nullable`1<int> get_ChunkSizeBytes();
+    public void set_ChunkSizeBytes(Nullable`1<int> value);
+    public string get_ContentType();
+    public void set_ContentType(string value);
+    public bool get_DisableMD5();
+    public void set_DisableMD5(bool value);
+    public BsonDocument get_Metadata();
+    public void set_Metadata(BsonDocument value);
+}
+public class MongoDB.Driver.GridFS.GridFSUploadStream : DelegatingStream {
+    private GridFSUploadStream`1<ObjectId> _wrappedStream;
+    public ObjectId Id { get; }
+    internal GridFSUploadStream(GridFSUploadStream`1<ObjectId> wrappedStream);
+    public ObjectId get_Id();
+    public void Abort(CancellationToken cancellationToken);
+    public Task AbortAsync(CancellationToken cancellationToken);
+    public void Close(CancellationToken cancellationToken);
+    public Task CloseAsync(CancellationToken cancellationToken);
+}
+public abstract class MongoDB.Driver.GridFS.GridFSUploadStream`1 : Stream {
+    public TFileId Id { get; }
+    public abstract virtual TFileId get_Id();
+    public abstract virtual void Abort(CancellationToken cancellationToken);
+    public abstract virtual Task AbortAsync(CancellationToken cancellationToken);
+    public abstract virtual void Close(CancellationToken cancellationToken);
+    public abstract virtual Task CloseAsync(CancellationToken cancellationToken);
+}
+public interface MongoDB.Driver.GridFS.IGridFSBucket {
+    public abstract virtual IAsyncCursor`1<GridFSFileInfo> Find(FilterDefinition`1<GridFSFileInfo> filter, GridFSFindOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<IAsyncCursor`1<GridFSFileInfo>> FindAsync(FilterDefinition`1<GridFSFileInfo> filter, GridFSFindOptions options, CancellationToken cancellationToken);
+    public abstract virtual GridFSUploadStream OpenUploadStream(string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<GridFSUploadStream> OpenUploadStreamAsync(string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual ObjectId UploadFromBytes(string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<ObjectId> UploadFromBytesAsync(string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual ObjectId UploadFromStream(string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<ObjectId> UploadFromStreamAsync(string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+}
+public interface MongoDB.Driver.GridFS.IGridFSBucket`1 {
+    public IMongoDatabase Database { get; }
+    public ImmutableGridFSBucketOptions Options { get; }
+    public abstract virtual IMongoDatabase get_Database();
+    public abstract virtual ImmutableGridFSBucketOptions get_Options();
+    public abstract virtual void Delete(TFileId id, CancellationToken cancellationToken);
+    public abstract virtual Task DeleteAsync(TFileId id, CancellationToken cancellationToken);
+    public abstract virtual Byte[] DownloadAsBytes(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<Byte[]> DownloadAsBytesAsync(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Byte[] DownloadAsBytesByName(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<Byte[]> DownloadAsBytesByNameAsync(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual void DownloadToStream(TFileId id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task DownloadToStreamAsync(TFileId id, Stream destination, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual void DownloadToStreamByName(string filename, Stream destination, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task DownloadToStreamByNameAsync(string filename, Stream destination, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual void Drop(CancellationToken cancellationToken);
+    public abstract virtual Task DropAsync(CancellationToken cancellationToken);
+    public abstract virtual IAsyncCursor`1<GridFSFileInfo`1<TFileId>> Find(FilterDefinition`1<GridFSFileInfo`1<TFileId>> filter, GridFSFindOptions`1<TFileId> options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<IAsyncCursor`1<GridFSFileInfo`1<TFileId>>> FindAsync(FilterDefinition`1<GridFSFileInfo`1<TFileId>> filter, GridFSFindOptions`1<TFileId> options, CancellationToken cancellationToken);
+    public abstract virtual GridFSDownloadStream`1<TFileId> OpenDownloadStream(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<GridFSDownloadStream`1<TFileId>> OpenDownloadStreamAsync(TFileId id, GridFSDownloadOptions options, CancellationToken cancellationToken);
+    public abstract virtual GridFSDownloadStream`1<TFileId> OpenDownloadStreamByName(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<GridFSDownloadStream`1<TFileId>> OpenDownloadStreamByNameAsync(string filename, GridFSDownloadByNameOptions options, CancellationToken cancellationToken);
+    public abstract virtual GridFSUploadStream`1<TFileId> OpenUploadStream(TFileId id, string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task`1<GridFSUploadStream`1<TFileId>> OpenUploadStreamAsync(TFileId id, string filename, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual void Rename(TFileId id, string newFilename, CancellationToken cancellationToken);
+    public abstract virtual Task RenameAsync(TFileId id, string newFilename, CancellationToken cancellationToken);
+    public abstract virtual void UploadFromBytes(TFileId id, string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task UploadFromBytesAsync(TFileId id, string filename, Byte[] source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual void UploadFromStream(TFileId id, string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+    public abstract virtual Task UploadFromStreamAsync(TFileId id, string filename, Stream source, GridFSUploadOptions options, CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+internal static class MongoDB.Driver.GridFS.IGridFSBucketExtensions : object {
+    [ExtensionAttribute]
+internal static CollectionNamespace GetChunksCollectionNamespace(IGridFSBucket`1<TFileId> bucket);
+    [ExtensionAttribute]
+internal static CollectionNamespace GetFilesCollectionNamespace(IGridFSBucket`1<TFileId> bucket);
+    [ExtensionAttribute]
+internal static MessageEncoderSettings GetMessageEncoderSettings(IGridFSBucket`1<TFileId> bucket);
+}
+public interface MongoDB.Driver.GridFS.IGridFSFileInfoSerializer`1 {
+}
+public class MongoDB.Driver.GridFS.ImmutableGridFSBucketOptions : object {
+    private static ImmutableGridFSBucketOptions __defaults;
+    private string _bucketName;
+    private int _chunkSizeBytes;
+    private bool _disableMD5;
+    private ReadConcern _readConcern;
+    private ReadPreference _readPreference;
+    private WriteConcern _writeConcern;
+    public static ImmutableGridFSBucketOptions Defaults { get; }
+    public string BucketName { get; }
+    public int ChunkSizeBytes { get; }
+    public bool DisableMD5 { get; }
+    public ReadConcern ReadConcern { get; }
+    public ReadPreference ReadPreference { get; }
+    public IBsonSerializerRegistry SerializerRegistry { get; }
+    public WriteConcern WriteConcern { get; }
+    public ImmutableGridFSBucketOptions(GridFSBucketOptions other);
+    private static ImmutableGridFSBucketOptions();
+    public static ImmutableGridFSBucketOptions get_Defaults();
+    public string get_BucketName();
+    public int get_ChunkSizeBytes();
+    public bool get_DisableMD5();
+    public ReadConcern get_ReadConcern();
+    public ReadPreference get_ReadPreference();
+    public IBsonSerializerRegistry get_SerializerRegistry();
+    public WriteConcern get_WriteConcern();
+}
+[ExtensionAttribute]
+internal static class MongoDB.Driver.GridFS.StreamExtensions : object {
+    [ExtensionAttribute]
+public static void ReadBytes(Stream stream, Byte[] destination, int offset, int count, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("MongoDB.Driver.GridFS.StreamExtensions/<ReadBytesAsync>d__1")]
+[ExtensionAttribute]
+public static Task ReadBytesAsync(Stream stream, Byte[] destination, int offset, int count, CancellationToken cancellationToken);
+}
+internal static class MongoDB.Driver.GridFS.TargetFramework : object {
+    public static string Moniker { get; }
+    public static string get_Moniker();
+}
+[EditorBrowsableAttribute("1")]
+internal class System.Runtime.CompilerServices.IsExternalInit : object {
+}
