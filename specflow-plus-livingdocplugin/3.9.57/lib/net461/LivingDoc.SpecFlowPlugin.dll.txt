@@ -1,0 +1,196 @@
+public class LivingDoc.SpecFlowPlugin.Analytics.AppInsights.AppInsightsInstrumentationKey : object {
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    public string Key { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public void set_Key(string value);
+}
+public class LivingDoc.SpecFlowPlugin.Analytics.GenerateJsonEvent : SpecFlowAnalyticsEventBase {
+    [CompilerGeneratedAttribute]
+private bool <HasOutputs>k__BackingField;
+    public bool HasOutputs { get; public set; }
+    public string EventName { get; }
+    public GenerateJsonEvent(DateTime utcDate, string userId, string platform, string platformDescription, string specFlowVersion, string unitTestProvider, string buildServerName, string hashedAssemblyName, string targetFrameworks, string targetFramework, bool isDockerContainer, bool hasOutputs);
+    [CompilerGeneratedAttribute]
+public bool get_HasOutputs();
+    [CompilerGeneratedAttribute]
+public void set_HasOutputs(bool value);
+    public virtual string get_EventName();
+}
+public interface LivingDoc.SpecFlowPlugin.Analytics.IPluginAnalyticsTransmitter {
+    public abstract virtual void TransmitEvent(IObjectContainer objectContainer, bool hasOutputs);
+}
+public class LivingDoc.SpecFlowPlugin.Analytics.PluginAnalyticsTransmitter : object {
+    private string _instrumentationKey;
+    public sealed virtual void TransmitEvent(IObjectContainer objectContainer, bool hasOutputs);
+    private GenerateJsonEvent CreateGenerateJsonEvent(IAnalyticsEventProvider eventProvider, string assemblyName, bool hasOutputs);
+}
+public class LivingDoc.SpecFlowPlugin.Collectors.FeatureExecutionResultCollector : object {
+    private GlobalExecutionResultStore _globalExecutionResultStore;
+    private IOutputLocationTracker _outputLocationTracker;
+    private List`1<ExecutionResult> _featureExecutionResults;
+    private ExecutionResultBuilder _executionResultBuilder;
+    private IFeatureContext _featureContext;
+    private bool IsCollecting { get; }
+    public FeatureExecutionResultCollector(GlobalExecutionResultStore globalExecutionResultStore, IOutputLocationTracker outputLocationTracker);
+    private bool get_IsCollecting();
+    public void OnFeatureStarted(FeatureStartedEvent obj);
+    public void OnFeatureFinished(FeatureFinishedEvent obj);
+    public void OnScenarioStarted(ScenarioStartedEvent scenarioStartedEvent);
+    public void OnScenarioFinished(ScenarioFinishedEvent scenarioFinishedEvent);
+    public void OnStepStarted(StepStartedEvent obj);
+    public void OnStepFinished(StepFinishedEvent obj);
+    private void EnsureBuilder();
+    private void SaveExecutionResultAndClearBuilder();
+    public void OnOutputAdded(IExecutionOutputEvent outputEvent);
+    public void OnStepBindingFinished(StepBindingFinishedEvent e);
+}
+public class LivingDoc.SpecFlowPlugin.Collectors.GlobalExecutionResultStore : object {
+    private List`1<ExecutionResult> _results;
+    private object _syncRoot;
+    public void AddResults(List`1<ExecutionResult> executionResults);
+    public List`1<ExecutionResult> GetResults();
+}
+public class LivingDoc.SpecFlowPlugin.Collectors.TestRunHookExecutionResultCollector : object {
+    private GlobalExecutionResultStore _globalExecutionResultStore;
+    private IOutputLocationTracker _outputLocationTracker;
+    private OutputBuilder _outputBuilder;
+    private bool _isCollecting;
+    public TestRunHookExecutionResultCollector(GlobalExecutionResultStore globalExecutionResultStore, IOutputLocationTracker outputLocationTracker);
+    public void HandleHookStarted(HookStartedEvent obj);
+    public void HandleHookFinished(HookFinishedEvent obj);
+    public void HandleOutputAdded(IExecutionOutputEvent obj);
+    private ExecutionResult CreateResult(SpecFlowOutput[] output);
+}
+public class LivingDoc.SpecFlowPlugin.FeatureDataGenerator : object {
+    private IObjectContainer _objectContainer;
+    private IReporter _reporter;
+    private IPluginAnalyticsTransmitter _analyticsTransmitter;
+    private GlobalExecutionResultStore _globalExecutionResultStore;
+    private OutputPathCalculator _outputPathCalculator;
+    public FeatureDataGenerator(IObjectContainer objectContainer, IReporter reporter, IPluginAnalyticsTransmitter analyticsTransmitter, GlobalExecutionResultStore globalExecutionResultStore, ITimestampGenerator timestampGenerator);
+    private LivingDocGeneratorConfiguration GetLivingDocGeneratorConfig(ISpecFlowJsonLocator specFlowJsonLocator);
+    public void GenerateFeatureData();
+    public void GenerateFeatureData(List`1<ExecutionResult> executionResults);
+    private void WriteFeatureData(ITraceListener traceListener, string filePath, string data);
+}
+public interface LivingDoc.SpecFlowPlugin.IReporter {
+    public abstract virtual string GetReport(List`1<ExecutionResult> executionResults, DateTime executionTime, string specFlowUserId);
+}
+public interface LivingDoc.SpecFlowPlugin.ITimestampGenerator {
+    public abstract virtual DateTime Generate();
+}
+public class LivingDoc.SpecFlowPlugin.JsonConfig : object {
+    [CompilerGeneratedAttribute]
+private LivingDocGeneratorConfiguration <LivingDocGenerator>k__BackingField;
+    [DataMemberAttribute]
+public LivingDocGeneratorConfiguration LivingDocGenerator { get; public set; }
+    [CompilerGeneratedAttribute]
+public LivingDocGeneratorConfiguration get_LivingDocGenerator();
+    [CompilerGeneratedAttribute]
+public void set_LivingDocGenerator(LivingDocGeneratorConfiguration value);
+}
+public class LivingDoc.SpecFlowPlugin.LivingDocGeneratorConfiguration : object {
+    [CompilerGeneratedAttribute]
+private object <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FilePath>k__BackingField;
+    [DataMemberAttribute]
+public object Enabled { get; public set; }
+    [DataMemberAttribute]
+public string FilePath { get; public set; }
+    [CompilerGeneratedAttribute]
+public object get_Enabled();
+    [CompilerGeneratedAttribute]
+public void set_Enabled(object value);
+    [CompilerGeneratedAttribute]
+public string get_FilePath();
+    [CompilerGeneratedAttribute]
+public void set_FilePath(string value);
+}
+public class LivingDoc.SpecFlowPlugin.OutputPathCalculator : object {
+    public static string DefaultJsonFileName;
+    private ITestRunnerManager _testRunnerManager;
+    private ITimestampGenerator _timestampGenerator;
+    public OutputPathCalculator(ITestRunnerManager testRunnerManager, ITimestampGenerator timestampGenerator);
+    private string GetFullPath(string path, string basePath);
+    private string GetFullPath(string path);
+    public string CalculateFilePath(LivingDocGeneratorConfiguration jsonConfig);
+    private string ReplacePlaceholders(string path);
+    private string ReplaceTimestamp(string inputString);
+    private static string ReplaceInvalidCharacters(string inputString);
+}
+public class LivingDoc.SpecFlowPlugin.Reporter : object {
+    public sealed virtual string GetReport(List`1<ExecutionResult> executionResults, DateTime executionTime, string specFlowUserId);
+}
+public class LivingDoc.SpecFlowPlugin.ResultBuilders.ExecutionResultBuilder : object {
+    protected ExecutionResult Result;
+    protected OutputBuilder OutputBuilder;
+    public virtual void AddOutput(IExecutionOutputEvent outputEvent, string outputLocation);
+    public virtual ExecutionResult GetResult();
+}
+public class LivingDoc.SpecFlowPlugin.ResultBuilders.FeatureExecutionResultBuilder : ExecutionResultBuilder {
+    public void StartFeature(IFeatureContext featureContext);
+    public virtual ExecutionResult GetResult();
+}
+public interface LivingDoc.SpecFlowPlugin.ResultBuilders.IOutputLocationTracker {
+    public string OutputLocation { get; }
+    public abstract virtual string get_OutputLocation();
+}
+public class LivingDoc.SpecFlowPlugin.ResultBuilders.OutputBuilder : object {
+    private List`1<SpecFlowOutput> _output;
+    public SpecFlowOutput[] GetResult();
+    public void Add(IExecutionOutputEvent outputEvent, string outputLocation);
+    private void AddText(OutputAddedEvent e, string outputLocation);
+    private void AddAttachment(AttachmentAddedEvent e, string outputLocation);
+}
+public class LivingDoc.SpecFlowPlugin.ResultBuilders.OutputLocationTracker : object {
+    [CompilerGeneratedAttribute]
+private string <OutputLocation>k__BackingField;
+    public string OutputLocation { get; private set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_OutputLocation();
+    [CompilerGeneratedAttribute]
+private void set_OutputLocation(string value);
+    public void OnHookBindingStarted(HookBindingStartedEvent hookBindingStartedEvent);
+    public void OnHookBindingFinished(HookBindingFinishedEvent hookBindingFinishedEvent);
+    public void OnStepBindingStarted(StepBindingStartedEvent e);
+    public void OnStepBindingFinished(StepBindingFinishedEvent e);
+}
+public class LivingDoc.SpecFlowPlugin.ResultBuilders.ScenarioExecutionResultBuilder : ExecutionResultBuilder {
+    private OutputBuilder _stepOutputBuilder;
+    private StepExecutionResult _stepExecutionResult;
+    public void StartScenario(IFeatureContext featureContext, IScenarioContext scenarioContext);
+    public void StartStep();
+    public void FinishStep(ScenarioExecutionStatus status, string error);
+    public void FinishScenario(IScenarioContext scenarioContext);
+    public virtual void AddOutput(IExecutionOutputEvent outputEvent, string outputLocation);
+    public void FinishStepBinding(TimeSpan duration);
+}
+public class LivingDoc.SpecFlowPlugin.RuntimePlugin : object {
+    private GlobalExecutionResultStore _globalExecutionResultStore;
+    public sealed virtual void Initialize(RuntimePluginEvents runtimePluginEvents, RuntimePluginParameters runtimePluginParameters, UnitTestProviderConfiguration unitTestProviderConfiguration);
+    [CompilerGeneratedAttribute]
+private void <Initialize>b__2_0(object sender, CustomizeGlobalDependenciesEventArgs args);
+}
+public class LivingDoc.SpecFlowPlugin.TestThreadExecutionEventRegistrator : object {
+    public TestThreadExecutionEventRegistrator(TestRunHookExecutionResultCollector testRunHookExecutionResultCollector, FeatureExecutionResultCollector featureExecutionResultCollector, IOutputLocationTracker outputLocationTracker, FeatureDataGenerator featureDataGenerator, ITestThreadExecutionEventPublisher eventPublisher);
+    private static void RegisterTestRunExecutionResultCollectorHandlers(TestRunHookExecutionResultCollector testRunHookExecutionResultCollector, ITestThreadExecutionEventPublisher eventPublisher);
+    private static void RegisterFeatureExecutionResultCollectorHandlers(FeatureExecutionResultCollector featureExecutionResultCollector, ITestThreadExecutionEventPublisher eventPublisher);
+    private void RegisterOutputLocationTrackerHandlers(OutputLocationTracker outputLocationTracker, ITestThreadExecutionEventPublisher eventPublisher);
+    private static void RegisterFeatureDataGeneratorHandlers(ITestThreadExecutionEventPublisher eventPublisher, FeatureDataGenerator featureDataGenerator);
+}
+public class LivingDoc.SpecFlowPlugin.TimestampGenerator : object {
+    public sealed virtual DateTime Generate();
+}
+internal static class ThisAssembly : object {
+    internal static string AssemblyVersion;
+    internal static string AssemblyFileVersion;
+    internal static string AssemblyInformationalVersion;
+    internal static string AssemblyName;
+    internal static string AssemblyTitle;
+    internal static string AssemblyConfiguration;
+    internal static string RootNamespace;
+}

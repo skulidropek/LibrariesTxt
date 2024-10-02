@@ -1,0 +1,1041 @@
+internal class ClipperLib.Clipper : ClipperBase {
+    public static int ioReverseSolution;
+    public static int ioStrictlySimple;
+    public static int ioPreserveCollinear;
+    private ClipType m_ClipType;
+    private Maxima m_Maxima;
+    private TEdge m_SortedEdges;
+    private List`1<IntersectNode> m_IntersectList;
+    private IComparer`1<IntersectNode> m_IntersectNodeComparer;
+    private bool m_ExecuteLocked;
+    private PolyFillType m_ClipFillType;
+    private PolyFillType m_SubjFillType;
+    private List`1<Join> m_Joins;
+    private List`1<Join> m_GhostJoins;
+    private bool m_UsingPolyTree;
+    [CompilerGeneratedAttribute]
+private bool <ReverseSolution>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <StrictlySimple>k__BackingField;
+    public bool ReverseSolution { get; public set; }
+    public bool StrictlySimple { get; public set; }
+    public Clipper(int InitOptions);
+    private void InsertMaxima(long X);
+    [CompilerGeneratedAttribute]
+public bool get_ReverseSolution();
+    [CompilerGeneratedAttribute]
+public void set_ReverseSolution(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_StrictlySimple();
+    [CompilerGeneratedAttribute]
+public void set_StrictlySimple(bool value);
+    public bool Execute(ClipType clipType, List`1<List`1<IntPoint>> solution, PolyFillType FillType);
+    public bool Execute(ClipType clipType, PolyTree polytree, PolyFillType FillType);
+    public bool Execute(ClipType clipType, List`1<PolyNode> nodes, PolyFillType FillType);
+    public bool Execute(ClipType clipType, List`1<List`1<IntPoint>> solution, PolyFillType subjFillType, PolyFillType clipFillType);
+    public bool Execute(ClipType clipType, PolyTree polytree, PolyFillType subjFillType, PolyFillType clipFillType);
+    public bool Execute(ClipType clipType, List`1<PolyNode> nodes, PolyFillType subjFillType, PolyFillType clipFillType);
+    internal void FixHoleLinkage(OutRec outRec);
+    private bool ExecuteInternal();
+    private void DisposeAllPolyPts();
+    private void AddJoin(OutPt Op1, OutPt Op2, IntPoint OffPt);
+    private void AddGhostJoin(OutPt Op, IntPoint OffPt);
+    private void InsertLocalMinimaIntoAEL(long botY);
+    private void InsertEdgeIntoAEL(TEdge edge, TEdge startEdge);
+    private bool E2InsertsBeforeE1(TEdge e1, TEdge e2);
+    private bool IsEvenOddFillType(TEdge edge);
+    private bool IsEvenOddAltFillType(TEdge edge);
+    private bool IsContributing(TEdge edge);
+    private void SetWindingCount(TEdge edge);
+    private void AddEdgeToSEL(TEdge edge);
+    internal bool PopEdgeFromSEL(TEdge& e);
+    private void CopyAELToSEL();
+    private void SwapPositionsInSEL(TEdge edge1, TEdge edge2);
+    private void AddLocalMaxPoly(TEdge e1, TEdge e2, IntPoint pt);
+    private OutPt AddLocalMinPoly(TEdge e1, TEdge e2, IntPoint pt);
+    private OutPt AddOutPt(TEdge e, IntPoint pt);
+    private OutPt GetLastOutPt(TEdge e);
+    internal void SwapPoints(IntPoint& pt1, IntPoint& pt2);
+    private bool HorzSegmentsOverlap(long seg1a, long seg1b, long seg2a, long seg2b);
+    private void SetHoleState(TEdge e, OutRec outRec);
+    private double GetDx(IntPoint pt1, IntPoint pt2);
+    private bool FirstIsBottomPt(OutPt btmPt1, OutPt btmPt2);
+    private OutPt GetBottomPt(OutPt pp);
+    private OutRec GetLowermostRec(OutRec outRec1, OutRec outRec2);
+    private bool OutRec1RightOfOutRec2(OutRec outRec1, OutRec outRec2);
+    private OutRec GetOutRec(int idx);
+    private void AppendPolygon(TEdge e1, TEdge e2);
+    private void ReversePolyPtLinks(OutPt pp);
+    private static void SwapSides(TEdge edge1, TEdge edge2);
+    private static void SwapPolyIndexes(TEdge edge1, TEdge edge2);
+    private void IntersectEdges(TEdge e1, TEdge e2, IntPoint pt);
+    private void DeleteFromSEL(TEdge e);
+    private void ProcessHorizontals();
+    private void GetHorzDirection(TEdge HorzEdge, Direction& Dir, Int64& Left, Int64& Right);
+    private void ProcessHorizontal(TEdge horzEdge);
+    private TEdge GetNextInAEL(TEdge e, Direction Direction);
+    private bool IsMinima(TEdge e);
+    private bool IsMaxima(TEdge e, double Y);
+    private bool IsIntermediate(TEdge e, double Y);
+    internal TEdge GetMaximaPair(TEdge e);
+    internal TEdge GetMaximaPairEx(TEdge e);
+    private bool ProcessIntersections(long topY);
+    private void BuildIntersectList(long topY);
+    private bool EdgesAdjacent(IntersectNode inode);
+    private static int IntersectNodeSort(IntersectNode node1, IntersectNode node2);
+    private bool FixupIntersectionOrder();
+    private void ProcessIntersectList();
+    internal static long Round(double value);
+    private static long TopX(TEdge edge, long currentY);
+    private void IntersectPoint(TEdge edge1, TEdge edge2, IntPoint& ip);
+    private void ProcessEdgesAtTopOfScanbeam(long topY);
+    private void DoMaxima(TEdge e);
+    public static void ReversePaths(List`1<List`1<IntPoint>> polys);
+    public static bool Orientation(List`1<IntPoint> poly);
+    private int PointCount(OutPt pts);
+    private void BuildResult(List`1<List`1<IntPoint>> polyg);
+    private void BuildResult2(PolyTree polytree);
+    private void BuildResult3(List`1<PolyNode> nodes);
+    private void FixupOutPolyline(OutRec outrec);
+    private void FixupOutPolygon(OutRec outRec);
+    private OutPt DupOutPt(OutPt outPt, bool InsertAfter);
+    private bool GetOverlap(long a1, long a2, long b1, long b2, Int64& Left, Int64& Right);
+    private bool JoinHorz(OutPt op1, OutPt op1b, OutPt op2, OutPt op2b, IntPoint Pt, bool DiscardLeft);
+    private bool JoinPoints(Join j, OutRec outRec1, OutRec outRec2);
+    public static int PointInPolygon(IntPoint pt, List`1<IntPoint> path);
+    private static int PointInPolygon(IntPoint pt, OutPt op);
+    private static bool Poly2ContainsPoly1(OutPt outPt1, OutPt outPt2);
+    private void FixupFirstLefts1(OutRec OldOutRec, OutRec NewOutRec);
+    private void FixupFirstLefts2(OutRec innerOutRec, OutRec outerOutRec);
+    private void FixupFirstLefts3(OutRec OldOutRec, OutRec NewOutRec);
+    private static OutRec ParseFirstLeft(OutRec FirstLeft);
+    private void JoinCommonEdges();
+    private void UpdateOutPtIdxs(OutRec outrec);
+    private void DoSimplePolygons();
+    public static double Area(List`1<IntPoint> poly);
+    internal double Area(OutRec outRec);
+    internal double Area(OutPt op);
+    public static List`1<List`1<IntPoint>> SimplifyPolygon(List`1<IntPoint> poly, PolyFillType fillType);
+    public static List`1<List`1<IntPoint>> SimplifyPolygons(List`1<List`1<IntPoint>> polys, PolyFillType fillType);
+    private static double DistanceSqrd(IntPoint pt1, IntPoint pt2);
+    private static double DistanceFromLineSqrd(IntPoint pt, IntPoint ln1, IntPoint ln2);
+    private static bool SlopesNearCollinear(IntPoint pt1, IntPoint pt2, IntPoint pt3, double distSqrd);
+    private static bool PointsAreClose(IntPoint pt1, IntPoint pt2, double distSqrd);
+    private static OutPt ExcludeOp(OutPt op);
+    public static List`1<IntPoint> CleanPolygon(List`1<IntPoint> path, double distance);
+    public static List`1<List`1<IntPoint>> CleanPolygons(List`1<List`1<IntPoint>> polys, double distance);
+    internal static List`1<List`1<IntPoint>> Minkowski(List`1<IntPoint> pattern, List`1<IntPoint> path, bool IsSum, bool IsClosed);
+    public static List`1<List`1<IntPoint>> MinkowskiSum(List`1<IntPoint> pattern, List`1<IntPoint> path, bool pathIsClosed);
+    private static List`1<IntPoint> TranslatePath(List`1<IntPoint> path, IntPoint delta);
+    public static List`1<List`1<IntPoint>> MinkowskiSum(List`1<IntPoint> pattern, List`1<List`1<IntPoint>> paths, bool pathIsClosed);
+    public static List`1<List`1<IntPoint>> MinkowskiDiff(List`1<IntPoint> poly1, List`1<IntPoint> poly2);
+    public static List`1<List`1<IntPoint>> PolyTreeToPaths(PolyTree polytree);
+    internal static void AddPolyNodeToPaths(PolyNode polynode, NodeType nt, List`1<List`1<IntPoint>> paths);
+    public static List`1<List`1<IntPoint>> OpenPathsFromPolyTree(PolyTree polytree);
+    public static List`1<List`1<IntPoint>> ClosedPathsFromPolyTree(PolyTree polytree);
+}
+internal class ClipperLib.ClipperBase : object {
+    internal static double horizontal;
+    internal static int Skip;
+    internal static int Unassigned;
+    internal static double tolerance;
+    public static long loRange;
+    public static long hiRange;
+    internal LocalMinima m_MinimaList;
+    internal LocalMinima m_CurrentLM;
+    internal List`1<List`1<TEdge>> m_edges;
+    internal Scanbeam m_Scanbeam;
+    internal List`1<OutRec> m_PolyOuts;
+    internal TEdge m_ActiveEdges;
+    internal bool m_UseFullRange;
+    internal bool m_HasOpenPaths;
+    [CompilerGeneratedAttribute]
+private bool <PreserveCollinear>k__BackingField;
+    public bool PreserveCollinear { get; public set; }
+    internal static bool near_zero(double val);
+    [CompilerGeneratedAttribute]
+public bool get_PreserveCollinear();
+    [CompilerGeneratedAttribute]
+public void set_PreserveCollinear(bool value);
+    public void Swap(Int64& val1, Int64& val2);
+    internal static bool IsHorizontal(TEdge e);
+    internal bool PointIsVertex(IntPoint pt, OutPt pp);
+    internal bool PointOnLineSegment(IntPoint pt, IntPoint linePt1, IntPoint linePt2, bool UseFullRange);
+    internal bool PointOnPolygon(IntPoint pt, OutPt pp, bool UseFullRange);
+    internal static bool SlopesEqual(TEdge e1, TEdge e2, bool UseFullRange);
+    internal static bool SlopesEqual(IntPoint pt1, IntPoint pt2, IntPoint pt3, bool UseFullRange);
+    internal static bool SlopesEqual(IntPoint pt1, IntPoint pt2, IntPoint pt3, IntPoint pt4, bool UseFullRange);
+    public virtual void Clear();
+    private void DisposeLocalMinimaList();
+    private void RangeTest(IntPoint Pt, Boolean& useFullRange);
+    private void InitEdge(TEdge e, TEdge eNext, TEdge ePrev, IntPoint pt);
+    private void InitEdge2(TEdge e, PolyType polyType);
+    private TEdge FindNextLocMin(TEdge E);
+    private TEdge ProcessBound(TEdge E, bool LeftBoundIsForward);
+    public bool AddPath(List`1<IntPoint> pg, PolyType polyType, bool Closed, object src);
+    public bool AddPaths(List`1<List`1<IntPoint>> ppg, PolyType polyType, bool closed);
+    internal bool Pt2IsBetweenPt1AndPt3(IntPoint pt1, IntPoint pt2, IntPoint pt3);
+    private TEdge RemoveEdge(TEdge e);
+    private void SetDx(TEdge e);
+    private void InsertLocalMinima(LocalMinima newLm);
+    internal bool PopLocalMinima(long Y, LocalMinima& current);
+    private void ReverseHorizontal(TEdge e);
+    internal virtual void Reset();
+    public static IntRect GetBounds(List`1<List`1<IntPoint>> paths);
+    internal void InsertScanbeam(long Y);
+    internal bool PopScanbeam(Int64& Y);
+    internal bool LocalMinimaPending();
+    internal OutRec CreateOutRec();
+    internal void DisposeOutRec(int index);
+    internal void UpdateEdgeIntoAEL(TEdge& e);
+    internal void SwapPositionsInAEL(TEdge edge1, TEdge edge2);
+    internal void DeleteFromAEL(TEdge e);
+}
+internal class ClipperLib.ClipperException : Exception {
+    public ClipperException(string description);
+}
+internal class ClipperLib.ClipperOffset : object {
+    private List`1<List`1<IntPoint>> m_destPolys;
+    private List`1<IntPoint> m_srcPoly;
+    private List`1<IntPoint> m_destPoly;
+    private List`1<DoublePoint> m_normals;
+    private double m_delta;
+    private double m_sinA;
+    private double m_sin;
+    private double m_cos;
+    private double m_miterLim;
+    private double m_StepsPerRad;
+    private IntPoint m_lowest;
+    private PolyNode m_polyNodes;
+    [CompilerGeneratedAttribute]
+private double <ArcTolerance>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <MiterLimit>k__BackingField;
+    private static double two_pi;
+    private static double def_arc_tolerance;
+    public double ArcTolerance { get; public set; }
+    public double MiterLimit { get; public set; }
+    public ClipperOffset(double miterLimit, double arcTolerance);
+    [CompilerGeneratedAttribute]
+public double get_ArcTolerance();
+    [CompilerGeneratedAttribute]
+public void set_ArcTolerance(double value);
+    [CompilerGeneratedAttribute]
+public double get_MiterLimit();
+    [CompilerGeneratedAttribute]
+public void set_MiterLimit(double value);
+    public void Clear();
+    internal static long Round(double value);
+    public void AddPath(List`1<IntPoint> path, JoinType joinType, EndType endType);
+    public void AddPaths(List`1<List`1<IntPoint>> paths, JoinType joinType, EndType endType);
+    private void FixOrientations();
+    internal static DoublePoint GetUnitNormal(IntPoint pt1, IntPoint pt2);
+    private void DoOffset(double delta);
+    public void Execute(List`1& solution, double delta);
+    public void Execute(PolyTree& solution, double delta);
+    private void OffsetPoint(int j, Int32& k, JoinType jointype);
+    internal void DoSquare(int j, int k);
+    internal void DoMiter(int j, int k, double r);
+    internal void DoRound(int j, int k);
+}
+internal enum ClipperLib.ClipType : Enum {
+    public int value__;
+    public static ClipType ctIntersection;
+    public static ClipType ctUnion;
+    public static ClipType ctDifference;
+    public static ClipType ctXor;
+}
+internal enum ClipperLib.Direction : Enum {
+    public int value__;
+    public static Direction dRightToLeft;
+    public static Direction dLeftToRight;
+}
+internal class ClipperLib.DoublePoint : ValueType {
+    public double X;
+    public double Y;
+    public DoublePoint(double x, double y);
+    public DoublePoint(DoublePoint dp);
+    public DoublePoint(IntPoint ip);
+}
+internal enum ClipperLib.EdgeSide : Enum {
+    public int value__;
+    public static EdgeSide esLeft;
+    public static EdgeSide esRight;
+}
+internal enum ClipperLib.EndType : Enum {
+    public int value__;
+    public static EndType etClosedPolygon;
+    public static EndType etClosedLine;
+    public static EndType etOpenButt;
+    public static EndType etOpenSquare;
+    public static EndType etOpenRound;
+}
+internal class ClipperLib.Int128 : ValueType {
+    private long hi;
+    private ulong lo;
+    public Int128(long _lo);
+    public Int128(long _hi, ulong _lo);
+    public Int128(Int128 val);
+    public bool IsNegative();
+    public static bool op_Equality(Int128 val1, Int128 val2);
+    public static bool op_Inequality(Int128 val1, Int128 val2);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_GreaterThan(Int128 val1, Int128 val2);
+    public static bool op_LessThan(Int128 val1, Int128 val2);
+    public static Int128 op_Addition(Int128 lhs, Int128 rhs);
+    public static Int128 op_Subtraction(Int128 lhs, Int128 rhs);
+    public static Int128 op_UnaryNegation(Int128 val);
+    public static double op_Explicit(Int128 val);
+    public static Int128 Int128Mul(long lhs, long rhs);
+}
+internal class ClipperLib.IntersectNode : object {
+    internal TEdge Edge1;
+    internal TEdge Edge2;
+    internal IntPoint Pt;
+}
+internal class ClipperLib.IntPoint : ValueType {
+    public long X;
+    public long Y;
+    public IntPoint(long X, long Y);
+    public IntPoint(double x, double y);
+    public IntPoint(IntPoint pt);
+    public static bool op_Equality(IntPoint a, IntPoint b);
+    public static bool op_Inequality(IntPoint a, IntPoint b);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+internal class ClipperLib.IntRect : ValueType {
+    public long left;
+    public long top;
+    public long right;
+    public long bottom;
+    public IntRect(long l, long t, long r, long b);
+    public IntRect(IntRect ir);
+}
+internal class ClipperLib.Join : object {
+    internal OutPt OutPt1;
+    internal OutPt OutPt2;
+    internal IntPoint OffPt;
+}
+internal enum ClipperLib.JoinType : Enum {
+    public int value__;
+    public static JoinType jtSquare;
+    public static JoinType jtRound;
+    public static JoinType jtMiter;
+}
+internal class ClipperLib.LocalMinima : object {
+    internal long Y;
+    internal TEdge LeftBound;
+    internal TEdge RightBound;
+    internal LocalMinima Next;
+}
+internal class ClipperLib.Maxima : object {
+    internal long X;
+    internal Maxima Next;
+    internal Maxima Prev;
+}
+internal class ClipperLib.MyIntersectNodeSort : object {
+    public sealed virtual int Compare(IntersectNode node1, IntersectNode node2);
+}
+internal class ClipperLib.OutPt : object {
+    internal int Idx;
+    internal IntPoint Pt;
+    internal OutPt Next;
+    internal OutPt Prev;
+}
+internal class ClipperLib.OutRec : object {
+    internal int Idx;
+    internal bool IsHole;
+    internal bool IsOpen;
+    internal OutRec FirstLeft;
+    internal OutPt Pts;
+    internal OutPt BottomPt;
+    internal PolyNode PolyNode;
+    [CompilerGeneratedAttribute]
+private object <Source>k__BackingField;
+    public object Source { get; internal set; }
+    [CompilerGeneratedAttribute]
+public object get_Source();
+    [CompilerGeneratedAttribute]
+internal void set_Source(object value);
+}
+internal enum ClipperLib.PolyFillType : Enum {
+    public int value__;
+    public static PolyFillType pftEvenOdd;
+    public static PolyFillType pftNonZero;
+    public static PolyFillType pftPositive;
+    public static PolyFillType pftNegative;
+}
+internal class ClipperLib.PolyNode : object {
+    internal PolyNode m_Parent;
+    internal List`1<IntPoint> m_polygon;
+    internal int m_Index;
+    internal JoinType m_jointype;
+    internal EndType m_endtype;
+    internal List`1<PolyNode> m_Childs;
+    [CompilerGeneratedAttribute]
+private bool <IsOpen>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <Source>k__BackingField;
+    public int ChildCount { get; }
+    public List`1<IntPoint> Contour { get; }
+    public List`1<PolyNode> Childs { get; }
+    public PolyNode Parent { get; }
+    public bool IsHole { get; }
+    public bool IsOpen { get; public set; }
+    public object Source { get; internal set; }
+    private bool IsHoleNode();
+    public int get_ChildCount();
+    public List`1<IntPoint> get_Contour();
+    internal void AddChild(PolyNode Child);
+    public PolyNode GetNext();
+    internal PolyNode GetNextSiblingUp();
+    public List`1<PolyNode> get_Childs();
+    public PolyNode get_Parent();
+    public bool get_IsHole();
+    [CompilerGeneratedAttribute]
+public bool get_IsOpen();
+    [CompilerGeneratedAttribute]
+public void set_IsOpen(bool value);
+    [CompilerGeneratedAttribute]
+public object get_Source();
+    [CompilerGeneratedAttribute]
+internal void set_Source(object value);
+}
+internal class ClipperLib.PolyTree : PolyNode {
+    internal List`1<PolyNode> m_AllPolys;
+    public int Total { get; }
+    public void Clear();
+    public PolyNode GetFirst();
+    public int get_Total();
+}
+internal enum ClipperLib.PolyType : Enum {
+    public int value__;
+    public static PolyType ptSubject;
+    public static PolyType ptClip;
+}
+internal class ClipperLib.Scanbeam : object {
+    internal long Y;
+    internal Scanbeam Next;
+}
+internal class ClipperLib.TEdge : object {
+    internal IntPoint Bot;
+    internal IntPoint Curr;
+    internal IntPoint Top;
+    internal IntPoint Delta;
+    internal double Dx;
+    internal PolyType PolyTyp;
+    internal EdgeSide Side;
+    internal int WindDelta;
+    internal int WindCnt;
+    internal int WindCnt2;
+    internal int OutIdx;
+    internal TEdge Next;
+    internal TEdge Prev;
+    internal TEdge NextInLML;
+    internal TEdge NextInAEL;
+    internal TEdge PrevInAEL;
+    internal TEdge NextInSEL;
+    internal TEdge PrevInSEL;
+    [CompilerGeneratedAttribute]
+private object <Source>k__BackingField;
+    public object Source { get; internal set; }
+    [CompilerGeneratedAttribute]
+public object get_Source();
+    [CompilerGeneratedAttribute]
+internal void set_Source(object value);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[DebuggerStepThroughAttribute]
+internal static class SixLabors.DebugGuard : object {
+    [ConditionalAttribute("DEBUG")]
+public static void NotNull(TValue value, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void NotNullOrWhiteSpace(string value, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeLessThan(TValue value, TValue max, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeLessThanOrEqualTo(TValue value, TValue max, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeGreaterThan(TValue value, TValue min, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeGreaterThanOrEqualTo(TValue value, TValue min, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeBetweenOrEqualTo(TValue value, TValue min, TValue max, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void IsTrue(bool target, string parameterName, string message);
+    [ConditionalAttribute("DEBUG")]
+public static void IsFalse(bool target, string parameterName, string message);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeSizedAtLeast(ReadOnlySpan`1<T> source, int minLength, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void MustBeSizedAtLeast(Span`1<T> source, int minLength, string parameterName);
+    [ConditionalAttribute("DEBUG")]
+public static void DestinationShouldNotBeTooShort(ReadOnlySpan`1<TSource> source, Span`1<TDest> destination, string destinationParamName);
+    [ConditionalAttribute("DEBUG")]
+public static void DestinationShouldNotBeTooShort(Span`1<TSource> source, Span`1<TDest> destination, string destinationParamName);
+    private static void ThrowArgumentException(string message, string parameterName);
+    private static void ThrowArgumentOutOfRangeException(string parameterName, string message);
+    private static void ThrowArgumentNullException(string parameterName);
+}
+[DebuggerStepThroughAttribute]
+internal static class SixLabors.Guard : object {
+    public static void NotNull(TValue value, string parameterName);
+    public static void NotNullOrWhiteSpace(string value, string parameterName);
+    public static void MustBeLessThan(TValue value, TValue max, string parameterName);
+    public static void MustBeLessThanOrEqualTo(TValue value, TValue max, string parameterName);
+    public static void MustBeGreaterThan(TValue value, TValue min, string parameterName);
+    public static void MustBeGreaterThanOrEqualTo(TValue value, TValue min, string parameterName);
+    public static void MustBeBetweenOrEqualTo(TValue value, TValue min, TValue max, string parameterName);
+    public static void IsTrue(bool target, string parameterName, string message);
+    public static void IsFalse(bool target, string parameterName, string message);
+    public static void MustBeSizedAtLeast(ReadOnlySpan`1<T> source, int minLength, string parameterName);
+    public static void MustBeSizedAtLeast(Span`1<T> source, int minLength, string parameterName);
+    public static void DestinationShouldNotBeTooShort(ReadOnlySpan`1<TSource> source, Span`1<TDest> destination, string destinationParamName);
+    public static void DestinationShouldNotBeTooShort(Span`1<TSource> source, Span`1<TDest> destination, string destinationParamName);
+    private static void ThrowArgumentException(string message, string parameterName);
+    private static void ThrowArgumentOutOfRangeException(string parameterName, string message);
+    private static void ThrowArgumentNullException(string parameterName);
+}
+[ExtensionAttribute]
+internal static class SixLabors.Shapes.ArrayExtensions : object {
+    [ExtensionAttribute]
+public static T[] Merge(T[] source1, T[] source2);
+}
+[ExtensionAttribute]
+public static class SixLabors.Shapes.ClipperExtensions : object {
+    [ExtensionAttribute]
+public static IPath Clip(IPath shape, IEnumerable`1<IPath> holes);
+    [ExtensionAttribute]
+public static IPath Clip(IPath shape, IPath[] holes);
+}
+public class SixLabors.Shapes.ComplexPolygon : object {
+    private IPath[] paths;
+    [CompilerGeneratedAttribute]
+private float <Length>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PathTypes <PathType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RectangleF <Bounds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxIntersections>k__BackingField;
+    public float Length { get; }
+    public PathTypes PathType { get; }
+    public IEnumerable`1<IPath> Paths { get; }
+    public RectangleF Bounds { get; }
+    public int MaxIntersections { get; }
+    public ComplexPolygon(IEnumerable`1<IPath> paths);
+    public ComplexPolygon(IPath[] paths);
+    [CompilerGeneratedAttribute]
+public sealed virtual float get_Length();
+    [CompilerGeneratedAttribute]
+public sealed virtual PathTypes get_PathType();
+    public IEnumerable`1<IPath> get_Paths();
+    [CompilerGeneratedAttribute]
+public sealed virtual RectangleF get_Bounds();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_MaxIntersections();
+    public sealed virtual PointInfo Distance(PointF point);
+    public sealed virtual int FindIntersections(PointF start, PointF end, PointF[] buffer, int offset);
+    public sealed virtual int FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public sealed virtual bool Contains(PointF point);
+    public sealed virtual IPath Transform(Matrix3x2 matrix);
+    public sealed virtual IEnumerable`1<ISimplePath> Flatten();
+    public sealed virtual IPath AsClosedPath();
+    public sealed virtual SegmentInfo PointAlongPath(float distanceAlongPath);
+}
+public class SixLabors.Shapes.CubicBezierLineSegment : object {
+    private static float MinimumSqrDistance;
+    private static float DivisionThreshold;
+    private List`1<PointF> linePoints;
+    private PointF[] controlPoints;
+    [CompilerGeneratedAttribute]
+private PointF <EndPoint>k__BackingField;
+    public PointF EndPoint { get; }
+    public CubicBezierLineSegment(PointF[] points);
+    public CubicBezierLineSegment(PointF start, PointF controlPoint1, PointF controlPoint2, PointF end, PointF[] additionalPoints);
+    [CompilerGeneratedAttribute]
+public sealed virtual PointF get_EndPoint();
+    public sealed virtual IReadOnlyList`1<PointF> Flatten();
+    public CubicBezierLineSegment Transform(Matrix3x2 matrix);
+    private sealed virtual override ILineSegment SixLabors.Shapes.ILineSegment.Transform(Matrix3x2 matrix);
+    private static List`1<PointF> GetDrawingPoints(PointF[] controlPoints);
+    private static List`1<PointF> FindDrawingPoints(int curveIndex, PointF[] controlPoints);
+    private static int FindDrawingPoints(int curveIndex, float t0, float t1, List`1<PointF> pointList, int insertionIndex, PointF[] controlPoints, int depth);
+    private static PointF CalculateBezierPoint(int curveIndex, float t, PointF[] controlPoints);
+    private static Vector2 CalculateBezierPoint(float t, Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3);
+}
+public class SixLabors.Shapes.EllipsePolygon : object {
+    private InternalPath innerPath;
+    private CubicBezierLineSegment segment;
+    private bool SixLabors.Shapes.ISimplePath.IsClosed { get; }
+    private IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.Points { get; }
+    public RectangleF Bounds { get; }
+    private PathTypes SixLabors.Shapes.IPath.PathType { get; }
+    private int SixLabors.Shapes.IPath.MaxIntersections { get; }
+    public float Length { get; }
+    public EllipsePolygon(PointF location, SizeF size);
+    public EllipsePolygon(PointF location, float radius);
+    public EllipsePolygon(float x, float y, float width, float height);
+    public EllipsePolygon(float x, float y, float radius);
+    private EllipsePolygon(CubicBezierLineSegment segment);
+    private sealed virtual override bool SixLabors.Shapes.ISimplePath.get_IsClosed();
+    private sealed virtual override IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.get_Points();
+    public sealed virtual RectangleF get_Bounds();
+    private sealed virtual override PathTypes SixLabors.Shapes.IPath.get_PathType();
+    private sealed virtual override int SixLabors.Shapes.IPath.get_MaxIntersections();
+    public sealed virtual float get_Length();
+    public sealed virtual PointInfo Distance(PointF point);
+    public EllipsePolygon Transform(Matrix3x2 matrix);
+    private sealed virtual override IPath SixLabors.Shapes.IPath.Transform(Matrix3x2 matrix);
+    private sealed virtual override IPath SixLabors.Shapes.IPath.AsClosedPath();
+    [IteratorStateMachineAttribute("SixLabors.Shapes.EllipsePolygon/<Flatten>d__23")]
+public sealed virtual IEnumerable`1<ISimplePath> Flatten();
+    private sealed virtual override int SixLabors.Shapes.IPath.FindIntersections(PointF start, PointF end, PointF[] buffer, int offset);
+    private sealed virtual override int SixLabors.Shapes.IPath.FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public sealed virtual bool Contains(PointF point);
+    public sealed virtual SegmentInfo PointAlongPath(float distanceAlongPath);
+    private static CubicBezierLineSegment CreateSegment(Vector2 location, SizeF size);
+}
+public enum SixLabors.Shapes.EndCapStyle : Enum {
+    public int value__;
+    public static EndCapStyle Butt;
+    public static EndCapStyle Round;
+    public static EndCapStyle Square;
+}
+public interface SixLabors.Shapes.ILineSegment {
+    public PointF EndPoint { get; }
+    public abstract virtual PointF get_EndPoint();
+    public abstract virtual IReadOnlyList`1<PointF> Flatten();
+    public abstract virtual ILineSegment Transform(Matrix3x2 matrix);
+}
+internal class SixLabors.Shapes.InternalPath : object {
+    private static float Epsilon;
+    private static float Epsilon2;
+    private static Vector2 MaxVector;
+    private PointData[] points;
+    private bool closedPath;
+    [CompilerGeneratedAttribute]
+private RectangleF <Bounds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <Length>k__BackingField;
+    public RectangleF Bounds { get; }
+    public float Length { get; }
+    public int PointCount { get; }
+    internal InternalPath(IEnumerable`1<ILineSegment> segments, bool isClosedPath);
+    internal InternalPath(ILineSegment segment, bool isClosedPath);
+    internal InternalPath(IEnumerable`1<PointF> points, bool isClosedPath);
+    private InternalPath(PointData[] points, bool isClosedPath);
+    private static InternalPath();
+    [CompilerGeneratedAttribute]
+public RectangleF get_Bounds();
+    [CompilerGeneratedAttribute]
+public float get_Length();
+    public int get_PointCount();
+    public PointInfo DistanceFromPath(PointF point);
+    public int FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public bool PointInPolygon(PointF point);
+    internal IReadOnlyList`1<PointF> Points();
+    internal SegmentInfo PointAlongPath(float distanceAlongPath);
+    private static bool IsOnSegment(Vector2 p, Vector2 q, Vector2 r);
+    private static bool IsOnSegment(Segment& seg, Vector2 q);
+    private static bool IsOnSegments(Segment& seg1, Segment& seg2, Vector2 q);
+    private static int WrapArrayIndex(int i, int arrayLength);
+    private static Orientation CalulateOrientation(Vector2 p, Vector2 q, Vector2 r);
+    private static Orientation CalulateOrientation(Vector2 qp, Vector2 rq);
+    private static Vector2 FindIntersection(Segment& source, Segment& target);
+    private static PointData[] Simplify(IEnumerable`1<ILineSegment> segments, bool isClosed);
+    private static PointData[] Simplify(IEnumerable`1<PointF> vectors, bool isClosed);
+    private void ClampPoints(PointF& start, PointF& end);
+    private float CalculateLength();
+    private bool CalculateShorterDistance(Vector2 start, Vector2 end, Vector2 point, PointInfoInternal& info);
+}
+public interface SixLabors.Shapes.IPath {
+    public PathTypes PathType { get; }
+    public RectangleF Bounds { get; }
+    public int MaxIntersections { get; }
+    public float Length { get; }
+    public abstract virtual PathTypes get_PathType();
+    public abstract virtual RectangleF get_Bounds();
+    public abstract virtual int get_MaxIntersections();
+    public abstract virtual float get_Length();
+    public abstract virtual SegmentInfo PointAlongPath(float distanceAlongPath);
+    public abstract virtual PointInfo Distance(PointF point);
+    public abstract virtual IEnumerable`1<ISimplePath> Flatten();
+    public abstract virtual int FindIntersections(PointF start, PointF end, PointF[] buffer, int offset);
+    public abstract virtual int FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public abstract virtual bool Contains(PointF point);
+    public abstract virtual IPath Transform(Matrix3x2 matrix);
+    public abstract virtual IPath AsClosedPath();
+}
+public interface SixLabors.Shapes.IPathCollection {
+    public RectangleF Bounds { get; }
+    public abstract virtual RectangleF get_Bounds();
+    public abstract virtual IPathCollection Transform(Matrix3x2 matrix);
+}
+public interface SixLabors.Shapes.ISimplePath {
+    public bool IsClosed { get; }
+    public IReadOnlyList`1<PointF> Points { get; }
+    public abstract virtual bool get_IsClosed();
+    public abstract virtual IReadOnlyList`1<PointF> get_Points();
+}
+public enum SixLabors.Shapes.JointStyle : Enum {
+    public int value__;
+    public static JointStyle Miter;
+    public static JointStyle Round;
+    public static JointStyle Square;
+}
+public class SixLabors.Shapes.LinearLineSegment : object {
+    private PointF[] points;
+    [CompilerGeneratedAttribute]
+private PointF <EndPoint>k__BackingField;
+    public PointF EndPoint { get; }
+    public LinearLineSegment(PointF start, PointF end);
+    public LinearLineSegment(PointF point1, PointF point2, PointF[] additionalPoints);
+    public LinearLineSegment(PointF[] points);
+    [CompilerGeneratedAttribute]
+public sealed virtual PointF get_EndPoint();
+    public sealed virtual IReadOnlyList`1<PointF> Flatten();
+    public LinearLineSegment Transform(Matrix3x2 matrix);
+    private sealed virtual override ILineSegment SixLabors.Shapes.ILineSegment.Transform(Matrix3x2 matrix);
+}
+[ExtensionAttribute]
+public static class SixLabors.Shapes.Outliner : object {
+    private static double MiterOffsetDelta;
+    private static float ScalingFactor;
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, Single[] pattern);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, ReadOnlySpan`1<float> pattern);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, Single[] pattern, bool startOff);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, ReadOnlySpan`1<float> pattern, bool startOff);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, ReadOnlySpan`1<float> pattern, bool startOff, JointStyle jointStyle, EndCapStyle patternSectionCapStyle);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width);
+    [ExtensionAttribute]
+public static IPath GenerateOutline(IPath path, float width, JointStyle jointStyle, EndCapStyle endCapStyle);
+    private static IPath ExecuteOutliner(float width, ClipperOffset offset);
+    [ExtensionAttribute]
+private static IntPoint ToPoint(PointF vector);
+    [ExtensionAttribute]
+private static IntPoint ToPoint(Vector2 vector);
+    private static JoinType Convert(JointStyle style);
+    private static EndType Convert(EndCapStyle style);
+}
+public class SixLabors.Shapes.Path : object {
+    private ILineSegment[] lineSegments;
+    private InternalPath innerPath;
+    public float Length { get; }
+    private bool SixLabors.Shapes.ISimplePath.IsClosed { get; }
+    private IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.Points { get; }
+    public RectangleF Bounds { get; }
+    public PathTypes PathType { get; }
+    public int MaxIntersections { get; }
+    public IReadOnlyList`1<ILineSegment> LineSegments { get; }
+    protected bool IsClosed { get; }
+    private InternalPath InnerPath { get; }
+    public Path(IEnumerable`1<ILineSegment> segments);
+    public Path(Path path);
+    public Path(ILineSegment[] segments);
+    public sealed virtual float get_Length();
+    private sealed virtual override bool SixLabors.Shapes.ISimplePath.get_IsClosed();
+    private sealed virtual override IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.get_Points();
+    public sealed virtual RectangleF get_Bounds();
+    public sealed virtual PathTypes get_PathType();
+    public sealed virtual int get_MaxIntersections();
+    public IReadOnlyList`1<ILineSegment> get_LineSegments();
+    protected virtual bool get_IsClosed();
+    private InternalPath get_InnerPath();
+    public sealed virtual PointInfo Distance(PointF point);
+    public virtual IPath Transform(Matrix3x2 matrix);
+    public sealed virtual IPath AsClosedPath();
+    [IteratorStateMachineAttribute("SixLabors.Shapes.Path/<Flatten>d__26")]
+public sealed virtual IEnumerable`1<ISimplePath> Flatten();
+    public sealed virtual int FindIntersections(PointF start, PointF end, PointF[] buffer, int offset);
+    public sealed virtual int FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public sealed virtual bool Contains(PointF point);
+    public sealed virtual SegmentInfo PointAlongPath(float distanceAlongPath);
+}
+public class SixLabors.Shapes.PathBuilder : object {
+    private List`1<Figure> figures;
+    private Matrix3x2 defaultTransform;
+    private Figure currentFigure;
+    private Matrix3x2 currentTransform;
+    private Matrix3x2 setTransform;
+    public PathBuilder(Matrix3x2 defaultTransform);
+    public PathBuilder SetTransform(Matrix3x2 translation);
+    public PathBuilder SetOrigin(PointF origin);
+    public PathBuilder ResetTransform();
+    public PathBuilder ResetOrigin();
+    public PathBuilder AddLine(PointF start, PointF end);
+    public PathBuilder AddLine(float x1, float y1, float x2, float y2);
+    public PathBuilder AddLines(IEnumerable`1<PointF> points);
+    public PathBuilder AddLines(PointF[] points);
+    public PathBuilder AddSegment(ILineSegment segment);
+    public PathBuilder AddBezier(PointF startPoint, PointF controlPoint, PointF endPoint);
+    public PathBuilder AddBezier(PointF startPoint, PointF controlPoint1, PointF controlPoint2, PointF endPoint);
+    public PathBuilder StartFigure();
+    public PathBuilder CloseFigure();
+    public PathBuilder CloseAllFigures();
+    public IPath Build();
+    public PathBuilder Reset();
+    public void Clear();
+}
+public class SixLabors.Shapes.PathCollection : object {
+    private IPath[] paths;
+    [CompilerGeneratedAttribute]
+private RectangleF <Bounds>k__BackingField;
+    public RectangleF Bounds { get; }
+    public PathCollection(IEnumerable`1<IPath> paths);
+    public PathCollection(IPath[] paths);
+    [CompilerGeneratedAttribute]
+public sealed virtual RectangleF get_Bounds();
+    public sealed virtual IEnumerator`1<IPath> GetEnumerator();
+    public sealed virtual IPathCollection Transform(Matrix3x2 matrix);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+[ExtensionAttribute]
+public static class SixLabors.Shapes.PathExtensions : object {
+    [ExtensionAttribute]
+public static IPathCollection Rotate(IPathCollection path, float radians);
+    [ExtensionAttribute]
+public static IPathCollection RotateDegree(IPathCollection shape, float degrees);
+    [ExtensionAttribute]
+public static IPathCollection Translate(IPathCollection path, PointF position);
+    [ExtensionAttribute]
+public static IPathCollection Translate(IPathCollection path, float x, float y);
+    [ExtensionAttribute]
+public static IPathCollection Scale(IPathCollection path, float scaleX, float scaleY);
+    [ExtensionAttribute]
+public static IPathCollection Scale(IPathCollection path, float scale);
+    [ExtensionAttribute]
+public static IPath Rotate(IPath path, float radians);
+    [ExtensionAttribute]
+public static IPath RotateDegree(IPath shape, float degrees);
+    [ExtensionAttribute]
+public static IPath Translate(IPath path, PointF position);
+    [ExtensionAttribute]
+public static IPath Translate(IPath path, float x, float y);
+    [ExtensionAttribute]
+public static IPath Scale(IPath path, float scaleX, float scaleY);
+    [ExtensionAttribute]
+public static IPath Scale(IPath path, float scale);
+    [ExtensionAttribute]
+public static IEnumerable`1<PointF> FindIntersections(IPath path, PointF start, PointF end);
+}
+public enum SixLabors.Shapes.PathTypes : Enum {
+    public int value__;
+    public static PathTypes Open;
+    public static PathTypes Closed;
+    public static PathTypes Mixed;
+}
+public class SixLabors.Shapes.PointInfo : ValueType {
+    public PointF SearchPoint;
+    public float DistanceAlongPath;
+    public float DistanceFromPath;
+    public PointF ClosestPointOnPath;
+}
+public class SixLabors.Shapes.Polygon : Path {
+    protected bool IsClosed { get; }
+    public Polygon(ILineSegment[] segments);
+    public Polygon(IEnumerable`1<ILineSegment> segments);
+    public Polygon(ILineSegment segment);
+    internal Polygon(Path path);
+    protected virtual bool get_IsClosed();
+    public virtual IPath Transform(Matrix3x2 matrix);
+}
+[IsReadOnlyAttribute]
+public class SixLabors.Shapes.PolygonClipper.ClippablePath : ValueType {
+    [CompilerGeneratedAttribute]
+private IPath <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ClippingType <Type>k__BackingField;
+    public IPath Path { get; }
+    public ClippingType Type { get; }
+    public ClippablePath(IPath path, ClippingType type);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public IPath get_Path();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public ClippingType get_Type();
+}
+public class SixLabors.Shapes.PolygonClipper.Clipper : object {
+    private static float ScalingFactor;
+    private Clipper innerClipper;
+    private object syncRoot;
+    public Clipper(ClippablePath[] shapes);
+    public IPath[] GenerateClippedShapes();
+    public void AddPaths(ClippablePath[] paths);
+    public void AddPaths(IEnumerable`1<IPath> paths, ClippingType clippingType);
+    public void AddPath(IPath path, ClippingType clippingType);
+    internal void AddPath(ISimplePath path, ClippingType clippingType);
+}
+internal class SixLabors.Shapes.PolygonClipper.ClipperException : Exception {
+    public ClipperException(string description);
+}
+public enum SixLabors.Shapes.PolygonClipper.ClippingType : Enum {
+    public int value__;
+    public static ClippingType Subject;
+    public static ClippingType Clip;
+}
+public class SixLabors.Shapes.RectangularPolygon : object {
+    private Vector2 topLeft;
+    private Vector2 bottomRight;
+    private PointF[] points;
+    private float halfLength;
+    private float length;
+    private RectangleF bounds;
+    [CompilerGeneratedAttribute]
+private PointF <Location>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SizeF <Size>k__BackingField;
+    public PointF Location { get; }
+    public float Left { get; }
+    public float X { get; }
+    public float Right { get; }
+    public float Top { get; }
+    public float Y { get; }
+    public float Bottom { get; }
+    private RectangleF SixLabors.Shapes.IPath.Bounds { get; }
+    private float SixLabors.Shapes.IPath.Length { get; }
+    private int SixLabors.Shapes.IPath.MaxIntersections { get; }
+    private bool SixLabors.Shapes.ISimplePath.IsClosed { get; }
+    private IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.Points { get; }
+    public SizeF Size { get; }
+    public float Width { get; }
+    public float Height { get; }
+    private PathTypes SixLabors.Shapes.IPath.PathType { get; }
+    public PointF Center { get; }
+    public RectangularPolygon(float x, float y, float width, float height);
+    public RectangularPolygon(PointF topLeft, PointF bottomRight);
+    public RectangularPolygon(PointF location, SizeF size);
+    public RectangularPolygon(RectangleF rectangle);
+    [CompilerGeneratedAttribute]
+public PointF get_Location();
+    public float get_Left();
+    public float get_X();
+    public float get_Right();
+    public float get_Top();
+    public float get_Y();
+    public float get_Bottom();
+    private sealed virtual override RectangleF SixLabors.Shapes.IPath.get_Bounds();
+    private sealed virtual override float SixLabors.Shapes.IPath.get_Length();
+    private sealed virtual override int SixLabors.Shapes.IPath.get_MaxIntersections();
+    private sealed virtual override bool SixLabors.Shapes.ISimplePath.get_IsClosed();
+    private sealed virtual override IReadOnlyList`1<PointF> SixLabors.Shapes.ISimplePath.get_Points();
+    [CompilerGeneratedAttribute]
+public SizeF get_Size();
+    public float get_Width();
+    public float get_Height();
+    private sealed virtual override PathTypes SixLabors.Shapes.IPath.get_PathType();
+    public PointF get_Center();
+    public static RectangularPolygon op_Explicit(Polygon polygon);
+    public sealed virtual bool Contains(PointF point);
+    public sealed virtual int FindIntersections(PointF start, PointF end, PointF[] buffer, int offset);
+    public sealed virtual int FindIntersections(PointF start, PointF end, Span`1<PointF> buffer);
+    public sealed virtual IPath Transform(Matrix3x2 matrix);
+    public sealed virtual SegmentInfo PointAlongPath(float distanceAlongPath);
+    public sealed virtual PointInfo Distance(PointF point);
+    [IteratorStateMachineAttribute("SixLabors.Shapes.RectangularPolygon/<Flatten>d__53")]
+public sealed virtual IEnumerable`1<ISimplePath> Flatten();
+    private sealed virtual override IPath SixLabors.Shapes.IPath.AsClosedPath();
+    public bool Equals(RectangularPolygon other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class SixLabors.Shapes.RegularPolygon : Polygon {
+    public RegularPolygon(PointF location, int verticies, float radius, float angle);
+    public RegularPolygon(PointF location, int verticies, float radius);
+    public RegularPolygon(float x, float y, int verticies, float radius, float angle);
+    public RegularPolygon(float x, float y, int verticies, float radius);
+    private static LinearLineSegment CreateSegment(PointF location, float radius, int verticies, float angle);
+}
+public class SixLabors.Shapes.SegmentInfo : ValueType {
+    public PointF Point;
+    public float Angle;
+}
+public class SixLabors.Shapes.Star : Polygon {
+    public Star(PointF location, int prongs, float innerRadii, float outerRadii, float angle);
+    public Star(PointF location, int prongs, float innerRadii, float outerRadii);
+    public Star(float x, float y, int prongs, float innerRadii, float outerRadii, float angle);
+    public Star(float x, float y, int prongs, float innerRadii, float outerRadii);
+    private static LinearLineSegment CreateSegment(Vector2 location, float innerRadii, float outerRadii, int prongs, float angle);
+}
+[ExtensionAttribute]
+internal static class SixLabors.Shapes.VectorExtensions : object {
+    [ExtensionAttribute]
+public static bool Equivelent(PointF source1, PointF source2, float threshold);
+    [ExtensionAttribute]
+public static bool Equivelent(Vector2 source1, Vector2 source2, float threshold);
+}
+internal class System.HashCode : ValueType {
+    private static UInt32 s_seed;
+    private static UInt32 Prime1;
+    private static UInt32 Prime2;
+    private static UInt32 Prime3;
+    private static UInt32 Prime4;
+    private static UInt32 Prime5;
+    private UInt32 _v1;
+    private UInt32 _v2;
+    private UInt32 _v3;
+    private UInt32 _v4;
+    private UInt32 _queue1;
+    private UInt32 _queue2;
+    private UInt32 _queue3;
+    private UInt32 _length;
+    private static HashCode();
+    private static UInt32 GenerateGlobalSeed();
+    public static int Combine(T1 value1);
+    public static int Combine(T1 value1, T2 value2);
+    public static int Combine(T1 value1, T2 value2, T3 value3);
+    public static int Combine(T1 value1, T2 value2, T3 value3, T4 value4);
+    public static int Combine(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5);
+    public static int Combine(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6);
+    public static int Combine(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7);
+    public static int Combine(T1 value1, T2 value2, T3 value3, T4 value4, T5 value5, T6 value6, T7 value7, T8 value8);
+    private static UInt32 Rol(UInt32 value, int count);
+    private static void Initialize(UInt32& v1, UInt32& v2, UInt32& v3, UInt32& v4);
+    private static UInt32 Round(UInt32 hash, UInt32 input);
+    private static UInt32 QueueRound(UInt32 hash, UInt32 queuedValue);
+    private static UInt32 MixState(UInt32 v1, UInt32 v2, UInt32 v3, UInt32 v4);
+    private static UInt32 MixEmptyState();
+    private static UInt32 MixFinal(UInt32 hash);
+    public void Add(T value);
+    public void Add(T value, IEqualityComparer`1<T> comparer);
+    private void Add(int value);
+    public int ToHashCode();
+    [ObsoleteAttribute("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", "True")]
+[EditorBrowsableAttribute("1")]
+public virtual int GetHashCode();
+    [ObsoleteAttribute("HashCode is a mutable struct and should not be compared with other HashCodes.", "True")]
+[EditorBrowsableAttribute("1")]
+public virtual bool Equals(object obj);
+}
+internal static class System.MathF : object {
+    public static float PI;
+    public static float Abs(float f);
+    public static float Atan2(float y, float x);
+    public static float Ceiling(float f);
+    public static float Cos(float f);
+    public static float Exp(float f);
+    public static float Floor(float f);
+    public static float Max(float val1, float val2);
+    public static float Min(float val1, float val2);
+    public static float Pow(float x, float y);
+    public static float Round(float f);
+    public static float Round(float f, MidpointRounding mode);
+    public static float Sin(float f);
+    public static float Sqrt(float f);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}

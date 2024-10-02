@@ -1,0 +1,203 @@
+[ExtensionAttribute]
+public static class Rebus.Config.HostBuilderExtensions : object {
+    [ExtensionAttribute]
+public static IHostBuilder AddRebusService(IHostBuilder builder, Action`1<IServiceCollection> configureServices);
+    [ExtensionAttribute]
+public static IHostBuilder AddRebusService(IHostBuilder builder, Action`2<HostBuilderContext, IServiceCollection> configureServices);
+    [ExtensionAttribute]
+public static IHostBuilder AddRebusService(IHostBuilder builder, Action`1<IServiceCollection> configureServices, Type[] forwardedSingletonTypes);
+    [ExtensionAttribute]
+public static IHostBuilder AddRebusService(IHostBuilder builder, Action`2<HostBuilderContext, IServiceCollection> configureServices, Type[] forwardedSingletonTypes);
+    [ExtensionAttribute]
+private static void AddSingletonForward(IServiceCollection services, Type forwardedType, IServiceProvider hostProvider);
+}
+[ExtensionAttribute]
+public static class Rebus.Config.ServiceCollectionExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddRebus(IServiceCollection services, Func`2<RebusConfigurer, RebusConfigurer> configure, bool isDefaultBus, Func`2<IBus, Task> onCreated, string key, bool startAutomatically);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebus(IServiceCollection services, Func`2<RebusConfigurer, RebusConfigurer> configure, Func`3<IBus, IServiceProvider, Task> onCreated, bool isDefaultBus, string key, bool startAutomatically);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebus(IServiceCollection services, Func`3<RebusConfigurer, IServiceProvider, RebusConfigurer> configure, bool isDefaultBus, Func`2<IBus, Task> onCreated, string key, bool startAutomatically);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebus(IServiceCollection services, Func`3<RebusConfigurer, IServiceProvider, RebusConfigurer> configure, Func`3<IBus, IServiceProvider, Task> onCreated, bool isDefaultBus, string key, bool startAutomatically);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebusHandler(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebusHandler(IServiceCollection services, Type typeToRegister);
+    [ExtensionAttribute]
+public static IServiceCollection AddRebusHandler(IServiceCollection services, Func`2<IServiceProvider, THandler> factory);
+    [ExtensionAttribute]
+public static IServiceCollection AutoRegisterHandlersFromAssemblyOf(IServiceCollection services, Func`2<Type, bool> predicate);
+    [ExtensionAttribute]
+public static IServiceCollection AutoRegisterHandlersFromAssembly(IServiceCollection services, Assembly assembly, Func`2<Type, bool> predicate);
+    [ExtensionAttribute]
+public static IServiceCollection AutoRegisterHandlersFromAssembly(IServiceCollection services, string assemblyString, Func`2<Type, bool> predicate);
+    [ExtensionAttribute]
+public static IServiceCollection AutoRegisterHandlersFromAssemblyNamespaceOf(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AutoRegisterHandlersFromAssemblyNamespaceOf(IServiceCollection services, Type handlerType);
+    private static Assembly GetAssembly();
+    private static IEnumerable`1<Type> GetImplementedHandlerInterfaces(Type type);
+    private static void RegisterAssembly(IServiceCollection services, Assembly assemblyToRegister, string namespaceFilter, Func`2<Type, bool> predicate);
+    private static bool IsClass(Type type);
+    private static void RegisterFactory(IServiceCollection services, Type typeToRegister, Func`2<IServiceProvider, object> factory);
+    private static void RegisterType(IServiceCollection services, Type typeToRegister);
+}
+[ExtensionAttribute]
+public static class Rebus.Config.ServiceProviderExtensions : object {
+    [ExtensionAttribute]
+public static IServiceProvider StartRebus(IServiceProvider serviceProvider);
+}
+public class Rebus.ServiceProvider.DependencyInjectionHandlerActivator : object {
+    private ConcurrentDictionary`2<Type, Type[]> _typesToResolveByMessage;
+    private IServiceProvider _provider;
+    public DependencyInjectionHandlerActivator(IServiceProvider provider);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.DependencyInjectionHandlerActivator/<GetHandlers>d__3`1")]
+public sealed virtual Task`1<IEnumerable`1<IHandleMessages`1<TMessage>>> GetHandlers(TMessage message, ITransactionContext transactionContext);
+    private IServiceProvider GetOrCreateScopeAndReturnServiceProvider(ITransactionContext transactionContext);
+    private IReadOnlyList`1<IHandleMessages`1<TMessage>> GetMessageHandlersForMessage(IServiceProvider serviceProvider);
+    private static Type[] FigureOutTypesToResolve(Type messageType);
+    private static IEnumerable`1<Type> GetCompatibleMessageHandlerTypes(Type type);
+    private static IEnumerable`1<Type> GetBaseTypes(GenericTypePair typePair);
+    private static bool SatisfiesParameterConstraints(Type type, IEnumerable`1<Type> parameterConstraints);
+    private static bool IsCovariant(Type type);
+    [CompilerGeneratedAttribute]
+private AsyncServiceScope <GetOrCreateScopeAndReturnServiceProvider>g__CreateAndInitializeNewScope|4_0(<>c__DisplayClass4_0& );
+}
+public interface Rebus.ServiceProvider.IBusRegistry {
+    public abstract virtual IBus GetBus(string key);
+    public abstract virtual bool TryGetBus(string key, IBus& bus);
+    public abstract virtual bool ContainsKey(string key);
+    public abstract virtual IBus StartBus(string key);
+    public abstract virtual IReadOnlyList`1<string> GetAllKeys();
+}
+internal static class Rebus.ServiceProvider.Internals.AsyncHelpers : object {
+    public static void RunSync(Func`1<Task> task);
+}
+internal class Rebus.ServiceProvider.Internals.BusWrapper : object {
+    private IBus _bus;
+    public IAdvancedApi Advanced { get; }
+    public BusWrapper(IBus bus);
+    public sealed virtual void Dispose();
+    public sealed virtual Task SendLocal(object commandMessage, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual Task Send(object commandMessage, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual Task DeferLocal(TimeSpan delay, object message, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual Task Defer(TimeSpan delay, object message, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual Task Reply(object replyMessage, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual Task Subscribe();
+    public sealed virtual Task Subscribe(Type eventType);
+    public sealed virtual Task Unsubscribe();
+    public sealed virtual Task Unsubscribe(Type eventType);
+    public sealed virtual Task Publish(object eventMessage, IDictionary`2<string, string> optionalHeaders);
+    public sealed virtual IAdvancedApi get_Advanced();
+    public virtual string ToString();
+}
+internal class Rebus.ServiceProvider.Internals.DefaultBusInstance : object {
+    private Lazy`1<ValueTuple`2<IBus, BusLifetimeEvents>> _instances;
+    public IBus Bus { get; }
+    public BusLifetimeEvents BusLifetimeEvents { get; }
+    public void SetInstanceResolver(Lazy`1<Task`1<ValueTuple`2<IBus, BusLifetimeEvents>>> resolver);
+    public IBus get_Bus();
+    public BusLifetimeEvents get_BusLifetimeEvents();
+}
+[ExtensionAttribute]
+public static class Rebus.ServiceProvider.Internals.EnumerableExtensions : object {
+    [ExtensionAttribute]
+public static IEnumerable`1<IEnumerable`1<T>> CartesianProduct(IEnumerable`1<IEnumerable`1<T>> sequences);
+}
+internal class Rebus.ServiceProvider.Internals.IndependentRebusHostedService : object {
+    private ConcurrentStack`1<IHostedService> _hostedServices;
+    private Action`1<IServiceCollection> _configureServices;
+    private IServiceProvider _serviceProvider;
+    private ILogger`1<IndependentRebusHostedService> _logger;
+    public IndependentRebusHostedService(Action`1<IServiceCollection> configureServices);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.Internals.IndependentRebusHostedService/<StartAsync>d__5")]
+public sealed virtual Task StartAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.Internals.IndependentRebusHostedService/<StopAsync>d__6")]
+public sealed virtual Task StopAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.Internals.IndependentRebusHostedService/<StopStartedServices>d__7")]
+private Task StopStartedServices(CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+internal static class Rebus.ServiceProvider.Internals.LoggingConfigurerExtensions : object {
+    [ExtensionAttribute]
+public static bool ReflectWhetherItHasRegistration(RebusLoggingConfigurer configurer);
+}
+internal class Rebus.ServiceProvider.Internals.MicrosoftExtensionsLoggingLoggerFactory : AbstractRebusLoggerFactory {
+    private ILoggerFactory _loggerFactory;
+    private ILogger _logger;
+    public MicrosoftExtensionsLoggingLoggerFactory(ILogger logger);
+    public MicrosoftExtensionsLoggingLoggerFactory(ILoggerFactory loggerFactory);
+    protected virtual ILog GetLogger(Type type);
+}
+internal class Rebus.ServiceProvider.Internals.RebusBackgroundService : BackgroundService {
+    private RebusInitializer _rebusInitializer;
+    public RebusBackgroundService(RebusInitializer rebusInitializer);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.Internals.RebusBackgroundService/<ExecuteAsync>d__2")]
+protected virtual Task ExecuteAsync(CancellationToken stoppingToken);
+}
+internal class Rebus.ServiceProvider.Internals.RebusDisposalHelper : object {
+    private ConcurrentStack`1<IDisposable> _disposables;
+    public void Add(IDisposable disposable);
+    public sealed virtual void Dispose();
+}
+internal class Rebus.ServiceProvider.Internals.RebusInitializer : object {
+    public Lazy`1<Task`1<ValueTuple`2<IBus, BusLifetimeEvents>>> _busAndEvents;
+    private bool _startAutomatically;
+    private string _key;
+    private Func`3<RebusConfigurer, IServiceProvider, RebusConfigurer> _configure;
+    private Func`3<IBus, IServiceProvider, Task> _onCreated;
+    private IServiceProvider _serviceProvider;
+    private bool _isDefaultBus;
+    private Nullable`1<CancellationToken> _cancellationToken;
+    public RebusInitializer(bool startAutomatically, string key, Func`3<RebusConfigurer, IServiceProvider, RebusConfigurer> configure, Func`3<IBus, IServiceProvider, Task> onCreated, IServiceProvider serviceProvider, bool isDefaultBus, IHostApplicationLifetime lifetime);
+    public Lazy`1<Task`1<ValueTuple`2<IBus, BusLifetimeEvents>>> GetLazyInitializer();
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.Internals.RebusInitializer/<<GetLazyInitializer>b__9_0>d")]
+[CompilerGeneratedAttribute]
+private Task`1<ValueTuple`2<IBus, BusLifetimeEvents>> <GetLazyInitializer>b__9_0();
+    [CompilerGeneratedAttribute]
+private void <GetLazyInitializer>b__9_2(OptionsConfigurer o);
+    [CompilerGeneratedAttribute]
+private IPipeline <GetLazyInitializer>b__9_6(IResolutionContext context);
+}
+internal class Rebus.ServiceProvider.Internals.RebusResolver : object {
+    public IBus GetBus(IServiceProvider serviceProvider);
+}
+internal class Rebus.ServiceProvider.Internals.ServiceCollectionBusDisposalFacility : object {
+    private IBus _bus;
+    public ServiceCollectionBusDisposalFacility(IBus bus);
+    public sealed virtual void Dispose();
+}
+internal class Rebus.ServiceProvider.Internals.ServiceProviderBusRegistry : object {
+    private ConcurrentDictionary`2<string, IBusStarter> _starters;
+    private ConcurrentDictionary`2<string, IBus> _buses;
+    public sealed virtual IBus GetBus(string key);
+    public sealed virtual bool TryGetBus(string key, IBus& bus);
+    public sealed virtual bool ContainsKey(string key);
+    public sealed virtual IBus StartBus(string key);
+    public sealed virtual IReadOnlyList`1<string> GetAllKeys();
+    public void AddBus(IBus bus, IBusStarter busStarter, string key);
+    private static KeyNotFoundException GetKeyNotFoundException(string key);
+}
+internal class Rebus.ServiceProvider.Internals.TypeEqualityComparer : object {
+    public sealed virtual bool Equals(object x, object y);
+    public sealed virtual int GetHashCode(object obj);
+}
+[StepDocumentationAttribute("Adds the service provider to the incoming/outgoing step context, thus making it available for the rest of the pipeline.")]
+public class Rebus.ServiceProvider.ServiceProviderProviderStep : object {
+    private IServiceProvider _serviceProvider;
+    private Lazy`1<IBus> _bus;
+    public ServiceProviderProviderStep(IServiceProvider serviceProvider, IResolutionContext resolutionContext);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.ServiceProviderProviderStep/<Process>d__3")]
+public sealed virtual Task Process(IncomingStepContext context, Func`1<Task> next);
+    [AsyncStateMachineAttribute("Rebus.ServiceProvider.ServiceProviderProviderStep/<Process>d__4")]
+public sealed virtual Task Process(OutgoingStepContext context, Func`1<Task> next);
+}
+[ExtensionAttribute]
+public static class Rebus.ServiceProvider.ServiceProviderScopeStepContextExtensions : object {
+    [ExtensionAttribute]
+public static Nullable`1<AsyncServiceScope> GetAsyncServiceScopeOrNull(OutgoingStepContext outgoingStepContext);
+    [ExtensionAttribute]
+public static IServiceScope GetServiceScopeOrNull(OutgoingStepContext outgoingStepContext);
+}

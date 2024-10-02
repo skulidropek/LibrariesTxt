@@ -1,0 +1,162 @@
+internal class Serilog.Extensions.Hosting.AmbientDiagnosticContextCollector : object {
+    private static AsyncLocal`1<AmbientDiagnosticContextCollector> AmbientCollector;
+    private DiagnosticContextCollector _collector;
+    public static DiagnosticContextCollector Current { get; }
+    private static AmbientDiagnosticContextCollector();
+    public static DiagnosticContextCollector get_Current();
+    public static DiagnosticContextCollector Begin();
+    public sealed virtual void Dispose();
+}
+internal class Serilog.Extensions.Hosting.CachingReloadableLogger : object {
+    private ReloadableLogger _reloadableLogger;
+    private Func`2<ILogger, ILogger> _configure;
+    private IReloadableLogger _parent;
+    private ILogger _root;
+    private ILogger _cached;
+    private bool _frozen;
+    public CachingReloadableLogger(ReloadableLogger reloadableLogger, ILogger root, IReloadableLogger parent, Func`2<ILogger, ILogger> configure);
+    public sealed virtual ILogger ReloadLogger();
+    public sealed virtual ILogger ForContext(ILogEventEnricher enricher);
+    public sealed virtual ILogger ForContext(IEnumerable`1<ILogEventEnricher> enrichers);
+    public sealed virtual ILogger ForContext(string propertyName, object value, bool destructureObjects);
+    public sealed virtual ILogger ForContext();
+    public sealed virtual ILogger ForContext(Type source);
+    private void Update(ILogger newRoot, ILogger newCached, bool frozen);
+    public sealed virtual void Write(LogEvent logEvent);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T propertyValue);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, Object[] propertyValues);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T propertyValue);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, Object[] propertyValues);
+    public sealed virtual bool IsEnabled(LogEventLevel level);
+    public sealed virtual bool BindMessageTemplate(string messageTemplate, Object[] propertyValues, MessageTemplate& parsedTemplate, IEnumerable`1& boundProperties);
+    public sealed virtual bool BindProperty(string propertyName, object value, bool destructureObjects, LogEventProperty& property);
+}
+public class Serilog.Extensions.Hosting.DiagnosticContext : object {
+    private ILogger _logger;
+    public DiagnosticContext(ILogger logger);
+    public DiagnosticContextCollector BeginCollection();
+    public sealed virtual void Set(string propertyName, object value, bool destructureObjects);
+    public sealed virtual void SetException(Exception exception);
+}
+public class Serilog.Extensions.Hosting.DiagnosticContextCollector : object {
+    private IDisposable _chainedDisposable;
+    private object _propertiesLock;
+    private Exception _exception;
+    private Dictionary`2<string, LogEventProperty> _properties;
+    public DiagnosticContextCollector(IDisposable chainedDisposable);
+    public void AddOrUpdate(LogEventProperty property);
+    public void SetException(Exception exception);
+    [ObsoleteAttribute("Replaced by TryComplete(out IEnumerable<LogEventProperty> properties, out Exception exception).")]
+public bool TryComplete(IEnumerable`1& properties);
+    public bool TryComplete(IEnumerable`1& properties, Exception& exception);
+    public sealed virtual void Dispose();
+}
+internal class Serilog.Extensions.Hosting.FixedPropertyEnricher : object {
+    private LogEventProperty _property;
+    public FixedPropertyEnricher(LogEventProperty property);
+    public sealed virtual void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory);
+}
+internal class Serilog.Extensions.Hosting.InjectedLoggerSettings : object {
+    private IServiceProvider _services;
+    public InjectedLoggerSettings(IServiceProvider services);
+    public sealed virtual void Configure(LoggerConfiguration loggerConfiguration);
+}
+internal interface Serilog.Extensions.Hosting.IReloadableLogger {
+    public abstract virtual ILogger ReloadLogger();
+}
+internal class Serilog.Extensions.Hosting.NullEnricher : object {
+    public sealed virtual void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory);
+}
+public class Serilog.Extensions.Hosting.ReloadableLogger : object {
+    private object _sync;
+    private Logger _logger;
+    private bool _frozen;
+    internal ReloadableLogger(Logger initial);
+    private sealed virtual override ILogger Serilog.Extensions.Hosting.IReloadableLogger.ReloadLogger();
+    public void Reload(Func`2<LoggerConfiguration, LoggerConfiguration> configure);
+    public Logger Freeze();
+    public sealed virtual void Dispose();
+    public sealed virtual ILogger ForContext(ILogEventEnricher enricher);
+    public sealed virtual ILogger ForContext(IEnumerable`1<ILogEventEnricher> enrichers);
+    public sealed virtual ILogger ForContext(string propertyName, object value, bool destructureObjects);
+    public sealed virtual ILogger ForContext();
+    public sealed virtual ILogger ForContext(Type source);
+    public sealed virtual void Write(LogEvent logEvent);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T propertyValue);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2);
+    public sealed virtual void Write(LogEventLevel level, string messageTemplate, Object[] propertyValues);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T propertyValue);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2);
+    public sealed virtual void Write(LogEventLevel level, Exception exception, string messageTemplate, Object[] propertyValues);
+    public sealed virtual bool IsEnabled(LogEventLevel level);
+    public sealed virtual bool BindMessageTemplate(string messageTemplate, Object[] propertyValues, MessageTemplate& parsedTemplate, IEnumerable`1& boundProperties);
+    public sealed virtual bool BindProperty(string propertyName, object value, bool destructureObjects, LogEventProperty& property);
+    private ValueTuple`2<ILogger, bool> UpdateForCaller(ILogger root, ILogger cached, IReloadableLogger caller, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeIsEnabled(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Boolean& isEnabled, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeBindMessageTemplate(ILogger root, ILogger cached, IReloadableLogger caller, string messageTemplate, Object[] propertyValues, MessageTemplate& parsedTemplate, IEnumerable`1& boundProperties, Boolean& canBind, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeBindProperty(ILogger root, ILogger cached, IReloadableLogger caller, string propertyName, object propertyValue, bool destructureObjects, LogEventProperty& property, Boolean& canBind, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEvent logEvent, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, string messageTemplate, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, string messageTemplate, T propertyValue, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, string messageTemplate, Object[] propertyValues, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Exception exception, string messageTemplate, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Exception exception, string messageTemplate, T propertyValue, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Exception exception, string messageTemplate, T0 propertyValue0, T1 propertyValue1, T2 propertyValue2, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool InvokeWrite(ILogger root, ILogger cached, IReloadableLogger caller, LogEventLevel level, Exception exception, string messageTemplate, Object[] propertyValues, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+    internal bool CreateChild(ILogger root, IReloadableLogger parent, ILogger cachedParent, Func`2<ILogger, ILogger> configureChild, ILogger& child, ILogger& newRoot, ILogger& newCached, Boolean& frozen);
+}
+[ObsoleteAttribute("Replaced with Serilog.Extensions.Logging.SerilogLoggerFactory")]
+[EditorBrowsableAttribute("1")]
+public class Serilog.Hosting.SerilogLoggerFactory : object {
+    private SerilogLoggerProvider _provider;
+    public SerilogLoggerFactory(ILogger logger, bool dispose);
+    public sealed virtual void Dispose();
+    public sealed virtual ILogger CreateLogger(string categoryName);
+    public sealed virtual void AddProvider(ILoggerProvider provider);
+}
+public interface Serilog.IDiagnosticContext {
+    public abstract virtual void Set(string propertyName, object value, bool destructureObjects);
+    public abstract virtual void SetException(Exception exception);
+}
+[ExtensionAttribute]
+public static class Serilog.LoggerConfigurationExtensions : object {
+    [ExtensionAttribute]
+public static ReloadableLogger CreateBootstrapLogger(LoggerConfiguration loggerConfiguration);
+}
+[ExtensionAttribute]
+public static class Serilog.LoggerSettingsConfigurationExtensions : object {
+    [ExtensionAttribute]
+public static LoggerConfiguration Services(LoggerSettingsConfiguration loggerSettingsConfiguration, IServiceProvider services);
+}
+[ExtensionAttribute]
+public static class Serilog.SerilogHostBuilderExtensions : object {
+    [ExtensionAttribute]
+public static IHostBuilder UseSerilog(IHostBuilder builder, ILogger logger, bool dispose, LoggerProviderCollection providers);
+    [ExtensionAttribute]
+public static IHostBuilder UseSerilog(IHostBuilder builder, Action`2<HostBuilderContext, LoggerConfiguration> configureLogger, bool preserveStaticLogger, bool writeToProviders);
+    [ExtensionAttribute]
+public static IHostBuilder UseSerilog(IHostBuilder builder, Action`3<HostBuilderContext, IServiceProvider, LoggerConfiguration> configureLogger, bool preserveStaticLogger, bool writeToProviders);
+}
+[ExtensionAttribute]
+public static class Serilog.SerilogServiceCollectionExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddSerilog(IServiceCollection collection, ILogger logger, bool dispose, LoggerProviderCollection providers);
+    [ExtensionAttribute]
+public static IServiceCollection AddSerilog(IServiceCollection collection, Action`1<LoggerConfiguration> configureLogger, bool preserveStaticLogger, bool writeToProviders);
+    [ExtensionAttribute]
+public static IServiceCollection AddSerilog(IServiceCollection collection, Action`2<IServiceProvider, LoggerConfiguration> configureLogger, bool preserveStaticLogger, bool writeToProviders);
+    private static void ConfigureDiagnosticContext(IServiceCollection collection, bool useRegisteredLogger);
+}

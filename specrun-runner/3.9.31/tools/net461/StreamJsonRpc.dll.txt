@@ -1,0 +1,732 @@
+[ExtensionAttribute]
+internal static class StreamJsonRpc.AwaitExtensions : object {
+    [ExtensionAttribute]
+internal static SynchronizationContextAwaiter GetAwaiter(SynchronizationContext synchronizationContext);
+}
+public class StreamJsonRpc.BadRpcHeaderException : RemoteRpcException {
+    internal BadRpcHeaderException(string message);
+    internal BadRpcHeaderException(string message, Exception innerException);
+    protected BadRpcHeaderException(SerializationInfo info, StreamingContext context);
+}
+public static class StreamJsonRpc.CommonMethodNameTransforms : object {
+    private static NamingStrategy CamelCaseStrategy;
+    public static Func`2<string, string> CamelCase { get; }
+    private static CommonMethodNameTransforms();
+    public static Func`2<string, string> get_CamelCase();
+    public static Func`2<string, string> Prepend(string prefix);
+}
+public abstract class StreamJsonRpc.DelimitedMessageHandler : object {
+    private CancellationTokenSource disposalTokenSource;
+    private AsyncSemaphore sendingSemaphore;
+    private AsyncSemaphore receivingSemaphore;
+    private Encoding encoding;
+    [CompilerGeneratedAttribute]
+private Stream <SendingStream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Stream <ReceivingStream>k__BackingField;
+    public Encoding Encoding { get; public set; }
+    public bool CanRead { get; }
+    public bool CanWrite { get; }
+    private bool Microsoft.IDisposableObservable.IsDisposed { get; }
+    protected Stream SendingStream { get; }
+    protected Stream ReceivingStream { get; }
+    protected CancellationToken DisposalToken { get; }
+    protected DelimitedMessageHandler(Stream sendingStream, Stream receivingStream, Encoding encoding);
+    public Encoding get_Encoding();
+    public void set_Encoding(Encoding value);
+    public bool get_CanRead();
+    public bool get_CanWrite();
+    private sealed virtual override bool Microsoft.IDisposableObservable.get_IsDisposed();
+    [CompilerGeneratedAttribute]
+protected Stream get_SendingStream();
+    [CompilerGeneratedAttribute]
+protected Stream get_ReceivingStream();
+    protected CancellationToken get_DisposalToken();
+    [AsyncStateMachineAttribute("StreamJsonRpc.DelimitedMessageHandler/<ReadAsync>d__22")]
+public Task`1<string> ReadAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StreamJsonRpc.DelimitedMessageHandler/<WriteAsync>d__23")]
+public Task WriteAsync(string content, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    protected abstract virtual Task`1<string> ReadCoreAsync(CancellationToken cancellationToken);
+    protected abstract virtual Task WriteCoreAsync(string content, Encoding contentEncoding, CancellationToken cancellationToken);
+    protected virtual Task FlushCoreAsync();
+}
+public enum StreamJsonRpc.DisconnectedReason : Enum {
+    public int value__;
+    public static DisconnectedReason Unknown;
+    public static DisconnectedReason StreamError;
+    public static DisconnectedReason ParseError;
+    public static DisconnectedReason Disposed;
+    public static DisconnectedReason FatalException;
+}
+public class StreamJsonRpc.HeaderDelimitedMessageHandler : DelimitedMessageHandler {
+    private static int MaxHeaderElementSize;
+    private static string ContentLengthHeaderNameText;
+    private static string ContentTypeHeaderNameText;
+    private static string DefaultSubType;
+    private static Encoding DefaultContentEncoding;
+    private static Encoding HeaderEncoding;
+    private static Byte[] ContentLengthHeaderName;
+    private static Byte[] HeaderKeyValueDelimiter;
+    private static Byte[] ContentTypeHeaderName;
+    private static Byte[] CrlfBytes;
+    private Byte[] sendingHeaderBuffer;
+    private Byte[] receivingBuffer;
+    [CompilerGeneratedAttribute]
+private string <SubType>k__BackingField;
+    public string SubType { get; public set; }
+    private ReadBufferingStream ReceivingStream { get; }
+    public HeaderDelimitedMessageHandler(Stream sendingStream, Stream receivingStream);
+    private static HeaderDelimitedMessageHandler();
+    [CompilerGeneratedAttribute]
+public string get_SubType();
+    [CompilerGeneratedAttribute]
+public void set_SubType(string value);
+    private ReadBufferingStream get_ReceivingStream();
+    [AsyncStateMachineAttribute("StreamJsonRpc.HeaderDelimitedMessageHandler/<ReadCoreAsync>d__20")]
+protected virtual Task`1<string> ReadCoreAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StreamJsonRpc.HeaderDelimitedMessageHandler/<WriteCoreAsync>d__21")]
+protected virtual Task WriteCoreAsync(string content, Encoding contentEncoding, CancellationToken cancellationToken);
+    private static Encoding ParseEncodingFromContentTypeHeader(string contentTypeAsText);
+    private static void ThrowIfNotExpectedToken(char actual, char expected);
+    private static Exception ThrowUnexpectedToken(char actual, Nullable`1<char> expected);
+    private static bool IsLastFourBytesCrlfCrlf(Byte[] buffer, int lastIndex);
+}
+public class StreamJsonRpc.JsonRpc : object {
+    private static string ImpliedMethodNameAsyncSuffix;
+    private static string CancelRequestSpecialMethod;
+    private static ReadOnlyDictionary`2<string, string> EmptyDictionary;
+    private static Object[] EmptyObjectArray;
+    private static JsonSerializer DefaultJsonSerializer;
+    private static SynchronizationContext DefaultSynchronizationContext;
+    private object syncObject;
+    private object dispatcherMapLock;
+    private object disconnectedEventLock;
+    private Dictionary`2<int, OutstandingCallData> resultDispatcherMap;
+    private Dictionary`2<JToken, CancellationTokenSource> inboundCancellationSources;
+    private Action`1<object> cancelPendingOutboundRequestAction;
+    private Func`3<Task, object, JsonRpcMessage> handleInvocationTaskResultDelegate;
+    private Dictionary`2<string, List`1<MethodSignatureAndTarget>> targetRequestMethodToClrMethodMap;
+    private CancellationTokenSource disposeCts;
+    private TaskCompletionSource`1<bool> completionSource;
+    private List`1<EventReceiver> eventReceivers;
+    private Task readLinesTask;
+    private int nextId;
+    private bool disposed;
+    private bool hasDisconnectedEventBeenRaised;
+    private bool startedListening;
+    private SynchronizationContext synchronizationContext;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<JsonRpcDisconnectedEventArgs> DisconnectedPrivate;
+    [CompilerGeneratedAttribute]
+private DelimitedMessageHandler <MessageHandler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowModificationWhileListening>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JsonSerializer <JsonSerializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Formatting <JsonSerializerFormatting>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JsonSerializerSettings <MessageJsonSerializerSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JsonSerializerSettings <MessageJsonDeserializerSettings>k__BackingField;
+    public Encoding Encoding { get; public set; }
+    public DelimitedMessageHandler MessageHandler { get; }
+    public SynchronizationContext SynchronizationContext { get; public set; }
+    public Task Completion { get; }
+    public bool AllowModificationWhileListening { get; public set; }
+    private bool Microsoft.IDisposableObservable.IsDisposed { get; }
+    public JsonSerializer JsonSerializer { get; }
+    public Formatting JsonSerializerFormatting { get; public set; }
+    private JsonSerializerSettings MessageJsonSerializerSettings { get; }
+    private JsonSerializerSettings MessageJsonDeserializerSettings { get; }
+    private SynchronizationContext SynchronizationContextOrDefault { get; }
+    public JsonRpc(Stream sendingStream, Stream receivingStream, object target);
+    public JsonRpc(DelimitedMessageHandler messageHandler, object target);
+    private static JsonRpc();
+    public void add_Disconnected(EventHandler`1<JsonRpcDisconnectedEventArgs> value);
+    public void remove_Disconnected(EventHandler`1<JsonRpcDisconnectedEventArgs> value);
+    [CompilerGeneratedAttribute]
+private void add_DisconnectedPrivate(EventHandler`1<JsonRpcDisconnectedEventArgs> value);
+    [CompilerGeneratedAttribute]
+private void remove_DisconnectedPrivate(EventHandler`1<JsonRpcDisconnectedEventArgs> value);
+    public Encoding get_Encoding();
+    public void set_Encoding(Encoding value);
+    [CompilerGeneratedAttribute]
+public DelimitedMessageHandler get_MessageHandler();
+    public SynchronizationContext get_SynchronizationContext();
+    public void set_SynchronizationContext(SynchronizationContext value);
+    public Task get_Completion();
+    [CompilerGeneratedAttribute]
+public bool get_AllowModificationWhileListening();
+    [CompilerGeneratedAttribute]
+public void set_AllowModificationWhileListening(bool value);
+    private sealed virtual override bool Microsoft.IDisposableObservable.get_IsDisposed();
+    [CompilerGeneratedAttribute]
+public JsonSerializer get_JsonSerializer();
+    [CompilerGeneratedAttribute]
+public Formatting get_JsonSerializerFormatting();
+    [CompilerGeneratedAttribute]
+public void set_JsonSerializerFormatting(Formatting value);
+    [CompilerGeneratedAttribute]
+private JsonSerializerSettings get_MessageJsonSerializerSettings();
+    [CompilerGeneratedAttribute]
+private JsonSerializerSettings get_MessageJsonDeserializerSettings();
+    private SynchronizationContext get_SynchronizationContextOrDefault();
+    public static JsonRpc Attach(Stream stream, object target);
+    public static JsonRpc Attach(Stream sendingStream, Stream receivingStream, object target);
+    public static T Attach(Stream stream);
+    public static T Attach(Stream sendingStream, Stream receivingStream);
+    public T Attach();
+    public T Attach(JsonRpcProxyOptions options);
+    public void AddLocalRpcTarget(object target);
+    public void AddLocalRpcTarget(object target, JsonRpcTargetOptions options);
+    public void AddLocalRpcMethod(string rpcMethodName, Delegate handler);
+    public void AddLocalRpcMethod(string rpcMethodName, MethodInfo handler, object target);
+    public void StartListening();
+    public Task InvokeAsync(string targetName, object argument);
+    public Task InvokeAsync(string targetName, Object[] arguments);
+    public Task`1<TResult> InvokeAsync(string targetName, object argument);
+    public Task`1<TResult> InvokeAsync(string targetName, Object[] arguments);
+    public Task`1<TResult> InvokeWithParameterObjectAsync(string targetName, object argument, CancellationToken cancellationToken);
+    public Task InvokeWithCancellationAsync(string targetName, IReadOnlyList`1<object> arguments, CancellationToken cancellationToken);
+    public Task`1<TResult> InvokeWithCancellationAsync(string targetName, IReadOnlyList`1<object> arguments, CancellationToken cancellationToken);
+    public Task NotifyAsync(string targetName, object argument);
+    public Task NotifyAsync(string targetName, Object[] arguments);
+    public Task NotifyWithParameterObjectAsync(string targetName, object argument);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    protected virtual bool IsFatalException(Exception ex);
+    protected virtual Task`1<TResult> InvokeCoreAsync(Nullable`1<int> id, string targetName, IReadOnlyList`1<object> arguments, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StreamJsonRpc.JsonRpc/<InvokeCoreAsync>d__88`1")]
+protected virtual Task`1<TResult> InvokeCoreAsync(Nullable`1<int> id, string targetName, IReadOnlyList`1<object> arguments, CancellationToken cancellationToken, bool isParameterObject);
+    private static Dictionary`2<string, List`1<MethodSignatureAndTarget>> GetRequestMethodToClrMethodMap(object target);
+    private static RemoteRpcException CreateExceptionFromRpcError(JsonRpcMessage response, string targetName);
+    private static JsonRpcMessage CreateError(JToken id, Exception exception);
+    private static Exception StripExceptionToInnerException(Exception exception);
+    private static bool TryGetTaskOfTType(TypeInfo taskTypeInfo, TypeInfo& taskOfTTypeInfo);
+    [AsyncStateMachineAttribute("StreamJsonRpc.JsonRpc/<DispatchIncomingRequestAsync>d__94")]
+private Task`1<JsonRpcMessage> DispatchIncomingRequestAsync(JsonRpcMessage request);
+    private JsonRpcMessage HandleInvocationTaskResult(JToken id, Task t);
+    private void OnJsonRpcDisconnected(JsonRpcDisconnectedEventArgs eventArgs);
+    [AsyncStateMachineAttribute("StreamJsonRpc.JsonRpc/<ReadAndHandleRequestsAsync>d__97")]
+private Task ReadAndHandleRequestsAsync();
+    [AsyncStateMachineAttribute("StreamJsonRpc.JsonRpc/<HandleRpcAsync>d__98")]
+private Task HandleRpcAsync(string json);
+    [AsyncStateMachineAttribute("StreamJsonRpc.JsonRpc/<HandleCancellationNotificationAsync>d__99")]
+private Task HandleCancellationNotificationAsync(JsonRpcMessage rpc);
+    private void CancelPendingRequests();
+    private void CancelPendingOutboundRequest(object state);
+    private Task TransmitAsync(JsonRpcMessage message, CancellationToken cancellationToken);
+    private void ThrowIfConfigurationLocked();
+    [CompilerGeneratedAttribute]
+private JsonRpcMessage <.ctor>b__24_0(Task t, object id);
+    [CompilerGeneratedAttribute]
+internal static bool <TryGetTaskOfTType>g__IsTaskOfT|93_0(TypeInfo typeInfo);
+    [CompilerGeneratedAttribute]
+private void <ReadAndHandleRequestsAsync>b__97_0(Task task, object state);
+}
+public class StreamJsonRpc.JsonRpcDisconnectedEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DisconnectedReason <Reason>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LastMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    public string Description { get; }
+    public DisconnectedReason Reason { get; }
+    public string LastMessage { get; }
+    public Exception Exception { get; }
+    public JsonRpcDisconnectedEventArgs(string description, DisconnectedReason reason);
+    public JsonRpcDisconnectedEventArgs(string description, DisconnectedReason reason, Exception exception);
+    public JsonRpcDisconnectedEventArgs(string description, DisconnectedReason reason, string lastMessage);
+    public JsonRpcDisconnectedEventArgs(string description, DisconnectedReason reason, string lastMessage, Exception exception);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public DisconnectedReason get_Reason();
+    [CompilerGeneratedAttribute]
+public string get_LastMessage();
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+}
+[JsonObjectAttribute("1")]
+internal class StreamJsonRpc.JsonRpcError : object {
+    private static string DataStackFieldName;
+    private static string DataCodeFieldName;
+    [CompilerGeneratedAttribute]
+private int <Code>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Data>k__BackingField;
+    public string ErrorStack { get; }
+    public string ErrorCode { get; }
+    [JsonPropertyAttribute("code")]
+internal int Code { get; private set; }
+    [JsonPropertyAttribute("message")]
+internal string Message { get; private set; }
+    [JsonPropertyAttribute("data")]
+internal JToken Data { get; private set; }
+    internal JsonRpcError(int code, string message);
+    [JsonConstructorAttribute]
+internal JsonRpcError(int code, string message, JToken data);
+    public string get_ErrorStack();
+    public string get_ErrorCode();
+    [CompilerGeneratedAttribute]
+internal int get_Code();
+    [CompilerGeneratedAttribute]
+private void set_Code(int value);
+    [CompilerGeneratedAttribute]
+internal string get_Message();
+    [CompilerGeneratedAttribute]
+private void set_Message(string value);
+    [CompilerGeneratedAttribute]
+internal JToken get_Data();
+    [CompilerGeneratedAttribute]
+private void set_Data(JToken value);
+}
+internal enum StreamJsonRpc.JsonRpcErrorCode : Enum {
+    public int value__;
+    public static JsonRpcErrorCode InvocationError;
+    public static JsonRpcErrorCode NoCallbackObject;
+    public static JsonRpcErrorCode ParseError;
+    public static JsonRpcErrorCode InvalidRequest;
+    public static JsonRpcErrorCode MethodNotFound;
+    public static JsonRpcErrorCode InvalidParams;
+    public static JsonRpcErrorCode InternalError;
+    public static JsonRpcErrorCode RequestCanceled;
+}
+[JsonObjectAttribute("1")]
+internal class StreamJsonRpc.JsonRpcMessage : object {
+    [CompilerGeneratedAttribute]
+private string <JsonRpcVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JsonRpcError <Error>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Parameters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <Result>k__BackingField;
+    [JsonPropertyAttribute("jsonrpc")]
+public string JsonRpcVersion { get; private set; }
+    [JsonPropertyAttribute("method")]
+public string Method { get; private set; }
+    [JsonPropertyAttribute("id")]
+public JToken Id { get; private set; }
+    [JsonPropertyAttribute("error")]
+public JsonRpcError Error { get; private set; }
+    [JsonPropertyAttribute("params")]
+public JToken Parameters { get; public set; }
+    public bool IsRequest { get; }
+    public bool IsResponse { get; }
+    public bool IsError { get; }
+    public bool IsNotification { get; }
+    public int ParameterCount { get; }
+    [JsonPropertyAttribute("result")]
+private JToken Result { get; private set; }
+    private JsonRpcMessage(string method, JToken parameters, object id, string jsonrpc);
+    [CompilerGeneratedAttribute]
+public string get_JsonRpcVersion();
+    [CompilerGeneratedAttribute]
+private void set_JsonRpcVersion(string value);
+    [CompilerGeneratedAttribute]
+public string get_Method();
+    [CompilerGeneratedAttribute]
+private void set_Method(string value);
+    [CompilerGeneratedAttribute]
+public JToken get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(JToken value);
+    [CompilerGeneratedAttribute]
+public JsonRpcError get_Error();
+    [CompilerGeneratedAttribute]
+private void set_Error(JsonRpcError value);
+    [CompilerGeneratedAttribute]
+public JToken get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(JToken value);
+    public bool get_IsRequest();
+    public bool get_IsResponse();
+    public bool get_IsError();
+    public bool get_IsNotification();
+    public int get_ParameterCount();
+    [CompilerGeneratedAttribute]
+private JToken get_Result();
+    [CompilerGeneratedAttribute]
+private void set_Result(JToken value);
+    public static JsonRpcMessage CreateRequest(Nullable`1<int> id, string method, IReadOnlyList`1<object> parameters, JsonSerializer parametersSerializer);
+    public static JsonRpcMessage CreateRequestWithNamedParameters(Nullable`1<int> id, string method, object namedParameters, JsonSerializer parameterSerializer);
+    public static JsonRpcMessage CreateResult(JToken id, object result, JsonSerializer jsonSerializer);
+    public static JsonRpcMessage CreateError(JToken id, JsonRpcErrorCode error, string message);
+    public static JsonRpcMessage CreateError(JToken id, JsonRpcErrorCode error, string message, JObject data);
+    public static JsonRpcMessage CreateError(JToken id, int error, string message);
+    public static JsonRpcMessage CreateError(JToken id, int error, string message, JObject data);
+    public static JsonRpcMessage FromJson(string json, JsonSerializerSettings settings);
+    public static JsonRpcMessage FromJson(JsonReader reader, JsonSerializerSettings settings);
+    public T GetResult(JsonSerializer serializer);
+    public Object[] GetParameters(ParameterInfo[] parameterInfos, JsonSerializer jsonSerializer);
+    public string ToJson(Formatting formatting, JsonSerializerSettings settings);
+}
+[AttributeUsageAttribute("64")]
+public class StreamJsonRpc.JsonRpcMethodAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    public string Name { get; }
+    public JsonRpcMethodAttribute(string name);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+}
+public class StreamJsonRpc.JsonRpcProxyOptions : object {
+    private Func`2<string, string> methodNameTransform;
+    private Func`2<string, string> eventNameTransform;
+    [CompilerGeneratedAttribute]
+private static JsonRpcProxyOptions <Default>k__BackingField;
+    public Func`2<string, string> MethodNameTransform { get; public set; }
+    public Func`2<string, string> EventNameTransform { get; public set; }
+    internal static JsonRpcProxyOptions Default { get; }
+    private static JsonRpcProxyOptions();
+    public Func`2<string, string> get_MethodNameTransform();
+    public void set_MethodNameTransform(Func`2<string, string> value);
+    public Func`2<string, string> get_EventNameTransform();
+    public void set_EventNameTransform(Func`2<string, string> value);
+    [CompilerGeneratedAttribute]
+internal static JsonRpcProxyOptions get_Default();
+}
+public class StreamJsonRpc.JsonRpcTargetOptions : object {
+    [CompilerGeneratedAttribute]
+private Func`2<string, string> <MethodNameTransform>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<string, string> <EventNameTransform>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NotifyClientOfEvents>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static JsonRpcTargetOptions <Default>k__BackingField;
+    public Func`2<string, string> MethodNameTransform { get; public set; }
+    public Func`2<string, string> EventNameTransform { get; public set; }
+    public bool NotifyClientOfEvents { get; public set; }
+    internal static JsonRpcTargetOptions Default { get; }
+    private static JsonRpcTargetOptions();
+    [CompilerGeneratedAttribute]
+public Func`2<string, string> get_MethodNameTransform();
+    [CompilerGeneratedAttribute]
+public void set_MethodNameTransform(Func`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public Func`2<string, string> get_EventNameTransform();
+    [CompilerGeneratedAttribute]
+public void set_EventNameTransform(Func`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public bool get_NotifyClientOfEvents();
+    [CompilerGeneratedAttribute]
+public void set_NotifyClientOfEvents(bool value);
+    [CompilerGeneratedAttribute]
+internal static JsonRpcTargetOptions get_Default();
+}
+[DebuggerDisplayAttribute("{DebuggerDisplay}")]
+internal class StreamJsonRpc.MethodSignature : object {
+    private static ParameterInfo[] EmptyParameterInfoArray;
+    private static StringComparer TypeNameComparer;
+    private ParameterInfo[] parameters;
+    [CompilerGeneratedAttribute]
+private MethodInfo <MethodInfo>k__BackingField;
+    internal MethodInfo MethodInfo { get; }
+    internal ParameterInfo[] Parameters { get; }
+    internal bool IsPublic { get; }
+    internal string Name { get; }
+    internal int RequiredParamCount { get; }
+    internal int TotalParamCountExcludingCancellationToken { get; }
+    internal bool HasCancellationTokenParameter { get; }
+    internal bool HasOutOrRefParameters { get; }
+    [ExcludeFromCodeCoverageAttribute]
+private string DebuggerDisplay { get; }
+    internal MethodSignature(MethodInfo methodInfo);
+    private static MethodSignature();
+    [CompilerGeneratedAttribute]
+internal MethodInfo get_MethodInfo();
+    internal ParameterInfo[] get_Parameters();
+    internal bool get_IsPublic();
+    internal string get_Name();
+    internal int get_RequiredParamCount();
+    internal int get_TotalParamCountExcludingCancellationToken();
+    internal bool get_HasCancellationTokenParameter();
+    internal bool get_HasOutOrRefParameters();
+    private string get_DebuggerDisplay();
+    private sealed virtual override bool System.IEquatable<StreamJsonRpc.MethodSignature>.Equals(MethodSignature other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    private static bool IsCancellationToken(ParameterInfo parameter);
+}
+[DebuggerDisplayAttribute("{DebuggerDisplay}")]
+internal class StreamJsonRpc.MethodSignatureAndTarget : ValueType {
+    [CompilerGeneratedAttribute]
+private MethodSignature <Signature>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <Target>k__BackingField;
+    public MethodSignature Signature { get; }
+    public object Target { get; }
+    [ExcludeFromCodeCoverageAttribute]
+private string DebuggerDisplay { get; }
+    public MethodSignatureAndTarget(MethodInfo method, object target);
+    [CompilerGeneratedAttribute]
+public MethodSignature get_Signature();
+    [CompilerGeneratedAttribute]
+public object get_Target();
+    private string get_DebuggerDisplay();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(MethodSignatureAndTarget other);
+    public virtual int GetHashCode();
+}
+internal static class StreamJsonRpc.ProxyGeneration : object {
+    private static Type[] EmptyTypes;
+    private static AssemblyName ProxyAssemblyName;
+    private static MethodInfo DelegateCombineMethod;
+    private static MethodInfo DelegateRemoveMethod;
+    private static AssemblyBuilder AssemblyBuilder;
+    private static ModuleBuilder ProxyModuleBuilder;
+    private static ConstructorInfo ObjectCtor;
+    private static Dictionary`2<TypeInfo, TypeInfo> GeneratedProxiesByInterface;
+    private static Dictionary`2<TypeInfo, TypeInfo> DisposableGeneratedProxiesByInterface;
+    private static MethodInfo CompareExchangeMethod;
+    private static MethodInfo MethodNameTransformPropertyGetter;
+    private static MethodInfo MethodNameTransformInvoke;
+    private static MethodInfo EventNameTransformPropertyGetter;
+    private static MethodInfo EventNameTransformInvoke;
+    private static ProxyGeneration();
+    internal static TypeInfo Get(TypeInfo serviceInterface, bool disposable);
+    private static void ImplementRaiseEventMethod(ILGenerator il, FieldBuilder evtField, FieldBuilder jsonRpcField);
+    private static void ImplementEventAccessor(ILGenerator il, FieldInfo evtField, MethodInfo combineOrRemoveMethod);
+    private static void VerifySupported(bool condition, string messageFormat, MemberInfo problematicMember, Object[] otherArgs);
+}
+internal class StreamJsonRpc.ReadBufferingStream : Stream {
+    private Stream underlyingStream;
+    private bool disposeUnderlyingStream;
+    private Byte[] buffer;
+    private int start;
+    private int length;
+    private bool endOfStreamEncountered;
+    public bool IsBufferEmpty { get; }
+    public int BufferCapacity { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    private int FirstBlockLength { get; }
+    private int WraparoundBlockLength { get; }
+    public ReadBufferingStream(Stream underlyingStream, int bufferSize, bool disposeUnderlyingStream);
+    public bool get_IsBufferEmpty();
+    public int get_BufferCapacity();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    private int get_FirstBlockLength();
+    private int get_WraparoundBlockLength();
+    public virtual void Flush();
+    [AsyncStateMachineAttribute("StreamJsonRpc.ReadBufferingStream/<FillBufferAsync>d__27")]
+public Task FillBufferAsync(CancellationToken cancellationToken);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    private static void ValidateReadArgs(Byte[] buffer, int offset, int count);
+    private void ConsumeBuffer(int count);
+}
+public class StreamJsonRpc.RemoteInvocationException : RemoteRpcException {
+    [CompilerGeneratedAttribute]
+private string <RemoteStackTrace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteErrorCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JToken <ErrorData>k__BackingField;
+    public string RemoteStackTrace { get; }
+    public string RemoteErrorCode { get; }
+    public JToken ErrorData { get; }
+    public RemoteInvocationException(string message, string remoteStack, string remoteCode);
+    public RemoteInvocationException(string message, string remoteStack, string remoteCode, JToken errorData);
+    protected RemoteInvocationException(SerializationInfo info, StreamingContext context);
+    [CompilerGeneratedAttribute]
+public string get_RemoteStackTrace();
+    [CompilerGeneratedAttribute]
+public string get_RemoteErrorCode();
+    [CompilerGeneratedAttribute]
+public JToken get_ErrorData();
+}
+public class StreamJsonRpc.RemoteMethodNotFoundException : RemoteRpcException {
+    [CompilerGeneratedAttribute]
+private string <TargetMethod>k__BackingField;
+    public string TargetMethod { get; }
+    internal RemoteMethodNotFoundException(string message, string targetMethod);
+    protected RemoteMethodNotFoundException(SerializationInfo info, StreamingContext context);
+    [CompilerGeneratedAttribute]
+public string get_TargetMethod();
+}
+public abstract class StreamJsonRpc.RemoteRpcException : Exception {
+    protected RemoteRpcException(string message);
+    protected RemoteRpcException(string message, Exception innerException);
+    protected RemoteRpcException(SerializationInfo info, StreamingContext context);
+}
+public class StreamJsonRpc.RemoteTargetNotSetException : RemoteRpcException {
+    internal RemoteTargetNotSetException(string message);
+    protected RemoteTargetNotSetException(SerializationInfo info, StreamingContext context);
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class StreamJsonRpc.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string BothReadableWritableAreNull { get; }
+    internal static string ClientProxyTypeArgumentMustBeAnInterface { get; }
+    internal static string ConflictingMethodAttributeValue { get; }
+    internal static string ConflictingMethodNameAttribute { get; }
+    internal static string ConflictMethodSignatureAlreadyRegistered { get; }
+    internal static string DroppingRequestDueToNoTargetObject { get; }
+    internal static string ErrorWritingJsonRpcResult { get; }
+    internal static string FailureDeserializingJsonRpc { get; }
+    internal static string FatalExceptionWasThrown { get; }
+    internal static string FillBufferFirst { get; }
+    internal static string HeaderContentLengthNotParseable { get; }
+    internal static string HeaderValueTooLarge { get; }
+    internal static string InvalidAfterListenHasStarted { get; }
+    internal static string InvalidBeforeListenHasStarted { get; }
+    internal static string JsonRpcCannotBeNull { get; }
+    internal static string MethodHasRefOrOutParameters { get; }
+    internal static string MethodParameterCountDoesNotMatch { get; }
+    internal static string MethodParametersNotCompatible { get; }
+    internal static string MustBeListening { get; }
+    internal static string MustNotBeListening { get; }
+    internal static string NonNegativeIntegerRequired { get; }
+    internal static string ParameterNotObject { get; }
+    internal static string PositiveIntegerRequired { get; }
+    internal static string ReachedEndOfStream { get; }
+    internal static string ReadingJsonRpcStreamFailed { get; }
+    internal static string ResponseIsNotError { get; }
+    internal static string RpcMethodNameNotFound { get; }
+    internal static string StreamDisposed { get; }
+    internal static string StreamMustBeReadable { get; }
+    internal static string StreamMustBeWriteable { get; }
+    internal static string SumOfTwoParametersExceedsArrayLength { get; }
+    internal static string TargetObjectAndMethodStaticFlagMismatch { get; }
+    internal static string TaskNotCompleted { get; }
+    internal static string TaskWasCancelled { get; }
+    internal static string UnableToFindMethod { get; }
+    internal static string UnexpectedErrorProcessingJsonRpc { get; }
+    internal static string UnexpectedTokenReadingHeader { get; }
+    internal static string UnrecognizedIncomingJsonRpc { get; }
+    internal static string UnsupportedEventHandlerTypeOnClientProxyInterface { get; }
+    internal static string UnsupportedGenericMethodsOnClientProxyInterface { get; }
+    internal static string UnsupportedMethodReturnTypeOnClientProxyInterface { get; }
+    internal static string UnsupportedPropertiesOnClientProxyInterface { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_BothReadableWritableAreNull();
+    internal static string get_ClientProxyTypeArgumentMustBeAnInterface();
+    internal static string get_ConflictingMethodAttributeValue();
+    internal static string get_ConflictingMethodNameAttribute();
+    internal static string get_ConflictMethodSignatureAlreadyRegistered();
+    internal static string get_DroppingRequestDueToNoTargetObject();
+    internal static string get_ErrorWritingJsonRpcResult();
+    internal static string get_FailureDeserializingJsonRpc();
+    internal static string get_FatalExceptionWasThrown();
+    internal static string get_FillBufferFirst();
+    internal static string get_HeaderContentLengthNotParseable();
+    internal static string get_HeaderValueTooLarge();
+    internal static string get_InvalidAfterListenHasStarted();
+    internal static string get_InvalidBeforeListenHasStarted();
+    internal static string get_JsonRpcCannotBeNull();
+    internal static string get_MethodHasRefOrOutParameters();
+    internal static string get_MethodParameterCountDoesNotMatch();
+    internal static string get_MethodParametersNotCompatible();
+    internal static string get_MustBeListening();
+    internal static string get_MustNotBeListening();
+    internal static string get_NonNegativeIntegerRequired();
+    internal static string get_ParameterNotObject();
+    internal static string get_PositiveIntegerRequired();
+    internal static string get_ReachedEndOfStream();
+    internal static string get_ReadingJsonRpcStreamFailed();
+    internal static string get_ResponseIsNotError();
+    internal static string get_RpcMethodNameNotFound();
+    internal static string get_StreamDisposed();
+    internal static string get_StreamMustBeReadable();
+    internal static string get_StreamMustBeWriteable();
+    internal static string get_SumOfTwoParametersExceedsArrayLength();
+    internal static string get_TargetObjectAndMethodStaticFlagMismatch();
+    internal static string get_TaskNotCompleted();
+    internal static string get_TaskWasCancelled();
+    internal static string get_UnableToFindMethod();
+    internal static string get_UnexpectedErrorProcessingJsonRpc();
+    internal static string get_UnexpectedTokenReadingHeader();
+    internal static string get_UnrecognizedIncomingJsonRpc();
+    internal static string get_UnsupportedEventHandlerTypeOnClientProxyInterface();
+    internal static string get_UnsupportedGenericMethodsOnClientProxyInterface();
+    internal static string get_UnsupportedMethodReturnTypeOnClientProxyInterface();
+    internal static string get_UnsupportedPropertiesOnClientProxyInterface();
+}
+internal class StreamJsonRpc.TargetMethod : object {
+    private HashSet`1<string> errorMessages;
+    private JsonRpcMessage request;
+    private object target;
+    private MethodInfo method;
+    private Object[] parameters;
+    [CompilerGeneratedAttribute]
+private bool <AcceptsCancellationToken>k__BackingField;
+    internal bool IsFound { get; }
+    internal bool AcceptsCancellationToken { get; private set; }
+    internal string LookupErrorMessage { get; }
+    internal TargetMethod(JsonRpcMessage request, JsonSerializer jsonSerializer, IEnumerable`1<MethodSignatureAndTarget> candidateMethodTargets);
+    internal bool get_IsFound();
+    [CompilerGeneratedAttribute]
+internal bool get_AcceptsCancellationToken();
+    [CompilerGeneratedAttribute]
+private void set_AcceptsCancellationToken(bool value);
+    internal string get_LookupErrorMessage();
+    internal object Invoke(CancellationToken cancellationToken);
+    private static Object[] TryGetParameters(JsonRpcMessage request, MethodSignature method, HashSet`1<string> errors, JsonSerializer jsonSerializer, string requestMethodName);
+    private bool TryAddMethod(JsonRpcMessage request, Dictionary`2<MethodSignatureAndTarget, Object[]> targetMethods, MethodSignatureAndTarget method, JsonSerializer jsonSerializer);
+}
+public class StreamJsonRpc.WebSocketMessageHandler : DelimitedMessageHandler {
+    private ArraySegment`1<byte> readBuffer;
+    private Byte[] writeBuffer;
+    private Decoder readDecoder;
+    [CompilerGeneratedAttribute]
+private WebSocket <WebSocket>k__BackingField;
+    public WebSocket WebSocket { get; }
+    public WebSocketMessageHandler(WebSocket webSocket, int bufferSize);
+    [CompilerGeneratedAttribute]
+public WebSocket get_WebSocket();
+    [AsyncStateMachineAttribute("StreamJsonRpc.WebSocketMessageHandler/<ReadCoreAsync>d__7")]
+protected virtual Task`1<string> ReadCoreAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StreamJsonRpc.WebSocketMessageHandler/<WriteCoreAsync>d__8")]
+protected virtual Task WriteCoreAsync(string content, Encoding contentEncoding, CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+private void <ReadCoreAsync>g__DecodeInput|7_0(<>c__DisplayClass7_0& , <>c__DisplayClass7_1& );
+}
+internal class ThisAssembly : object {
+    internal static string AssemblyVersion;
+    internal static string AssemblyFileVersion;
+    internal static string AssemblyInformationalVersion;
+    internal static string AssemblyName;
+    internal static string AssemblyTitle;
+    internal static string AssemblyConfiguration;
+    internal static string PublicKey;
+    internal static string PublicKeyToken;
+    internal static string RootNamespace;
+}

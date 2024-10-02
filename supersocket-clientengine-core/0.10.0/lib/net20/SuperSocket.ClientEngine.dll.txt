@@ -1,0 +1,627 @@
+public class SuperSocket.ClientEngine.AsyncTcpSession : TcpClientSession {
+    private SocketAsyncEventArgs m_SocketEventArgs;
+    private SocketAsyncEventArgs m_SocketEventArgsSend;
+    protected virtual void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e);
+    protected virtual void SetBuffer(ArraySegment`1<byte> bufferSegment);
+    protected virtual void OnGetSocket(SocketAsyncEventArgs e);
+    private void BeginReceive();
+    private void ProcessReceive(SocketAsyncEventArgs e);
+    private void StartReceive();
+    protected virtual void SendInternal(PosList`1<ArraySegment`1<byte>> items);
+    private void Sending_Completed(object sender, SocketAsyncEventArgs e);
+    protected virtual void OnClosed();
+}
+public abstract class SuperSocket.ClientEngine.AuthenticatedStreamTcpSession : TcpClientSession {
+    private AuthenticatedStream m_Stream;
+    [CompilerGeneratedAttribute]
+private SecurityOption <Security>k__BackingField;
+    public SecurityOption Security { get; public set; }
+    [CompilerGeneratedAttribute]
+public SecurityOption get_Security();
+    [CompilerGeneratedAttribute]
+public void set_Security(SecurityOption value);
+    protected virtual void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e);
+    protected abstract virtual void StartAuthenticatedStream(Socket client);
+    protected virtual void OnGetSocket(SocketAsyncEventArgs e);
+    protected void OnAuthenticatedStreamConnected(AuthenticatedStream stream);
+    private void OnDataRead(IAsyncResult result);
+    private void BeginRead();
+    private void StartRead();
+    protected virtual bool IsIgnorableException(Exception e);
+    protected virtual void SendInternal(PosList`1<ArraySegment`1<byte>> items);
+    private void OnWriteComplete(IAsyncResult result);
+    public virtual void Close();
+}
+public abstract class SuperSocket.ClientEngine.ClientSession : object {
+    public static int DefaultReceiveBufferSize;
+    [CompilerGeneratedAttribute]
+private Socket <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EndPoint <LocalEndPoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsConnected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <SendingQueueSize>k__BackingField;
+    private EventHandler m_Closed;
+    private EventHandler`1<ErrorEventArgs> m_Error;
+    private EventHandler m_Connected;
+    private EventHandler`1<DataEventArgs> m_DataReceived;
+    private DataEventArgs m_DataArgs;
+    [CompilerGeneratedAttribute]
+private int <ReceiveBufferSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProxyConnector <Proxy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ArraySegment`1<byte> <Buffer>k__BackingField;
+    protected Socket Client { get; protected set; }
+    private Socket SuperSocket.ClientEngine.IClientSession.Socket { get; }
+    public EndPoint LocalEndPoint { get; public set; }
+    public bool IsConnected { get; private set; }
+    public bool NoDelay { get; public set; }
+    public int SendingQueueSize { get; public set; }
+    public int ReceiveBufferSize { get; public set; }
+    public IProxyConnector Proxy { get; public set; }
+    protected ArraySegment`1<byte> Buffer { get; protected set; }
+    [CompilerGeneratedAttribute]
+protected Socket get_Client();
+    [CompilerGeneratedAttribute]
+protected void set_Client(Socket value);
+    private sealed virtual override Socket SuperSocket.ClientEngine.IClientSession.get_Socket();
+    [CompilerGeneratedAttribute]
+public virtual EndPoint get_LocalEndPoint();
+    [CompilerGeneratedAttribute]
+public virtual void set_LocalEndPoint(EndPoint value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsConnected();
+    [CompilerGeneratedAttribute]
+private void set_IsConnected(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_SendingQueueSize();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_SendingQueueSize(int value);
+    public abstract virtual void Connect(EndPoint remoteEndPoint);
+    public abstract virtual bool TrySend(ArraySegment`1<byte> segment);
+    public abstract virtual bool TrySend(IList`1<ArraySegment`1<byte>> segments);
+    public sealed virtual void Send(Byte[] data, int offset, int length);
+    public sealed virtual void Send(ArraySegment`1<byte> segment);
+    public sealed virtual void Send(IList`1<ArraySegment`1<byte>> segments);
+    public abstract virtual void Close();
+    public sealed virtual void add_Closed(EventHandler value);
+    public sealed virtual void remove_Closed(EventHandler value);
+    protected virtual void OnClosed();
+    public sealed virtual void add_Error(EventHandler`1<ErrorEventArgs> value);
+    public sealed virtual void remove_Error(EventHandler`1<ErrorEventArgs> value);
+    protected virtual void OnError(Exception e);
+    public sealed virtual void add_Connected(EventHandler value);
+    public sealed virtual void remove_Connected(EventHandler value);
+    protected virtual void OnConnected();
+    public sealed virtual void add_DataReceived(EventHandler`1<DataEventArgs> value);
+    public sealed virtual void remove_DataReceived(EventHandler`1<DataEventArgs> value);
+    protected virtual void OnDataReceived(Byte[] data, int offset, int length);
+    [CompilerGeneratedAttribute]
+public virtual int get_ReceiveBufferSize();
+    [CompilerGeneratedAttribute]
+public virtual void set_ReceiveBufferSize(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProxyConnector get_Proxy();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Proxy(IProxyConnector value);
+    [CompilerGeneratedAttribute]
+protected ArraySegment`1<byte> get_Buffer();
+    [CompilerGeneratedAttribute]
+protected void set_Buffer(ArraySegment`1<byte> value);
+    private sealed virtual override void SuperSocket.ClientEngine.IBufferSetter.SetBuffer(ArraySegment`1<byte> bufferSegment);
+    protected virtual void SetBuffer(ArraySegment`1<byte> bufferSegment);
+}
+public class SuperSocket.ClientEngine.ConcurrentBatchQueue`1 : object {
+    private object m_Entity;
+    private Entity<T> m_BackEntity;
+    private static T m_Null;
+    private Func`2<T, bool> m_NullValidator;
+    private bool m_Rebuilding;
+    public bool IsEmpty { get; }
+    public int Count { get; }
+    public ConcurrentBatchQueue`1(int capacity);
+    public ConcurrentBatchQueue`1(int capacity, Func`2<T, bool> nullValidator);
+    public ConcurrentBatchQueue`1(T[] array);
+    public ConcurrentBatchQueue`1(T[] array, Func`2<T, bool> nullValidator);
+    private static ConcurrentBatchQueue`1();
+    public sealed virtual bool Enqueue(T item);
+    private bool TryEnqueue(T item, Boolean& full);
+    public sealed virtual bool Enqueue(IList`1<T> items);
+    private bool TryEnqueue(IList`1<T> items, Boolean& full);
+    private void EnsureNotRebuild();
+    public sealed virtual bool TryDequeue(IList`1<T> outputItems);
+    public sealed virtual bool get_IsEmpty();
+    public sealed virtual int get_Count();
+}
+[ExtensionAttribute]
+public static class SuperSocket.ClientEngine.ConnectAsyncExtension : object {
+    private static void SocketAsyncEventCompleted(object sender, SocketAsyncEventArgs e);
+    private static SocketAsyncEventArgs CreateSocketAsyncEventArgs(EndPoint remoteEndPoint, ConnectedCallback callback, object state);
+    [ExtensionAttribute]
+private static void ConnectAsyncInternal(EndPoint remoteEndPoint, EndPoint localEndPoint, ConnectedCallback callback, object state);
+    private static IPAddress GetNextAddress(DnsConnectState state, Socket& attempSocket);
+    private static void CreateAttempSocket(DnsConnectState connectState);
+    private static void OnGetHostAddresses(IAsyncResult result);
+    private static void SocketConnectCompleted(object sender, SocketAsyncEventArgs e);
+    private static void ClearSocketAsyncEventArgs(SocketAsyncEventArgs e);
+    [ExtensionAttribute]
+public static void ConnectAsync(EndPoint remoteEndPoint, EndPoint localEndPoint, ConnectedCallback callback, object state);
+}
+public class SuperSocket.ClientEngine.ConnectedCallback : MulticastDelegate {
+    public ConnectedCallback(object object, IntPtr method);
+    public virtual void Invoke(Socket socket, object state, SocketAsyncEventArgs e, Exception exception);
+    public virtual IAsyncResult BeginInvoke(Socket socket, object state, SocketAsyncEventArgs e, Exception exception, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class SuperSocket.ClientEngine.DataEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private Byte[] <Data>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Offset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    public Byte[] Data { get; public set; }
+    public int Offset { get; public set; }
+    public int Length { get; public set; }
+    [CompilerGeneratedAttribute]
+public Byte[] get_Data();
+    [CompilerGeneratedAttribute]
+public void set_Data(Byte[] value);
+    [CompilerGeneratedAttribute]
+public int get_Offset();
+    [CompilerGeneratedAttribute]
+public void set_Offset(int value);
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+public void set_Length(int value);
+}
+public class SuperSocket.ClientEngine.ErrorEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    public Exception Exception { get; private set; }
+    public ErrorEventArgs(Exception exception);
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+    [CompilerGeneratedAttribute]
+private void set_Exception(Exception value);
+}
+[ExtensionAttribute]
+public static class SuperSocket.ClientEngine.Extensions : object {
+    private static Random m_Random;
+    private static Extensions();
+    [ExtensionAttribute]
+public static int IndexOf(IList`1<T> source, T target, int pos, int length);
+    [ExtensionAttribute]
+public static Nullable`1<int> SearchMark(IList`1<T> source, T[] mark);
+    [ExtensionAttribute]
+public static Nullable`1<int> SearchMark(IList`1<T> source, int offset, int length, T[] mark);
+    [ExtensionAttribute]
+public static Nullable`1<int> SearchMark(IList`1<T> source, int offset, int length, T[] mark, int matched);
+    [ExtensionAttribute]
+public static int SearchMark(IList`1<T> source, int offset, int length, SearchMarkState`1<T> searchState);
+    [ExtensionAttribute]
+public static int StartsWith(IList`1<T> source, T[] mark);
+    [ExtensionAttribute]
+public static int StartsWith(IList`1<T> source, int offset, int length, T[] mark);
+    [ExtensionAttribute]
+public static bool EndsWith(IList`1<T> source, T[] mark);
+    [ExtensionAttribute]
+public static bool EndsWith(IList`1<T> source, int offset, int length, T[] mark);
+    [ExtensionAttribute]
+public static T[] CloneRange(T[] source, int offset, int length);
+    [ExtensionAttribute]
+public static T[] RandomOrder(T[] source);
+    [ExtensionAttribute]
+public static string GetValue(NameValueCollection collection, string key);
+    [ExtensionAttribute]
+public static string GetValue(NameValueCollection collection, string key, string defaultValue);
+}
+public interface SuperSocket.ClientEngine.IBatchQueue`1 {
+    public bool IsEmpty { get; }
+    public int Count { get; }
+    public abstract virtual bool Enqueue(T item);
+    public abstract virtual bool Enqueue(IList`1<T> items);
+    public abstract virtual bool TryDequeue(IList`1<T> outputItems);
+    public abstract virtual bool get_IsEmpty();
+    public abstract virtual int get_Count();
+}
+public interface SuperSocket.ClientEngine.IBufferSetter {
+    public abstract virtual void SetBuffer(ArraySegment`1<byte> bufferSegment);
+}
+public interface SuperSocket.ClientEngine.IClientSession {
+    public Socket Socket { get; }
+    public IProxyConnector Proxy { get; public set; }
+    public int ReceiveBufferSize { get; public set; }
+    public int SendingQueueSize { get; public set; }
+    public bool IsConnected { get; }
+    public abstract virtual Socket get_Socket();
+    public abstract virtual IProxyConnector get_Proxy();
+    public abstract virtual void set_Proxy(IProxyConnector value);
+    public abstract virtual int get_ReceiveBufferSize();
+    public abstract virtual void set_ReceiveBufferSize(int value);
+    public abstract virtual int get_SendingQueueSize();
+    public abstract virtual void set_SendingQueueSize(int value);
+    public abstract virtual bool get_IsConnected();
+    public abstract virtual void Connect(EndPoint remoteEndPoint);
+    public abstract virtual void Send(ArraySegment`1<byte> segment);
+    public abstract virtual void Send(IList`1<ArraySegment`1<byte>> segments);
+    public abstract virtual void Send(Byte[] data, int offset, int length);
+    public abstract virtual bool TrySend(ArraySegment`1<byte> segment);
+    public abstract virtual bool TrySend(IList`1<ArraySegment`1<byte>> segments);
+    public abstract virtual void Close();
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Connected(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Connected(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Closed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Closed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Error(EventHandler`1<ErrorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Error(EventHandler`1<ErrorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_DataReceived(EventHandler`1<DataEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_DataReceived(EventHandler`1<DataEventArgs> value);
+}
+public interface SuperSocket.ClientEngine.IPosList`1 {
+    public int Position { get; public set; }
+    public abstract virtual int get_Position();
+    public abstract virtual void set_Position(int value);
+}
+public interface SuperSocket.ClientEngine.IProxyConnector {
+    public abstract virtual void Connect(EndPoint remoteEndPoint);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Completed(EventHandler`1<ProxyEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Completed(EventHandler`1<ProxyEventArgs> value);
+}
+public class SuperSocket.ClientEngine.PosList`1 : List`1<T> {
+    [CompilerGeneratedAttribute]
+private int <Position>k__BackingField;
+    public int Position { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Position();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Position(int value);
+}
+public class SuperSocket.ClientEngine.Proxy.HttpConnectProxy : ProxyConnectorBase {
+    private static string m_RequestTemplate;
+    private static string m_ResponsePrefix;
+    private static char m_Space;
+    private static Byte[] m_LineSeparator;
+    private int m_ReceiveBufferSize;
+    private static HttpConnectProxy();
+    public HttpConnectProxy(EndPoint proxyEndPoint);
+    public HttpConnectProxy(EndPoint proxyEndPoint, string targetHostName);
+    public HttpConnectProxy(EndPoint proxyEndPoint, int receiveBufferSize, string targetHostName);
+    public virtual void Connect(EndPoint remoteEndPoint);
+    protected virtual void ProcessConnect(Socket socket, object targetEndPoint, SocketAsyncEventArgs e, Exception exception);
+    protected virtual void ProcessSend(SocketAsyncEventArgs e);
+    protected virtual void ProcessReceive(SocketAsyncEventArgs e);
+}
+public abstract class SuperSocket.ClientEngine.Proxy.ProxyConnectorBase : object {
+    [CompilerGeneratedAttribute]
+private EndPoint <ProxyEndPoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TargetHostHame>k__BackingField;
+    protected static Encoding ASCIIEncoding;
+    private EventHandler`1<ProxyEventArgs> m_Completed;
+    public EndPoint ProxyEndPoint { get; private set; }
+    public string TargetHostHame { get; private set; }
+    public ProxyConnectorBase(EndPoint proxyEndPoint);
+    public ProxyConnectorBase(EndPoint proxyEndPoint, string targetHostHame);
+    private static ProxyConnectorBase();
+    [CompilerGeneratedAttribute]
+public EndPoint get_ProxyEndPoint();
+    [CompilerGeneratedAttribute]
+private void set_ProxyEndPoint(EndPoint value);
+    [CompilerGeneratedAttribute]
+public string get_TargetHostHame();
+    [CompilerGeneratedAttribute]
+private void set_TargetHostHame(string value);
+    public abstract virtual void Connect(EndPoint remoteEndPoint);
+    public sealed virtual void add_Completed(EventHandler`1<ProxyEventArgs> value);
+    public sealed virtual void remove_Completed(EventHandler`1<ProxyEventArgs> value);
+    protected void OnCompleted(ProxyEventArgs args);
+    protected void OnException(Exception exception);
+    protected void OnException(string exception);
+    protected bool ValidateAsyncResult(SocketAsyncEventArgs e);
+    protected void AsyncEventArgsCompleted(object sender, SocketAsyncEventArgs e);
+    protected void StartSend(Socket socket, SocketAsyncEventArgs e);
+    protected virtual void StartReceive(Socket socket, SocketAsyncEventArgs e);
+    protected abstract virtual void ProcessConnect(Socket socket, object targetEndPoint, SocketAsyncEventArgs e, Exception exception);
+    protected abstract virtual void ProcessSend(SocketAsyncEventArgs e);
+    protected abstract virtual void ProcessReceive(SocketAsyncEventArgs e);
+}
+internal class SuperSocket.ClientEngine.Proxy.ReceiveState : object {
+    [CompilerGeneratedAttribute]
+private Byte[] <Buffer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    public Byte[] Buffer { get; private set; }
+    public int Length { get; public set; }
+    public ReceiveState(Byte[] buffer);
+    [CompilerGeneratedAttribute]
+public Byte[] get_Buffer();
+    [CompilerGeneratedAttribute]
+private void set_Buffer(Byte[] value);
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+public void set_Length(int value);
+}
+public class SuperSocket.ClientEngine.Proxy.Socks4aConnector : Socks4Connector {
+    private static Random m_Random;
+    public Socks4aConnector(EndPoint proxyEndPoint, string userID);
+    private static Socks4aConnector();
+    public virtual void Connect(EndPoint remoteEndPoint);
+    protected virtual Byte[] GetSendingBuffer(EndPoint targetEndPoint, Int32& actualLength);
+    protected virtual void HandleFaultStatus(byte status);
+}
+public class SuperSocket.ClientEngine.Proxy.Socks4Connector : ProxyConnectorBase {
+    [CompilerGeneratedAttribute]
+private string <UserID>k__BackingField;
+    private static int m_ValidResponseSize;
+    public string UserID { get; private set; }
+    public Socks4Connector(EndPoint proxyEndPoint, string userID);
+    [CompilerGeneratedAttribute]
+public string get_UserID();
+    [CompilerGeneratedAttribute]
+private void set_UserID(string value);
+    public virtual void Connect(EndPoint remoteEndPoint);
+    protected virtual Byte[] GetSendingBuffer(EndPoint targetEndPoint, Int32& actualLength);
+    protected virtual void ProcessConnect(Socket socket, object targetEndPoint, SocketAsyncEventArgs e, Exception exception);
+    protected virtual void ProcessSend(SocketAsyncEventArgs e);
+    protected virtual void ProcessReceive(SocketAsyncEventArgs e);
+    protected virtual void HandleFaultStatus(byte status);
+}
+public class SuperSocket.ClientEngine.Proxy.Socks5Connector : ProxyConnectorBase {
+    private ArraySegment`1<byte> m_UserNameAuthenRequest;
+    private static Byte[] m_AuthenHandshake;
+    public Socks5Connector(EndPoint proxyEndPoint);
+    public Socks5Connector(EndPoint proxyEndPoint, string username, string password);
+    private static Socks5Connector();
+    public virtual void Connect(EndPoint remoteEndPoint);
+    protected virtual void ProcessConnect(Socket socket, object targetEndPoint, SocketAsyncEventArgs e, Exception exception);
+    protected virtual void ProcessSend(SocketAsyncEventArgs e);
+    private bool ProcessAuthenticationResponse(Socket socket, SocketAsyncEventArgs e);
+    protected virtual void ProcessReceive(SocketAsyncEventArgs e);
+    private void OnGetFullResponse(SocksContext context);
+    private void SendHandshake(SocketAsyncEventArgs e);
+    private void AutheticateWithUserNamePassword(SocketAsyncEventArgs e);
+}
+public class SuperSocket.ClientEngine.ProxyEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private bool <Connected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Socket <Socket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TargetHostName>k__BackingField;
+    public bool Connected { get; private set; }
+    public Socket Socket { get; private set; }
+    public Exception Exception { get; private set; }
+    public string TargetHostName { get; private set; }
+    public ProxyEventArgs(Socket socket);
+    public ProxyEventArgs(Socket socket, string targetHostHame);
+    public ProxyEventArgs(Exception exception);
+    public ProxyEventArgs(bool connected, Socket socket, string targetHostName, Exception exception);
+    [CompilerGeneratedAttribute]
+public bool get_Connected();
+    [CompilerGeneratedAttribute]
+private void set_Connected(bool value);
+    [CompilerGeneratedAttribute]
+public Socket get_Socket();
+    [CompilerGeneratedAttribute]
+private void set_Socket(Socket value);
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+    [CompilerGeneratedAttribute]
+private void set_Exception(Exception value);
+    [CompilerGeneratedAttribute]
+public string get_TargetHostName();
+    [CompilerGeneratedAttribute]
+private void set_TargetHostName(string value);
+}
+public class SuperSocket.ClientEngine.SearchMarkState`1 : object {
+    [CompilerGeneratedAttribute]
+private T[] <Mark>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Matched>k__BackingField;
+    public T[] Mark { get; private set; }
+    public int Matched { get; public set; }
+    public SearchMarkState`1(T[] mark);
+    [CompilerGeneratedAttribute]
+public T[] get_Mark();
+    [CompilerGeneratedAttribute]
+private void set_Mark(T[] value);
+    [CompilerGeneratedAttribute]
+public int get_Matched();
+    [CompilerGeneratedAttribute]
+public void set_Matched(int value);
+}
+public class SuperSocket.ClientEngine.SecurityOption : object {
+    [CompilerGeneratedAttribute]
+private SslProtocols <EnabledSslProtocols>k__BackingField;
+    [CompilerGeneratedAttribute]
+private X509CertificateCollection <Certificates>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowUnstrustedCertificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowNameMismatchCertificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowCertificateChainErrors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NetworkCredential <Credential>k__BackingField;
+    public SslProtocols EnabledSslProtocols { get; public set; }
+    public X509CertificateCollection Certificates { get; public set; }
+    public bool AllowUnstrustedCertificate { get; public set; }
+    public bool AllowNameMismatchCertificate { get; public set; }
+    public bool AllowCertificateChainErrors { get; public set; }
+    public NetworkCredential Credential { get; public set; }
+    public SecurityOption(SslProtocols enabledSslProtocols);
+    public SecurityOption(SslProtocols enabledSslProtocols, X509Certificate certificate);
+    public SecurityOption(SslProtocols enabledSslProtocols, X509CertificateCollection certificates);
+    public SecurityOption(NetworkCredential credential);
+    [CompilerGeneratedAttribute]
+public SslProtocols get_EnabledSslProtocols();
+    [CompilerGeneratedAttribute]
+public void set_EnabledSslProtocols(SslProtocols value);
+    [CompilerGeneratedAttribute]
+public X509CertificateCollection get_Certificates();
+    [CompilerGeneratedAttribute]
+public void set_Certificates(X509CertificateCollection value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowUnstrustedCertificate();
+    [CompilerGeneratedAttribute]
+public void set_AllowUnstrustedCertificate(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowNameMismatchCertificate();
+    [CompilerGeneratedAttribute]
+public void set_AllowNameMismatchCertificate(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowCertificateChainErrors();
+    [CompilerGeneratedAttribute]
+public void set_AllowCertificateChainErrors(bool value);
+    [CompilerGeneratedAttribute]
+public NetworkCredential get_Credential();
+    [CompilerGeneratedAttribute]
+public void set_Credential(NetworkCredential value);
+    private static SslProtocols GetDefaultProtocol();
+}
+public class SuperSocket.ClientEngine.SslStreamTcpSession : AuthenticatedStreamTcpSession {
+    protected virtual void StartAuthenticatedStream(Socket client);
+    private void OnAuthenticated(IAsyncResult result);
+    private bool ValidateRemoteCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
+}
+public abstract class SuperSocket.ClientEngine.TcpClientSession : ClientSession {
+    [CompilerGeneratedAttribute]
+private string <HostName>k__BackingField;
+    private bool m_InConnecting;
+    private IBatchQueue`1<ArraySegment`1<byte>> m_SendingQueue;
+    private PosList`1<ArraySegment`1<byte>> m_SendingItems;
+    private int m_IsSending;
+    protected string HostName { get; private set; }
+    public EndPoint LocalEndPoint { get; public set; }
+    public int ReceiveBufferSize { get; public set; }
+    protected bool IsSending { get; }
+    [CompilerGeneratedAttribute]
+protected string get_HostName();
+    [CompilerGeneratedAttribute]
+private void set_HostName(string value);
+    public virtual EndPoint get_LocalEndPoint();
+    public virtual void set_LocalEndPoint(EndPoint value);
+    public virtual int get_ReceiveBufferSize();
+    public virtual void set_ReceiveBufferSize(int value);
+    protected virtual bool IsIgnorableException(Exception e);
+    protected bool IsIgnorableSocketError(int errorCode);
+    protected abstract virtual void SocketEventArgsCompleted(object sender, SocketAsyncEventArgs e);
+    public virtual void Connect(EndPoint remoteEndPoint);
+    private void Proxy_Completed(object sender, ProxyEventArgs e);
+    protected void ProcessConnect(Socket socket, object state, SocketAsyncEventArgs e, Exception exception);
+    private string GetHostOfEndPoint(EndPoint endPoint);
+    protected abstract virtual void OnGetSocket(SocketAsyncEventArgs e);
+    protected bool EnsureSocketClosed();
+    protected bool EnsureSocketClosed(Socket prevClient);
+    private bool DetectConnected();
+    private IBatchQueue`1<ArraySegment`1<byte>> GetSendingQueue();
+    private PosList`1<ArraySegment`1<byte>> GetSendingItems();
+    protected bool get_IsSending();
+    public virtual bool TrySend(ArraySegment`1<byte> segment);
+    public virtual bool TrySend(IList`1<ArraySegment`1<byte>> segments);
+    private void DequeueSend();
+    protected abstract virtual void SendInternal(PosList`1<ArraySegment`1<byte>> items);
+    protected void OnSendingCompleted();
+    public virtual void Close();
+}
+public class System.Collections.Concurrent.ConcurrentQueue`1 : object {
+    private Queue`1<T> m_Queue;
+    private object m_SyncRoot;
+    public ConcurrentQueue`1(int capacity);
+    public ConcurrentQueue`1(IEnumerable`1<T> collection);
+    public void Enqueue(T item);
+    public bool TryDequeue(T& item);
+}
+public class System.Func`1 : MulticastDelegate {
+    public Func`1(object object, IntPtr method);
+    public virtual TResult Invoke();
+    public virtual IAsyncResult BeginInvoke(AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+public class System.Func`2 : MulticastDelegate {
+    public Func`2(object object, IntPtr method);
+    public virtual TResult Invoke(T t);
+    public virtual IAsyncResult BeginInvoke(T t, AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+public class System.Func`3 : MulticastDelegate {
+    public Func`3(object object, IntPtr method);
+    public virtual TResult Invoke(T1 t1, T2 t2);
+    public virtual IAsyncResult BeginInvoke(T1 t1, T2 t2, AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+public class System.Func`4 : MulticastDelegate {
+    public Func`4(object object, IntPtr method);
+    public virtual TResult Invoke(T1 t1, T2 t2, T3 t3);
+    public virtual IAsyncResult BeginInvoke(T1 t1, T2 t2, T3 t3, AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+public class System.Func`5 : MulticastDelegate {
+    public Func`5(object object, IntPtr method);
+    public virtual TResult Invoke(T1 t1, T2 t2, T3 t3, T4 t4);
+    public virtual IAsyncResult BeginInvoke(T1 t1, T2 t2, T3 t3, T4 t4, AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+internal class System.Linq.DelegateComparer`2 : object {
+    private Func`2<TSource, TKey> m_Getter;
+    public DelegateComparer`2(Func`2<TSource, TKey> getter);
+    public sealed virtual int Compare(TSource x, TSource y);
+}
+[ExtensionAttribute]
+public static class System.Linq.LINQ : object {
+    [ExtensionAttribute]
+public static int Count(IEnumerable`1<TSource> source, Predicate`1<TSource> predicate);
+    [ExtensionAttribute]
+public static bool Contains(IEnumerable`1<TSource> source, TSource target);
+    [ExtensionAttribute]
+public static TSource FirstOrDefault(IEnumerable`1<TSource> source, Predicate`1<TSource> predicate);
+    [ExtensionAttribute]
+public static int Sum(IEnumerable`1<TSource> source, Func`2<TSource, int> getter);
+    [ExtensionAttribute]
+public static IEnumerable`1<TSource> OrderByDescending(IEnumerable`1<TSource> source, Func`2<TSource, TKey> getter);
+    [ExtensionAttribute]
+public static TSource[] ToArray(IEnumerable`1<TSource> source);
+}
+public class System.Net.DnsEndPoint : EndPoint {
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Port>k__BackingField;
+    public string Host { get; private set; }
+    public int Port { get; private set; }
+    public DnsEndPoint(string host, int port);
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+private void set_Host(string value);
+    [CompilerGeneratedAttribute]
+public int get_Port();
+    [CompilerGeneratedAttribute]
+private void set_Port(int value);
+}
+[AttributeUsageAttribute("64")]
+public class System.Runtime.CompilerServices.ExtensionAttribute : Attribute {
+}

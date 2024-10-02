@@ -1,0 +1,986 @@
+public class Smidge.BundleFileSetGenerator : object {
+    private FileProcessingConventions _conventions;
+    private ISmidgeFileSystem _fileSystem;
+    public BundleFileSetGenerator(ISmidgeFileSystem fileSystem, FileProcessingConventions conventions);
+    public sealed virtual IEnumerable`1<IWebFile> GetOrderedFileSet(Bundle bundle, PreProcessPipeline pipeline);
+    public sealed virtual IEnumerable`1<IWebFile> GetOrderedFileSet(IEnumerable`1<IWebFile> files, PreProcessPipeline pipeline);
+    private IWebFile ApplyConventions(IWebFile file);
+    private void ValidateFile(IWebFile file);
+}
+public class Smidge.BundleManager : object {
+    private IOptions`1<SmidgeOptions> _smidgeOptions;
+    private ILogger _logger;
+    private ConcurrentDictionary`2<string, Bundle> _bundles;
+    public BundleEnvironmentOptions DefaultBundleOptions { get; }
+    public PreProcessPipelineFactory PipelineFactory { get; }
+    public BundleManager(IOptions`1<SmidgeOptions> smidgeOptions, ILogger`1<BundleManager> logger);
+    public sealed virtual BundleEnvironmentOptions get_DefaultBundleOptions();
+    public sealed virtual PreProcessPipelineFactory get_PipelineFactory();
+    public sealed virtual Bundle Create(string bundleName, JavaScriptFile[] jsFiles);
+    public sealed virtual Bundle Create(string bundleName, CssFile[] cssFiles);
+    public sealed virtual Bundle Create(string bundleName, WebFileType type, String[] paths);
+    public sealed virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, JavaScriptFile[] jsFiles);
+    public sealed virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, CssFile[] cssFiles);
+    public sealed virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, String[] paths);
+    public sealed virtual bool TryGetValue(string key, Bundle& value);
+    public sealed virtual IEnumerable`1<string> GetBundleNames(WebFileType type);
+    public sealed virtual IEnumerable`1<Bundle> GetBundles(WebFileType type);
+    public sealed virtual bool Exists(string bundleName);
+    public sealed virtual void AddToBundle(string bundleName, CssFile file);
+    public sealed virtual void AddToBundle(string bundleName, JavaScriptFile file);
+    public sealed virtual Bundle GetBundle(string bundleName);
+}
+[ExtensionAttribute]
+public static class Smidge.BundleManagerExtensions : object {
+    [ExtensionAttribute]
+public static Bundle CreateJs(IBundleManager bundleManager, string bundleName, String[] paths);
+    [ExtensionAttribute]
+public static Bundle CreateJs(IBundleManager bundleManager, string bundleName, PreProcessPipeline pipeline, String[] paths);
+    [ExtensionAttribute]
+public static Bundle CreateCss(IBundleManager bundleManager, string bundleName, String[] paths);
+    [ExtensionAttribute]
+public static Bundle CreateCss(IBundleManager bundleManager, string bundleName, PreProcessPipeline pipeline, String[] paths);
+}
+public class Smidge.BundleNotFoundException : Exception {
+    [CompilerGeneratedAttribute]
+private string <BundleName>k__BackingField;
+    public string BundleName { get; public set; }
+    public string Message { get; }
+    public BundleNotFoundException(string bundleName);
+    [CompilerGeneratedAttribute]
+public string get_BundleName();
+    [CompilerGeneratedAttribute]
+public void set_BundleName(string value);
+    public virtual string get_Message();
+}
+public class Smidge.Cache.AppDomainLifetimeCacheBuster : object {
+    private static Lazy`1<string> _value;
+    public sealed virtual string GetValue();
+}
+public class Smidge.Cache.CacheBusterResolver : object {
+    private IEnumerable`1<ICacheBuster> _cacheBusters;
+    public CacheBusterResolver(IEnumerable`1<ICacheBuster> cacheBusters);
+    public ICacheBuster GetCacheBuster(Type busterType);
+}
+public class Smidge.Cache.ConfigCacheBuster : object {
+    private ISmidgeConfig _config;
+    public bool PersistProcessedFiles { get; }
+    public ConfigCacheBuster(ISmidgeConfig config);
+    public sealed virtual string GetValue();
+    public virtual bool get_PersistProcessedFiles();
+}
+public interface Smidge.Cache.ICacheBuster {
+    public abstract virtual string GetValue();
+}
+public interface Smidge.Cache.ICacheFileSystem {
+    public abstract virtual IFileInfo GetRequiredFileInfo(string filePath);
+    public abstract virtual Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey);
+    public abstract virtual IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, String& filePath);
+    public abstract virtual IFileInfo GetCacheFile(IWebFile file, Func`1<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, String& filePath);
+    public abstract virtual Task WriteFileAsync(string filePath, string contents);
+    public abstract virtual Task WriteFileAsync(string filePath, Stream contents);
+}
+public class Smidge.Cache.PhysicalFileCacheFileSystem : object {
+    private IHasher _hasher;
+    private PhysicalFileProvider _fileProvider;
+    public PhysicalFileCacheFileSystem(PhysicalFileProvider cacheFileProvider, IHasher hasher);
+    public static PhysicalFileCacheFileSystem CreatePhysicalFileCacheFileSystem(IHasher hasher, ISmidgeConfig config, IHostEnvironment hosting);
+    public sealed virtual IFileInfo GetRequiredFileInfo(string filePath);
+    private string GetCompositeFilePath(string cacheBusterValue, CompressionType type, string filesetKey);
+    public sealed virtual Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey);
+    public sealed virtual IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, String& filePath);
+    public sealed virtual Task WriteFileAsync(string filePath, string contents);
+    [AsyncStateMachineAttribute("Smidge.Cache.PhysicalFileCacheFileSystem/<WriteFileAsync>d__9")]
+public sealed virtual Task WriteFileAsync(string filePath, Stream contents);
+    private string GetFullFilePathForWriting(string filePath);
+    public sealed virtual IFileInfo GetCacheFile(IWebFile file, Func`1<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, String& filePath);
+}
+public class Smidge.Cache.TimestampCacheBuster : object {
+    public sealed virtual string GetValue();
+}
+public class Smidge.CompositeFiles.BundleContext : object {
+    private List`1<Func`1<Task`1<string>>> _appenders;
+    private List`1<Func`1<Task`1<string>>> _prependers;
+    private string _bundleCompositeFilePath;
+    [CompilerGeneratedAttribute]
+private IRequestModel <BundleRequest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, object> <Items>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheBusterValue>k__BackingField;
+    public IRequestModel BundleRequest { get; }
+    public IDictionary`2<string, object> Items { get; private set; }
+    public string BundleCompositeFilePath { get; }
+    public string BundleName { get; }
+    public string FileExtension { get; }
+    public string CacheBusterValue { get; }
+    private BundleContext(string cacheBusterValue);
+    public BundleContext(string cacheBusterValue, IRequestModel bundleRequest, string bundleCompositeFilePath);
+    public static BundleContext CreateEmpty(string cacheBusterValue);
+    [CompilerGeneratedAttribute]
+public IRequestModel get_BundleRequest();
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, object> get_Items();
+    [CompilerGeneratedAttribute]
+private void set_Items(IDictionary`2<string, object> value);
+    public string get_BundleCompositeFilePath();
+    public string get_BundleName();
+    public string get_FileExtension();
+    [CompilerGeneratedAttribute]
+public string get_CacheBusterValue();
+    public void AddAppender(Func`1<Task`1<string>> appender);
+    public void AddPrepender(Func`1<Task`1<string>> prepender);
+    [AsyncStateMachineAttribute("Smidge.CompositeFiles.BundleContext/<GetCombinedStreamAsync>d__24")]
+public Task`1<Stream> GetCombinedStreamAsync(IEnumerable`1<Stream> inputs, string delimeter);
+    public sealed virtual void Dispose();
+}
+public static class Smidge.CompositeFiles.Compressor : object {
+    [AsyncStateMachineAttribute("Smidge.CompositeFiles.Compressor/<CompressAsync>d__0")]
+public static Task`1<Stream> CompressAsync(CompressionType type, Stream original);
+    [AsyncStateMachineAttribute("Smidge.CompositeFiles.Compressor/<CompressAsync>d__1")]
+public static Task`1<Stream> CompressAsync(CompressionType type, CompressionLevel level, Stream original);
+}
+public class Smidge.CompositeFiles.DefaultUrlManager : object {
+    private IHasher _hasher;
+    private bool _keepFileExtensions;
+    private UrlManagerOptions _options;
+    private IRequestHelper _requestHelper;
+    public DefaultUrlManager(IOptions`1<SmidgeOptions> options, IHasher hasher, IRequestHelper requestHelper, ISmidgeConfig config);
+    public sealed virtual string AppendCacheBuster(string url, bool debug, string cacheBusterValue);
+    public sealed virtual string GetUrl(string bundleName, string fileExtension, bool debug, string cacheBusterValue);
+    public sealed virtual IEnumerable`1<FileSetUrl> GetUrls(IEnumerable`1<IWebFile> dependencies, string fileExtension, string cacheBusterValue);
+    public sealed virtual ParsedUrlPath ParsePath(string input);
+    private string GetCompositeUrl(string fileKey, string fileExtension, string cacheBusterValue);
+}
+public class Smidge.CompositeFiles.FileSetUrl : object {
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    public string Url { get; public set; }
+    public string Key { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Url();
+    [CompilerGeneratedAttribute]
+public void set_Url(string value);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public void set_Key(string value);
+}
+public interface Smidge.CompositeFiles.IUrlManager {
+    public abstract virtual string AppendCacheBuster(string url, bool debug, string cacheBusterValue);
+    public abstract virtual string GetUrl(string bundleName, string fileExtension, bool debug, string cacheBusterValue);
+    public abstract virtual IEnumerable`1<FileSetUrl> GetUrls(IEnumerable`1<IWebFile> dependencies, string fileExtension, string cacheBusterValue);
+    public abstract virtual ParsedUrlPath ParsePath(string input);
+}
+public class Smidge.CompositeFiles.ParsedUrlPath : object {
+    [CompilerGeneratedAttribute]
+private WebFileType <WebType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <Names>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheBusterValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Debug>k__BackingField;
+    public WebFileType WebType { get; public set; }
+    public IEnumerable`1<string> Names { get; public set; }
+    public string CacheBusterValue { get; public set; }
+    public bool Debug { get; public set; }
+    [CompilerGeneratedAttribute]
+public WebFileType get_WebType();
+    [CompilerGeneratedAttribute]
+public void set_WebType(WebFileType value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<string> get_Names();
+    [CompilerGeneratedAttribute]
+public void set_Names(IEnumerable`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_CacheBusterValue();
+    [CompilerGeneratedAttribute]
+public void set_CacheBusterValue(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Debug();
+    [CompilerGeneratedAttribute]
+public void set_Debug(bool value);
+}
+public class Smidge.CompositeFiles.UrlManagerOptions : object {
+    [CompilerGeneratedAttribute]
+private int <MaxUrlLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CompositeFilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <BundleFilePath>k__BackingField;
+    public int MaxUrlLength { get; public set; }
+    public string CompositeFilePath { get; public set; }
+    public string BundleFilePath { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_MaxUrlLength();
+    [CompilerGeneratedAttribute]
+public void set_MaxUrlLength(int value);
+    [CompilerGeneratedAttribute]
+public string get_CompositeFilePath();
+    [CompilerGeneratedAttribute]
+public void set_CompositeFilePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_BundleFilePath();
+    [CompilerGeneratedAttribute]
+public void set_BundleFilePath(string value);
+}
+public class Smidge.CompressionType : ValueType {
+    private string _compressionType;
+    [CompilerGeneratedAttribute]
+private static CompressionType <Deflate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static CompressionType <GZip>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static CompressionType <Brotli>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static CompressionType <None>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static IReadOnlyCollection`1<CompressionType> <All>k__BackingField;
+    public static CompressionType Deflate { get; }
+    public static CompressionType GZip { get; }
+    public static CompressionType Brotli { get; }
+    public static CompressionType None { get; }
+    public static IReadOnlyCollection`1<CompressionType> All { get; }
+    private CompressionType(string compressionType);
+    private static CompressionType();
+    [CompilerGeneratedAttribute]
+public static CompressionType get_Deflate();
+    [CompilerGeneratedAttribute]
+public static CompressionType get_GZip();
+    [CompilerGeneratedAttribute]
+public static CompressionType get_Brotli();
+    [CompilerGeneratedAttribute]
+public static CompressionType get_None();
+    [CompilerGeneratedAttribute]
+public static IReadOnlyCollection`1<CompressionType> get_All();
+    public static CompressionType Parse(string compressionType);
+    public virtual string ToString();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(CompressionType other);
+    public sealed virtual bool Equals(string other);
+    public virtual int GetHashCode();
+    public static bool op_Equality(CompressionType left, CompressionType right);
+    public static bool op_Inequality(CompressionType left, CompressionType right);
+    public static bool op_Equality(CompressionType left, string right);
+    public static bool op_Inequality(CompressionType left, string right);
+    public static bool op_Equality(string left, CompressionType right);
+    public static bool op_Inequality(string left, CompressionType right);
+}
+internal class Smidge.Core.OrderedSet`1 : object {
+    private IDictionary`2<T, LinkedListNode`1<T>> _dictionary;
+    private LinkedList`1<T> _linkedList;
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public OrderedSet`1(IEqualityComparer`1<T> comparer);
+    public sealed virtual int get_Count();
+    public virtual bool get_IsReadOnly();
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.Add(T item);
+    public bool Add(T item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Remove(T item);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual bool Contains(T item);
+    public sealed virtual void CopyTo(T[] array, int arrayIndex);
+}
+public class Smidge.DefaultFileProviderFilter : object {
+    private IFileInfo _rootFileInfo;
+    public sealed virtual IEnumerable`1<string> GetMatchingFiles(IFileProvider fileProvider, string filePattern);
+    [IteratorStateMachineAttribute("Smidge.DefaultFileProviderFilter/<GetFilesInFolder>d__2")]
+private IEnumerable`1<string> GetFilesInFolder(IFileProvider fileProvider, string folder, string extension, int currentRecursiveDepth, int recurseDepth);
+}
+public class Smidge.FileBatcher : object {
+    private ISmidgeFileSystem _fileSystemHelper;
+    private IRequestHelper _requestHelper;
+    private IHasher _hasher;
+    public FileBatcher(ISmidgeFileSystem fileSystemHelper, IRequestHelper requestHelper, IHasher hasher);
+    public IEnumerable`1<WebFileBatch> GetCompositeFileCollectionForUrlGeneration(IEnumerable`1<IWebFile> files);
+}
+public class Smidge.FileProcessors.CssImportProcessor : object {
+    private ISmidgeFileSystem _fileSystem;
+    private IWebsiteInfo _siteInfo;
+    private IRequestHelper _requestHelper;
+    public CssImportProcessor(ISmidgeFileSystem fileSystem, IWebsiteInfo siteInfo, IRequestHelper requestHelper);
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.CssImportProcessor/<ProcessAsync>d__4")]
+public sealed virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+    internal string ParseImportStatements(string content, IEnumerable`1& importedPaths, IEnumerable`1& externalPaths);
+}
+public class Smidge.FileProcessors.CssMinifier : object {
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.CssMinifier/<ProcessAsync>d__0")]
+public sealed virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+}
+public class Smidge.FileProcessors.CssUrlProcessor : object {
+    private IWebsiteInfo _siteInfo;
+    private IRequestHelper _requestHelper;
+    public CssUrlProcessor(IWebsiteInfo siteInfo, IRequestHelper requestHelper);
+    public sealed virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+    internal string ReplaceUrlsWithAbsolutePaths(string fileContents, string url);
+    internal static string ReplaceUrlsWithAbsolutePaths(string fileContent, Uri cssLocation);
+}
+public class Smidge.FileProcessors.FileProcessContext : object {
+    [CompilerGeneratedAttribute]
+private string <FileContent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IWebFile <WebFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BundleContext <BundleContext>k__BackingField;
+    public string FileContent { get; private set; }
+    public IWebFile WebFile { get; }
+    public BundleContext BundleContext { get; }
+    public FileProcessContext(string fileContent, IWebFile webFile, BundleContext bundleContext);
+    public void Update(string fileContent);
+    [CompilerGeneratedAttribute]
+public string get_FileContent();
+    [CompilerGeneratedAttribute]
+private void set_FileContent(string value);
+    [CompilerGeneratedAttribute]
+public IWebFile get_WebFile();
+    [CompilerGeneratedAttribute]
+public BundleContext get_BundleContext();
+}
+public interface Smidge.FileProcessors.IFileProcessingConvention {
+    public abstract virtual IWebFile Apply(IWebFile file);
+}
+public interface Smidge.FileProcessors.IPreProcessManager {
+    public abstract virtual Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext);
+}
+public interface Smidge.FileProcessors.IPreProcessor {
+    public abstract virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+}
+public class Smidge.FileProcessors.JsMinifier : object {
+    public sealed virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+}
+public class Smidge.FileProcessors.JsSourceMapProcessor : object {
+    private static string _sourceMappingUrl;
+    private IWebsiteInfo _siteInfo;
+    private IRequestHelper _requestHelper;
+    public JsSourceMapProcessor(IWebsiteInfo siteInfo, IRequestHelper requestHelper);
+    private static JsSourceMapProcessor();
+    public sealed virtual Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
+    private void WriteLine(StringBuilder sb, string line);
+}
+public class Smidge.FileProcessors.MinifiedFilePathConvention : object {
+    public sealed virtual IWebFile Apply(IWebFile file);
+}
+public class Smidge.FileProcessors.PreProcessManager : object {
+    private ISmidgeFileSystem _fileSystem;
+    private IBundleManager _bundleManager;
+    private ILogger`1<PreProcessManager> _logger;
+    private SemaphoreSlim _processFileSemaphore;
+    private Char[] _invalidPathChars;
+    public PreProcessManager(ISmidgeFileSystem fileSystem, IBundleManager bundleManager, ILogger`1<PreProcessManager> logger);
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.PreProcessManager/<ProcessAndCacheFileAsync>d__6")]
+public sealed virtual Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext);
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.PreProcessManager/<ProcessFile>d__7")]
+private Task ProcessFile(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext);
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.PreProcessManager/<ProcessFileImpl>d__8")]
+private Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext);
+    private static void FileModified(WatchedFile file);
+}
+public class Smidge.FileProcessors.PreProcessorDelegate : MulticastDelegate {
+    public PreProcessorDelegate(object object, IntPtr method);
+    public virtual Task Invoke(FileProcessContext context);
+    public virtual IAsyncResult BeginInvoke(FileProcessContext context, AsyncCallback callback, object object);
+    public virtual Task EndInvoke(IAsyncResult result);
+}
+public class Smidge.FileProcessors.PreProcessPipeline : object {
+    [CompilerGeneratedAttribute]
+private List`1<IPreProcessor> <Processors>k__BackingField;
+    public List`1<IPreProcessor> Processors { get; }
+    public PreProcessPipeline(IEnumerable`1<IPreProcessor> processors);
+    [CompilerGeneratedAttribute]
+public List`1<IPreProcessor> get_Processors();
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.PreProcessPipeline/<ProcessAsync>d__4")]
+public Task`1<string> ProcessAsync(FileProcessContext fileProcessContext);
+    [AsyncStateMachineAttribute("Smidge.FileProcessors.PreProcessPipeline/<ProcessNext>d__5")]
+private static Task`1<bool> ProcessNext(Queue`1<IPreProcessor> queue, FileProcessContext fileProcessContext);
+    public PreProcessPipeline Copy();
+}
+[ExtensionAttribute]
+public static class Smidge.FileProcessors.PreProcessPipelineExtensions : object {
+    [ExtensionAttribute]
+public static PreProcessPipeline Create(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline Create(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline Create(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline Create(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline Create(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline DefaultJs(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline DefaultCss(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static IPreProcessor Resolve(PreProcessPipelineFactory pipelineFactory);
+    [ExtensionAttribute]
+public static PreProcessPipeline Replace(PreProcessPipeline pipeline, PreProcessPipelineFactory pipelineFactory);
+}
+public class Smidge.FileProcessors.PreProcessPipelineFactory : object {
+    private Lazy`1<IReadOnlyCollection`1<IPreProcessor>> _allProcessors;
+    private Func`3<WebFileType, PreProcessPipeline, PreProcessPipeline> _setGetDefaultCallback;
+    private ConcurrentDictionary`2<WebFileType, PreProcessPipeline> _default;
+    unknown Func`3<WebFileType, PreProcessPipeline, PreProcessPipeline> OnCreateDefault {public set; }
+    public PreProcessPipelineFactory(Lazy`1<IEnumerable`1<IPreProcessor>> allProcessors);
+    public IPreProcessor Resolve(Type preProcessorType);
+    public PreProcessPipeline Create(Type[] preProcessorTypes);
+    public virtual PreProcessPipeline CreateDefault(WebFileType fileType);
+    private PreProcessPipeline GetDefault(WebFileType fileType);
+    public void set_OnCreateDefault(Func`3<WebFileType, PreProcessPipeline, PreProcessPipeline> value);
+}
+public class Smidge.FileProcessors.RegexStatements : object {
+    public static Regex ImportCssRegex;
+    public static Regex CssUrlRegex;
+    public static Regex SourceMap;
+    private static RegexStatements();
+}
+public class Smidge.Hashing.Crc32 : HashAlgorithm {
+    public static UInt32 DefaultPolynomial;
+    private static UInt32 _allOnes;
+    private static Crc32 _defaultCRC;
+    private static ConcurrentDictionary`2<UInt32, UInt32[]> _crc32TablesCache;
+    private UInt32[] _crc32Table;
+    private UInt32 _crc;
+    public int HashSize { get; }
+    public Crc32(UInt32 polynomial);
+    private static Crc32();
+    public virtual int get_HashSize();
+    public virtual void Initialize();
+    protected virtual void HashCore(Byte[] buffer, int offset, int count);
+    protected virtual Byte[] HashFinal();
+    public static int Compute(string asciiString);
+    public static int Compute(Stream inputStream);
+    public static int Compute(Byte[] buffer);
+    public static int Compute(Byte[] buffer, int offset, int count);
+    public Byte[] ComputeHash(string asciiString);
+    public Byte[] ComputeHash(Stream inputStream);
+    public Byte[] ComputeHash(Byte[] buffer);
+    public Byte[] ComputeHash(Byte[] buffer, int offset, int count);
+    private static UInt32[] _buildCRC32Table(UInt32 polynomial);
+    private static int ToInt32(Byte[] buffer);
+}
+public class Smidge.Hashing.Crc32Hasher : object {
+    public sealed virtual string Hash(string input);
+}
+public interface Smidge.Hashing.IHasher {
+    public abstract virtual string Hash(string input);
+}
+public class Smidge.Hashing.SHA1Hasher : object {
+    public sealed virtual string Hash(string input);
+}
+public interface Smidge.IBundleFileSetGenerator {
+    public abstract virtual IEnumerable`1<IWebFile> GetOrderedFileSet(Bundle bundle, PreProcessPipeline pipeline);
+    public abstract virtual IEnumerable`1<IWebFile> GetOrderedFileSet(IEnumerable`1<IWebFile> files, PreProcessPipeline pipeline);
+}
+public interface Smidge.IBundleManager {
+    public BundleEnvironmentOptions DefaultBundleOptions { get; }
+    public PreProcessPipelineFactory PipelineFactory { get; }
+    public abstract virtual BundleEnvironmentOptions get_DefaultBundleOptions();
+    public abstract virtual PreProcessPipelineFactory get_PipelineFactory();
+    public abstract virtual Bundle Create(string bundleName, JavaScriptFile[] jsFiles);
+    public abstract virtual Bundle Create(string bundleName, CssFile[] cssFiles);
+    public abstract virtual Bundle Create(string bundleName, WebFileType type, String[] paths);
+    public abstract virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, JavaScriptFile[] jsFiles);
+    public abstract virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, CssFile[] cssFiles);
+    public abstract virtual Bundle Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, String[] paths);
+    public abstract virtual bool TryGetValue(string key, Bundle& value);
+    public abstract virtual IEnumerable`1<string> GetBundleNames(WebFileType type);
+    public abstract virtual IEnumerable`1<Bundle> GetBundles(WebFileType type);
+    public abstract virtual bool Exists(string bundleName);
+    public abstract virtual void AddToBundle(string bundleName, CssFile file);
+    public abstract virtual void AddToBundle(string bundleName, JavaScriptFile file);
+    public abstract virtual Bundle GetBundle(string bundleName);
+}
+public interface Smidge.IFileProviderFilter {
+    public abstract virtual IEnumerable`1<string> GetMatchingFiles(IFileProvider fileProvider, string filePattern);
+}
+public interface Smidge.IRequestHelper {
+    public abstract virtual string Content(string path);
+    public abstract virtual string Content(IWebFile file);
+    public abstract virtual CompressionType GetClientCompression(IDictionary`2<string, StringValues> headers);
+    public abstract virtual bool IsExternalRequestPath(string path);
+}
+public interface Smidge.ISmidgeConfig {
+    public string DataFolder { get; }
+    public string Version { get; }
+    public bool KeepFileExtensions { get; }
+    public abstract virtual string get_DataFolder();
+    public abstract virtual string get_Version();
+    public abstract virtual bool get_KeepFileExtensions();
+}
+public interface Smidge.ISmidgeFileProvider {
+}
+public interface Smidge.ISmidgeFileSystem {
+    public ICacheFileSystem CacheFileSystem { get; }
+    public abstract virtual ICacheFileSystem get_CacheFileSystem();
+    public abstract virtual IFileInfo GetRequiredFileInfo(IWebFile webfile);
+    public abstract virtual IFileInfo GetRequiredFileInfo(string filePath);
+    public abstract virtual IEnumerable`1<string> GetMatchingFiles(string filePattern);
+    public abstract virtual Task`1<string> ReadContentsAsync(IFileInfo fileInfo);
+    public abstract virtual string ReverseMapPath(string subPath, IFileInfo fileInfo);
+    public abstract virtual bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action`1<WatchedFile> fileModifiedCallback);
+    public abstract virtual string ConvertToFileProviderPath(string path);
+}
+public interface Smidge.ISmidgeRequire {
+    public abstract virtual ISmidgeRequire RequiresJs(JavaScriptFile file);
+    public abstract virtual ISmidgeRequire RequiresJs(String[] paths);
+    public abstract virtual ISmidgeRequire RequiresCss(CssFile file);
+    public abstract virtual ISmidgeRequire RequiresCss(String[] paths);
+}
+public interface Smidge.IWebsiteInfo {
+    public abstract virtual Uri GetBaseUrl();
+    public abstract virtual string GetBasePath();
+}
+public class Smidge.Models.Bundle : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<IWebFile> <Files>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<IEnumerable`1<IWebFile>, IEnumerable`1<IWebFile>> <OrderingCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BundleEnvironmentOptions <BundleOptions>k__BackingField;
+    public string Name { get; }
+    public List`1<IWebFile> Files { get; }
+    public Func`2<IEnumerable`1<IWebFile>, IEnumerable`1<IWebFile>> OrderingCallback { get; private set; }
+    public BundleEnvironmentOptions BundleOptions { get; private set; }
+    public Bundle(string name, List`1<IWebFile> files);
+    public Bundle(string name, List`1<IWebFile> files, BundleEnvironmentOptions bundleOptions);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public List`1<IWebFile> get_Files();
+    [CompilerGeneratedAttribute]
+public Func`2<IEnumerable`1<IWebFile>, IEnumerable`1<IWebFile>> get_OrderingCallback();
+    [CompilerGeneratedAttribute]
+private void set_OrderingCallback(Func`2<IEnumerable`1<IWebFile>, IEnumerable`1<IWebFile>> value);
+    [CompilerGeneratedAttribute]
+public BundleEnvironmentOptions get_BundleOptions();
+    [CompilerGeneratedAttribute]
+private void set_BundleOptions(BundleEnvironmentOptions value);
+    public Bundle WithEnvironmentOptions(BundleEnvironmentOptions bundleOptions);
+    public Bundle OnOrdering(Func`2<IEnumerable`1<IWebFile>, IEnumerable`1<IWebFile>> callback);
+}
+[ExtensionAttribute]
+public static class Smidge.Models.BundleExtensions : object {
+    [ExtensionAttribute]
+public static BundleOptions GetBundleOptions(Bundle bundle, IBundleManager bundleMgr, bool debug);
+    [ExtensionAttribute]
+public static BundleOptions GetDefaultBundleOptions(IBundleManager bundleMgr, bool debug);
+    [ExtensionAttribute]
+public static BundleOptions GetAvailableOrDefaultBundleOptions(IBundleManager bundleMgr, BundleOptions options, bool debug);
+}
+public class Smidge.Models.CssFile : WebFile {
+    public CssFile(string path);
+}
+public class Smidge.Models.FileWatchEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private WatchedFile <File>k__BackingField;
+    public WatchedFile File { get; }
+    public FileWatchEventArgs(WatchedFile file);
+    [CompilerGeneratedAttribute]
+public WatchedFile get_File();
+}
+public interface Smidge.Models.IRequestModel {
+    public CompressionType Compression { get; }
+    public bool Debug { get; }
+    public string Extension { get; }
+    public string FileKey { get; }
+    public string Mime { get; }
+    public abstract virtual CompressionType get_Compression();
+    public abstract virtual bool get_Debug();
+    public abstract virtual string get_Extension();
+    public abstract virtual string get_FileKey();
+    public abstract virtual string get_Mime();
+}
+public interface Smidge.Models.IWebFile {
+    public string FilePath { get; public set; }
+    public string RequestPath { get; public set; }
+    public WebFileType DependencyType { get; }
+    public int Order { get; public set; }
+    public PreProcessPipeline Pipeline { get; public set; }
+    public abstract virtual string get_FilePath();
+    public abstract virtual void set_FilePath(string value);
+    public abstract virtual string get_RequestPath();
+    public abstract virtual void set_RequestPath(string value);
+    public abstract virtual WebFileType get_DependencyType();
+    public abstract virtual int get_Order();
+    public abstract virtual void set_Order(int value);
+    public abstract virtual PreProcessPipeline get_Pipeline();
+    public abstract virtual void set_Pipeline(PreProcessPipeline value);
+}
+public class Smidge.Models.JavaScriptFile : WebFile {
+    public JavaScriptFile(string path);
+}
+public class Smidge.Models.WatchedFile : object {
+    [CompilerGeneratedAttribute]
+private IWebFile <WebFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IFileInfo <FileInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BundleOptions <BundleOptions>k__BackingField;
+    public IWebFile WebFile { get; }
+    public IFileInfo FileInfo { get; }
+    public BundleOptions BundleOptions { get; }
+    public WatchedFile(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions);
+    [CompilerGeneratedAttribute]
+public IWebFile get_WebFile();
+    [CompilerGeneratedAttribute]
+public IFileInfo get_FileInfo();
+    [CompilerGeneratedAttribute]
+public BundleOptions get_BundleOptions();
+}
+public class Smidge.Models.WebFile : object {
+    [CompilerGeneratedAttribute]
+private WebFileType <DependencyType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Order>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FilePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequestPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PreProcessPipeline <Pipeline>k__BackingField;
+    public WebFileType DependencyType { get; public set; }
+    public int Order { get; public set; }
+    public string FilePath { get; public set; }
+    public string RequestPath { get; public set; }
+    public PreProcessPipeline Pipeline { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual WebFileType get_DependencyType();
+    [CompilerGeneratedAttribute]
+public void set_DependencyType(WebFileType value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Order();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Order(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_FilePath();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_FilePath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_RequestPath();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_RequestPath(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual PreProcessPipeline get_Pipeline();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Pipeline(PreProcessPipeline value);
+}
+public class Smidge.Models.WebFileBatch : object {
+    private HashSet`1<WebFilePair> _files;
+    [CompilerGeneratedAttribute]
+private bool <IsExternal>k__BackingField;
+    public IEnumerable`1<WebFilePair> Files { get; }
+    public bool IsExternal { get; private set; }
+    public void AddExternal(IWebFile original);
+    public void AddInternal(IWebFile original, IWebFile hashed);
+    public sealed virtual IEnumerator`1<WebFilePair> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public IEnumerable`1<WebFilePair> get_Files();
+    [CompilerGeneratedAttribute]
+public bool get_IsExternal();
+    [CompilerGeneratedAttribute]
+private void set_IsExternal(bool value);
+}
+[ExtensionAttribute]
+public static class Smidge.Models.WebFileExtensions : object {
+    [ExtensionAttribute]
+public static IWebFile Duplicate(IWebFile orig, string newPath);
+}
+public class Smidge.Models.WebFilePair : object {
+    [CompilerGeneratedAttribute]
+private IWebFile <Original>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IWebFile <Hashed>k__BackingField;
+    public IWebFile Original { get; }
+    public IWebFile Hashed { get; }
+    public WebFilePair(IWebFile original, IWebFile hashed);
+    [CompilerGeneratedAttribute]
+public IWebFile get_Original();
+    [CompilerGeneratedAttribute]
+public IWebFile get_Hashed();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+internal class Smidge.Models.WebFilePairEqualityComparer : object {
+    [CompilerGeneratedAttribute]
+private static WebFilePairEqualityComparer <Instance>k__BackingField;
+    public static WebFilePairEqualityComparer Instance { get; }
+    private static WebFilePairEqualityComparer();
+    [CompilerGeneratedAttribute]
+public static WebFilePairEqualityComparer get_Instance();
+    public sealed virtual bool Equals(IWebFile x, IWebFile y);
+    public sealed virtual int GetHashCode(IWebFile obj);
+}
+public enum Smidge.Models.WebFileType : Enum {
+    public int value__;
+    public static WebFileType Js;
+    public static WebFileType Css;
+}
+public class Smidge.Options.BundleEnvironmentOptions : object {
+    [CompilerGeneratedAttribute]
+private BundleOptions <DebugOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BundleOptions <ProductionOptions>k__BackingField;
+    public BundleOptions DebugOptions { get; public set; }
+    public BundleOptions ProductionOptions { get; public set; }
+    public static BundleEnvironmentOptionsBuilder Create();
+    [CompilerGeneratedAttribute]
+public BundleOptions get_DebugOptions();
+    [CompilerGeneratedAttribute]
+public void set_DebugOptions(BundleOptions value);
+    [CompilerGeneratedAttribute]
+public BundleOptions get_ProductionOptions();
+    [CompilerGeneratedAttribute]
+public void set_ProductionOptions(BundleOptions value);
+}
+public class Smidge.Options.BundleEnvironmentOptionsBuilder : object {
+    private BundleEnvironmentOptions _bundleEnvironmentOptions;
+    private Action`1<BundleOptionsBuilder> _debugBuilder;
+    private Action`1<BundleOptionsBuilder> _productionBuilder;
+    private bool _built;
+    public BundleEnvironmentOptionsBuilder(BundleEnvironmentOptions bundleEnvironmentOptions);
+    public BundleEnvironmentOptionsBuilder ForDebug(Action`1<BundleOptionsBuilder> debugBuilder);
+    public BundleEnvironmentOptionsBuilder ForProduction(Action`1<BundleOptionsBuilder> productionBuilder);
+    public BundleEnvironmentOptions Build();
+}
+public class Smidge.Options.BundleOptions : object {
+    private Type _defaultCacheBuster;
+    [CompilerGeneratedAttribute]
+private bool <ProcessAsCompositeFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CompressResult>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CompressionLevel <CompressionLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CacheControlOptions <CacheControlOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FileWatchOptions <FileWatchOptions>k__BackingField;
+    public bool ProcessAsCompositeFile { get; public set; }
+    public bool CompressResult { get; public set; }
+    public CompressionLevel CompressionLevel { get; public set; }
+    public CacheControlOptions CacheControlOptions { get; public set; }
+    public FileWatchOptions FileWatchOptions { get; public set; }
+    public void SetCacheBusterType();
+    public void SetCacheBusterType(Type t);
+    public Type GetCacheBusterType();
+    [CompilerGeneratedAttribute]
+public bool get_ProcessAsCompositeFile();
+    [CompilerGeneratedAttribute]
+public void set_ProcessAsCompositeFile(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_CompressResult();
+    [CompilerGeneratedAttribute]
+public void set_CompressResult(bool value);
+    [CompilerGeneratedAttribute]
+public CompressionLevel get_CompressionLevel();
+    [CompilerGeneratedAttribute]
+public void set_CompressionLevel(CompressionLevel value);
+    [CompilerGeneratedAttribute]
+public CacheControlOptions get_CacheControlOptions();
+    [CompilerGeneratedAttribute]
+public void set_CacheControlOptions(CacheControlOptions value);
+    [CompilerGeneratedAttribute]
+public FileWatchOptions get_FileWatchOptions();
+    [CompilerGeneratedAttribute]
+public void set_FileWatchOptions(FileWatchOptions value);
+}
+public class Smidge.Options.BundleOptionsBuilder : object {
+    private BundleOptions _options;
+    public BundleOptionsBuilder(BundleOptions options);
+    public BundleOptionsBuilder SetCacheBusterType();
+    public BundleOptionsBuilder SetCacheBusterType(Type t);
+    public BundleOptionsBuilder EnableCompositeProcessing();
+    public BundleOptionsBuilder EnableFileWatcher();
+    public BundleOptionsBuilder CacheControlOptions(bool enableEtag, int cacheControlMaxAge);
+}
+public class Smidge.Options.CacheControlOptions : object {
+    [CompilerGeneratedAttribute]
+private bool <EnableETag>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <CacheControlMaxAge>k__BackingField;
+    public bool EnableETag { get; public set; }
+    public int CacheControlMaxAge { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_EnableETag();
+    [CompilerGeneratedAttribute]
+public void set_EnableETag(bool value);
+    [CompilerGeneratedAttribute]
+public int get_CacheControlMaxAge();
+    [CompilerGeneratedAttribute]
+public void set_CacheControlMaxAge(int value);
+}
+public class Smidge.Options.FileProcessingConventions : object {
+    private IOptions`1<SmidgeOptions> _options;
+    private IEnumerable`1<IFileProcessingConvention> _allConventions;
+    private IFileProcessingConvention[] _filtered;
+    public IEnumerable`1<IFileProcessingConvention> Values { get; }
+    public FileProcessingConventions(IOptions`1<SmidgeOptions> options, IEnumerable`1<IFileProcessingConvention> allConventions);
+    public IEnumerable`1<IFileProcessingConvention> get_Values();
+    [CompilerGeneratedAttribute]
+private bool <get_Values>b__5_0(IFileProcessingConvention x);
+}
+public class Smidge.Options.FileProcessingConventionsCollection : Collection`1<Type> {
+    protected virtual void InsertItem(int index, Type item);
+    protected virtual void SetItem(int index, Type item);
+    private void Validate(Type item);
+}
+public class Smidge.Options.FileWatchOptions : object {
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<FileWatchEventArgs> FileModified;
+    public bool Enabled { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_Enabled();
+    [CompilerGeneratedAttribute]
+public void set_Enabled(bool value);
+    public void Changed(FileWatchEventArgs args);
+    [CompilerGeneratedAttribute]
+public void add_FileModified(EventHandler`1<FileWatchEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_FileModified(EventHandler`1<FileWatchEventArgs> value);
+    private void OnFileModified(FileWatchEventArgs e);
+}
+public class Smidge.Options.SmidgeCacheOptions : object {
+    [CompilerGeneratedAttribute]
+private bool <UseInMemoryCache>k__BackingField;
+    public bool UseInMemoryCache { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_UseInMemoryCache();
+    [CompilerGeneratedAttribute]
+public void set_UseInMemoryCache(bool value);
+}
+public class Smidge.Options.SmidgeOptions : object {
+    [CompilerGeneratedAttribute]
+private PreProcessPipelineFactory <PipelineFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BundleEnvironmentOptions <DefaultBundleOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UrlManagerOptions <UrlOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICollection`1<Type> <FileProcessingConventions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SmidgeCacheOptions <CacheOptions>k__BackingField;
+    public PreProcessPipelineFactory PipelineFactory { get; public set; }
+    public BundleEnvironmentOptions DefaultBundleOptions { get; public set; }
+    public UrlManagerOptions UrlOptions { get; public set; }
+    public ICollection`1<Type> FileProcessingConventions { get; public set; }
+    public SmidgeCacheOptions CacheOptions { get; public set; }
+    [CompilerGeneratedAttribute]
+public PreProcessPipelineFactory get_PipelineFactory();
+    [CompilerGeneratedAttribute]
+public void set_PipelineFactory(PreProcessPipelineFactory value);
+    [CompilerGeneratedAttribute]
+public BundleEnvironmentOptions get_DefaultBundleOptions();
+    [CompilerGeneratedAttribute]
+public void set_DefaultBundleOptions(BundleEnvironmentOptions value);
+    [CompilerGeneratedAttribute]
+public UrlManagerOptions get_UrlOptions();
+    [CompilerGeneratedAttribute]
+public void set_UrlOptions(UrlManagerOptions value);
+    [CompilerGeneratedAttribute]
+public ICollection`1<Type> get_FileProcessingConventions();
+    [CompilerGeneratedAttribute]
+public void set_FileProcessingConventions(ICollection`1<Type> value);
+    [CompilerGeneratedAttribute]
+public SmidgeCacheOptions get_CacheOptions();
+    [CompilerGeneratedAttribute]
+public void set_CacheOptions(SmidgeCacheOptions value);
+}
+public class Smidge.Options.SmidgeOptionsSetup : ConfigureOptions`1<SmidgeOptions> {
+    [CompilerGeneratedAttribute]
+private PreProcessPipelineFactory <PipelineFactory>k__BackingField;
+    public PreProcessPipelineFactory PipelineFactory { get; }
+    public SmidgeOptionsSetup(PreProcessPipelineFactory pipelineFactory);
+    [CompilerGeneratedAttribute]
+public PreProcessPipelineFactory get_PipelineFactory();
+    public static void ConfigureSmidge(SmidgeOptions options);
+    public virtual void Configure(SmidgeOptions options);
+}
+public class Smidge.SmidgeConfig : object {
+    private IConfiguration _config;
+    public string Version { get; }
+    public string DataFolder { get; }
+    public bool KeepFileExtensions { get; }
+    public SmidgeConfig(IConfiguration configuration);
+    public sealed virtual string get_Version();
+    public sealed virtual string get_DataFolder();
+    public sealed virtual bool get_KeepFileExtensions();
+}
+public class Smidge.SmidgeConstants : object {
+    public static string SchemeDelimiter;
+}
+public class Smidge.SmidgeFileProvider : object {
+    private CompositeFileProvider _compositeFileProvider;
+    public SmidgeFileProvider(IFileProvider[] fileProviders);
+    public sealed virtual IDirectoryContents GetDirectoryContents(string subpath);
+    public sealed virtual IFileInfo GetFileInfo(string subpath);
+    public sealed virtual IChangeToken Watch(string filter);
+}
+public class Smidge.SmidgeFileSystem : object {
+    private ConcurrentDictionary`2<string, IDisposable> _fileWatchers;
+    private IWebsiteInfo _siteInfo;
+    private IFileProvider _sourceFileProvider;
+    private IFileProviderFilter _fileProviderFilter;
+    [CompilerGeneratedAttribute]
+private ICacheFileSystem <CacheFileSystem>k__BackingField;
+    public ICacheFileSystem CacheFileSystem { get; }
+    public SmidgeFileSystem(IFileProvider sourceFileProvider, IFileProviderFilter fileProviderFilter, ICacheFileSystem cacheFileProvider, IWebsiteInfo siteInfo);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICacheFileSystem get_CacheFileSystem();
+    public sealed virtual IFileInfo GetRequiredFileInfo(IWebFile webfile);
+    public sealed virtual IFileInfo GetRequiredFileInfo(string filePath);
+    public sealed virtual IEnumerable`1<string> GetMatchingFiles(string filePattern);
+    public sealed virtual string ReverseMapPath(string subPath, IFileInfo fileInfo);
+    [AsyncStateMachineAttribute("Smidge.SmidgeFileSystem/<ReadContentsAsync>d__12")]
+public sealed virtual Task`1<string> ReadContentsAsync(IFileInfo fileInfo);
+    public sealed virtual bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action`1<WatchedFile> fileModifiedCallback);
+    public sealed virtual string ConvertToFileProviderPath(string path);
+}
+[ExtensionAttribute]
+public static class Smidge.SmidgeFileSystemExtensions : object {
+    [ExtensionAttribute]
+public static string GetFileHash(IHasher hasher, IWebFile file, string extension);
+    [ExtensionAttribute]
+public static string GetFileHash(IHasher hasher, IWebFile file, IFileInfo fileInfo, string extension);
+}
+[ExtensionAttribute]
+public static class Smidge.StringExtensions : object {
+    [ExtensionAttribute]
+internal static bool InvariantIgnoreCaseStartsWith(string input, string value);
+    [ExtensionAttribute]
+internal static string TrimExtension(string input, string extension);
+    [ExtensionAttribute]
+internal static string EnsureEndsWith(string input, char endsWith);
+    [ExtensionAttribute]
+internal static string EnsureStartsWith(string input, char startsWith);
+    [ExtensionAttribute]
+public static string ReplaceNonAlphanumericChars(string input, char replacement);
+    [ExtensionAttribute]
+public static string ReverseString(string s);
+    [ExtensionAttribute]
+public static string ReplaceFirst(string text, string search, string replace);
+    [ExtensionAttribute]
+public static string EncodeTo64Url(string toEncode);
+    [ExtensionAttribute]
+public static string EncodeTo64(string toEncode);
+    [ExtensionAttribute]
+public static string DecodeFrom64Url(string toDecode);
+    [ExtensionAttribute]
+public static string DecodeFrom64(string toDecode);
+    [ExtensionAttribute]
+public static bool EndsWithOneOf(string str, String[] ext);
+}
+[ExtensionAttribute]
+public static class Smidge.UriExtensions : object {
+    [ExtensionAttribute]
+internal static string ToAbsolutePath(Uri originalUri, string path);
+    [ExtensionAttribute]
+public static Uri MakeAbsoluteUri(Uri uri, Uri baseUrl);
+}

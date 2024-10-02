@@ -1,0 +1,478 @@
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+public class Rebus.AzureServiceBus.AzureServiceBusTransport : object {
+    private static string OutgoingMessagesKey;
+    private static string MagicSubscriptionPrefix;
+    public static string MagicDeferredMessagesAddress;
+    private static string TransportmessageItemKey;
+    private static ServiceBusRetryOptions DefaultRetryStrategy;
+    private ExceptionIgnorant _subscriptionExceptionIgnorant;
+    private ConcurrentStack`1<IDisposable> _disposables;
+    private ConcurrentDictionary`2<string, MessageLockRenewer> _messageLockRenewers;
+    private ConcurrentDictionary`2<string, String[]> _cachedSubscriberAddresses;
+    private ConcurrentDictionary`2<string, Lazy`1<ServiceBusSender>> _messageSenders;
+    private ConcurrentDictionary`2<string, Lazy`1<Task`1<ServiceBusSender>>> _topicClients;
+    private CancellationToken _cancellationToken;
+    private IAsyncTask _messageLockRenewalTask;
+    private ServiceBusAdministrationClient _managementClient;
+    private ConnectionStringParser _connectionStringParser;
+    private INameFormatter _nameFormatter;
+    private IMessageConverter _messageConverter;
+    private string _subscriptionName;
+    private ILog _log;
+    private ServiceBusClient _client;
+    private bool _prefetchingEnabled;
+    private int _prefetchCount;
+    private ServiceBusReceiver _messageReceiver;
+    [CompilerGeneratedAttribute]
+private string <Address>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AutomaticallyRenewPeekLock>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PartitioningEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DoNotCreateQueuesEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DoNotCheckQueueConfigurationEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <DefaultMessageTimeToLive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <LockDuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <AutoDeleteOnIdle>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <DuplicateDetectionHistoryTimeWindow>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ReceiveOperationTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NativeMessageDeliveryCountEnabled>k__BackingField;
+    public string Address { get; }
+    public bool IsCentralized { get; }
+    public bool AutomaticallyRenewPeekLock { get; public set; }
+    public bool PartitioningEnabled { get; public set; }
+    public bool DoNotCreateQueuesEnabled { get; public set; }
+    public bool DoNotCheckQueueConfigurationEnabled { get; public set; }
+    public Nullable`1<TimeSpan> DefaultMessageTimeToLive { get; public set; }
+    public Nullable`1<TimeSpan> LockDuration { get; public set; }
+    public Nullable`1<TimeSpan> AutoDeleteOnIdle { get; public set; }
+    public Nullable`1<TimeSpan> DuplicateDetectionHistoryTimeWindow { get; public set; }
+    public TimeSpan ReceiveOperationTimeout { get; public set; }
+    public bool NativeMessageDeliveryCountEnabled { get; public set; }
+    public AzureServiceBusTransport(string connectionString, string queueName, IRebusLoggerFactory rebusLoggerFactory, IAsyncTaskFactory asyncTaskFactory, INameFormatter nameFormatter, IMessageConverter messageConverter, CancellationToken cancellationToken, TokenCredential tokenCredential);
+    private static AzureServiceBusTransport();
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<GetSubscriberAddresses>d__24")]
+public sealed virtual Task`1<IReadOnlyList`1<string>> GetSubscriberAddresses(string topic);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<RegisterSubscriber>d__25")]
+public sealed virtual Task RegisterSubscriber(string topic, string subscriberAddress);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<UnregisterSubscriber>d__26")]
+public sealed virtual Task UnregisterSubscriber(string topic, string subscriberAddress);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<GetOrCreateSubscription>d__27")]
+private Task`1<SubscriptionProperties> GetOrCreateSubscription(string topicPath, string subscriptionName);
+    private void VerifyIsOwnInputQueueAddress(string subscriberAddress);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<EnsureTopicExists>d__29")]
+private Task`1<TopicProperties> EnsureTopicExists(string normalizedTopic);
+    public sealed virtual void CreateQueue(string address);
+    private void InnerCreateQueue(string normalizedAddress);
+    private void CheckInputQueueConfiguration(string address);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<GetQueueDescription>d__33")]
+private Task`1<QueueProperties> GetQueueDescription(string address);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<Send>d__34")]
+public sealed virtual Task Send(string destinationAddress, TransportMessage message, ITransactionContext context);
+    private string GetActualDestinationAddress(string destinationAddress, TransportMessage message);
+    private ConcurrentQueue`1<OutgoingMessage> GetOutgoingMessages(ITransactionContext context);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<GetBatches>d__37")]
+private Task`1<IReadOnlyList`1<ServiceBusMessageBatch>> GetBatches(IEnumerable`1<ServiceBusMessage> messages, ServiceBusSender sender);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<Receive>d__38")]
+public sealed virtual Task`1<TransportMessage> Receive(ITransactionContext context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<ReceiveInternal>d__39")]
+private Task`1<ReceivedMessage> ReceiveInternal();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Address();
+    public sealed virtual void Initialize();
+    public sealed virtual bool get_IsCentralized();
+    [CompilerGeneratedAttribute]
+public bool get_AutomaticallyRenewPeekLock();
+    [CompilerGeneratedAttribute]
+public void set_AutomaticallyRenewPeekLock(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_PartitioningEnabled();
+    [CompilerGeneratedAttribute]
+public void set_PartitioningEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_DoNotCreateQueuesEnabled();
+    [CompilerGeneratedAttribute]
+public void set_DoNotCreateQueuesEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_DoNotCheckQueueConfigurationEnabled();
+    [CompilerGeneratedAttribute]
+public void set_DoNotCheckQueueConfigurationEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_DefaultMessageTimeToLive();
+    [CompilerGeneratedAttribute]
+public void set_DefaultMessageTimeToLive(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_LockDuration();
+    [CompilerGeneratedAttribute]
+public void set_LockDuration(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_AutoDeleteOnIdle();
+    [CompilerGeneratedAttribute]
+public void set_AutoDeleteOnIdle(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_DuplicateDetectionHistoryTimeWindow();
+    [CompilerGeneratedAttribute]
+public void set_DuplicateDetectionHistoryTimeWindow(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ReceiveOperationTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ReceiveOperationTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_NativeMessageDeliveryCountEnabled();
+    [CompilerGeneratedAttribute]
+public void set_NativeMessageDeliveryCountEnabled(bool value);
+    public void PurgeInputQueue();
+    public void PrefetchMessages(int prefetchCount);
+    public sealed virtual void Dispose();
+    private void PurgeQueue(string queueName);
+    private ServiceBusSender GetMessageSender(string queue);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<GetTopicClient>d__91")]
+private Task`1<ServiceBusSender> GetTopicClient(string topic);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<RenewPeekLocks>d__92")]
+private Task RenewPeekLocks();
+    [CompilerGeneratedAttribute]
+internal static bool <RegisterSubscriber>g__ForwardToMatches|25_1(<>c__DisplayClass25_1& );
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.AzureServiceBusTransport/<<RenewPeekLocks>b__92_2>d")]
+[CompilerGeneratedAttribute]
+private Task <RenewPeekLocks>b__92_2(MessageLockRenewer r);
+}
+internal class Rebus.AzureServiceBus.ConnectionStringParser : object {
+    private Dictionary`2<string, string> _parts;
+    [CompilerGeneratedAttribute]
+private string <ConnectionString>k__BackingField;
+    public string ConnectionString { get; }
+    public string Endpoint { get; }
+    public string SharedAccessKeyName { get; }
+    public string SharedAccessKey { get; }
+    public string EntityPath { get; }
+    public ServiceBusTransportType Transport { get; }
+    public ConnectionStringParser(string endpoint, string sharedAccessKeyName, string sharedAccessKey, string entityPath);
+    public ConnectionStringParser(string connectionString);
+    [CompilerGeneratedAttribute]
+public string get_ConnectionString();
+    public string get_Endpoint();
+    public string get_SharedAccessKeyName();
+    public string get_SharedAccessKey();
+    public string get_EntityPath();
+    public ServiceBusTransportType get_Transport();
+    public bool Contains(string name, string value, StringComparison comparison);
+    public virtual string ToString();
+    public string GetConnectionStringWithoutEntityPath();
+    public string GetConnectionString();
+}
+public class Rebus.AzureServiceBus.DefaultAzureServiceBusTopicNameConvention : object {
+    private bool _useLegacyNaming;
+    public DefaultAzureServiceBusTopicNameConvention(bool useLegacyNaming);
+    public sealed virtual string GetTopic(Type eventType);
+}
+internal class Rebus.AzureServiceBus.DisabledTimeoutManager : object {
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.DisabledTimeoutManager/<Defer>d__0")]
+public sealed virtual Task Defer(DateTimeOffset approximateDueTime, Dictionary`2<string, string> headers, Byte[] body);
+    [AsyncStateMachineAttribute("Rebus.AzureServiceBus.DisabledTimeoutManager/<GetDueMessages>d__1")]
+public sealed virtual Task`1<DueMessagesResult> GetDueMessages();
+}
+internal class Rebus.AzureServiceBus.Messages.DefaultMessageConverter : object {
+    public sealed virtual TransportMessage ToTransport(ServiceBusReceivedMessage message);
+    public sealed virtual ServiceBusMessage ToServiceBus(TransportMessage transportMessage);
+}
+internal static class Rebus.AzureServiceBus.Messages.ExtraHeaders : object {
+    public static string SessionId;
+}
+public interface Rebus.AzureServiceBus.Messages.IMessageConverter {
+    public abstract virtual TransportMessage ToTransport(ServiceBusReceivedMessage message);
+    public abstract virtual ServiceBusMessage ToServiceBus(TransportMessage transportMessage);
+}
+internal class Rebus.AzureServiceBus.Messages.RemoveHeaders : object {
+    private IMessageConverter _messageConverter;
+    public RemoveHeaders(IMessageConverter messageConverter);
+    private sealed virtual override TransportMessage Rebus.AzureServiceBus.Messages.IMessageConverter.ToTransport(ServiceBusReceivedMessage message);
+    private sealed virtual override ServiceBusMessage Rebus.AzureServiceBus.Messages.IMessageConverter.ToServiceBus(TransportMessage transportMessage);
+}
+public class Rebus.AzureServiceBus.NameFormat.DefaultNameFormatter : object {
+    private Char[] _additionalValidCharacters;
+    private string ReplaceInvalidCharacters(string str);
+    private bool IsValidCharacter(char c);
+    public sealed virtual string FormatQueueName(string queueName);
+    public sealed virtual string FormatSubscriptionName(string subscriptionName);
+    public sealed virtual string FormatTopicName(string topicName);
+    [CompilerGeneratedAttribute]
+private char <ReplaceInvalidCharacters>b__2_0(char c);
+}
+public interface Rebus.AzureServiceBus.NameFormat.INameFormatter {
+    public abstract virtual string FormatQueueName(string queueName);
+    public abstract virtual string FormatSubscriptionName(string subscriptionName);
+    public abstract virtual string FormatTopicName(string topicName);
+}
+public class Rebus.AzureServiceBus.NameFormat.LegacyNameFormatter : object {
+    private Char[] _additionalValidCharacters;
+    private string ReplaceInvalidCharacters(string str);
+    private bool IsValidCharacter(char c);
+    public sealed virtual string FormatQueueName(string queueName);
+    public sealed virtual string FormatSubscriptionName(string subscriptionName);
+    public sealed virtual string FormatTopicName(string topicName);
+    [CompilerGeneratedAttribute]
+private char <ReplaceInvalidCharacters>b__2_0(char c);
+}
+public class Rebus.AzureServiceBus.NameFormat.LegacyV3NameFormatter : object {
+    public sealed virtual string FormatQueueName(string queueName);
+    public sealed virtual string FormatSubscriptionName(string subscriptionName);
+    public sealed virtual string FormatTopicName(string topicName);
+}
+public class Rebus.AzureServiceBus.NameFormat.PrefixNameFormatter : object {
+    private string _prefix;
+    private INameFormatter _innerFormatter;
+    public PrefixNameFormatter(string prefix);
+    public PrefixNameFormatter(string prefix, INameFormatter innerFormatter);
+    public sealed virtual string FormatQueueName(string queueName);
+    public sealed virtual string FormatSubscriptionName(string subscriptionName);
+    public sealed virtual string FormatTopicName(string topicName);
+}
+internal class Rebus.AzureServiceBus.OutgoingMessage : object {
+    [CompilerGeneratedAttribute]
+private string <DestinationAddress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TransportMessage <TransportMessage>k__BackingField;
+    public string DestinationAddress { get; }
+    public TransportMessage TransportMessage { get; }
+    public OutgoingMessage(string destinationAddress, TransportMessage transportMessage);
+    [CompilerGeneratedAttribute]
+public string get_DestinationAddress();
+    [CompilerGeneratedAttribute]
+public TransportMessage get_TransportMessage();
+}
+internal class Rebus.AzureServiceBus.ReceivedMessage : object {
+    [CompilerGeneratedAttribute]
+private ServiceBusReceivedMessage <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ServiceBusReceiver <MessageReceiver>k__BackingField;
+    public ServiceBusReceivedMessage Message { get; }
+    public ServiceBusReceiver MessageReceiver { get; }
+    public ReceivedMessage(ServiceBusReceivedMessage message, ServiceBusReceiver messageReceiver);
+    [CompilerGeneratedAttribute]
+public ServiceBusReceivedMessage get_Message();
+    [CompilerGeneratedAttribute]
+public ServiceBusReceiver get_MessageReceiver();
+}
+[ExtensionAttribute]
+public static class Rebus.Config.AdditionalAzureServiceBusConfigurationExtensions : object {
+    [ExtensionAttribute]
+public static void UseNativeDeadlettering(StandardConfigurer`1<ITransport> configurer);
+    [ExtensionAttribute]
+public static StandardConfigurer`1<ITransport> UseNativeHeaders(StandardConfigurer`1<ITransport> configurer);
+}
+[ExtensionAttribute]
+public static class Rebus.Config.AzureServiceBusConfigurationExtensions : object {
+    private static string AsbSubStorageText;
+    private static string AsbTimeoutManagerText;
+    [ExtensionAttribute]
+public static AzureServiceBusTransportClientSettings UseAzureServiceBusAsOneWayClient(StandardConfigurer`1<ITransport> configurer, string connectionString, TokenCredential tokenCredential);
+    [ExtensionAttribute]
+public static AzureServiceBusTransportSettings UseAzureServiceBus(StandardConfigurer`1<ITransport> configurer, string connectionString, string inputQueueAddress, TokenCredential tokenCredential);
+    private static void RegisterServices(StandardConfigurer`1<ITransport> configurer, Func`1<bool> legacyNamingEnabled);
+}
+public class Rebus.Config.AzureServiceBusTransportClientSettings : object {
+    [CompilerGeneratedAttribute]
+private bool <LegacyNamingEnabled>k__BackingField;
+    internal bool LegacyNamingEnabled { get; internal set; }
+    [CompilerGeneratedAttribute]
+internal bool get_LegacyNamingEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_LegacyNamingEnabled(bool value);
+    public AzureServiceBusTransportClientSettings UseLegacyNaming();
+}
+public class Rebus.Config.AzureServiceBusTransportSettings : object {
+    [CompilerGeneratedAttribute]
+private bool <PrefetchingEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <NumberOfMessagesToPrefetch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PartitioningEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DoNotCreateQueuesEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AutomaticPeekLockRenewalEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DoNotCheckQueueConfigurationEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <LegacyNamingEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NativeMessageDeliveryCountEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <DefaultMessageTimeToLive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <LockDuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <AutoDeleteOnIdle>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <DuplicateDetectionHistoryTimeWindow>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <ReceiveOperationTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaximumMessagePayloadBytes>k__BackingField;
+    internal bool PrefetchingEnabled { get; internal set; }
+    internal int NumberOfMessagesToPrefetch { get; internal set; }
+    internal bool PartitioningEnabled { get; internal set; }
+    internal bool DoNotCreateQueuesEnabled { get; internal set; }
+    internal bool AutomaticPeekLockRenewalEnabled { get; internal set; }
+    internal bool DoNotCheckQueueConfigurationEnabled { get; internal set; }
+    internal bool LegacyNamingEnabled { get; internal set; }
+    internal bool NativeMessageDeliveryCountEnabled { get; internal set; }
+    internal Nullable`1<TimeSpan> DefaultMessageTimeToLive { get; internal set; }
+    internal Nullable`1<TimeSpan> LockDuration { get; internal set; }
+    internal Nullable`1<TimeSpan> AutoDeleteOnIdle { get; internal set; }
+    internal Nullable`1<TimeSpan> DuplicateDetectionHistoryTimeWindow { get; internal set; }
+    internal Nullable`1<TimeSpan> ReceiveOperationTimeout { get; internal set; }
+    internal int MaximumMessagePayloadBytes { get; internal set; }
+    [CompilerGeneratedAttribute]
+internal bool get_PrefetchingEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_PrefetchingEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal int get_NumberOfMessagesToPrefetch();
+    [CompilerGeneratedAttribute]
+internal void set_NumberOfMessagesToPrefetch(int value);
+    [CompilerGeneratedAttribute]
+internal bool get_PartitioningEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_PartitioningEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_DoNotCreateQueuesEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_DoNotCreateQueuesEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_AutomaticPeekLockRenewalEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_AutomaticPeekLockRenewalEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_DoNotCheckQueueConfigurationEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_DoNotCheckQueueConfigurationEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_LegacyNamingEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_LegacyNamingEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_NativeMessageDeliveryCountEnabled();
+    [CompilerGeneratedAttribute]
+internal void set_NativeMessageDeliveryCountEnabled(bool value);
+    [CompilerGeneratedAttribute]
+internal Nullable`1<TimeSpan> get_DefaultMessageTimeToLive();
+    [CompilerGeneratedAttribute]
+internal void set_DefaultMessageTimeToLive(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+internal Nullable`1<TimeSpan> get_LockDuration();
+    [CompilerGeneratedAttribute]
+internal void set_LockDuration(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+internal Nullable`1<TimeSpan> get_AutoDeleteOnIdle();
+    [CompilerGeneratedAttribute]
+internal void set_AutoDeleteOnIdle(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+internal Nullable`1<TimeSpan> get_DuplicateDetectionHistoryTimeWindow();
+    [CompilerGeneratedAttribute]
+internal void set_DuplicateDetectionHistoryTimeWindow(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+internal Nullable`1<TimeSpan> get_ReceiveOperationTimeout();
+    [CompilerGeneratedAttribute]
+internal void set_ReceiveOperationTimeout(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+internal int get_MaximumMessagePayloadBytes();
+    [CompilerGeneratedAttribute]
+internal void set_MaximumMessagePayloadBytes(int value);
+    public AzureServiceBusTransportSettings EnablePartitioning();
+    public AzureServiceBusTransportSettings SetMessagePayloadSizeLimit(int maximumMessagePayloadBytes);
+    public AzureServiceBusTransportSettings SetDuplicateDetectionHistoryTimeWindow(TimeSpan duplicateDetectionHistoryTimeWindow);
+    public AzureServiceBusTransportSettings SetAutoDeleteOnIdle(TimeSpan autoDeleteOnIdleDuration);
+    public AzureServiceBusTransportSettings SetDefaultMessageTimeToLive(TimeSpan messageTimeToLive);
+    public AzureServiceBusTransportSettings SetMessagePeekLockDuration(TimeSpan messagePeekLockDuration);
+    public AzureServiceBusTransportSettings EnablePrefetching(int numberOfMessagesToPrefetch);
+    public AzureServiceBusTransportSettings AutomaticallyRenewPeekLock();
+    public AzureServiceBusTransportSettings UseLegacyNaming();
+    public AzureServiceBusTransportSettings UseNativeMessageDeliveryCount();
+    public AzureServiceBusTransportSettings DoNotCreateQueues();
+    public AzureServiceBusTransportSettings DoNotCheckQueueConfiguration();
+    public AzureServiceBusTransportSettings SetReceiveOperationTimeout(TimeSpan receiveOperationTimeout);
+}
+internal static class Rebus.Internals.AsyncHelpers : object {
+    public static void RunSync(Func`1<Task> task);
+}
+[ExtensionAttribute]
+internal static class Rebus.Internals.DisposableExtensions : object {
+    [ExtensionAttribute]
+public static void DisposeCollection(IEnumerable`1<IDisposable> disposables);
+    [ExtensionAttribute]
+public static IDisposable AsDisposable(T instance, Action`1<T> disposeAction);
+}
+[ExtensionAttribute]
+internal static class Rebus.Internals.EnumerableExtensions : object {
+    [IteratorStateMachineAttribute("Rebus.Internals.EnumerableExtensions/<Batch>d__0`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<IReadOnlyList`1<TItem>> Batch(IEnumerable`1<TItem> items, int maxBatchSize);
+}
+internal class Rebus.Internals.ExceptionIgnorant : object {
+    private List`1<ExceptionToIgnore> _exceptionsToIgnore;
+    private TimeSpan _delayBetweenAttempts;
+    private int _maxAttemps;
+    public ExceptionIgnorant(int maxAttemps, TimeSpan delayBetweenAttempts);
+    public ExceptionIgnorant Ignore(Func`2<TException, bool> ignoreCriteria);
+    [AsyncStateMachineAttribute("Rebus.Internals.ExceptionIgnorant/<Execute>d__5")]
+public Task Execute(Func`1<Task> function, CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+private bool <Execute>g__TriedTooManyTimes|5_0(<>c__DisplayClass5_0& );
+    [CompilerGeneratedAttribute]
+private bool <Execute>g__ShouldIgnoreException|5_1(Exception ex, <>c__DisplayClass5_0& );
+}
+[ExtensionAttribute]
+internal static class Rebus.Internals.ManagementExtensions : object {
+    [AsyncStateMachineAttribute("Rebus.Internals.ManagementExtensions/<DeleteQueueIfExistsAsync>d__0")]
+[ExtensionAttribute]
+public static Task DeleteQueueIfExistsAsync(ServiceBusAdministrationClient client, string queuePath, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Rebus.Internals.ManagementExtensions/<CreateQueueIfNotExistsAsync>d__1")]
+[ExtensionAttribute]
+public static Task CreateQueueIfNotExistsAsync(ServiceBusAdministrationClient client, string queuePath, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Rebus.Internals.ManagementExtensions/<PurgeQueue>d__2")]
+public static Task PurgeQueue(string connectionString, string queueName, CancellationToken cancellationToken);
+}
+internal class Rebus.Internals.MessageLockRenewer : object {
+    private ServiceBusReceivedMessage _message;
+    private ServiceBusReceiver _messageReceiver;
+    private DateTimeOffset _nextRenewal;
+    public string MessageId { get; }
+    public bool IsDue { get; }
+    private DateTimeOffset LockedUntil { get; }
+    public MessageLockRenewer(ServiceBusReceivedMessage message, ServiceBusReceiver messageReceiver);
+    public string get_MessageId();
+    public bool get_IsDue();
+    [AsyncStateMachineAttribute("Rebus.Internals.MessageLockRenewer/<Renew>d__8")]
+public Task Renew();
+    private DateTimeOffset GetTimeOfNextRenewal();
+    private DateTimeOffset get_LockedUntil();
+}
+[ExtensionAttribute]
+internal static class Rebus.Internals.SeviceBusSenderExtensions : object {
+    [ExtensionAttribute]
+public static string GetQueuePath(ServiceBusSender sender);
+}
+[ExtensionAttribute]
+internal static class Rebus.Internals.StringExtensions : object {
+    [ExtensionAttribute]
+public static string TrimTo(string str, int maxLength);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

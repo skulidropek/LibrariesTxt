@@ -1,0 +1,2327 @@
+public class Corax.Analyzers.Analyzer : object {
+    [ThreadStaticAttribute]
+private static ArrayPool`1<byte> _bufferPool;
+    [ThreadStaticAttribute]
+private static ArrayPool`1<Token> _tokensPool;
+    public bool IsExactAnalyzer;
+    public int DefaultOutputSize;
+    public int DefaultTokenSize;
+    private method _funcUtf8;
+    private method _funcUtf16;
+    private Analyzer _inner;
+    private ITokenizer _tokenizer;
+    private ITransformer[] _transformers;
+    private float _sourceBufferMultiplier;
+    private float _tokenBufferMultiplier;
+    private bool _disposedValue;
+    public static ArrayPool`1<byte> BufferPool { get; }
+    public static ArrayPool`1<Token> TokensPool { get; }
+    protected Analyzer(method functionUtf8, method functionUtf16, ITokenizer& tokenizer, ITransformer[] transformers);
+    protected Analyzer(Analyzer inner, method functionUtf8, method functionUtf16, ITokenizer& tokenizer, ITransformer[] transformers);
+    public static Analyzer CreateDefaultAnalyzer(ByteStringContext context);
+    public static Analyzer CreateLowercaseAnalyzer(ByteStringContext context);
+    public static ArrayPool`1<byte> get_BufferPool();
+    public static ArrayPool`1<Token> get_TokensPool();
+    public void GetOutputBuffersSize(int inputSize, Int32& outputSize, Int32& tokenSize);
+    private static int RunTransformer(TTransformer& transformer, ReadOnlySpan`1<char> source, ReadOnlySpan`1<Token> tokens, Span`1& output, Span`1& outputTokens);
+    private static int RunTransformer(TTransformer& transformer, ReadOnlySpan`1<byte> source, ReadOnlySpan`1<Token> tokens, Span`1& output, Span`1& outputTokens);
+    private static void RunUtf8(Analyzer analyzer, ReadOnlySpan`1<byte> source, Span`1& output, Span`1& tokens, Byte[]& buffer);
+    internal static void RunUtf16(Analyzer analyzer, ReadOnlySpan`1<char> source, Span`1& output, Span`1& tokens);
+    public static Analyzer Create(ByteStringContext context, TTokenizer& tokenizer, TTransform1& transform1, TTransform2& transform2, TTransform3& transform3);
+    public static Analyzer Create(ByteStringContext context, TTokenizer& tokenizer, TTransform1& transform1);
+    public static Analyzer Create(ByteStringContext context, TTokenizer& tokenizer, TTransform1& transform1, TTransform2& transform2);
+    public Analyzer With(TTransform1& transform1);
+    public Analyzer With(TTransform1& transform1, TTransform2& transform2);
+    public Analyzer With(TTransform1& transform1, TTransform2& transform2, TTransform3& transform3);
+    public void Execute(ReadOnlySpan`1<byte> source, Span`1& output, Span`1& tokens, Byte[]& utf8ConversionBuffer);
+    public void Execute(ReadOnlySpan`1<byte> source, Span`1& output, Span`1& tokens);
+    public void Execute(ReadOnlySpan`1<char> source, Span`1& output, Span`1& tokens);
+    protected void Dispose(bool disposing);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+internal static void <Create>g__RunUtf8WithConversion|28_0(Analyzer analyzer, ReadOnlySpan`1<byte> source, Span`1& output, Span`1& tokens, Byte[]& buffer);
+}
+internal class Corax.Analyzers.AnalyzerScope : object {
+    private IndexSearcher _indexSearcher;
+    private Analyzer _analyzer;
+    private InternalScope<ByteStringMemoryCache> _tempBufferScope;
+    private int _tempOutputBufferSize;
+    private Byte* _tempOutputBuffer;
+    private int _tempOutputTokenSize;
+    private Token* _tempTokenBuffer;
+    public AnalyzerScope(IndexSearcher indexSearcher, Analyzer analyzer);
+    public AnalyzerScope(string fieldName, IndexSearcher indexSearcher, IndexFieldsMapping fieldsMapping, bool hasDynamics);
+    private void InitializeTemporaryBuffers(ByteStringContext allocator);
+    private void UnlikelyGrowBuffers(int outputSize, int tokenSize);
+    public InternalScope<ByteStringMemoryCache> Execute(ReadOnlySpan`1<byte> source, Span`1& buffer, Span`1& tokens);
+    [DoesNotReturnAttribute]
+private static Analyzer ThrowWhenAnalyzerModeNotFound(FieldIndexingMode mode);
+    [DoesNotReturnAttribute]
+private static void ThrowWhenDynamicFieldNotFound(string fieldName);
+    public sealed virtual void Dispose();
+}
+public static class Corax.Constants : object {
+    public static string BeforeAllKeys;
+    public static string AfterAllKeys;
+    public static string NullValue;
+    public static ReadOnlyMemory`1<char> NullValueCharSpan;
+    public static string EmptyString;
+    public static ReadOnlyMemory`1<char> EmptyStringCharSpan;
+    private static string NonExistingValue;
+    public static string PhraseQuerySuffixAsStr;
+    public static string IndexMetadata;
+    public static string IndexTimeFields;
+    public static string DocumentBoost;
+    public static string ProjectionNullValue;
+    public static string JsonValue;
+    public static Slice NullValueSlice;
+    public static Slice ProjectionNullValueSlice;
+    public static Slice EmptyStringSlice;
+    public static Slice IndexMetadataSlice;
+    public static Slice DocumentBoostSlice;
+    public static Slice IndexTimeFieldsSlice;
+    public static Slice NonExistingValueSlice;
+    public static ReadOnlySpan`1<byte> NullValueSpan { get; }
+    public static ReadOnlySpan`1<byte> PhraseQuerySuffix { get; }
+    private static Constants();
+    public static ReadOnlySpan`1<byte> get_NullValueSpan();
+    public static ReadOnlySpan`1<byte> get_PhraseQuerySuffix();
+}
+public enum Corax.FieldIndexingMode : Enum {
+    public byte value__;
+    public static FieldIndexingMode No;
+    public static FieldIndexingMode Exact;
+    public static FieldIndexingMode Search;
+    public static FieldIndexingMode Normal;
+}
+internal class Corax.Indexing.EntriesModifications : ValueType {
+    private static int ControlBits;
+    private static int ControlMask;
+    private static int HasLong;
+    private static int HasDouble;
+    private static int NeedSorting;
+    private static int NeeddUpdates;
+    private int _termSize;
+    private long _longValue;
+    private double _doubleValue;
+    public NativeList`1<TermInEntryModification> Additions;
+    public NativeList`1<TermInEntryModification> Removals;
+    public NativeList`1<TermInEntryModification> Updates;
+    public int TermSize { get; public set; }
+    public Nullable`1<long> Long { get; public set; }
+    public Nullable`1<double> Double { get; public set; }
+    private bool NeedToSort { get; private set; }
+    private bool NeedToUpdate { get; private set; }
+    public bool HasChanges { get; }
+    public EntriesModifications(int size);
+    public int get_TermSize();
+    public void set_TermSize(int value);
+    public Nullable`1<long> get_Long();
+    public void set_Long(Nullable`1<long> value);
+    public Nullable`1<double> get_Double();
+    public void set_Double(Nullable`1<double> value);
+    private bool get_NeedToSort();
+    private void set_NeedToSort(bool value);
+    private bool get_NeedToUpdate();
+    private void set_NeedToUpdate(bool value);
+    public void Prepare(ByteStringContext context);
+    public bool get_HasChanges();
+    public void Addition(ByteStringContext context, long entryId, int termsPerEntryIndex, short freq);
+    public void Removal(ByteStringContext context, long entryId, int termsPerEntryIndex, short freq);
+    private void AddToList(ByteStringContext context, NativeList`1& list, long entryId, int termsPerEntryIndex, short freq);
+    private void DeleteAllDuplicates(ByteStringContext context);
+    public void GetEncodedAdditionsAndRemovals(ByteStringContext context, Int64*& additions, Int64*& removals);
+    [ConditionalAttribute("DEBUG")]
+private void ValidateNoDuplicateEntries();
+    [ConditionalAttribute("DEBUG")]
+public void AssertPreparationIsNotFinished();
+    [ConditionalAttribute("DEBUG")]
+private void AssertHasChangesIsCalledOnlyOnce();
+    public void Dispose(ByteStringContext context);
+}
+public interface Corax.Indexing.IIndexEntryBuilder {
+    public abstract virtual void Boost(float boost);
+    public abstract virtual ReadOnlySpan`1<byte> AnalyzeSingleTerm(int fieldId, ReadOnlySpan`1<byte> value);
+    public abstract virtual void WriteNull(int fieldId, string path);
+    public abstract virtual void WriteNonExistingMarker(int fieldId, string path);
+    public abstract virtual void Write(int fieldId, ReadOnlySpan`1<byte> value);
+    public abstract virtual void Write(int fieldId, string path, ReadOnlySpan`1<byte> value);
+    public abstract virtual void Write(int fieldId, string path, string value);
+    public abstract virtual void Write(int fieldId, ReadOnlySpan`1<byte> value, long longValue, double dblValue);
+    public abstract virtual void Write(int fieldId, string path, string value, long longValue, double dblValue);
+    public abstract virtual void Write(int fieldId, string path, ReadOnlySpan`1<byte> value, long longValue, double dblValue);
+    public abstract virtual void WriteSpatial(int fieldId, string path, CoraxSpatialPointEntry entry);
+    public abstract virtual void Store(BlittableJsonReaderObject storedValue);
+    public abstract virtual void Store(int fieldId, string name, BlittableJsonReaderObject storedValue);
+    public abstract virtual void RegisterEmptyOrNull(int fieldId, string fieldName, StoredFieldType type);
+    public abstract virtual void IncrementList();
+    public abstract virtual void DecrementList();
+    public abstract virtual int ResetList();
+    public abstract virtual void RestoreList(int old);
+}
+internal class Corax.Indexing.IndexedField : object {
+    private IndexedField _parent;
+    public Dictionary`2<long, SpatialEntry> Spatial;
+    public FastList`1<EntriesModifications> Storage;
+    public Dictionary`2<Slice, int> Textual;
+    private NativeList`1<NativeList`1<int>> _entryToTerms;
+    public Dictionary`2<long, int> Longs;
+    public Dictionary`2<double, int> Doubles;
+    public Dictionary`2<Slice, int> Suggestions;
+    public Analyzer Analyzer;
+    public string NameForStatistics;
+    public Slice Name;
+    public Slice NameLong;
+    public Slice NameDouble;
+    public Slice NameTotalLengthOfTerms;
+    public int Id;
+    public FieldIndexingMode FieldIndexingMode;
+    public bool ShouldIndex;
+    public bool HasSuggestions;
+    public bool ShouldStore;
+    public SupportedFeatures SupportedFeatures;
+    public bool IsVirtual;
+    public bool HasMultipleTermsPerField;
+    public long FieldRootPage;
+    public long TermsVectorFieldRootPage;
+    public NativeList`1& EntryToTerms { get; }
+    public bool FieldSupportsPhraseQuery { get; }
+    public IndexedField(IndexFieldBinding binding, SupportedFeatures& supportedFeatures);
+    private IndexedField(int id, Slice name, Slice nameLong, Slice nameDouble, Slice nameTotalLengthOfTerms, Analyzer analyzer, FieldIndexingMode fieldIndexingMode, bool hasSuggestions, bool shouldStore, SupportedFeatures& supportedFeatures, string nameForStatistics, long fieldRootPage, long termsVectorFieldRootPage, FastList`1<EntriesModifications> storage, Dictionary`2<Slice, int> textual, Dictionary`2<long, int> longs, Dictionary`2<double, int> doubles, IndexedField parent);
+    public IndexedField(int id, Slice name, Slice nameLong, Slice nameDouble, Slice nameTotalLengthOfTerms, Analyzer analyzer, FieldIndexingMode fieldIndexingMode, bool hasSuggestions, bool shouldStore, SupportedFeatures& supportedFeatures, string nameForStatistics, long fieldRootPage, long termsVectorFieldRootPage);
+    public NativeList`1& get_EntryToTerms();
+    public bool get_FieldSupportsPhraseQuery();
+    public virtual string ToString();
+    public IndexedField CreateVirtualIndexedField(IndexFieldBinding dynamicField);
+    public void Clear();
+}
+public class Corax.Indexing.IndexWriter : object {
+    private long _numberOfModifications;
+    private HashSet`1<Slice> _indexedEntries;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private List`1<ValueTuple`2<long, float>> _boostedDocs;
+    private IndexFieldsMapping _fieldsMapping;
+    private SupportedFeatures _supportedFeatures;
+    private FixedSizeTree _documentBoost;
+    private Tree _indexMetadata;
+    private long _numberOfTermModifications;
+    private CompactKeyCacheScope _compactKeyScope;
+    private bool _ownsTransaction;
+    private JsonOperationContext _jsonOperationContext;
+    private Transaction _transaction;
+    private ContextBoundNativeList`1<long> _entriesToTermsBuffer;
+    private ContextBoundNativeList`1<long> _entriesForTermsRemovalsBuffer;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private NativeList`1<ValueTuple`2<long, long>> _entriesForTermsAdditionsBuffer;
+    private Token[] _tokensBufferHandler;
+    private Byte[] _encodingBufferHandler;
+    private Byte[] _utf8ConverterBufferHandler;
+    private bool _hasSuggestions;
+    private IndexedField[] _knownFieldsTerms;
+    private Dictionary`2<Slice, IndexedField> _dynamicFieldsTerms;
+    private HashSet`1<long> _deletedEntries;
+    private FieldsCache _fieldsCache;
+    private long _postingListContainerId;
+    private long _storedFieldsContainerId;
+    private long _entriesTermsContainerId;
+    private Lookup`1<Int64LookupKey> _entryIdToLocation;
+    private IndexFieldsMapping _dynamicFieldsMapping;
+    private PostingList _largePostingListSet;
+    private IndexEntryBuilder _builder;
+    private long _initialNumberOfEntries;
+    private HashSet`1<long> _entriesAlreadyAdded;
+    private List`1<long> _additionsForTerm;
+    private List`1<long> _removalsForTerm;
+    private IndexOperationsDumper _indexDebugDumper;
+    private FastPForDecoder _pforDecoder;
+    private long _lastEntryId;
+    private ContextBoundNativeList`1<long> _tempListBuffer;
+    private FastPForEncoder _pForEncoder;
+    private NativeList`1<long> _termsPerEntryIds;
+    private NativeList`1<NativeList`1<RecordedTerm>> _termsPerEntryId;
+    private ByteStringContext _entriesAllocator;
+    private Tree _fieldsTree;
+    private Tree _nullEntriesPostingListsTree;
+    private Tree _nonExistingEntriesPostingListsTree;
+    private Int32[] _suggestionsTermsLengths;
+    private TextualFieldBuffers _textualFieldBuffers;
+    private IndexWriter(IndexFieldsMapping fieldsMapping, SupportedFeatures supportedFeatures);
+    public IndexWriter(StorageEnvironment environment, IndexFieldsMapping fieldsMapping, SupportedFeatures supportedFeatures);
+    public IndexWriter(Transaction tx, IndexFieldsMapping fieldsMapping, SupportedFeatures supportedFeatures);
+    public void UpdateDynamicFieldsMapping(IndexFieldsMapping current);
+    private void Init();
+    private void InitializeFieldRootPage(IndexedField field);
+    private void InitializeFieldRootPageForTermsVector(IndexedField field);
+    public IndexEntryBuilder Update(ReadOnlySpan`1<byte> key);
+    private int InsertTermsPerEntry(long entryId);
+    public IndexEntryBuilder Index(string key);
+    public IndexEntryBuilder Index(ReadOnlySpan`1<byte> key);
+    private long InitBuilder();
+    private void BoostEntry(long entryId, float documentBoost);
+    private void RemoveDocumentBoost(long entryId);
+    private IndexedField GetDynamicIndexedField(ByteStringContext context, string currentFieldName);
+    private IndexedField GetDynamicIndexedField(ByteStringContext context, Span`1<byte> currentFieldName);
+    private IndexedField GetDynamicIndexedField(Slice fieldName);
+    public long GetNumberOfEntries();
+    private void AddSuggestions(IndexedField field, Slice slice);
+    private void RemoveSuggestions(IndexedField field, ReadOnlySpan`1<byte> sequence);
+    internal static InternalScope<ByteStringMemoryCache> CreateNormalizedTerm(ByteStringContext context, ReadOnlySpan`1<byte> value, Slice& slice);
+    private static InternalScope<ByteStringMemoryCache> UnlikelyCreateLargeTerm(ByteStringContext context, ReadOnlySpan`1<byte> value, Slice& slice);
+    private void ProcessDeletes();
+    private void RecordTermDeletionsForEntry(Item entryTerms, LowLevelTransaction llt, Dictionary`2<long, IndexedField> fieldsByRootPage, HashSet`1<long> nullTermMarkers, HashSet`1<long> nonExistingTermMarkers, long dicId, long entryToDelete, int termsPerEntryIndex);
+    private void RemoveMarkerTerm(IndexedField field, EntryTermsReader reader, Slice termSlice, long entryToDelete, int termsPerEntryIndex);
+    public Dictionary`2<long, string> GetIndexedFieldNamesByRootPage();
+    private Dictionary`2<long, IndexedField> GetIndexedFieldByRootPage(Tree fieldsTree);
+    public bool TryDeleteEntry(string term);
+    public bool TryDeleteEntry(ReadOnlySpan`1<byte> term);
+    private bool TryDeleteEntry(Slice termSlice, Int64& entryId);
+    private void FlushBatch();
+    private void ResetWriter();
+    public void TryDeleteEntryByField(string field, string term);
+    [SkipLocalsInitAttribute]
+private bool RecordDeletion(long idInTree, Int64& singleEntryId, Boolean& setsAreDisjoint);
+    private bool TryGetEntryTermId(Slice fieldName, ReadOnlySpan`1<byte> term, Int64& idInTree);
+    public void Commit();
+    public void Commit(TStatsScope stats);
+    private void RecordFieldHasMultipleTerms(IndexedField indexedField);
+    private void AppendDocumentsBoost();
+    private void WriteIndexEntries();
+    private void InsertSpatialField(Tree entriesToSpatialTree, IndexedField indexedField);
+    private NativeList`1& GetEntryTerms(int termsPerEntryIndex);
+    private void ClearEntriesForTerm();
+    private void InsertEntriesForTermBulk(Tree entriesToTermsTree, Slice name);
+    private void SetRange(List`1<long> list, NativeList`1& span);
+    private AddEntriesToTermResult AddEntriesToTerm(Span`1<byte> tmpBuf, long idInTree, bool isNullTerm, EntriesModifications& entries, Int64& termId);
+    private AddEntriesToTermResult AddEntriesToTermResultViaSmallPostingList(Span`1<byte> tmpBuf, EntriesModifications& entries, Int64& termIdInTree, long idInTree);
+    private long AllocatedSpaceForSmallSet(Span`1<byte> encoded, LowLevelTransaction llt, Span`1& space);
+    private AddEntriesToTermResult AddEntriesToTermResultSingleValue(Span`1<byte> tmpBuf, long idInTree, EntriesModifications& entries, Int64& termId);
+    private AddEntriesToTermResult AddEntriesToTermResultViaLargePostingList(EntriesModifications& entries, Int64& termId, bool isNullTerm, long id);
+    private void RemovePostingListFromLargePostingListsSet(long containerId);
+    private void InsertNumericFieldLongs(Tree entriesToTermsTree, IndexedField indexedField, Span`1<byte> tmpBuf);
+    private void UpdateEntriesForTerm(EntriesModifications entries, long term);
+    private void InsertEntriesForTerm(long term);
+    private void InsertNumericFieldDoubles(Tree entriesToTermsTree, IndexedField indexedField, Span`1<byte> tmpBuf);
+    private bool TryEncodingToBuffer(Int64* additions, int additionsCount, Span`1<byte> tmpBuf, Span`1& encoded);
+    private void AddNewTerm(EntriesModifications& entries, Span`1<byte> tmpBuf, Int64& termId);
+    private void AddNewTermToSet(Int64& termId);
+    private void UnlikelyGrowAnalyzerBuffer(int newBufferSize, int newTokenSize);
+    public sealed virtual void Dispose();
+    public void ReduceModificationCount();
+    private static void ThrowTriedToDeleteTermThatDoesNotExists(Slice term, IndexedField indexedField);
+    private static void ThrowMoreThanOneRemovalFoundForSingleItem(long idInTree, EntriesModifications& entries, long existingEntryId, short existingFrequency);
+    [DoesNotReturnAttribute]
+private void ThrowInvalidTokenFoundOnBuffer(IndexedField field, ReadOnlySpan`1<byte> value, Span`1<byte> wordsBuffer, Span`1<Token> tokens, Token token);
+    private static void ThrowInconsistentDynamicFieldCreation(IndexFieldBinding binding, FieldIndexingMode originalIndexingMode);
+    private static void ThrowPreviousBuilderIsNotDisposed();
+    private static void ThrowUnableToFindMatchingField(EntryTermsReader reader);
+    private static void ThrowUnableToLocateEntry(long entryToDelete);
+    [CompilerGeneratedAttribute]
+private IndexedField <GetDynamicIndexedField>g__CreateDynamicField|46_0(Analyzer analyzer, FieldIndexingMode mode, <>c__DisplayClass46_0& );
+}
+public class Corax.Indexing.RecordedTerm : ValueType {
+    public long TermContainerId;
+    public long Long;
+    public double Double;
+    public double Lat;
+    public double Lng;
+    public bool HasLong { get; }
+    public bool HasDouble { get; }
+    public RecordedTerm(long termContainerId);
+    public RecordedTerm(long termContainerId, long long);
+    public RecordedTerm(long termContainerId, double lat, double lng);
+    public bool get_HasLong();
+    public bool get_HasDouble();
+    public sealed virtual int CompareTo(RecordedTerm other);
+    public static RecordedTerm CreateForStored(NativeList`1& fieldTerms, StoredFieldType& storedFieldType, Int64& listContainerId);
+}
+[FlagsAttribute]
+public enum Corax.Indexing.TermIdMask : Enum {
+    public long value__;
+    public static TermIdMask Single;
+    public static TermIdMask EnsureIsSingleMask;
+    public static TermIdMask SmallPostingList;
+    public static TermIdMask PostingList;
+}
+internal class Corax.Indexing.TermInEntryModification : ValueType {
+    public long EntryId;
+    public int TermsPerEntryIndex;
+    public short Frequency;
+    public TermInEntryModification(long entryId, int termPerEntryIndex, short frequency);
+    public virtual string ToString();
+    public sealed virtual bool Equals(TermInEntryModification other);
+    public sealed virtual int CompareTo(TermInEntryModification other);
+}
+public class Corax.IndexingEnvironment : object {
+    public StorageEnvironment Storage;
+    public StorageEnvironmentOptions Options { get; }
+    public IndexingEnvironment(StorageEnvironment environment);
+    public StorageEnvironmentOptions get_Options();
+    public sealed virtual void Dispose();
+    public void Initialize();
+}
+[IsReadOnlyAttribute]
+public class Corax.Mappings.FieldMetadata : ValueType {
+    public Slice FieldName;
+    public Slice TermLengthSumName;
+    public int FieldId;
+    public FieldIndexingMode Mode;
+    public Analyzer Analyzer;
+    public bool HasBoost;
+    public bool IsDynamic { get; }
+    private FieldMetadata(Slice fieldName, Slice termLengthSumName, int fieldId, FieldIndexingMode mode, Analyzer analyzer, bool hasBoost);
+    public FieldMetadata GetNumericFieldMetadata(ByteStringContext allocator);
+    internal Slice GetPhraseQueryContainerName(ByteStringContext alloc);
+    public bool Equals(FieldMetadata& other);
+    public static FieldMetadata Build(ByteStringContext allocator, string fieldName, int fieldId, FieldIndexingMode mode, Analyzer analyzer, bool hasBoost);
+    public static FieldMetadata Build(Slice fieldName, Slice termLengthSumName, int fieldId, FieldIndexingMode mode, Analyzer analyzer, bool hasBoost);
+    public FieldMetadata ChangeAnalyzer(FieldIndexingMode mode, Analyzer analyzer);
+    public FieldMetadata ChangeScoringMode(bool hasBoost);
+    public bool get_IsDynamic();
+    public virtual string ToString();
+}
+public class Corax.Mappings.FieldMetadataComparer : object {
+    public static FieldMetadataComparer Instance;
+    private static FieldMetadataComparer();
+    public sealed virtual bool Equals(FieldMetadata x, FieldMetadata y);
+    public sealed virtual int GetHashCode(FieldMetadata obj);
+}
+public class Corax.Mappings.IndexFieldBinding : object {
+    public int FieldId;
+    public Slice FieldName;
+    public Slice FieldNameLong;
+    public Slice FieldNameDouble;
+    public Slice FieldTermTotalSumField;
+    private Analyzer _analyzer;
+    public bool HasSuggestions;
+    public bool HasSpatial;
+    private FieldIndexingMode _fieldIndexingMode;
+    public bool ShouldStore;
+    private Nullable`1<FieldIndexingMode> _silentlyChangedIndexingModeLegacy;
+    private string _fieldName;
+    private bool _isFieldBindingForWriter;
+    public FieldMetadata Metadata;
+    private string _fieldNameForStatistics;
+    public Analyzer Analyzer { get; }
+    public FieldIndexingMode FieldIndexingMode { get; }
+    public string FieldNameAsString { get; }
+    public string FieldNameForStatistics { get; }
+    public bool IsIndexed { get; }
+    public IndexFieldBinding(int fieldId, Slice fieldName, Slice fieldNameLong, Slice fieldNameDouble, Slice fieldTermTotalSumField, bool isFieldBindingForWriter, Analyzer analyzer, bool hasSuggestions, FieldIndexingMode fieldIndexingMode, bool shouldStore, bool hasSpatial);
+    public Analyzer get_Analyzer();
+    public FieldIndexingMode get_FieldIndexingMode();
+    public string get_FieldNameAsString();
+    public string get_FieldNameForStatistics();
+    public bool get_IsIndexed();
+    public void OverrideFieldIndexingMode(FieldIndexingMode mode);
+    public void SetAnalyzer(Analyzer analyzer);
+    private void AssertBindingIsMadeForIndexing();
+}
+public class Corax.Mappings.IndexFieldsMapping : object {
+    private Dictionary`2<Slice, IndexFieldBinding> _fields;
+    private Dictionary`2<string, IndexFieldBinding> _fieldsByString;
+    private Dictionary`2<int, IndexFieldBinding> _fieldsById;
+    private ByteStringContext _mappingContext;
+    public Func`2<string, Analyzer> ExactAnalyzer;
+    public Func`2<string, Analyzer> SearchAnalyzer;
+    public Analyzer DefaultAnalyzer;
+    public int MaximumOutputSize;
+    public int MaximumTokenSize;
+    public int Count { get; }
+    public int StoredJsonPropertyOffset { get; }
+    internal IndexFieldsMapping(ByteStringContext mappingContext, Dictionary`2<Slice, IndexFieldBinding> fields, Dictionary`2<int, IndexFieldBinding> fieldsById, Analyzer defaultAnalyzer, Func`2<string, Analyzer> searchAnalyzer, Func`2<string, Analyzer> exactAnalyzer, int maximumOutputSize, int maximumTokenSize);
+    public int get_Count();
+    public bool TryGetByFieldName(ByteStringContext context, string fieldName, IndexFieldBinding& binding);
+    public bool TryGetByFieldName(string fieldName, IndexFieldBinding& binding);
+    public bool ContainsField(string fieldName);
+    public bool TryGetByFieldName(Slice fieldName, IndexFieldBinding& binding);
+    public bool TryGetByFieldId(int fieldId, IndexFieldBinding& binding);
+    public IndexFieldBinding GetFirstField();
+    public IndexFieldBinding GetByFieldId(int fieldId);
+    public sealed virtual IEnumerator`1<IndexFieldBinding> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual void Dispose();
+    public int get_StoredJsonPropertyOffset();
+}
+public class Corax.Mappings.IndexFieldsMappingBuilder : object {
+    private ByteStringContext _context;
+    private static short LongSuffix;
+    private static short DoubleSuffix;
+    private static short TermTotalSumField;
+    private Dictionary`2<Slice, IndexFieldBinding> _fields;
+    private Dictionary`2<int, IndexFieldBinding> _fieldsById;
+    private bool _materialized;
+    private bool _isDynamic;
+    private Func`2<string, Analyzer> _exactAnalyzer;
+    private Func`2<string, Analyzer> _searchAnalyzer;
+    private Analyzer _defaultAnalyzer;
+    private bool _isForWriter;
+    private int _maximumOutputSize;
+    private int _maximumTokenSize;
+    public int Count { get; }
+    private IndexFieldsMappingBuilder(bool isForWriter, bool isDynamic);
+    public int get_Count();
+    public static IndexFieldsMappingBuilder CreateForWriter(bool isDynamic);
+    public static IndexFieldsMappingBuilder CreateForReader();
+    public IndexFieldsMappingBuilder AddBindingToEnd(string fieldName, Analyzer analyzer, bool hasSuggestion, FieldIndexingMode fieldIndexingMode, bool shouldStore, bool hasSpatial);
+    public IndexFieldsMappingBuilder AddBindingToEnd(Slice fieldName, Analyzer analyzer, bool hasSuggestion, FieldIndexingMode fieldIndexingMode, bool shouldStore, bool hasSpatial);
+    public IndexFieldsMappingBuilder AddDynamicBinding(Slice fieldName, FieldIndexingMode mode, bool shouldStore);
+    public IndexFieldsMappingBuilder AddBinding(int fieldId, string fieldName, Analyzer analyzer, bool hasSuggestion, FieldIndexingMode fieldIndexingMode, bool shouldStore, bool hasSpatial);
+    public IndexFieldsMappingBuilder AddBinding(int fieldId, Slice fieldName, Analyzer analyzer, bool hasSuggestion, FieldIndexingMode fieldIndexingMode, bool shouldStore, bool hasSpatial);
+    internal static void GetFieldNameForLongs(ByteStringContext context, Slice fieldName, Slice& fieldNameForLongs);
+    internal static void GetFieldNameForDoubles(ByteStringContext context, Slice fieldName, Slice& fieldNameForDoubles);
+    internal static void GetFieldForTotalSum(ByteStringContext context, Slice fieldName, Slice& fieldForTotalSum);
+    private static void GetFieldNameWithPostfix(ByteStringContext context, Slice fieldName, short postfix, Slice& fieldWithPostfix);
+    public IndexFieldsMappingBuilder AddSearchAnalyzer(Func`2<string, Analyzer> searchAnalyzer);
+    public IndexFieldsMappingBuilder AddExactAnalyzer(Func`2<string, Analyzer> exactAnalyzer);
+    public IndexFieldsMappingBuilder AddDefaultAnalyzer(Analyzer defaultAnalyzer);
+    public IndexFieldsMapping Build();
+    private void UpdateMaximumOutputAndTokenSize();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private Analyzer <AddDynamicBinding>g__GetAnalyzer|21_0(<>c__DisplayClass21_0& );
+}
+public class Corax.Pipeline.ExactTransformer : ValueType {
+    public void Dispose();
+    public sealed virtual int Transform(ReadOnlySpan`1<byte> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+    public sealed virtual int Transform(ReadOnlySpan`1<char> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+}
+public class Corax.Pipeline.FilteringTokenFilter`1 : ValueType {
+    private TFilter _filter;
+    public bool SupportUtf8 { get; }
+    public FilteringTokenFilter`1(TFilter filter);
+    public sealed virtual bool get_SupportUtf8();
+    public sealed virtual int Filter(ReadOnlySpan`1<byte> source, Span`1& tokens);
+    public sealed virtual int Filter(ReadOnlySpan`1<char> source, Span`1& tokens);
+    public sealed virtual void Dispose();
+}
+public class Corax.Pipeline.FilterTransformer`1 : ValueType {
+    private FilteringTokenFilter`1<TFilter> _filter;
+    public bool SupportUtf8 { get; }
+    public FilterTransformer`1(TFilter filter);
+    public sealed virtual bool get_SupportUtf8();
+    public sealed virtual int Transform(ReadOnlySpan`1<byte> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+    public sealed virtual int Transform(ReadOnlySpan`1<char> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+}
+public interface Corax.Pipeline.IFilter {
+    public bool SupportUtf8 { get; }
+    public virtual bool get_SupportUtf8();
+    public abstract virtual int Filter(ReadOnlySpan`1<byte> source, Span`1& tokens);
+    public abstract virtual int Filter(ReadOnlySpan`1<char> source, Span`1& tokens);
+}
+public interface Corax.Pipeline.ITokenFilter {
+    public bool SupportUtf8 { get; }
+    public virtual bool get_SupportUtf8();
+    public abstract virtual bool Accept(ReadOnlySpan`1<byte> source, Token& modreq(System.Runtime.InteropServices.InAttribute) token);
+    public abstract virtual bool Accept(ReadOnlySpan`1<char> source, Token& modreq(System.Runtime.InteropServices.InAttribute) token);
+}
+public interface Corax.Pipeline.ITokenizer {
+    public bool SupportUtf8 { get; }
+    public virtual bool get_SupportUtf8();
+    public abstract virtual int Tokenize(ReadOnlySpan`1<char> source, Span`1& tokens);
+    public abstract virtual int Tokenize(ReadOnlySpan`1<byte> source, Span`1& tokens);
+}
+public interface Corax.Pipeline.ITransformer {
+    public bool SupportUtf8 { get; }
+    public bool RequiresTokenSpace { get; }
+    public bool RequiresBufferSpace { get; }
+    public float TokenSpaceMultiplier { get; }
+    public float BufferSpaceMultiplier { get; }
+    public virtual bool get_SupportUtf8();
+    public virtual bool get_RequiresTokenSpace();
+    public virtual bool get_RequiresBufferSpace();
+    public virtual float get_TokenSpaceMultiplier();
+    public virtual float get_BufferSpaceMultiplier();
+    public abstract virtual int Transform(ReadOnlySpan`1<byte> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+    public abstract virtual int Transform(ReadOnlySpan`1<char> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+}
+public class Corax.Pipeline.KeywordTokenizer : ValueType {
+    public bool SupportUtf8 { get; }
+    public sealed virtual bool get_SupportUtf8();
+    public sealed virtual int Tokenize(ReadOnlySpan`1<byte> source, Span`1& tokens);
+    public sealed virtual int Tokenize(ReadOnlySpan`1<char> source, Span`1& tokens);
+    public sealed virtual void Dispose();
+}
+public class Corax.Pipeline.LowerCaseTransformer : ValueType {
+    public void Dispose();
+    public sealed virtual int Transform(ReadOnlySpan`1<byte> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+    public sealed virtual int Transform(ReadOnlySpan`1<char> source, ReadOnlySpan`1<Token> tokens, Span`1& dest, Span`1& destTokens);
+}
+public class Corax.Pipeline.Token : ValueType {
+    public int Offset;
+    public UInt32 Length;
+    public TokenType Type;
+}
+[FlagsAttribute]
+public enum Corax.Pipeline.TokenType : Enum {
+    public UInt32 value__;
+    public static TokenType None;
+    public static TokenType Word;
+    public static TokenType Term;
+    public static TokenType Numeric;
+    public static TokenType Alphabetic;
+    public static TokenType Alphanumeric;
+    public static TokenType UserDefined;
+    public static TokenType Invalid;
+}
+public class Corax.Pipeline.WhitespaceTokenizer : ValueType {
+    public bool SupportUtf8 { get; }
+    public sealed virtual bool get_SupportUtf8();
+    public sealed virtual int Tokenize(ReadOnlySpan`1<byte> source, Span`1& tokens);
+    public sealed virtual int Tokenize(ReadOnlySpan`1<char> source, Span`1& tokens);
+    public sealed virtual void Dispose();
+}
+public class Corax.Querying.IndexSearcher : object {
+    internal Transaction _transaction;
+    private Dictionary`2<string, Slice> _dynamicFieldNameMapping;
+    private IndexFieldsMapping _fieldMapping;
+    private HashSet`1<long> _nullTermsMarkers;
+    private HashSet`1<long> _nonExistingTermsMarkers;
+    private Tree _persistedDynamicTreeAnalyzer;
+    private Nullable`1<long> _numberOfEntries;
+    public bool _nullTermsMarkersLoaded;
+    private bool _nonExistingTermsMarkersLoaded;
+    [CompilerGeneratedAttribute]
+private bool <ForceNonAccelerated>k__BackingField;
+    private bool _ownsTransaction;
+    private bool _ownsIndexMapping;
+    private Tree _metadataTree;
+    private Tree _multipleTermsInField;
+    private Tree _fieldsTree;
+    private Tree _entriesToTermsTree;
+    private Tree _entriesToSpatialTree;
+    private Tree _nullPostingListsTree;
+    private Tree _nonExistingPostingListsTree;
+    private long _dictionaryId;
+    private Lookup`1<Int64LookupKey> _entryIdToLocation;
+    public FieldsCache FieldCache;
+    private bool _nullPostingListsTreeLoaded;
+    private bool _nonExistingPostingListsTreeLoaded;
+    public long MaxMemoizationSizeInBytes;
+    private Dictionary`2<Slice, bool> _hasMultipleTermsInFieldCache;
+    private Dictionary`2<long, Slice> _pageToField;
+    public bool ForceNonAccelerated { get; public set; }
+    public bool IsAccelerated { get; }
+    public long NumberOfEntries { get; }
+    public ByteStringContext Allocator { get; }
+    internal Transaction Transaction { get; }
+    public bool DocumentsAreBoosted { get; }
+    public IndexSearcher(StorageEnvironment environment, IndexFieldsMapping fieldsMapping);
+    public IndexSearcher(Transaction tx, IndexFieldsMapping fieldsMapping);
+    private IndexSearcher(IndexFieldsMapping fieldsMapping);
+    public IAggregationProvider TextualAggregation(FieldMetadata& field, bool forward, bool streamingEnabled, CancellationToken& token);
+    public IAggregationProvider LowAggregationBuilder(FieldMetadata& field, TValue value, UnaryMatchOperation operation, bool forward);
+    public IAggregationProvider GreaterAggregationBuilder(FieldMetadata& field, TValue value, UnaryMatchOperation operation, bool forward);
+    public IAggregationProvider BetweenAggregation(FieldMetadata& field, TValue low, TValue high, UnaryMatchOperation leftSide, UnaryMatchOperation rightSide, bool forward);
+    private IAggregationProvider AggregationRangeBuilder(FieldMetadata& field, Slice low, Slice high, bool forward);
+    private IAggregationProvider AggregationRangeBuilder(FieldMetadata field, double low, double high, bool forward);
+    private IAggregationProvider AggregationRangeBuilder(FieldMetadata field, TLookupKey low, TLookupKey high, bool forward);
+    public BinaryMatch And(TInner& set1, TOuter& set2, CancellationToken& token);
+    public BinaryMatch Or(TInner& set1, TOuter& set2, CancellationToken& token);
+    public AndNotMatch AndNot(TInner& set1, TOuter& set2, CancellationToken& token);
+    public BoostingMatch Boost(IQueryMatch match, float boostFactor);
+    [CompilerGeneratedAttribute]
+public bool get_ForceNonAccelerated();
+    [CompilerGeneratedAttribute]
+public void set_ForceNonAccelerated(bool value);
+    public bool get_IsAccelerated();
+    public long get_NumberOfEntries();
+    public ByteStringContext get_Allocator();
+    internal Transaction get_Transaction();
+    public bool get_DocumentsAreBoosted();
+    private void Init();
+    public EntryTermsReader GetEntryTermsReader(long id, Page& p);
+    internal void EncodeAndApplyAnalyzerForMultipleTerms(FieldMetadata& binding, ReadOnlySpan`1<char> term, ContextBoundNativeList`1& terms);
+    internal void ApplyAnalyzerMultiTerms(FieldMetadata& binding, ReadOnlySpan`1<byte> originalTerm, ContextBoundNativeList`1& terms);
+    private void AnalyzeMultipleTerms(Analyzer analyzer, ReadOnlySpan`1<byte> originalTerm, ContextBoundNativeList`1& terms);
+    internal Slice EncodeAndApplyAnalyzer(FieldMetadata& binding, Analyzer analyzer, ReadOnlySpan`1<char> term);
+    [SkipLocalsInitAttribute]
+public Slice EncodeAndApplyAnalyzer(FieldMetadata& binding, string term);
+    public void ApplyAnalyzer(string originalTerm, int fieldId, Slice& value);
+    public void ApplyAnalyzer(FieldMetadata& binding, Analyzer analyzer, ReadOnlySpan`1<byte> originalTerm, Slice& value);
+    internal InternalScope<ByteStringMemoryCache> ApplyAnalyzer(ReadOnlySpan`1<byte> originalTerm, int fieldId, Slice& value);
+    [SkipLocalsInitAttribute]
+internal InternalScope<ByteStringMemoryCache> ApplyAnalyzer(Slice originalTerm, int fieldId, Slice& value);
+    private InternalScope<ByteStringMemoryCache> AnalyzeTerm(Analyzer analyzer, ReadOnlySpan`1<byte> originalTerm, Slice& value);
+    public AllEntriesMatch AllEntries();
+    public TermMatch EmptyMatch();
+    public long GetDictionaryIdFor(Slice field);
+    public long GetTermAmountInField(FieldMetadata& field);
+    public bool TryGetTermsOfField(FieldMetadata& field, ExistsTermProvider`1& existsTermProvider);
+    public bool TryGetTermsOfField(FieldMetadata& field, ExistsTermProvider`1& existsTermProvider);
+    public List`1<string> GetFields();
+    public FieldIndexingMode GetFieldIndexingModeForDynamic(Slice name);
+    public FieldMetadata GetFieldMetadata(string fieldName, FieldIndexingMode mode);
+    internal FixedSizeTree GetDocumentBoostTree();
+    public FieldMetadata FieldMetadataBuilder(string fieldName, int fieldId, Analyzer analyzer, FieldIndexingMode fieldIndexingMode, bool hasBoost);
+    public Slice GetDynamicFieldName(string fieldName);
+    public TermsReader TermsReaderFor(string name);
+    public TermsReader TermsReaderFor(Slice name);
+    public SpatialReader SpatialReader(Slice name);
+    public Lookup`1<Int64LookupKey> EntriesToTermsReader(Slice name);
+    public sealed virtual void Dispose();
+    public Slice GetFirstIndexedFiledName();
+    public bool HasMultipleTermsInField(string fieldName);
+    public bool HasMultipleTermsInField(FieldMetadata& fieldMetadata);
+    private bool HasMultipleTermsInField(Slice fieldName);
+    internal bool TryGetPostingListForNonExisting(FieldMetadata& field, Int64& postingListId);
+    private bool TryGetPostingListForNonExisting(Slice name, Int64& postingListId);
+    private void InitNonExistingPostingList();
+    internal bool TryGetPostingListForNull(FieldMetadata& field, Int64& postingListId);
+    private bool TryGetPostingListForNull(Slice name, Int64& postingListId);
+    private void InitNullPostingList();
+    public IncludeNullMatch`1<TInner> IncludeNullMatch(FieldMetadata& field, TInner& inner, bool forward);
+    public IncludeNonExistingMatch`1<TInner> IncludeNonExistingMatch(FieldMetadata& field, TInner& inner, bool forward);
+    private void InitializeSpecialTermsMarkers();
+    public static void LoadSpecialTermMarkers(Tree postingList, HashSet`1<long> termsMarkers);
+    private long GetRootPageByFieldName(Slice fieldName);
+    public Dictionary`2<long, Slice> GetIndexedFieldNamesByRootPage();
+    public MemoizationMatchProvider`1<TInner> Memoize(TInner inner);
+    public MultiUnaryMatch CreateMultiUnaryMatch(TInner inner, MultiUnaryItem[] unaryItems, CancellationToken token);
+    public IQueryMatch PhraseQuery(TInner inner, FieldMetadata& field, ReadOnlySpan`1<Slice> terms);
+    public IQueryMatch SearchQuery(FieldMetadata& field, IEnumerable`1<string> values, Operator operator, Nullable`1<bool> supportsPhraseQuery, CancellationToken& cancellationToken);
+    private IQueryMatch SearchQueryLegacy(FieldMetadata field, IEnumerable`1<string> values, Operator operator, CancellationToken& cancellationToken);
+    private IQueryMatch SearchQueryWithPhraseQuery(FieldMetadata field, IEnumerable`1<string> values, Operator operator, CancellationToken& cancellationToken);
+    private SearchMatchOptions GetTermType(ReadOnlySpan`1<char> termValue);
+    private Analyzer CreateWildcardAnalyzer(FieldMetadata& field, Analyzer& analyzer);
+    public SortingMatch OrderBy(TInner& set, OrderMetadata metadata, int take, CancellationToken& token);
+    public SortingMultiMatch OrderBy(TInner& set, OrderMetadata[] metadata, int take, CancellationToken& token);
+    public IRawTermProvider Suggest(FieldMetadata& field, string term, bool sortByPopularity, StringDistanceAlgorithm algorithm, float accuracy, int take);
+    private SuggestionTermProvider`1<TDistanceProvider> Suggest(FieldMetadata& field, string term, bool sortByPopularity, float accuracy, int take);
+    public TermMatch TermQuery(string field, string term, bool hasBoost);
+    public TermMatch TermQuery(Slice field, Slice term, bool hasBoost);
+    private long GetContainerIdOfNumericalTerm(FieldMetadata& field, FieldMetadata& numericalField, TNumeric term);
+    public TermMatch TermQuery(FieldMetadata& field, TNumeric term, CompactTree termsTree);
+    public CompactTree GetTermsFor(Slice name);
+    public Lookup`1<Int64LookupKey> GetLongTermsFor(Slice name);
+    public Lookup`1<DoubleLookupKey> GetDoubleTermsFor(Slice name);
+    public TermMatch TermQuery(FieldMetadata& field, string term, CompactTree termsTree);
+    public TermMatch TermQuery(FieldMetadata& field, Slice term, CompactTree termsTree);
+    public TermMatch TermQuery(FieldMetadata& field, CompactKey term, CompactTree tree);
+    private double GetTermRatioToWholeCollection(FieldMetadata& field, CompactKey term, CompactTree tree);
+    internal TermMatch TermQuery(FieldMetadata& field, long containerId, double termRatioToWholeCollection);
+    public PostingList GetPostingList(long containerId);
+    public long NumberOfDocumentsUnderSpecificTerm(FieldMetadata& binding, TData term);
+    private long NumberOfDocumentsUnderSpecificTerm(FieldMetadata& binding, string term);
+    internal long NumberOfDocumentsUnderSpecificTerm(CompactTree tree, Slice term);
+    private long NumberOfDocumentsUnderSpecificTerm(long containerId);
+    public MultiTermMatch StartWithQuery(string field, string startWith, bool isNegated, bool hasBoost, bool forward);
+    public MultiTermMatch StartWithQuery(FieldMetadata& field, string startWith, bool isNegated, bool forward, bool streamingEnabled, CancellationToken& token);
+    public MultiTermMatch StartWithQuery(FieldMetadata& field, Slice startWith, bool isNegated, bool forward, bool streamingEnabled, bool validatePostfixLen, CancellationToken& token);
+    public MultiTermMatch EndsWithQuery(FieldMetadata& field, string endsWith, bool isNegated, bool forward, bool streamingEnabled, CancellationToken& token);
+    public MultiTermMatch EndsWithQuery(FieldMetadata& field, Slice endsWith, bool isNegated, bool forward, bool streamingEnabled, CancellationToken& token);
+    public MultiTermMatch ContainsQuery(FieldMetadata& field, string containsTerm, bool isNegated, bool forward, CancellationToken& token);
+    public MultiTermMatch ContainsQuery(FieldMetadata& field, Slice containsTerm, bool isNegated, bool forward, CancellationToken& token);
+    public MultiTermMatch ExistsQuery(FieldMetadata& field, bool forward, bool streamingEnabled, CancellationToken& token);
+    public MultiTermMatch RegexQuery(FieldMetadata& field, Regex regex, bool forward, bool streamingEnabled, CancellationToken& token);
+    private MultiTermMatch MultiTermMatchBuilder(FieldMetadata& field, Slice term, bool streamingEnabled, bool validatePostfixLen, CancellationToken& token);
+    private MultiTermMatch MultiTermMatchBuilder(FieldMetadata& field, string term, bool streamingEnabled, CancellationToken token);
+    private bool TryRewriteTermWhenPerformingBackwardStreaming(bool streamingEnabled, Slice termSlice, Slice& termForSeek);
+    private TTermProvider GetMultiTermMatchProvider(FieldMetadata& field, CompactTree termTree, CompactKey term, CompactKey seekTerm, bool validatePostfixLen, CancellationToken token);
+    public MultiTermMatch InQuery(string field, List`1<string> inTerms);
+    public MultiTermMatch InQuery(FieldMetadata& field, List`1<string> inTerms);
+    public MultiTermMatch InQuery(FieldMetadata& field, List`1<ValueTuple`2<string, bool>> inTerms, CancellationToken& token);
+    private MultiTermMatch InQuery(FieldMetadata& field, List`1<TTermType> inTerms, CancellationToken token);
+    public IQueryMatch AllInQuery(FieldMetadata& field, HashSet`1<ValueTuple`2<string, bool>> allInTerms, CancellationToken& token);
+    public IQueryMatch AllInQuery(FieldMetadata& field, HashSet`1<Slice> allInTerms, CancellationToken& token);
+    private IQueryMatch AllInQuery(FieldMetadata& field, HashSet`1<TTerm> allInTerms, CancellationToken& cancellationToken);
+    private static int TermQueryItemComparison(TermQueryItem x, TermQueryItem y);
+    public AndNotMatch NotInQuery(FieldMetadata& field, TInner inner, List`1<string> notInTerms);
+    private TermMatch TermMatchHandlingNullTerm(FieldMetadata& field, TermQueryItem termItem, CompactTree terms);
+    public MultiTermMatch BetweenQuery(FieldMetadata& field, TValue low, TValue high, UnaryMatchOperation leftSide, UnaryMatchOperation rightSide, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    public MultiTermMatch GreaterThanQuery(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    public MultiTermMatch GreatThanOrEqualsQuery(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    private MultiTermMatch GreatBuilder(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    public MultiTermMatch LessThanOrEqualsQuery(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    public MultiTermMatch LessThanQuery(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    private MultiTermMatch LessBuilder(FieldMetadata& field, TValue value, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    private MultiTermMatch RangeBuilder(FieldMetadata& field, Slice low, Slice high, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    private MultiTermMatch RangeBuilder(FieldMetadata field, long low, long high, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    private MultiTermMatch RangeBuilder(FieldMetadata field, double low, double high, bool forward, bool streamingEnabled, long maxNumberOfTerms, CancellationToken token);
+    public IQueryMatch SpatialQuery(FieldMetadata& field, double error, IShape shape, SpatialContext spatialContext, SpatialRelation spatialRelation, bool isNegated, CancellationToken& token);
+    [CompilerGeneratedAttribute]
+internal static void <SearchQueryLegacy>g__AssertFieldIsSearched|103_0(<>c__DisplayClass103_0& );
+    [IteratorStateMachineAttribute("Corax.Querying.IndexSearcher/<<SearchQueryLegacy>g__GetTokens|103_1>d")]
+[CompilerGeneratedAttribute]
+internal static IEnumerable`1<Token> <SearchQueryLegacy>g__GetTokens|103_1(string source);
+    [CompilerGeneratedAttribute]
+internal static void <SearchQueryWithPhraseQuery>g__AssertFieldIsSearched|104_0(<>c__DisplayClass104_0& );
+    [CompilerGeneratedAttribute]
+internal static int <SearchQueryWithPhraseQuery>g__CountTokens|104_1(String& source, Token& termToken);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.AllEntriesMatch : ValueType {
+    private long _count;
+    private ForwardIterator<Int64LookupKey> _entriesPagesIt;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    public AllEntriesMatch(IndexSearcher searcher, Transaction tx);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.AndNotMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    internal AndNotMatch(IQueryMatch match, FunctionTable functionTable);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    public static AndNotMatch Create(AndNotMatch`2& query);
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.AndNotMatch`2 : ValueType {
+    private TInner _inner;
+    private TOuter _outer;
+    private long _totalResults;
+    private QueryCountConfidence _confidence;
+    private CancellationToken _token;
+    private ByteStringContext _context;
+    private bool _isAndWithBuffer;
+    private GrowableBuffer`1<Progressive> _buffer;
+    private bool _doNotSortResults;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    private AndNotMatch`2(ByteStringContext context, TInner& inner, TOuter& outer, long totalResults, QueryCountConfidence confidence, CancellationToken token);
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    public static AndNotMatch`2<TInner, TOuter> Create(IndexSearcher searcher, TInner& inner, TOuter& outer, CancellationToken& token);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.BinaryMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    internal BinaryMatch(IQueryMatch match, FunctionTable functionTable);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    public static BinaryMatch Create(BinaryMatch`2& query);
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.BinaryMatch`2 : ValueType {
+    private method _fillFunc;
+    private method _andWithFunc;
+    private method _inspectFunc;
+    private TInner _inner;
+    private TOuter _outer;
+    private MemoizationMatchProvider`1<TOuter> _memoizedOuter;
+    private ByteStringContext _ctx;
+    private IndexSearcher _indexSearcher;
+    private long _totalResults;
+    private QueryCountConfidence _confidence;
+    private CancellationToken _token;
+    private SkipSortingResult _skipSortingResult;
+    private int _fillCallCounter;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    private BinaryMatch`2(IndexSearcher indexSearcher, TInner& inner, TOuter& outer, method fillFunc, method andWithFunc, method inspectionFunc, long totalResults, QueryCountConfidence confidence, SkipSortingResult skipSortingResult, CancellationToken& token);
+    public static BinaryMatch`2<TInner, TOuter> YieldAnd(IndexSearcher searcher, TInner& inner, TOuter& outer, CancellationToken& token);
+    public static BinaryMatch`2<TInner, TOuter> YieldOr(IndexSearcher indexSearcher, TInner& inner, TOuter& outer, CancellationToken& token);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    [CompilerGeneratedAttribute]
+internal static int <YieldAnd>g__FillFunc|0_0(BinaryMatch`2& match, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+internal static int <YieldAnd>g__AndWith|0_1(BinaryMatch`2& match, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <YieldAnd>g__InspectFunc|0_2(BinaryMatch`2& match);
+    [CompilerGeneratedAttribute]
+[SkipLocalsInitAttribute]
+internal static int <YieldOr>g__AndWith|1_0(BinaryMatch`2& match, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+[SkipLocalsInitAttribute]
+internal static int <YieldOr>g__FillFunc|1_1(BinaryMatch`2& match, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <YieldOr>g__InspectFunc|1_2(BinaryMatch`2& match);
+}
+public class Corax.Querying.Matches.BoostingComparer : ValueType {
+    public MatchCompareFieldType FieldType { get; }
+    public FieldMetadata Field { get; }
+    public sealed virtual MatchCompareFieldType get_FieldType();
+    public sealed virtual FieldMetadata get_Field();
+    public sealed virtual int CompareNumerical(T sx, T sy);
+    public sealed virtual int CompareSequence(ReadOnlySpan`1<byte> sx, ReadOnlySpan`1<byte> sy);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.BoostingMatch : ValueType {
+    internal IQueryMatch _inner;
+    public float BoostFactor;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public BoostingMatch(IndexSearcher searcher, IQueryMatch& inner, float boostFactor);
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public class Corax.Querying.Matches.EmptyAggregationProvider : ValueType {
+    public sealed virtual IDisposable AggregateByTerms(List`1& terms, Span`1& counts);
+    public sealed virtual long AggregateByRange();
+}
+public class Corax.Querying.Matches.IncludeNonExistingMatch`1 : ValueType {
+    private bool _forward;
+    private bool _hasLeftNonExisting;
+    private bool _innerEnd;
+    private Iterator _postingListIterator;
+    private TInner _inner;
+    [CompilerGeneratedAttribute]
+private long <Count>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QueryCountConfidence <Confidence>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsBoosting>k__BackingField;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public IncludeNonExistingMatch`1(IndexSearcher searcher, TInner& inner, FieldMetadata& field, bool forward);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual QueryCountConfidence get_Confidence();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> matches);
+    private int BackwardStreaming(Span`1<long> matches);
+    private int ForwardStreaming(Span`1<long> matches);
+    private bool FetchNonExisting(Span`1<long> matches, Int32& matchesCount);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public class Corax.Querying.Matches.IncludeNullMatch`1 : ValueType {
+    private bool _forward;
+    private bool _hasLeftNulls;
+    private bool _innerEnd;
+    private Iterator _postingListIterator;
+    private TInner _inner;
+    [CompilerGeneratedAttribute]
+private long <Count>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QueryCountConfidence <Confidence>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsBoosting>k__BackingField;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public IncludeNullMatch`1(IndexSearcher searcher, TInner& inner, FieldMetadata& field, bool forward);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual QueryCountConfidence get_Confidence();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> matches);
+    private int BackwardStreaming(Span`1<long> matches);
+    private int ForwardStreaming(Span`1<long> matches);
+    private bool FetchNulls(Span`1<long> matches, Int32& matchesCount);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public interface Corax.Querying.Matches.IRawTermProvider {
+    public abstract virtual void Next(Span`1& terms, Span`1& tokens, Span`1& score);
+}
+public class Corax.Querying.Matches.MemoizationMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    internal MemoizationMatch(IQueryMatch match, FunctionTable functionTable);
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public Span`1<long> FillAndRetrieve();
+    public static MemoizationMatch Create(MemoizationMatch`1& query);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.MemoizationMatch`1 : ValueType {
+    private MemoizationMatchProvider`1<TInner> _inner;
+    private int _bufferCurrentIdx;
+    public bool IsAllEntries;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    internal MemoizationMatch`1(MemoizationMatchProvider`1& inner);
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public Span`1<long> FillAndRetrieve();
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    private string get_DebugView();
+    public sealed virtual QueryInspectionNode Inspect();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.MemoizationMatchProvider`1 : object {
+    private int _replayCounter;
+    private ByteStringContext _ctx;
+    private IndexSearcher _indexSearcher;
+    private TInner _inner;
+    private int _bufferEndIdx;
+    private ByteString _bufferHolder;
+    private InternalScope<ByteStringMemoryCache> _bufferScope;
+    private SortMode<TInner> _sortMode;
+    public int ReplayCounter { get; }
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public Span`1<long> Buffer { get; }
+    private string DebugView { get; }
+    public MemoizationMatchProvider`1(IndexSearcher indexSearcher, TInner& inner);
+    public int get_ReplayCounter();
+    public bool get_IsBoosting();
+    public long get_Count();
+    public QueryCountConfidence get_Confidence();
+    public Span`1<long> get_Buffer();
+    public void SortingRequired();
+    public void SkipSortingResults();
+    public sealed virtual MemoizationMatch Replay();
+    public Span`1<long> FillAndRetrieve();
+    internal int Fill(Span`1<long> matches);
+    private void InitializeInner();
+    private void UnlikelyGrowBuffer(int currentlyUsed);
+    public void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public QueryInspectionNode Inspect();
+    private string get_DebugView();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private void <InitializeInner>g__SetSortingMode|25_0();
+    [CompilerGeneratedAttribute]
+private void <UnlikelyGrowBuffer>g__ThrowExceededMemoizationSize|26_0(<>c__DisplayClass26_0& );
+}
+public class Corax.Querying.Matches.Meta.HasBoosting : ValueType {
+}
+public class Corax.Querying.Matches.Meta.HasBoostingNoStore : ValueType {
+}
+public interface Corax.Querying.Matches.Meta.IAggregationProvider {
+    public abstract virtual IDisposable AggregateByTerms(List`1& terms, Span`1& counts);
+    public abstract virtual long AggregateByRange();
+}
+public interface Corax.Querying.Matches.Meta.IBoostingMarker {
+}
+public interface Corax.Querying.Matches.Meta.IMemoizationMatchSource {
+    public abstract virtual MemoizationMatch Replay();
+}
+public interface Corax.Querying.Matches.Meta.IQueryMatch {
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public string DebugView { get; }
+    public abstract virtual long get_Count();
+    public abstract virtual SkipSortingResult AttemptToSkipSorting();
+    public abstract virtual QueryCountConfidence get_Confidence();
+    public abstract virtual bool get_IsBoosting();
+    public abstract virtual int Fill(Span`1<long> matches);
+    public abstract virtual int AndWith(Span`1<long> buffer, int matches);
+    public abstract virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public abstract virtual QueryInspectionNode Inspect();
+    public virtual string get_DebugView();
+}
+public interface Corax.Querying.Matches.Meta.ITermProvider {
+    public bool IsFillSupported { get; }
+    public string DebugView { get; }
+    public abstract virtual bool get_IsFillSupported();
+    public abstract virtual int Fill(Span`1<long> containers);
+    public abstract virtual void Reset();
+    public abstract virtual bool Next(TermMatch& term);
+    public abstract virtual QueryInspectionNode Inspect();
+    public virtual string get_DebugView();
+}
+internal class Corax.Querying.Matches.Meta.MergeHelper : object {
+    public static int And(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    public static int And(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    internal static int AndVectorized(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    internal static int AndVectorized(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    internal static int AndScalar(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    internal static int AndScalar(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    public static int Or(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    public static int Or(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    public static int OrNonTemporal(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    public static int OrScalar(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    public static int AndNot(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    public static int AndNot(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+    internal static int AndNotScalar(Int64* dst, int dstLength, Int64* left, int leftLength, Int64* right, int rightLength);
+}
+public class Corax.Querying.Matches.Meta.NoBoosting : ValueType {
+}
+[ExtensionAttribute]
+public static class Corax.Querying.Matches.Meta.QueryConfidenceExtensions : object {
+    [ExtensionAttribute]
+public static QueryCountConfidence Min(QueryCountConfidence c1, QueryCountConfidence c2);
+    [ExtensionAttribute]
+public static QueryCountConfidence Max(QueryCountConfidence c1, QueryCountConfidence c2);
+}
+public enum Corax.Querying.Matches.Meta.QueryCountConfidence : Enum {
+    public int value__;
+    public static QueryCountConfidence Low;
+    public static QueryCountConfidence Normal;
+    public static QueryCountConfidence High;
+}
+public class Corax.Querying.Matches.Meta.QueryInspectionNode : object {
+    public string Operation;
+    public Dictionary`2<string, string> Parameters;
+    public List`1<QueryInspectionNode> Children;
+    public QueryInspectionNode(string operation, List`1<QueryInspectionNode> children, Dictionary`2<string, string> parameters);
+    public sealed virtual DynamicJsonValue ToJson();
+    public static QueryInspectionNode NotInitializedInspectionNode(string nameOperation);
+    public virtual string ToString();
+    public static string ToString(QueryInspectionNode node);
+    private static string ToString(QueryInspectionNode node, int indent);
+}
+public static class Corax.Querying.Matches.Meta.QueryMatch : object {
+    public static long Invalid;
+    public static long Start;
+}
+public static class Corax.Querying.Matches.Meta.Range : object {
+}
+public enum Corax.Querying.Matches.Meta.SkipSortingResult : Enum {
+    public int value__;
+    public static SkipSortingResult ResultsNativelySorted;
+    public static SkipSortingResult WillSkipSorting;
+    public static SkipSortingResult SortingIsRequired;
+}
+internal class Corax.Querying.Matches.Meta.SortHelper : object {
+    public static int FindMatches(Span`1<long> dst, Span`1<long> left, Span`1<long> right);
+    private static int FindMatches(Int64* dst, Int64* left, int leftLength, Int64* right, int rightLength);
+    [CompilerGeneratedAttribute]
+internal static int <FindMatches>g__LinearScan|1_0(<>c__DisplayClass1_0& );
+    [CompilerGeneratedAttribute]
+internal static int <FindMatches>g__GallopSearch|1_1(long needle, <>c__DisplayClass1_0& );
+}
+public enum Corax.Querying.Matches.Meta.UnaryMatchOperation : Enum {
+    public int value__;
+    public static UnaryMatchOperation None;
+    public static UnaryMatchOperation NotEquals;
+    public static UnaryMatchOperation LessThan;
+    public static UnaryMatchOperation LessThanOrEqual;
+    public static UnaryMatchOperation GreaterThan;
+    public static UnaryMatchOperation GreaterThanOrEqual;
+    public static UnaryMatchOperation Equals;
+    public static UnaryMatchOperation Between;
+    public static UnaryMatchOperation NotBetween;
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.MultiTermMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    internal MultiTermMatch(IQueryMatch match, FunctionTable functionTable);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    public static MultiTermMatch Create(MultiTermMatch`1& query);
+    public static MultiTermMatch Create(BinaryMatch& query);
+    public static MultiTermMatch Create(TermMatch& query);
+    public static MultiTermMatch CreateEmpty(ByteStringContext context);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.MultiTermMatch`1 : ValueType {
+    private static int InitialFrequencyHolders;
+    private CancellationToken _token;
+    private bool _isBoosting;
+    private long _readTerms;
+    private long _totalResults;
+    private long _maxNumberOfTerms;
+    private long _current;
+    private QueryCountConfidence _confidence;
+    private Bm25Relevance[] _frequenciesHolder;
+    private int _currentFreqIdx;
+    private bool _doNotSortResultsDueToStreaming;
+    private TTermProvider _inner;
+    private TermMatch _currentTerm;
+    private MultiTermReader<TTermProvider> _termReader;
+    private ByteStringContext _context;
+    private int FrequenciesHolderSize { get; }
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public string DebugView { get; }
+    public MultiTermMatch`1(IndexSearcher indexSearcher, FieldMetadata& field, ByteStringContext context, TTermProvider inner, bool streamingEnabled, long maxNumberOfTerms, QueryCountConfidence confidence, CancellationToken& token);
+    private int get_FrequenciesHolderSize();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    private int FillWithReader(Span`1<long> buffer);
+    [SkipLocalsInitAttribute]
+private int FillWithTermMatches(Span`1<long> buffer);
+    private void UnlikelyGrowBufferOfTermMatches();
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    private int AndWithFill(Span`1<long> buffer, int matches);
+    [SkipLocalsInitAttribute]
+private int AndWithTermMatch(Span`1<long> buffer, int matches);
+    private void ResetBm25Buffer();
+    private void AddTermToBm25();
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    public sealed virtual string get_DebugView();
+}
+public class Corax.Querying.Matches.MultiUnaryItem : ValueType {
+    public FieldMetadata Binding;
+    public DataType Type;
+    private Slice _sliceValueLeft;
+    private long _longValueLeft;
+    private double _doubleValueLeft;
+    private Slice _sliceValueRight;
+    private long _longValueRight;
+    private double _doubleValueRight;
+    internal bool _isBetween;
+    internal UnaryMatchOperation _leftSideOperation;
+    internal UnaryMatchOperation _rightSideOperation;
+    public UnaryMode Mode;
+    private method _byteComparerLeft;
+    private method _longComparerLeft;
+    private method _doubleComparerLeft;
+    private method _byteComparerRight;
+    private method _longComparerRight;
+    private method _doubleComparerRight;
+    private method _compareNullLeft;
+    private method _compareNullRight;
+    private bool _leftIsNull;
+    private bool _rightIsNull;
+    private MultiUnaryItem(FieldMetadata& binding, DataType dataType, bool isBetween, UnaryMatchOperation leftOperation, UnaryMatchOperation rightOperation);
+    public MultiUnaryItem(IndexSearcher searcher, FieldMetadata& binding, string value, UnaryMatchOperation operation);
+    public MultiUnaryItem(FieldMetadata& binding, long value, UnaryMatchOperation operation);
+    public MultiUnaryItem(FieldMetadata& binding, double value, UnaryMatchOperation operation);
+    public MultiUnaryItem(FieldMetadata& binding, Slice value, UnaryMatchOperation operation);
+    public MultiUnaryItem(IndexSearcher searcher, FieldMetadata& binding, string leftValue, string rightValue, UnaryMatchOperation leftOperation, UnaryMatchOperation rightOperation);
+    public MultiUnaryItem(FieldMetadata& binding, long valueLeft, long valueRight, UnaryMatchOperation leftOperation, UnaryMatchOperation rightOperation);
+    public MultiUnaryItem(FieldMetadata& binding, double valueLeft, double valueRight, UnaryMatchOperation leftOperation, UnaryMatchOperation rightOperation);
+    public string RightAsString();
+    public string LeftAsString();
+    public bool CompareNumerical(EntryTermsReader& it);
+    public bool CompareLiteral(EntryTermsReader& it);
+    [CompilerGeneratedAttribute]
+internal static void <.ctor>g__SelectComparers|25_0(UnaryMatchOperation operation, method& byteComparer, method& longComparer, method& doubleComparer, method& compareNull);
+    [CompilerGeneratedAttribute]
+internal static bool <.ctor>g__AlwaysFalse|25_1(bool _);
+    [CompilerGeneratedAttribute]
+internal static bool <.ctor>g__AlwaysTrue|25_2(bool _);
+    [CompilerGeneratedAttribute]
+internal static bool <.ctor>g__FalseUnlessNull|25_3(bool isNull);
+    [CompilerGeneratedAttribute]
+internal static bool <.ctor>g__TrueUnlessNull|25_4(bool isNull);
+    [CompilerGeneratedAttribute]
+internal static bool <.ctor>g__ThrowWhenUsed|25_5(bool isNull);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.MultiUnaryMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    private CancellationToken _token;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    internal MultiUnaryMatch(IQueryMatch match, FunctionTable functionTable, CancellationToken token);
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public static MultiUnaryMatch Create(MultiUnaryMatch`1& query, CancellationToken token);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+public class Corax.Querying.Matches.MultiUnaryMatch`1 : ValueType {
+    private long _count;
+    private QueryCountConfidence _confidence;
+    private IndexSearcher _searcher;
+    private TInner _inner;
+    private MultiUnaryItem[] _comparers;
+    private GrowableBuffer`1<Progressive> _growableBuffer;
+    [CompilerGeneratedAttribute]
+private bool <IsBoosting>k__BackingField;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public MultiUnaryMatch`1(IndexSearcher searcher, TInner inner, MultiUnaryItem[]& items);
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public class Corax.Querying.Matches.PhraseMatch`1 : ValueType {
+    private IDisposable _memoryHandler;
+    private ByteString _memory;
+    private TInner _inner;
+    private FieldMetadata _fieldMetadata;
+    private IndexSearcher _indexSearcher;
+    private ByteString _subsequence;
+    private long _vectorRootPage;
+    private long _rootPage;
+    private int MemorySize { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public PhraseMatch`1(FieldMetadata& fieldMetadata, IndexSearcher indexSearcher, TInner inner, ByteString subsequence, long vectorRootPage, long rootPage);
+    private int get_MemorySize();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    private int ScanDocumentsTermsEntries(Span`1<long> matches);
+    private void UnlikelyGrowBuffer(Span`1& buffer, Span`1& indexes);
+    internal string RenderOriginalSentence(long documentId);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+internal class Corax.Querying.Matches.SortingMatches.AlphanumericalComparer : object {
+    public static AlphanumericalComparer Instance;
+    private static AlphanumericalComparer();
+    public int Compare(ReadOnlySpan`1<byte> string1, ReadOnlySpan`1<byte> string2);
+}
+public static class Corax.Querying.Matches.SortingMatches.CompactKeyComparer : object {
+    public static int Compare(UnmanagedSpan xItem, UnmanagedSpan yItem);
+}
+internal static class Corax.Querying.Matches.SortingMatches.HeapSorterBuilder : object {
+    public static NumericalMaxHeapSorter`2<UnmanagedSpan, TSecondaryComparer> BuildCompoundCompactKeySorter(Span`1<int> documents, Span`1<UnmanagedSpan> terms, bool descending, TSecondaryComparer secondaryCmp);
+    public static TextualMaxHeapSorter`1<SkipSecondaryComparer> BuildSingleAlphanumericalSorter(Span`1<int> documents, Span`1<ByteString> terms, ByteStringContext allocator, bool descending);
+    public static TextualMaxHeapSorter`1<TSecondaryCmp> BuildCompoundAlphanumericalSorter(Span`1<int> documents, Span`1<ByteString> terms, ByteStringContext allocator, bool descending, TSecondaryCmp secondaryCmp);
+    public static NumericalMaxHeapSorter`2<TTermType, SkipSecondaryComparer> BuildSingleNumericalSorter(Span`1<int> documents, Span`1<TTermType> terms, bool descending);
+    public static NumericalMaxHeapSorter`2<TTermType, TSecondaryCmp> BuildCompoundNumericalSorter(Span`1<int> documents, Span`1<TTermType> terms, bool descending, TSecondaryCmp secondaryCmp);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundCompactKeySorter>g__Ascending|0_0(NumericalMaxHeapSorter`2& sorter, UnmanagedSpan termA, int posA, UnmanagedSpan termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundCompactKeySorter>g__Descending|0_1(NumericalMaxHeapSorter`2& sorter, UnmanagedSpan termA, int posA, UnmanagedSpan termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildSingleAlphanumericalSorter>g__CompareAlphanumericalAscending|1_0(TextualMaxHeapSorter`1& sorter, ReadOnlySpan`1<byte> termA, int posA, ReadOnlySpan`1<byte> termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildSingleAlphanumericalSorter>g__CompareAlphanumericalDescending|1_1(TextualMaxHeapSorter`1& sorter, ReadOnlySpan`1<byte> termA, int posA, ReadOnlySpan`1<byte> termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundAlphanumericalSorter>g__CompareAlphanumericalAscending|2_0(TextualMaxHeapSorter`1& sorter, ReadOnlySpan`1<byte> termA, int posA, ReadOnlySpan`1<byte> termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundAlphanumericalSorter>g__CompareAlphanumericalDescending|2_1(TextualMaxHeapSorter`1& sorter, ReadOnlySpan`1<byte> termA, int posA, ReadOnlySpan`1<byte> termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildSingleNumericalSorter>g__Ascending|3_0(NumericalMaxHeapSorter`2& sorter, TTermType termA, int posA, TTermType termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildSingleNumericalSorter>g__Descending|3_1(NumericalMaxHeapSorter`2& sorter, TTermType termA, int posA, TTermType termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundNumericalSorter>g__Ascending|4_0(NumericalMaxHeapSorter`2& sorter, TTermType termA, int posA, TTermType termB, int posB);
+    [CompilerGeneratedAttribute]
+internal static int <BuildCompoundNumericalSorter>g__Descending|4_1(NumericalMaxHeapSorter`2& sorter, TTermType termA, int posA, TTermType termB, int posB);
+}
+public interface Corax.Querying.Matches.SortingMatches.Meta.IMatchComparer {
+    public MatchCompareFieldType FieldType { get; }
+    public FieldMetadata Field { get; }
+    public abstract virtual MatchCompareFieldType get_FieldType();
+    public abstract virtual FieldMetadata get_Field();
+    public abstract virtual int CompareSequence(ReadOnlySpan`1<byte> sx, ReadOnlySpan`1<byte> sy);
+    public abstract virtual int CompareNumerical(T sx, T sy);
+}
+public interface Corax.Querying.Matches.SortingMatches.Meta.ISpatialComparer {
+    public double Round { get; }
+    public SpatialUnits Units { get; }
+    public IPoint Point { get; }
+    public abstract virtual double get_Round();
+    public abstract virtual SpatialUnits get_Units();
+    public abstract virtual IPoint get_Point();
+}
+public enum Corax.Querying.Matches.SortingMatches.Meta.MatchCompareFieldType : Enum {
+    public ushort value__;
+    public static MatchCompareFieldType Sequence;
+    public static MatchCompareFieldType Integer;
+    public static MatchCompareFieldType Floating;
+    public static MatchCompareFieldType Score;
+    public static MatchCompareFieldType Alphanumeric;
+    public static MatchCompareFieldType Spatial;
+    public static MatchCompareFieldType Random;
+}
+public class Corax.Querying.Matches.SortingMatches.Meta.SortingDataTransfer : ValueType {
+    public Single[] ScoresBuffer;
+    public SpatialResult[] DistancesBuffer;
+    public bool IncludeScores { get; }
+    public bool IncludeDistances { get; }
+    public bool get_IncludeScores();
+    public bool get_IncludeDistances();
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+[CompilerFeatureRequiredAttribute("RefStructs")]
+internal class Corax.Querying.Matches.SortingMatches.NumericalMaxHeapSorter`2 : ValueType {
+    private Span`1<int> _documents;
+    private Span`1<TTermType> _terms;
+    private int _heapSize;
+    private int _heapCapacity;
+    public bool IsDescending;
+    public TSecondaryComparer SecondaryComparer;
+    private method _compare;
+    public void Init(Span`1<int> documents, Span`1<TTermType> terms, ByteStringContext allocator, bool descending, method compare, TSecondaryComparer secondaryCmp);
+    public void Insert(int document, TTermType newTerm);
+    private int Compare(TTermType xDoc, int xIndex, TTermType yDoc, int yIndex);
+    private void HeapIncreaseKey(int i);
+    private void MaxHeapify(int i);
+    private void ReplaceMax(TTermType term, int documentId);
+    private void RemoveMax();
+    public void Fill(Span`1<long> batchResults, ContextBoundNativeList`1& results, ContextBoundNativeList`1& scoreDestination, Span`1<float> scores);
+    public void FillWithTerms(Span`1<long> batchResults, ContextBoundNativeList`1& results, ContextBoundNativeList`1& terms, ContextBoundNativeList`1& scoreDestination, Span`1<float> scores);
+    private int Parent(int idX);
+    private int LeftChild(int idX);
+    private int RightChild(int idX);
+    private void Swap(int a, int b);
+    [ConditionalAttribute("DEBUG")]
+private void ValidateMaxHeapStructure();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.SortingMatches.SortingMatch : ValueType {
+    public static int SortBatchSize;
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public long TotalResults { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    private string DebugView { get; }
+    private SortingMatch(IQueryMatch match, FunctionTable functionTable);
+    public long get_TotalResults();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public void SetScoreAndDistanceBuffer(SortingDataTransfer& sortingDataTransfer);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public static SortingMatch Create(SortingMatch`1& query);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.SortingMatches.SortingMatch`1 : ValueType {
+    private IndexSearcher _searcher;
+    private TInner _inner;
+    private OrderMetadata _orderMetadata;
+    private CancellationToken _cancellationToken;
+    private method _fillFunc;
+    private int _take;
+    private static int NotStarted;
+    private InternalScope<ByteStringMemoryCache> _entriesBufferScope;
+    private ContextBoundNativeList`1<long> _results;
+    private ContextBoundNativeList`1<SpatialResult> _distancesResults;
+    private ContextBoundNativeList`1<float> _scoresResults;
+    private int _alreadyReadIdx;
+    private SortingDataTransfer _sortingDataTransfer;
+    public long TotalResults;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    private string DebugView { get; }
+    public SortingMatch`1(IndexSearcher searcher, TInner& inner, OrderMetadata orderMetadata, CancellationToken& cancellationToken, int take);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    private static method SortBy(OrderMetadata metadata);
+    private static int Fill(SortingMatch`1& match, Span`1<long> matches);
+    private static void SortByRandom(SortingMatch`1& match, Span`1<long> results);
+    private static void SortUsingIndex(SortingMatch`1& match, Span`1<long> allMatches);
+    private static int FilterAlreadyFoundMatches(Span`1<long> items);
+    private static void InitializeIndexesTopHalf(Span`1<long> span);
+    private static void InitializeIndexesBottomHalf(Span`1<long> span);
+    private static String[] DebugTerms(LowLevelTransaction llt, Span`1<UnmanagedSpan> terms);
+    private static void SortResults(SortingMatch`1& match, Span`1<long> batchResults);
+    internal void SetSortingDataTransfer(SortingDataTransfer& sortingDataTransfer);
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    [CompilerGeneratedAttribute]
+internal static SortedIndexReader`1<TInner, TDirection> <SortUsingIndex>g__GetReader|33_0(SortingMatch`1& match, long min, long max, <>c__DisplayClass33_0`2& );
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.SortingMatches.SortingMultiMatch : ValueType {
+    private FunctionTable _functionTable;
+    private IQueryMatch _inner;
+    public long TotalResults { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    private string DebugView { get; }
+    internal SortingMultiMatch(IQueryMatch match, FunctionTable functionTable);
+    public long get_TotalResults();
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual int Fill(Span`1<long> buffer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public void SetSortingDataTransfer(SortingDataTransfer& sortingDataTransfer);
+    public static SortingMultiMatch Create(SortingMultiMatch`1& query);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.SortingMatches.SortingMultiMatch`1 : ValueType {
+    private static int NextComparerOffset;
+    private IndexSearcher _searcher;
+    private TInner _inner;
+    private OrderMetadata[] _orderMetadata;
+    private method _fillFunc;
+    private IEntryComparer[] _nextComparers;
+    private int _take;
+    private CancellationToken _token;
+    private static int NotStarted;
+    private InternalScope<ByteStringMemoryCache> _entriesBufferScope;
+    private ContextBoundNativeList`1<long> _results;
+    private SortingDataTransfer _sortingDataTransfer;
+    private ContextBoundNativeList`1<SpatialResult> _distancesResults;
+    private ContextBoundNativeList`1<float> _scoresResults;
+    private UnmanagedSpan`1<float> _secondaryScoreBuffer;
+    private IDisposable _scoreBufferHandler;
+    private int _alreadyReadIdx;
+    public long TotalResults;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    private string DebugView { get; }
+    public SortingMultiMatch`1(IndexSearcher searcher, TInner& inner, OrderMetadata[] orderMetadata, int take, CancellationToken& token);
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public void SetSortingDataTransfer(SortingDataTransfer& sortingDataTransfer);
+    private static int Fill(SortingMultiMatch`1& match, Span`1<long> matches);
+    private static void SortResults(SortingMultiMatch`1& match, Span`1<long> matches);
+    public sealed virtual long get_Count();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    private static method SortBy(OrderMetadata[] orderMetadata);
+    private static method SortBy(OrderMetadata[] orderMetadata);
+    private static method SortBy(OrderMetadata[] orderMetadata);
+    [CompilerGeneratedAttribute]
+internal static IEntryComparer[] <.ctor>g__HandleNextComparers|29_0(<>c__DisplayClass29_0& );
+}
+[IsByRefLikeAttribute]
+[ObsoleteAttribute("Types with embedded references are not supported in this version of your compiler.", "True")]
+[CompilerFeatureRequiredAttribute("RefStructs")]
+internal class Corax.Querying.Matches.SortingMatches.TextualMaxHeapSorter`1 : ValueType {
+    private Span`1<int> _documents;
+    private Span`1<ByteString> _terms;
+    private int _heapSize;
+    private int _heapCapacity;
+    private ByteStringContext _allocator;
+    public bool IsDescending;
+    public TSecondaryComparer SecondaryComparer;
+    private method _compare;
+    public void Init(Span`1<int> documents, Span`1<ByteString> terms, ByteStringContext allocator, bool descending, method compare, TSecondaryComparer secondaryCmp);
+    public void Insert(int document, ReadOnlySpan`1<byte> newTerm);
+    private void HeapIncreaseKey(int i);
+    private void MaxHeapify(int i);
+    private void ReplaceMax(ByteString term, int documentId);
+    private void RemoveMax();
+    public void Fill(Span`1<long> batchResults, ContextBoundNativeList`1& results, ContextBoundNativeList`1& scoreDestination, Span`1<float> scores);
+    private int Parent(int idX);
+    private int LeftChild(int idX);
+    private int RightChild(int idX);
+    private void Swap(int a, int b);
+    private int Compare(ReadOnlySpan`1<byte> xDoc, int xIndex, ReadOnlySpan`1<byte> yDoc, int yIndex);
+    [ConditionalAttribute("DEBUG")]
+private void ValidateMaxHeapStructure();
+}
+public class Corax.Querying.Matches.SpatialMatch.SpatialMatch`1 : object {
+    private IndexSearcher _indexSearcher;
+    private SpatialContext _spatialContext;
+    private double _error;
+    private IShape _shape;
+    private Page _lastPage;
+    private Point _point;
+    private CompactTree _tree;
+    private FieldMetadata _field;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private IEnumerator`1<ValueTuple`2<string, bool>> _termGenerator;
+    private TermMatch _currentMatch;
+    private ByteStringContext _allocator;
+    private SpatialRelation _spatialRelation;
+    private CancellationToken _token;
+    private bool _isTermMatch;
+    private IDisposable _startsWithDisposeHandler;
+    private HashSet`1<long> _alreadyReturned;
+    private long _fieldRootPage;
+    private SpatialScore _spatialScore;
+    private double _xShapeCenter;
+    private double _yShapeCenter;
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    public bool IsBoosting { get; }
+    public SpatialMatch`1(IndexSearcher indexSearcher, ByteStringContext allocator, SpatialContext spatialContext, FieldMetadata& field, IShape shape, CompactTree tree, double errorInPercentage, SpatialRelation spatialRelation, CancellationToken token);
+    private bool GoNextMatch();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual int Fill(Span`1<long> matches);
+    private bool CheckEntryManually(long id);
+    private bool IsTrue(SpatialRelation answer);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    private void ThrowPrimitiveHasNoBoostingData();
+    public sealed virtual QueryInspectionNode Inspect();
+}
+internal class Corax.Querying.Matches.SpatialMatch.SpatialScore : ValueType {
+    private ByteStringContext _context;
+    private NativeList`1<long> _matches;
+    private NativeList`1<double> _distances;
+    private double _maxDistance;
+    public void Init(ByteStringContext allocator);
+    public void Push(long id, double distance);
+    public void Dispose();
+    public void CalculateScore(Span`1<long> matches, Span`1<float> scores, float boostFactor, SpatialRelation spatialRelation);
+}
+public class Corax.Querying.Matches.SuggestionTermProvider`1 : ValueType {
+    private IndexSearcher _searcher;
+    private int _fieldId;
+    private Slice _term;
+    private int _take;
+    private bool _sort;
+    private float _distance;
+    private TDistanceProvider _distanceProvider;
+    public SuggestionTermProvider`1(IndexSearcher searcher, int fieldId, Slice term, IndexFieldBinding binding, int take, bool sortByPopularity, float accuracy, TDistanceProvider distanceProvider);
+    public static SuggestionTermProvider`1<TDistanceProvider> YieldSuggestions(IndexSearcher searcher, int fieldId, Slice term, IndexFieldBinding binding, TDistanceProvider distanceProvider, bool sortByPopularity, float distance, int take);
+    public sealed virtual void Next(Span`1& terms, Span`1& tokens, Span`1& scores);
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermMatch : ValueType {
+    private method _fillFunc;
+    private method _andWithFunc;
+    private method _scoreFunc;
+    private method _inspectFunc;
+    private bool _returnedValue;
+    private long _totalResults;
+    private long _current;
+    internal Bm25Relevance _bm25Relevance;
+    private Iterator _set;
+    private Item _containerItem;
+    private FastPForBufferedReader _containerReader;
+    private ByteStringContext _ctx;
+    public bool IsBoosting { get; }
+    public long Count { get; }
+    public QueryCountConfidence Confidence { get; }
+    private string DebugView { get; }
+    private TermMatch(IndexSearcher indexSearcher, ByteStringContext ctx, long totalResults, method fillFunc, method andWithFunc, method scoreFunc, method inspectFunc);
+    public sealed virtual bool get_IsBoosting();
+    public sealed virtual long get_Count();
+    public sealed virtual SkipSortingResult AttemptToSkipSorting();
+    public sealed virtual QueryCountConfidence get_Confidence();
+    public static TermMatch CreateEmpty(IndexSearcher indexSearcher, ByteStringContext ctx);
+    public static TermMatch YieldOnce(IndexSearcher indexSearcher, ByteStringContext ctx, long value, double termRatioToWholeCollection, bool isBoosting);
+    public static TermMatch YieldSmall(IndexSearcher indexSearcher, ByteStringContext ctx, Item containerItem, double termRatioToWholeCollection, bool isBoosting);
+    public static TermMatch YieldSet(IndexSearcher indexSearcher, ByteStringContext ctx, PostingList postingList, double termRatioToWholeCollection, bool isBoosting, bool useAccelerated);
+    public sealed virtual int Fill(Span`1<long> matches);
+    public sealed virtual int AndWith(Span`1<long> buffer, int matches);
+    public sealed virtual void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+    [CompilerGeneratedAttribute]
+internal static int <CreateEmpty>g__FillFunc|20_0(TermMatch& term, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+internal static int <CreateEmpty>g__AndWithFunc|20_1(TermMatch& term, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <CreateEmpty>g__InspectFunc|20_2(TermMatch& term);
+    [CompilerGeneratedAttribute]
+internal static int <YieldOnce>g__FillFunc|21_0(TermMatch& term, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+internal static int <YieldOnce>g__AndWithFunc|21_1(TermMatch& term, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+internal static void <YieldOnce>g__ScoreFunc|21_2(TermMatch& term, Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <YieldOnce>g__InspectFunc|21_3(TermMatch& term);
+    [CompilerGeneratedAttribute]
+internal static int <YieldSmall>g__FillFunc|22_0(TermMatch& term, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+[SkipLocalsInitAttribute]
+internal static int <YieldSmall>g__AndWithFunc|22_1(TermMatch& term, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+internal static void <YieldSmall>g__ScoreFunc|22_2(TermMatch& term, Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <YieldSmall>g__InspectFunc|22_3(TermMatch& term);
+    [CompilerGeneratedAttribute]
+[SkipLocalsInitAttribute]
+internal static int <YieldSet>g__AndWithFunc|23_0(TermMatch& term, Span`1<long> buffer, int matchesCount);
+    [CompilerGeneratedAttribute]
+[SkipLocalsInitAttribute]
+internal static int <YieldSet>g__AndWithVectorizedFunc|23_1(TermMatch& term, Span`1<long> buffer, int matches);
+    [CompilerGeneratedAttribute]
+internal static int <YieldSet>g__FillFunc|23_2(TermMatch& term, Span`1<long> matches);
+    [CompilerGeneratedAttribute]
+internal static QueryInspectionNode <YieldSet>g__InspectFunc|23_3(TermMatch& term);
+    [CompilerGeneratedAttribute]
+internal static void <YieldSet>g__ScoreFunc|23_4(TermMatch& term, Span`1<long> matches, Span`1<float> scores, float boostFactor);
+}
+public class Corax.Querying.Matches.TermProviders.ContainsTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _term;
+    private Iterator`1<TLookupIterator> _iterator;
+    public bool IsFillSupported { get; }
+    public ContainsTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey term);
+    public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public class Corax.Querying.Matches.TermProviders.EndsWithTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _endsWith;
+    private Iterator`1<TLookupIterator> _iterator;
+    public bool IsFillSupported { get; }
+    public EndsWithTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey endsWith);
+    public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+public class Corax.Querying.Matches.TermProviders.ExistsTermProvider`1 : ValueType {
+    private long _numberOfTerms;
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private bool _nullExists;
+    private PostingList _nullPostingList;
+    private Iterator _nullIterator;
+    private bool _fetchNulls;
+    private long _postingListId;
+    private Iterator`1<TLookupIterator> _iterator;
+    private CompactKey _compactKey;
+    public bool IsFillSupported { get; }
+    private int NumberOfTerms { get; }
+    public ExistsTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, bool forAggregation);
+    public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public bool GetNextTerm(ReadOnlySpan`1& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    public sealed virtual IDisposable AggregateByTerms(List`1& terms, Span`1& counts);
+    public sealed virtual long AggregateByRange();
+    private int get_NumberOfTerms();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.InTermProvider`1 : ValueType {
+    private IndexSearcher _searcher;
+    private List`1<TTermsType> _terms;
+    private int _termIndex;
+    private FieldMetadata _field;
+    private FieldMetadata _exactField;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    private string DebugView { get; }
+    public InTermProvider`1(IndexSearcher searcher, FieldMetadata& field, List`1<TTermsType> terms);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    [DoesNotReturnAttribute]
+private static TermMatch ThrowInvalidTermType();
+    private string get_DebugView();
+}
+public class Corax.Querying.Matches.TermProviders.NotContainsTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _term;
+    private Iterator`1<TLookupIterator> _iterator;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    public NotContainsTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey term);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.NotEndsWithTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _endsWith;
+    private Iterator`1<TLookupIterator> _iterator;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    private string DebugView { get; }
+    public NotEndsWithTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey endsWith);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.NotStartsWithTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _startWith;
+    private bool _validatePostfixLen;
+    private CancellationToken _token;
+    private Iterator`1<TLookupIterator> _iterator;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    private string DebugView { get; }
+    public NotStartsWithTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey startWith, bool validatePostfixLen, CancellationToken token);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    private string get_DebugView();
+}
+public class Corax.Querying.Matches.TermProviders.RegexTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private Regex _regex;
+    private Iterator`1<TLookupIterator> _iterator;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    public RegexTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, Regex regex);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.StartsWithTermProvider`1 : ValueType {
+    private CompactTree _tree;
+    private IndexSearcher _searcher;
+    private FieldMetadata _field;
+    private CompactKey _startWith;
+    private CompactKey _startWithLimit;
+    private bool _validatePostfixLen;
+    private CancellationToken _token;
+    private bool _firstRun;
+    private Iterator`1<TLookupIterator> _iterator;
+    [CompilerGeneratedAttribute]
+private bool <IsFillSupported>k__BackingField;
+    public bool IsFillSupported { get; }
+    public string DebugView { get; }
+    public StartsWithTermProvider`1(IndexSearcher searcher, CompactTree tree, FieldMetadata& field, CompactKey startWith, CompactKey seekTerm, bool validatePostfixLen, CancellationToken token);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    public sealed virtual string get_DebugView();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.TermNumericRangeProvider`4 : ValueType {
+    private IndexSearcher _searcher;
+    private Lookup`1<TVal> _set;
+    private FieldMetadata _field;
+    private TVal _low;
+    private TVal _high;
+    private TLookupIterator _iterator;
+    private bool _skipRangeCheck;
+    private long _lastTermId;
+    private bool _includeLastTerm;
+    private bool _isEmpty;
+    public bool IsFillSupported { get; }
+    public string DebugView { get; }
+    public int NumberOfTerms { get; }
+    public TermNumericRangeProvider`4(IndexSearcher searcher, Lookup`1<TVal> set, FieldMetadata& field, TVal low, TVal high);
+    private void PrepareKeys();
+    public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    public sealed virtual string get_DebugView();
+    public sealed virtual IDisposable AggregateByTerms(List`1& terms, Span`1& counts);
+    public sealed virtual long AggregateByRange();
+    public int get_NumberOfTerms();
+}
+[DebuggerDisplayAttribute("{DebugView,nq}")]
+public class Corax.Querying.Matches.TermProviders.TermRangeProvider`3 : ValueType {
+    private IndexSearcher _indexSearcher;
+    private FieldMetadata _field;
+    private Slice _low;
+    private Slice _high;
+    private Iterator`1<TLookupIterator> _iterator;
+    private bool _isForward;
+    private bool _skipRangeCheck;
+    private bool _isEmpty;
+    private bool _shouldIncludeLastTerm;
+    private long _endContainerId;
+    public bool IsFillSupported { get; }
+    public string DebugView { get; }
+    public TermRangeProvider`3(IndexSearcher indexSearcher, CompactTree tree, FieldMetadata& field, Slice low, Slice high);
+    private void PrepareKeys();
+    public sealed virtual bool get_IsFillSupported();
+    public sealed virtual int Fill(Span`1<long> containers);
+    public sealed virtual void Reset();
+    private bool ShouldSeek();
+    public sealed virtual bool Next(TermMatch& term);
+    public sealed virtual QueryInspectionNode Inspect();
+    public sealed virtual string get_DebugView();
+    public sealed virtual IDisposable AggregateByTerms(List`1& terms, Span`1& counts);
+    public sealed virtual long AggregateByRange();
+}
+[IsReadOnlyAttribute]
+public class Corax.Querying.SpatialReader : ValueType {
+    private FixedSizeTree _fst;
+    public bool IsValid { get; }
+    public SpatialReader(LowLevelTransaction llt, Tree entriesToSpatialTree, Slice name);
+    public bool get_IsValid();
+    public bool TryGetSpatialPoint(long id, ValueTuple`2& coords);
+}
+public enum Corax.Querying.StringDistanceAlgorithm : Enum {
+    public int value__;
+    public static StringDistanceAlgorithm None;
+    public static StringDistanceAlgorithm NGram;
+    public static StringDistanceAlgorithm JaroWinkler;
+    public static StringDistanceAlgorithm Levenshtein;
+}
+public class Corax.Querying.TermsReader : ValueType {
+    private LowLevelTransaction _llt;
+    private Lookup`1<Int64LookupKey> _lookup;
+    private CompactKeyCacheScope _xKeyScope;
+    private CompactKeyCacheScope _yKeyScope;
+    private static int CacheSize;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ValueTuple`2* _cache;
+    private InternalScope<ByteStringMemoryCache> _cacheScope;
+    private Page _lastPage;
+    private long _dictionaryId;
+    public TermsReader(LowLevelTransaction llt, Tree entriesToTermsTree, Slice name);
+    public string GetTermFor(long id);
+    public bool TryGetRawTermFor(long id, UnmanagedSpan& term);
+    public bool TryGetTermFor(long id, String& term);
+    public static void Set(CompactKey key, Item& item, long dictionaryId);
+    public ReadOnlySpan`1<byte> GetDecodedTerm(long dictionaryId, UnmanagedSpan x);
+    public void GetDecodedTermsByIds(long dictionaryId, long xIds, ReadOnlySpan`1& xTerm, long yIds, ReadOnlySpan`1& yTerm);
+    public void GetDecodedTerms(long dictionaryId, UnmanagedSpan x, ReadOnlySpan`1& xTerm, UnmanagedSpan y, ReadOnlySpan`1& yTerm);
+    private static void DecodeKey(CompactKeyCacheScope scope, Byte* ptr, int len, long dictionaryId, ReadOnlySpan`1& term);
+    private UnmanagedSpan GetTerm(long entryId);
+    public int Compare(long x, long y);
+    public sealed virtual void Dispose();
+}
+public class Corax.SupportedFeatures : object {
+    public static SupportedFeatures All;
+    public bool PhraseQuery;
+    public bool StoreOnly;
+    public SupportedFeatures(bool isPhraseQuerySupported, bool isStoreOnlySupported);
+    private static SupportedFeatures();
+}
+[DefaultMemberAttribute("Item")]
+public class Corax.Utils.BlittableIterator : ValueType {
+    private List`1<BlittableJsonReaderObject> _values;
+    private List`1<IDisposable> _toDispose;
+    public int Length { get; }
+    public ReadOnlySpan`1<byte> Item { get; }
+    public BlittableIterator(List`1<BlittableJsonReaderObject> values);
+    public sealed virtual int get_Length();
+    public sealed virtual bool IsNull(int i);
+    public sealed virtual ReadOnlySpan`1<byte> get_Item(int i);
+    private ReadOnlySpan`1<byte> Memory(int id);
+    public sealed virtual void Dispose();
+}
+public class Corax.Utils.Bm25Relevance : object {
+    [ThreadStaticAttribute]
+internal static ArrayPool`1<Bm25Relevance> RelevancePool;
+    private method _processFunc;
+    private method _scoreFunc;
+    public static float InitialScoreValue;
+    private static int MaximumDocumentCapacity;
+    private static int MaxSizeOfStorage;
+    private static float BFactor;
+    private static float K1;
+    private float _termRatioToWholeCollection;
+    private Int64* _matchBuffer;
+    private Int16* _scoreBuffer;
+    private int _numberOfDocuments;
+    private int _currentId;
+    private float _idf;
+    private Iterator _setIterator;
+    private IDisposable _memoryHolder;
+    public bool IsStored;
+    private bool _isDisposed;
+    private int _bufferCapacity;
+    private Span`1<long> Matches { get; }
+    private Span`1<short> Scores { get; }
+    private Bm25Relevance(IndexSearcher indexSearcher, long termFrequency, ByteStringContext context, int numberOfDocuments, double termRatioToWholeCollection, method dynamicalScoreFunc);
+    private Span`1<long> get_Matches();
+    private Span`1<short> get_Scores();
+    private static float ComputeIdf(IndexSearcher indexSearcher, long termFrequency);
+    public void Score(Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    private static void CalculateScoreFromMemory(Bm25Relevance bm25, Span`1<long> matches, Span`1<float> scores, float boostFactor);
+    public void Process(Span`1<long> matches, int count);
+    private static void DecodeAndDiscard(Bm25Relevance bm25, Span`1<long> matches, int count);
+    private static void DecodeAndSave(Bm25Relevance bm25, Span`1<long> matches, int count);
+    public long Add(long entry);
+    [DoesNotReturnAttribute]
+private void ThrowAlreadyDisposed();
+    public void Remove();
+    public sealed virtual void Dispose();
+    public static Bm25Relevance Once(IndexSearcher indexSearcher, long termFrequency, ByteStringContext context, int numberOfDocuments, double termRatioToWholeCollection);
+    public static Bm25Relevance Small(IndexSearcher indexSearcher, long termFrequency, ByteStringContext context, int numberOfDocuments, double termRatioToWholeCollection);
+    public static Bm25Relevance Set(IndexSearcher indexSearcher, long termFrequency, ByteStringContext context, int numberOfDocuments, double termRatioToWholeCollection, PostingList postingList);
+    [CompilerGeneratedAttribute]
+internal static void <Set>g__PostingListCalculateScoreDynamically|36_0(Bm25Relevance bm25, Span`1<long> matches, Span`1<float> scores, float boostFactor);
+}
+[DefaultMemberAttribute("Item")]
+public class Corax.Utils.ByteStringIterator : ValueType {
+    private List`1<ByteString> _values;
+    public int Length { get; }
+    public ReadOnlySpan`1<byte> Item { get; }
+    public ByteStringIterator(List`1<ByteString> values);
+    public sealed virtual int get_Length();
+    public sealed virtual bool IsNull(int i);
+    public sealed virtual ReadOnlySpan`1<byte> get_Item(int i);
+}
+public static class Corax.Utils.CommitOperation : object {
+    public static string TextualValues;
+    public static string FloatingValues;
+    public static string IntegerValues;
+    public static string Deletions;
+    public static string Suggestions;
+    public static string SpatialValues;
+    public static string StoredValues;
+}
+public class Corax.Utils.CoraxSpatialPointEntry : object {
+    public double Latitude;
+    public double Longitude;
+    public string Geohash;
+    public CoraxSpatialPointEntry(double latitude, double longitude, string geohash);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[DefaultMemberAttribute("Item")]
+public class Corax.Utils.EmptyIterator : object {
+    public static EmptyIterator Instance;
+    public int Length { get; }
+    public ReadOnlySpan`1<byte> Item { get; }
+    private static EmptyIterator();
+    public sealed virtual int get_Length();
+    public sealed virtual bool IsNull(int i);
+    public sealed virtual ReadOnlySpan`1<byte> get_Item(int i);
+}
+internal class Corax.Utils.EmptyStatsScope : ValueType {
+    public sealed virtual ICoraxStatsScope For(string name, bool start);
+    public sealed virtual void Dispose();
+}
+public static class Corax.Utils.EntryIdEncodings : object {
+    private static byte FrequencySizeInBits;
+    private static byte EntryIdOffset;
+    private static long Mask;
+    private static byte ContainerTypeOffset;
+    private static long MaxEntryId;
+    private static Int64[] Step;
+    private static Int64[] StepSize;
+    private static Double[] LevelSizeInStep;
+    private static Int16[] FrequencyTable;
+    private static EntryIdEncodings();
+    public static long Encode(long entryId, short count, TermIdMask containerType);
+    public static ValueTuple`2<long, short> Decode(long entryId);
+    public static long GetContainerId(long entryId);
+    public static void Encode(Span`1<long> entries, Span`1<short> frequencies);
+    public static long DecodeAndDiscardFrequency(long entryId);
+    public static void DecodeAndDiscardFrequencyVector256(Span`1<long> entries, int read);
+    public static void DecodeAndDiscardFrequencyNeon(Span`1<long> entries, int read);
+    public static void DecodeAndDiscardFrequencyClassic(Span`1<long> entries, int read);
+    public static void DecodeAndDiscardFrequency(Span`1<long> entries, int read);
+    public static void Decode(Span`1<long> matches, Span`1<short> frequencies);
+    internal static long QuantizeAndDequantize(short frequency);
+    internal static long FrequencyQuantization(short frequency);
+    internal static long FrequencyQuantizationReference(short frequency);
+    internal static short FrequencyReconstructionFromQuantization(long encoded);
+    internal static short FrequencyReconstructionFromQuantizationFromFunction(long encoded);
+    internal static long PrepareIdForPruneInPostingList(long entryId);
+    internal static long PrepareIdForSeekInPostingList(long entryId);
+}
+public class Corax.Utils.EntryTermsReader : ValueType {
+    private LowLevelTransaction _llt;
+    private HashSet`1<long> _nullTermsMarkers;
+    private HashSet`1<long> _nonExistingTermsMarkers;
+    private long _dicId;
+    private Byte* _cur;
+    private Byte* _end;
+    private Byte* _start;
+    private long _prevTerm;
+    private long _prevLong;
+    public CompactKey Current;
+    public long CurrentLong;
+    public long FieldRootPage;
+    public long TermId;
+    public double CurrentDouble;
+    public double Latitude;
+    public double Longitude;
+    public Nullable`1<UnmanagedSpan> StoredField;
+    public short Frequency;
+    public bool HasNumeric;
+    public bool IsRaw;
+    public bool IsList;
+    public bool IsNull;
+    public bool IsNonExisting;
+    public EntryTermsReader(LowLevelTransaction llt, HashSet`1<long> nullTermsMarkers, HashSet`1<long> nonExistingTermsMarkers, Byte* cur, int size, long dicId);
+    public bool FindNextStored(long fieldRootPage);
+    public bool FindNext(long fieldRootPage);
+    public bool FindNextSpatial(long fieldRootPage);
+    public bool MoveNext();
+    public bool MoveNextSpatial();
+    public bool MoveNextStoredField();
+    private void HandleRegularTerm(long termContainerId);
+    private void HandleSpecialTerm(long termContainerId, bool skipStoredFieldLoad);
+    public void Reset();
+    public string Debug(IndexWriter w);
+    public string Debug(IndexSearcher r);
+    public string Debug(Dictionary`2<long, string> fields);
+}
+public class Corax.Utils.EntryTermsWriter : ValueType {
+    private ByteStringContext _bsc;
+    private InternalScope<ByteStringMemoryCache> _scope;
+    private ByteString _bs;
+    private int _offset;
+    public EntryTermsWriter(ByteStringContext bsc);
+    public int Encode(NativeList`1& terms);
+    public sealed virtual void Dispose();
+    public void Write(Span`1<byte> space);
+}
+public class Corax.Utils.FieldsCache : ValueType {
+    private Dictionary`2<Slice, long> _fieldNameToRootPage;
+    private ByteStringContext _allocator;
+    private Tree _fieldsTree;
+    private Dictionary`2<long, string> _fieldsRootPages;
+    public FieldsCache(Transaction tx, Tree fieldsTree);
+    public long GetFieldRootPage(Slice name, Tree tree);
+    public long GetLookupRootPage(string name);
+    public long GetLookupRootPage(Slice name);
+    public bool TryGetField(long fieldRootPage, String& fieldName);
+}
+public interface Corax.Utils.ICoraxStatsScope {
+    public abstract virtual ICoraxStatsScope For(string name, bool start);
+}
+[IsReadOnlyAttribute]
+public class Corax.Utils.OrderMetadata : ValueType {
+    public FieldMetadata Field;
+    public bool HasBoost;
+    public bool Ascending;
+    public MatchCompareFieldType FieldType;
+    public IPoint Point;
+    public double Round;
+    public SpatialUnits Units;
+    public int RandomSeed;
+    public OrderMetadata(bool hasBoost, MatchCompareFieldType fieldType, bool ascending);
+    public OrderMetadata(int randomSeed);
+    public OrderMetadata(FieldMetadata& field, bool ascending, MatchCompareFieldType fieldType);
+    public OrderMetadata(FieldMetadata& field, bool ascending, MatchCompareFieldType fieldType, IPoint point, double round, SpatialUnits units);
+    public virtual string ToString();
+}
+public enum Corax.Utils.Spatial.SpatialRelation : Enum {
+    public int value__;
+    public static SpatialRelation Within;
+    public static SpatialRelation Contains;
+    public static SpatialRelation Disjoint;
+    public static SpatialRelation Intersects;
+}
+public class Corax.Utils.Spatial.SpatialResult : ValueType {
+    public double Distance;
+    public double Latitude;
+    public double Longitude;
+    public static SpatialResult Invalid;
+    private static SpatialResult();
+    public sealed virtual int CompareTo(object other);
+}
+public enum Corax.Utils.Spatial.SpatialUnits : Enum {
+    public int value__;
+    public static SpatialUnits Kilometers;
+    public static SpatialUnits Miles;
+}
+public class Corax.Utils.Spatial.SpatialUtils : object {
+    private static Char[] Alphabet;
+    public static int DefaultGeohashLevel;
+    private static Dictionary`2<string, IRectangle> CachedFigures;
+    private static int Threshold;
+    private static SpatialUtils();
+    internal static double GetErrorFromPercentage(SpatialContext ctx, IShape shape, double percentage);
+    public static double GetGeoDistance(ValueTuple`2& fieldCoordinates, ValueTuple`2<double, double> center, double round, SpatialUnits units);
+    internal static double HaverstineDistanceInInternationalNauticalMiles(double lat1, double lng1, double lat2, double lng2);
+    [IteratorStateMachineAttribute("Corax.Utils.Spatial.SpatialUtils/<GetGeohashesForQueriesOutsideShape>d__7")]
+public static IEnumerable`1<ValueTuple`2<string, bool>> GetGeohashesForQueriesOutsideShape(IndexSearcher searcher, CompactTree tree, ByteStringContext allocator, SpatialContext ctx, IShape shape, int currentPrecision, string currentGeohash, int maxPrecision);
+    [IteratorStateMachineAttribute("Corax.Utils.Spatial.SpatialUtils/<GetGeohashesForQueriesInsideShape>d__8")]
+public static IEnumerable`1<ValueTuple`2<string, bool>> GetGeohashesForQueriesInsideShape(IndexSearcher searcher, CompactTree tree, ByteStringContext allocator, SpatialContext ctx, IShape shape, int currentPrecision, string currentGeohash, int maxPrecision);
+}
+[FlagsAttribute]
+public enum Corax.Utils.StoredFieldType : Enum {
+    public byte value__;
+    public static StoredFieldType None;
+    public static StoredFieldType Null;
+    public static StoredFieldType Empty;
+    public static StoredFieldType Term;
+    public static StoredFieldType Raw;
+    public static StoredFieldType Tuple;
+    public static StoredFieldType List;
+    public static StoredFieldType Markers;
+}
+internal static class Corax.Utils.SuggestionsKeys : object {
+    internal static ByteString Generate(ByteStringContext allocator, int ngramSize, ReadOnlySpan`1<byte> term, Span`1<int> termsLength, Int32& keysCount);
+}
+[IsReadOnlyAttribute]
+public class Corax.Utils.TermQueryItem : ValueType {
+    [CompilerGeneratedAttribute]
+private CompactKey <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Density>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Slice <Term>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <ContainerId>k__BackingField;
+    public CompactKey Key { get; public set; }
+    public long Density { get; public set; }
+    public Slice Term { get; public set; }
+    public long ContainerId { get; public set; }
+    public TermQueryItem(CompactKey Key, long Density, Slice Term, long ContainerId);
+    [CompilerGeneratedAttribute]
+public CompactKey get_Key();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_Key(CompactKey value);
+    [CompilerGeneratedAttribute]
+public long get_Density();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_Density(long value);
+    [CompilerGeneratedAttribute]
+public Slice get_Term();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_Term(Slice value);
+    [CompilerGeneratedAttribute]
+public long get_ContainerId();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_ContainerId(long value);
+    [CompilerGeneratedAttribute]
+public virtual string ToString();
+    [CompilerGeneratedAttribute]
+private bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(TermQueryItem left, TermQueryItem right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(TermQueryItem left, TermQueryItem right);
+    [CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool Equals(TermQueryItem other);
+    [CompilerGeneratedAttribute]
+public void Deconstruct(CompactKey& Key, Int64& Density, Slice& Term, Int64& ContainerId);
+}
+public static class Corax.Utils.TimeFields : object {
+    public static HashSet`1<string> ReadTimeFieldsNames(Transaction tx);
+    public static void WriteTimeFieldsNames(Transaction tx, HashSet`1<string> fieldsNames);
+}

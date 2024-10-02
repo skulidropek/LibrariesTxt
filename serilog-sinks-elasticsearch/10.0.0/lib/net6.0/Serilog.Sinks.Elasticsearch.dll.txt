@@ -1,0 +1,727 @@
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[ExtensionAttribute]
+public static class Serilog.LoggerConfigurationElasticsearchExtensions : object {
+    private static string DefaultNodeUri;
+    [ExtensionAttribute]
+public static LoggerConfiguration Elasticsearch(LoggerSinkConfiguration loggerSinkConfiguration, ElasticsearchSinkOptions options);
+    [ExtensionAttribute]
+[ObsoleteAttribute("New code should not be compiled against this obsolete overload")]
+[EditorBrowsableAttribute("1")]
+public static LoggerConfiguration Elasticsearch(LoggerSinkConfiguration loggerSinkConfiguration, string nodeUris, string indexFormat, string templateName, string typeName, int batchPostingLimit, int period, bool inlineFields, LogEventLevel restrictedToMinimumLevel, string bufferBaseFilename, Nullable`1<long> bufferFileSizeLimitBytes, long bufferLogShippingInterval, string connectionGlobalHeaders, LoggingLevelSwitch levelSwitch);
+    [ExtensionAttribute]
+public static LoggerConfiguration Elasticsearch(LoggerSinkConfiguration loggerSinkConfiguration, string nodeUris, string indexFormat, string templateName, string typeName, int batchPostingLimit, int period, bool inlineFields, LogEventLevel restrictedToMinimumLevel, string bufferBaseFilename, Nullable`1<long> bufferFileSizeLimitBytes, long bufferLogShippingInterval, string connectionGlobalHeaders, LoggingLevelSwitch levelSwitch, int connectionTimeout, EmitEventFailureHandling emitEventFailure, int queueSizeLimit, string pipelineName, bool autoRegisterTemplate, Nullable`1<AutoRegisterTemplateVersion> autoRegisterTemplateVersion, bool overwriteTemplate, RegisterTemplateRecovery registerTemplateFailure, string deadLetterIndexName, Nullable`1<int> numberOfShards, Nullable`1<int> numberOfReplicas, IFormatProvider formatProvider, IConnection connection, IElasticsearchSerializer serializer, IConnectionPool connectionPool, ITextFormatter customFormatter, ITextFormatter customDurableFormatter, ILogEventSink failureSink, Nullable`1<long> singleEventSizePostingLimit, Nullable`1<int> bufferFileCountLimit, Dictionary`2<string, string> templateCustomSettings, ElasticOpType batchAction, bool detectElasticsearchVersion);
+}
+public enum Serilog.Sinks.Elasticsearch.AutoRegisterTemplateVersion : Enum {
+    public int value__;
+    public static AutoRegisterTemplateVersion ESv6;
+    public static AutoRegisterTemplateVersion ESv7;
+    public static AutoRegisterTemplateVersion ESv8;
+}
+internal class Serilog.Sinks.Elasticsearch.BatchedElasticsearchSink : object {
+    private ElasticsearchSinkState _state;
+    public BatchedElasticsearchSink(ElasticsearchSinkOptions options);
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.BatchedElasticsearchSink/<EmitBatchAsync>d__2")]
+public sealed virtual Task EmitBatchAsync(IEnumerable`1<LogEvent> events);
+    public sealed virtual Task OnEmptyBatchAsync();
+    private Task`1<T> EmitBatchCheckedAsync(IEnumerable`1<LogEvent> events);
+    private void HandleException(Exception ex, IEnumerable`1<LogEvent> events);
+    private IEnumerable`1<string> CreatePayload(IEnumerable`1<LogEvent> events);
+    private void HandleResponse(IEnumerable`1<LogEvent> events, DynamicResponse result);
+    internal static string BulkAction(ElasticOpType elasticOpType);
+    internal static object CreateElasticAction(ElasticOpType opType, string indexName, string pipelineName, string id, string mappingType);
+}
+public abstract class Serilog.Sinks.Elasticsearch.Durable.APayloadReader`1 : object {
+    public abstract virtual TPayload GetNoPayload();
+    public sealed virtual TPayload ReadPayload(int batchPostingLimit, Nullable`1<long> eventBodyLimitBytes, FileSetPosition& position, Int32& count, string fileName);
+    protected abstract virtual void InitPayLoad(string fileName);
+    protected abstract virtual TPayload FinishPayLoad();
+    protected abstract virtual void AddToPayLoad(string nextLine);
+    private static bool TryReadLine(Stream current, Int64& nextStart, String& nextLine);
+}
+internal class Serilog.Sinks.Elasticsearch.Durable.BookmarkFile : object {
+    private FileStream _bookmark;
+    public BookmarkFile(string bookmarkFilename);
+    public FileSetPosition TryReadBookmark();
+    public void WriteBookmark(FileSetPosition bookmark);
+    public sealed virtual void Dispose();
+}
+internal class Serilog.Sinks.Elasticsearch.Durable.ControlledLevelSwitch : object {
+    private LoggingLevelSwitch _controlledSwitch;
+    private Nullable`1<LogEventLevel> _originalLevel;
+    public bool IsActive { get; }
+    public ControlledLevelSwitch(LoggingLevelSwitch controlledSwitch);
+    public bool get_IsActive();
+    public bool IsIncluded(LogEvent evt);
+    public void Update(Nullable`1<LogEventLevel> minimumAcceptedLevel);
+}
+internal class Serilog.Sinks.Elasticsearch.Durable.DurableElasticsearchSink : object {
+    private static string FileNameSuffix;
+    private Logger _sink;
+    private LogShipper`1<List`1<string>> _shipper;
+    private ElasticsearchSinkState _state;
+    public DurableElasticsearchSink(ElasticsearchSinkOptions options);
+    public sealed virtual void Emit(LogEvent logEvent);
+    public sealed virtual void Dispose();
+}
+public class Serilog.Sinks.Elasticsearch.Durable.ElasticsearchLogClient : object {
+    private IElasticLowLevelClient _elasticLowLevelClient;
+    private Func`4<string, Nullable`1<long>, string, string> _cleanPayload;
+    private ElasticOpType _elasticOpType;
+    public ElasticsearchLogClient(IElasticLowLevelClient elasticLowLevelClient, Func`4<string, Nullable`1<long>, string, string> cleanPayload, ElasticOpType elasticOpType);
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.Durable.ElasticsearchLogClient/<SendPayloadAsync>d__4")]
+public sealed virtual Task`1<SentPayloadResult> SendPayloadAsync(List`1<string> payload);
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.Durable.ElasticsearchLogClient/<SendPayloadAsync>d__5")]
+public Task`1<SentPayloadResult> SendPayloadAsync(List`1<string> payload, bool first);
+    private InvalidResult GetInvalidPayloadAsync(DynamicResponse baseResult, List`1<string> payload, List`1& cleanPayload);
+}
+public class Serilog.Sinks.Elasticsearch.Durable.ElasticsearchLogShipper : LogShipper`1<List`1<string>> {
+    private Action _registerTemplateIfNeeded;
+    private bool _didRegisterTemplateIfNeeded;
+    public ElasticsearchLogShipper(string bufferBaseFilename, int batchPostingLimit, TimeSpan period, Nullable`1<long> eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch, ILogClient`1<List`1<string>> logClient, IPayloadReader`1<List`1<string>> payloadReader, Nullable`1<long> retainedInvalidPayloadsLimitBytes, Nullable`1<long> bufferSizeLimitBytes, Action registerTemplateIfNeeded, RollingInterval rollingInterval);
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.Durable.ElasticsearchLogShipper/<OnTick>d__3")]
+protected virtual Task OnTick();
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task <>n__0();
+}
+public class Serilog.Sinks.Elasticsearch.Durable.ElasticsearchPayloadReader : APayloadReader`1<List`1<string>> {
+    private string _pipelineName;
+    private string _typeName;
+    private Func`2<object, string> _serialize;
+    private Func`3<string, DateTime, string> _getIndexForEvent;
+    private ElasticOpType _elasticOpType;
+    private RollingInterval _rollingInterval;
+    private List`1<string> _payload;
+    private int _count;
+    private DateTime _date;
+    public ElasticsearchPayloadReader(string pipelineName, string typeName, Func`2<object, string> serialize, Func`3<string, DateTime, string> getIndexForEvent, ElasticOpType elasticOpType, RollingInterval rollingInterval);
+    public virtual List`1<string> GetNoPayload();
+    protected virtual void InitPayLoad(string filename);
+    protected virtual List`1<string> FinishPayLoad();
+    protected virtual void AddToPayLoad(string nextLine);
+}
+public class Serilog.Sinks.Elasticsearch.Durable.ExponentialBackoffConnectionSchedule : object {
+    private static TimeSpan MinimumBackoffPeriod;
+    private static TimeSpan MaximumBackoffInterval;
+    private TimeSpan _period;
+    private int _failuresSinceSuccessfulConnection;
+    public TimeSpan NextInterval { get; }
+    public ExponentialBackoffConnectionSchedule(TimeSpan period);
+    private static ExponentialBackoffConnectionSchedule();
+    public void MarkSuccess();
+    public void MarkFailure();
+    public TimeSpan get_NextInterval();
+}
+internal class Serilog.Sinks.Elasticsearch.Durable.FileSet : object {
+    private string _bookmarkFilename;
+    private string _candidateSearchPath;
+    private string _logFolder;
+    private Regex _filenameMatcher;
+    private static string InvalidPayloadFilePrefix;
+    public FileSet(string bufferBaseFilename, RollingInterval rollingInterval);
+    public BookmarkFile OpenBookmarkFile();
+    public String[] GetBufferFiles();
+    public void CleanUpBufferFiles(long bufferSizeLimitBytes, int alwaysRetainCount);
+    public string MakeInvalidPayloadFilename(int statusCode);
+    public void CleanUpInvalidPayloadFiles(long maxNumberOfBytesToRetain);
+    private static void DeleteExceedingCumulativeSize(IEnumerable`1<FileInfo> files, long maxNumberOfBytesToRetain, int alwaysRetainCount);
+    [CompilerGeneratedAttribute]
+private KeyValuePair`2<string, Match> <GetBufferFiles>b__7_0(string n);
+}
+public class Serilog.Sinks.Elasticsearch.Durable.FileSetPosition : ValueType {
+    [CompilerGeneratedAttribute]
+private string <File>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <NextLineStart>k__BackingField;
+    public static FileSetPosition None;
+    public string File { get; }
+    public long NextLineStart { get; }
+    public FileSetPosition(long nextLineStart, string file);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_File();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public long get_NextLineStart();
+}
+public interface Serilog.Sinks.Elasticsearch.Durable.ILogClient`1 {
+    public abstract virtual Task`1<SentPayloadResult> SendPayloadAsync(TPayload payload);
+}
+public class Serilog.Sinks.Elasticsearch.Durable.InvalidResult : object {
+    [CompilerGeneratedAttribute]
+private int <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Content>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <BadPayLoad>k__BackingField;
+    public int StatusCode { get; public set; }
+    public string Content { get; public set; }
+    public string BadPayLoad { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(int value);
+    [CompilerGeneratedAttribute]
+public string get_Content();
+    [CompilerGeneratedAttribute]
+public void set_Content(string value);
+    [CompilerGeneratedAttribute]
+public string get_BadPayLoad();
+    [CompilerGeneratedAttribute]
+public void set_BadPayLoad(string value);
+}
+public interface Serilog.Sinks.Elasticsearch.Durable.IPayloadReader`1 {
+    public abstract virtual TPayload ReadPayload(int batchPostingLimit, Nullable`1<long> eventBodyLimitBytes, FileSetPosition& position, Int32& count, string fileName);
+    public abstract virtual TPayload GetNoPayload();
+}
+public class Serilog.Sinks.Elasticsearch.Durable.LogShipper`1 : object {
+    private static TimeSpan RequiredLevelCheckInterval;
+    private int _batchPostingLimit;
+    private Nullable`1<long> _eventBodyLimitBytes;
+    private ILogClient`1<TPayload> _logClient;
+    private IPayloadReader`1<TPayload> _payloadReader;
+    private FileSet _fileSet;
+    private Nullable`1<long> _retainedInvalidPayloadsLimitBytes;
+    private Nullable`1<long> _bufferSizeLimitBytes;
+    protected ExponentialBackoffConnectionSchedule _connectionSchedule;
+    private DateTime _nextRequiredLevelCheckUtc;
+    private object _stateLock;
+    private PortableTimer _timer;
+    private ControlledLevelSwitch _controlledSwitch;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _unloading;
+    public LogShipper`1(string bufferBaseFilename, int batchPostingLimit, TimeSpan period, Nullable`1<long> eventBodyLimitBytes, LoggingLevelSwitch levelControlSwitch, ILogClient`1<TPayload> logClient, IPayloadReader`1<TPayload> payloadReader, Nullable`1<long> retainedInvalidPayloadsLimitBytes, Nullable`1<long> bufferSizeLimitBytes, RollingInterval rollingInterval);
+    private static LogShipper`1();
+    private void CloseAndFlush();
+    public bool IsIncluded(LogEvent logEvent);
+    public sealed virtual void Dispose();
+    protected void SetTimer();
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.Durable.LogShipper`1/<OnTick>d__19")]
+protected virtual Task OnTick();
+    private void DumpInvalidPayload(int statusCode, string resultContent, string payload);
+    private static bool FileIsUnlockedAndUnextended(FileSetPosition position);
+    [CompilerGeneratedAttribute]
+private Task <.ctor>b__14_0(CancellationToken c);
+}
+internal class Serilog.Sinks.Elasticsearch.Durable.PortableTimer : object {
+    private object _stateLock;
+    private Func`2<CancellationToken, Task> _onTick;
+    private CancellationTokenSource _cancel;
+    private Timer _timer;
+    private bool _running;
+    private bool _disposed;
+    public PortableTimer(Func`2<CancellationToken, Task> onTick);
+    public void Start(TimeSpan interval);
+    [AsyncStateMachineAttribute("Serilog.Sinks.Elasticsearch.Durable.PortableTimer/<OnTick>d__8")]
+private void OnTick();
+    public sealed virtual void Dispose();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+private void <.ctor>b__6_0(object _);
+}
+[ExtensionAttribute]
+internal static class Serilog.Sinks.Elasticsearch.Durable.RollingIntervalExtensions : object {
+    [ExtensionAttribute]
+public static string GetFormat(RollingInterval interval);
+    [ExtensionAttribute]
+public static string GetMatchingDateRegularExpressionPart(RollingInterval interval);
+}
+public class Serilog.Sinks.Elasticsearch.Durable.SentPayloadResult : object {
+    [DynamicAttribute]
+[CompilerGeneratedAttribute]
+private object <BaseResult>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Success>k__BackingField;
+    [CompilerGeneratedAttribute]
+private InvalidResult <InvalidResult>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    [DynamicAttribute]
+public object BaseResult { get; }
+    public bool Success { get; }
+    public InvalidResult InvalidResult { get; }
+    public Exception Exception { get; }
+    public SentPayloadResult(object baseResult, bool success, InvalidResult invalidResult, Exception exception);
+    [CompilerGeneratedAttribute]
+public object get_BaseResult();
+    [CompilerGeneratedAttribute]
+public bool get_Success();
+    [CompilerGeneratedAttribute]
+public InvalidResult get_InvalidResult();
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+}
+public enum Serilog.Sinks.Elasticsearch.ElasticOpType : Enum {
+    public int value__;
+    [EnumMemberAttribute]
+public static ElasticOpType Index;
+    [EnumMemberAttribute]
+public static ElasticOpType Create;
+}
+public class Serilog.Sinks.Elasticsearch.ElasticsearchSink : object {
+    private PeriodicBatchingSink _batchingSink;
+    public ElasticsearchSink(ElasticsearchSinkOptions options);
+    private ElasticsearchSink(IBatchedLogEventSink batchedSink, PeriodicBatchingSinkOptions options);
+    public sealed virtual void Dispose();
+    public sealed virtual void Emit(LogEvent logEvent);
+    public sealed virtual ValueTask DisposeAsync();
+}
+public class Serilog.Sinks.Elasticsearch.ElasticsearchSinkOptions : object {
+    private int _queueSizeLimit;
+    [CompilerGeneratedAttribute]
+private bool <AutoRegisterTemplate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<AutoRegisterTemplateVersion> <AutoRegisterTemplateVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RegisterTemplateRecovery <RegisterTemplateFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TemplateName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`1<object> <GetTemplateContent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <TemplateCustomSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <OverwriteTemplate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <NumberOfShards>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <NumberOfReplicas>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <IndexAliases>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<ConnectionConfiguration, ConnectionConfiguration> <ModifyConnectionSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <IndexFormat>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DeadLetterIndexName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ElasticOpType <BatchAction>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<LogEvent, string> <PipelineNameDecider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PipelineName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <BatchPostingLimit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <SingleEventSizePostingLimit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <Period>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IFormatProvider <FormatProvider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IConnection <Connection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ConnectionTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <InlineFields>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<LogEventLevel> <MinimumLogEventLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LoggingLevelSwitch <LevelSwitch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IElasticsearchSerializer <Serializer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IConnectionPool <ConnectionPool>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`3<LogEvent, DateTimeOffset, string> <IndexDecider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`3<string, DateTime, string> <BufferIndexDecider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <BufferBaseFilename>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <BufferFileSizeLimitBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <BufferLogShippingInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`4<string, Nullable`1<long>, string, string> <BufferCleanPayload>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <BufferRetainedInvalidPayloadsLimitBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITextFormatter <CustomFormatter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITextFormatter <CustomDurableFormatter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EmitEventFailureHandling <EmitEventFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ILogEventSink <FailureSink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`2<LogEvent, Exception> <FailureCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <BufferFileCountLimit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <FormatStackTraceAsArray>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RollingInterval <BufferFileRollingInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ApiKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static string <DefaultTypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DetectElasticsearchVersion>k__BackingField;
+    private Uri _defaultNode;
+    public bool AutoRegisterTemplate { get; public set; }
+    public Nullable`1<AutoRegisterTemplateVersion> AutoRegisterTemplateVersion { get; public set; }
+    public RegisterTemplateRecovery RegisterTemplateFailure { get; public set; }
+    public string TemplateName { get; public set; }
+    public Func`1<object> GetTemplateContent { get; public set; }
+    public Dictionary`2<string, string> TemplateCustomSettings { get; public set; }
+    public bool OverwriteTemplate { get; public set; }
+    public Nullable`1<int> NumberOfShards { get; public set; }
+    public Nullable`1<int> NumberOfReplicas { get; public set; }
+    public String[] IndexAliases { get; public set; }
+    public Func`2<ConnectionConfiguration, ConnectionConfiguration> ModifyConnectionSettings { get; public set; }
+    public string IndexFormat { get; public set; }
+    public string DeadLetterIndexName { get; public set; }
+    public string TypeName { get; public set; }
+    public ElasticOpType BatchAction { get; public set; }
+    public Func`2<LogEvent, string> PipelineNameDecider { get; public set; }
+    public string PipelineName { get; public set; }
+    public int BatchPostingLimit { get; public set; }
+    public Nullable`1<long> SingleEventSizePostingLimit { get; public set; }
+    public TimeSpan Period { get; public set; }
+    public IFormatProvider FormatProvider { get; public set; }
+    public IConnection Connection { get; public set; }
+    public TimeSpan ConnectionTimeout { get; public set; }
+    public bool InlineFields { get; public set; }
+    public Nullable`1<LogEventLevel> MinimumLogEventLevel { get; public set; }
+    public LoggingLevelSwitch LevelSwitch { get; public set; }
+    public IElasticsearchSerializer Serializer { get; public set; }
+    public IConnectionPool ConnectionPool { get; private set; }
+    public Func`3<LogEvent, DateTimeOffset, string> IndexDecider { get; public set; }
+    public Func`3<string, DateTime, string> BufferIndexDecider { get; public set; }
+    public string BufferBaseFilename { get; public set; }
+    public Nullable`1<long> BufferFileSizeLimitBytes { get; public set; }
+    public Nullable`1<TimeSpan> BufferLogShippingInterval { get; public set; }
+    public Func`4<string, Nullable`1<long>, string, string> BufferCleanPayload { get; public set; }
+    public Nullable`1<long> BufferRetainedInvalidPayloadsLimitBytes { get; public set; }
+    public ITextFormatter CustomFormatter { get; public set; }
+    public ITextFormatter CustomDurableFormatter { get; public set; }
+    public EmitEventFailureHandling EmitEventFailure { get; public set; }
+    public ILogEventSink FailureSink { get; public set; }
+    public Action`2<LogEvent, Exception> FailureCallback { get; public set; }
+    public int QueueSizeLimit { get; public set; }
+    public Nullable`1<int> BufferFileCountLimit { get; public set; }
+    public bool FormatStackTraceAsArray { get; public set; }
+    public RollingInterval BufferFileRollingInterval { get; public set; }
+    public string ApiKey { get; public set; }
+    public static string DefaultTypeName { get; }
+    public bool DetectElasticsearchVersion { get; public set; }
+    public ElasticsearchSinkOptions(IConnectionPool connectionPool);
+    public ElasticsearchSinkOptions(IEnumerable`1<Uri> nodes);
+    public ElasticsearchSinkOptions(Uri node);
+    private static ElasticsearchSinkOptions();
+    [CompilerGeneratedAttribute]
+public bool get_AutoRegisterTemplate();
+    [CompilerGeneratedAttribute]
+public void set_AutoRegisterTemplate(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<AutoRegisterTemplateVersion> get_AutoRegisterTemplateVersion();
+    [CompilerGeneratedAttribute]
+public void set_AutoRegisterTemplateVersion(Nullable`1<AutoRegisterTemplateVersion> value);
+    [CompilerGeneratedAttribute]
+public RegisterTemplateRecovery get_RegisterTemplateFailure();
+    [CompilerGeneratedAttribute]
+public void set_RegisterTemplateFailure(RegisterTemplateRecovery value);
+    [CompilerGeneratedAttribute]
+public string get_TemplateName();
+    [CompilerGeneratedAttribute]
+public void set_TemplateName(string value);
+    [CompilerGeneratedAttribute]
+public Func`1<object> get_GetTemplateContent();
+    [CompilerGeneratedAttribute]
+public void set_GetTemplateContent(Func`1<object> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_TemplateCustomSettings();
+    [CompilerGeneratedAttribute]
+public void set_TemplateCustomSettings(Dictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public bool get_OverwriteTemplate();
+    [CompilerGeneratedAttribute]
+public void set_OverwriteTemplate(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_NumberOfShards();
+    [CompilerGeneratedAttribute]
+public void set_NumberOfShards(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_NumberOfReplicas();
+    [CompilerGeneratedAttribute]
+public void set_NumberOfReplicas(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public String[] get_IndexAliases();
+    [CompilerGeneratedAttribute]
+public void set_IndexAliases(String[] value);
+    [CompilerGeneratedAttribute]
+public Func`2<ConnectionConfiguration, ConnectionConfiguration> get_ModifyConnectionSettings();
+    [CompilerGeneratedAttribute]
+public void set_ModifyConnectionSettings(Func`2<ConnectionConfiguration, ConnectionConfiguration> value);
+    [CompilerGeneratedAttribute]
+public string get_IndexFormat();
+    [CompilerGeneratedAttribute]
+public void set_IndexFormat(string value);
+    [CompilerGeneratedAttribute]
+public string get_DeadLetterIndexName();
+    [CompilerGeneratedAttribute]
+public void set_DeadLetterIndexName(string value);
+    [CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+public void set_TypeName(string value);
+    [CompilerGeneratedAttribute]
+public ElasticOpType get_BatchAction();
+    [CompilerGeneratedAttribute]
+public void set_BatchAction(ElasticOpType value);
+    [CompilerGeneratedAttribute]
+public Func`2<LogEvent, string> get_PipelineNameDecider();
+    [CompilerGeneratedAttribute]
+public void set_PipelineNameDecider(Func`2<LogEvent, string> value);
+    [CompilerGeneratedAttribute]
+public string get_PipelineName();
+    [CompilerGeneratedAttribute]
+public void set_PipelineName(string value);
+    [CompilerGeneratedAttribute]
+public int get_BatchPostingLimit();
+    [CompilerGeneratedAttribute]
+public void set_BatchPostingLimit(int value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_SingleEventSizePostingLimit();
+    [CompilerGeneratedAttribute]
+public void set_SingleEventSizePostingLimit(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_Period();
+    [CompilerGeneratedAttribute]
+public void set_Period(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public IFormatProvider get_FormatProvider();
+    [CompilerGeneratedAttribute]
+public void set_FormatProvider(IFormatProvider value);
+    [CompilerGeneratedAttribute]
+public IConnection get_Connection();
+    [CompilerGeneratedAttribute]
+public void set_Connection(IConnection value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ConnectionTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_InlineFields();
+    [CompilerGeneratedAttribute]
+public void set_InlineFields(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<LogEventLevel> get_MinimumLogEventLevel();
+    [CompilerGeneratedAttribute]
+public void set_MinimumLogEventLevel(Nullable`1<LogEventLevel> value);
+    [CompilerGeneratedAttribute]
+public LoggingLevelSwitch get_LevelSwitch();
+    [CompilerGeneratedAttribute]
+public void set_LevelSwitch(LoggingLevelSwitch value);
+    [CompilerGeneratedAttribute]
+public IElasticsearchSerializer get_Serializer();
+    [CompilerGeneratedAttribute]
+public void set_Serializer(IElasticsearchSerializer value);
+    [CompilerGeneratedAttribute]
+public IConnectionPool get_ConnectionPool();
+    [CompilerGeneratedAttribute]
+private void set_ConnectionPool(IConnectionPool value);
+    [CompilerGeneratedAttribute]
+public Func`3<LogEvent, DateTimeOffset, string> get_IndexDecider();
+    [CompilerGeneratedAttribute]
+public void set_IndexDecider(Func`3<LogEvent, DateTimeOffset, string> value);
+    [CompilerGeneratedAttribute]
+public Func`3<string, DateTime, string> get_BufferIndexDecider();
+    [CompilerGeneratedAttribute]
+public void set_BufferIndexDecider(Func`3<string, DateTime, string> value);
+    [CompilerGeneratedAttribute]
+public string get_BufferBaseFilename();
+    [CompilerGeneratedAttribute]
+public void set_BufferBaseFilename(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_BufferFileSizeLimitBytes();
+    [CompilerGeneratedAttribute]
+public void set_BufferFileSizeLimitBytes(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_BufferLogShippingInterval();
+    [CompilerGeneratedAttribute]
+public void set_BufferLogShippingInterval(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public Func`4<string, Nullable`1<long>, string, string> get_BufferCleanPayload();
+    [CompilerGeneratedAttribute]
+public void set_BufferCleanPayload(Func`4<string, Nullable`1<long>, string, string> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_BufferRetainedInvalidPayloadsLimitBytes();
+    [CompilerGeneratedAttribute]
+public void set_BufferRetainedInvalidPayloadsLimitBytes(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public ITextFormatter get_CustomFormatter();
+    [CompilerGeneratedAttribute]
+public void set_CustomFormatter(ITextFormatter value);
+    [CompilerGeneratedAttribute]
+public ITextFormatter get_CustomDurableFormatter();
+    [CompilerGeneratedAttribute]
+public void set_CustomDurableFormatter(ITextFormatter value);
+    [CompilerGeneratedAttribute]
+public EmitEventFailureHandling get_EmitEventFailure();
+    [CompilerGeneratedAttribute]
+public void set_EmitEventFailure(EmitEventFailureHandling value);
+    [CompilerGeneratedAttribute]
+public ILogEventSink get_FailureSink();
+    [CompilerGeneratedAttribute]
+public void set_FailureSink(ILogEventSink value);
+    [CompilerGeneratedAttribute]
+public Action`2<LogEvent, Exception> get_FailureCallback();
+    [CompilerGeneratedAttribute]
+public void set_FailureCallback(Action`2<LogEvent, Exception> value);
+    public int get_QueueSizeLimit();
+    public void set_QueueSizeLimit(int value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_BufferFileCountLimit();
+    [CompilerGeneratedAttribute]
+public void set_BufferFileCountLimit(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public bool get_FormatStackTraceAsArray();
+    [CompilerGeneratedAttribute]
+public void set_FormatStackTraceAsArray(bool value);
+    [CompilerGeneratedAttribute]
+public RollingInterval get_BufferFileRollingInterval();
+    [CompilerGeneratedAttribute]
+public void set_BufferFileRollingInterval(RollingInterval value);
+    [CompilerGeneratedAttribute]
+public string get_ApiKey();
+    [CompilerGeneratedAttribute]
+public void set_ApiKey(string value);
+    [CompilerGeneratedAttribute]
+public static string get_DefaultTypeName();
+    [CompilerGeneratedAttribute]
+public bool get_DetectElasticsearchVersion();
+    [CompilerGeneratedAttribute]
+public void set_DetectElasticsearchVersion(bool value);
+}
+internal class Serilog.Sinks.Elasticsearch.ElasticsearchSinkState : object {
+    private ElasticsearchSinkOptions _options;
+    private Func`3<LogEvent, DateTimeOffset, string> _indexDecider;
+    private Func`3<string, DateTime, string> _bufferedIndexDecider;
+    private ITextFormatter _formatter;
+    private ITextFormatter _durableFormatter;
+    private ElasticLowLevelClient _client;
+    private bool _registerTemplateOnStartup;
+    private string _templateName;
+    private string _templateMatchString;
+    private static Regex IndexFormatRegex;
+    private ElasticsearchVersionManager _versionManager;
+    [CompilerGeneratedAttribute]
+private bool <TemplateRegistrationSuccess>k__BackingField;
+    private bool IncludeTypeName { get; }
+    public ElasticsearchSinkOptions Options { get; }
+    public IElasticLowLevelClient Client { get; }
+    public ITextFormatter Formatter { get; }
+    public ITextFormatter DurableFormatter { get; }
+    public bool TemplateRegistrationSuccess { get; private set; }
+    private ElasticsearchSinkState(ElasticsearchSinkOptions options);
+    private static ElasticsearchSinkState();
+    public static ElasticsearchSinkState Create(ElasticsearchSinkOptions options);
+    private bool get_IncludeTypeName();
+    public ElasticsearchSinkOptions get_Options();
+    public IElasticLowLevelClient get_Client();
+    public ITextFormatter get_Formatter();
+    public ITextFormatter get_DurableFormatter();
+    [CompilerGeneratedAttribute]
+public bool get_TemplateRegistrationSuccess();
+    [CompilerGeneratedAttribute]
+private void set_TemplateRegistrationSuccess(bool value);
+    public static ITextFormatter CreateDefaultFormatter(ElasticsearchSinkOptions options);
+    public static ITextFormatter CreateDefaultDurableFormatter(ElasticsearchSinkOptions options);
+    public string Serialize(object o);
+    public string GetIndexForEvent(LogEvent e, DateTimeOffset offset);
+    public string GetBufferedIndexForEvent(string logEvent, DateTime offset);
+    public void RegisterTemplateIfNeeded();
+    private PostData GetTemplatePostData();
+    private object GetTemplateData();
+}
+public class Serilog.Sinks.Elasticsearch.ElasticsearchTemplateProvider : object {
+    public static object GetTemplate(ElasticsearchSinkOptions options, int discoveredMajorVersion, Dictionary`2<string, string> settings, string templateMatchString, AutoRegisterTemplateVersion version);
+    private static object GetTemplateESv8(ElasticsearchSinkOptions options, int discoveredMajorVersion, Dictionary`2<string, string> settings, string templateMatchString);
+    private static object GetTemplateESv7(ElasticsearchSinkOptions options, int discoveredMajorVersion, Dictionary`2<string, string> settings, string templateMatchString);
+    private static object GetTemplateESv6(ElasticsearchSinkOptions options, int discoveredMajorVersion, Dictionary`2<string, string> settings, string templateMatchString);
+    private static object GetTemplateESv5(Dictionary`2<string, string> settings, string templateMatchString);
+    private static object GetTemplateESv2(Dictionary`2<string, string> settings, string templateMatchString);
+}
+[FlagsAttribute]
+public enum Serilog.Sinks.Elasticsearch.EmitEventFailureHandling : Enum {
+    public int value__;
+    public static EmitEventFailureHandling WriteToSelfLog;
+    public static EmitEventFailureHandling WriteToFailureSink;
+    public static EmitEventFailureHandling ThrowException;
+    public static EmitEventFailureHandling RaiseCallback;
+}
+public enum Serilog.Sinks.Elasticsearch.RegisterTemplateRecovery : Enum {
+    public int value__;
+    public static RegisterTemplateRecovery IndexAnyway;
+    public static RegisterTemplateRecovery IndexToDeadletterIndex;
+    public static RegisterTemplateRecovery FailSink;
+}
+internal class Serilog.Sinks.Elasticsearch.SerializerAdapter : object {
+    private IElasticsearchSerializer _elasticsearchSerializer;
+    internal SerializerAdapter(IElasticsearchSerializer elasticsearchSerializer);
+    public sealed virtual object Deserialize(Type type, Stream stream);
+    public sealed virtual T Deserialize(Stream stream);
+    public sealed virtual Task`1<object> DeserializeAsync(Type type, Stream stream, CancellationToken cancellationToken);
+    public sealed virtual Task`1<T> DeserializeAsync(Stream stream, CancellationToken cancellationToken);
+    public sealed virtual void Serialize(T data, Stream stream, SerializationFormatting formatting);
+    public sealed virtual Task SerializeAsync(T data, Stream stream, SerializationFormatting formatting, CancellationToken cancellationToken);
+    public sealed virtual string SerializeToString(object value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Serilog.Sinks.Elasticsearch.Sinks.ElasticSearch.ElasticsearchVersionManager : object {
+    private bool _detectElasticsearchVersion;
+    private IElasticLowLevelClient _client;
+    public Version DefaultVersion;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private Version <DetectedVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DetectionAttempted>k__BackingField;
+    [NullableAttribute("2")]
+public Version DetectedVersion { get; private set; }
+    public bool DetectionAttempted { get; private set; }
+    public Version EffectiveVersion { get; }
+    public ElasticsearchVersionManager(bool detectElasticsearchVersion, IElasticLowLevelClient client);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public Version get_DetectedVersion();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+private void set_DetectedVersion(Version value);
+    [CompilerGeneratedAttribute]
+public bool get_DetectionAttempted();
+    [CompilerGeneratedAttribute]
+private void set_DetectionAttempted(bool value);
+    public Version get_EffectiveVersion();
+    [NullableContextAttribute("2")]
+internal Version DiscoverClusterVersion();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

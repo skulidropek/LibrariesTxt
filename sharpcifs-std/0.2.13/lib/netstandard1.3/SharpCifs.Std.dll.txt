@@ -1,0 +1,4060 @@
+public class SharpCifs.Config : object {
+    private static Properties _prp;
+    private static LogStream _log;
+    public static string DefaultOemEncoding;
+    private static Config();
+    public static void Apply();
+    public static void RegisterSmbURLHandler();
+    public static void SetProperties(Properties prp);
+    public static void Load(InputStream input);
+    public static void Store(OutputStream output, string header);
+    public static void SetProperty(string key, string value);
+    public static object Get(string key);
+    public static string GetProperty(string key, string def);
+    public static string GetProperty(string key);
+    public static int GetInt(string key, int def);
+    public static int GetInt(string key);
+    public static long GetLong(string key, long def);
+    public static IPAddress GetInetAddress(string key, IPAddress def);
+    public static IPAddress GetLocalHost();
+    public static bool GetBoolean(string key, bool def);
+    public static IPAddress[] GetInetAddressArray(string key, string delim, IPAddress[] def);
+}
+public class SharpCifs.Dcerpc.DcerpcBind : DcerpcMessage {
+    internal static String[] ResultMessage;
+    internal DcerpcBinding Binding;
+    internal int MaxXmit;
+    internal int MaxRecv;
+    internal DcerpcBind(DcerpcBinding binding, DcerpcHandle handle);
+    private static DcerpcBind();
+    internal static string GetResultMessage(int result);
+    public virtual DcerpcException GetResult();
+    public virtual int GetOpnum();
+    public virtual void Encode_in(NdrBuffer dst);
+    public virtual void Decode_out(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.DcerpcBinding : object {
+    private static Hashtable _interfaces;
+    internal string Proto;
+    internal string Server;
+    internal string Endpoint;
+    internal Hashtable Options;
+    internal Uuid Uuid;
+    internal int Major;
+    internal int Minor;
+    private static DcerpcBinding();
+    internal DcerpcBinding(string proto, string server);
+    public static void AddInterface(string name, string syntax);
+    internal virtual void SetOption(string key, object val);
+    internal virtual object GetOption(string key);
+    public virtual string ToString();
+}
+public static class SharpCifs.Dcerpc.DcerpcConstants : object {
+    public static Uuid DcerpcUuidSyntaxNdr;
+    public static int DcerpcFirstFrag;
+    public static int DcerpcLastFrag;
+    public static int DcerpcPendingCancel;
+    public static int DcerpcReserved1;
+    public static int DcerpcConcMpx;
+    public static int DcerpcDidNotExecute;
+    public static int DcerpcMaybe;
+    public static int DcerpcObjectUuid;
+    private static DcerpcConstants();
+}
+public static class SharpCifs.Dcerpc.DcerpcError : object {
+    public static int DcerpcFaultOther;
+    public static int DcerpcFaultAccessDenied;
+    public static int DcerpcFaultCantPerform;
+    public static int DcerpcFaultNdr;
+    public static int DcerpcFaultInvalidTag;
+    public static int DcerpcFaultContextMismatch;
+    public static int DcerpcFaultOpRngError;
+    public static int DcerpcFaultUnkIf;
+    public static int DcerpcFaultProtoError;
+    public static Int32[] DcerpcFaultCodes;
+    public static String[] DcerpcFaultMessages;
+    private static DcerpcError();
+}
+public class SharpCifs.Dcerpc.DcerpcException : IOException {
+    private int _error;
+    private Exception _rootCause;
+    internal DcerpcException(int error);
+    public DcerpcException(string msg);
+    public DcerpcException(string msg, Exception rootCause);
+    internal static string GetMessageByDcerpcError(int errcode);
+    public virtual int GetErrorCode();
+    public virtual Exception GetRootCause();
+    public virtual string ToString();
+}
+public abstract class SharpCifs.Dcerpc.DcerpcHandle : object {
+    protected internal DcerpcBinding Binding;
+    protected internal int MaxXmit;
+    protected internal int MaxRecv;
+    protected internal int State;
+    protected internal IDcerpcSecurityProvider SecurityProvider;
+    private static int _callId;
+    private static DcerpcHandle();
+    protected internal static DcerpcBinding ParseBinding(string str);
+    public static DcerpcHandle GetHandle(string url, NtlmPasswordAuthentication auth);
+    public virtual void Bind();
+    public virtual void Sendrecv(DcerpcMessage msg);
+    public virtual void SetDcerpcSecurityProvider(IDcerpcSecurityProvider securityProvider);
+    public virtual string GetServer();
+    public virtual Principal GetPrincipal();
+    public virtual string ToString();
+    protected internal abstract virtual void DoSendFragment(Byte[] buf, int off, int length, bool isDirect);
+    protected internal abstract virtual void DoReceiveFragment(Byte[] buf, bool isDirect);
+    public abstract virtual void Close();
+}
+public abstract class SharpCifs.Dcerpc.DcerpcMessage : NdrObject {
+    protected internal int Ptype;
+    protected internal int Flags;
+    protected internal int Length;
+    protected internal int CallId;
+    protected internal int AllocHint;
+    protected internal int Result;
+    public virtual bool IsFlagSet(int flag);
+    public virtual void UnsetFlag(int flag);
+    public virtual void SetFlag(int flag);
+    public virtual DcerpcException GetResult();
+    internal virtual void Encode_header(NdrBuffer buf);
+    internal virtual void Decode_header(NdrBuffer buf);
+    public virtual void Encode(NdrBuffer buf);
+    public virtual void Decode(NdrBuffer buf);
+    public abstract virtual int GetOpnum();
+    public abstract virtual void Encode_in(NdrBuffer dst);
+    public abstract virtual void Decode_out(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.DcerpcPipeHandle : DcerpcHandle {
+    internal SmbNamedPipe Pipe;
+    internal SmbFileInputStream In;
+    internal SmbFileOutputStream Out;
+    internal bool IsStart;
+    public DcerpcPipeHandle(string url, NtlmPasswordAuthentication auth);
+    protected internal virtual void DoSendFragment(Byte[] buf, int off, int length, bool isDirect);
+    protected internal virtual void DoReceiveFragment(Byte[] buf, bool isDirect);
+    public virtual void Close();
+}
+public interface SharpCifs.Dcerpc.IDcerpcSecurityProvider {
+    public abstract virtual void Wrap(NdrBuffer outgoing);
+    public abstract virtual void Unwrap(NdrBuffer incoming);
+}
+public class SharpCifs.Dcerpc.Msrpc.LsaPolicyHandle : PolicyHandle {
+    public LsaPolicyHandle(DcerpcHandle handle, string server, int access);
+    public virtual void Close();
+}
+public class SharpCifs.Dcerpc.Msrpc.Lsarpc : object {
+    public static int PolicyInfoAuditEvents;
+    public static int PolicyInfoPrimaryDomain;
+    public static int PolicyInfoAccountDomain;
+    public static int PolicyInfoServerRole;
+    public static int PolicyInfoModification;
+    public static int PolicyInfoDnsDomain;
+    public static int SidNameUseNone;
+    public static int SidNameUser;
+    public static int SidNameDomGrp;
+    public static int SidNameDomain;
+    public static int SidNameAlias;
+    public static int SidNameWknGrp;
+    public static int SidNameDeleted;
+    public static int SidNameInvalid;
+    public static int SidNameUnknown;
+    public static string GetSyntax();
+}
+internal class SharpCifs.Dcerpc.Msrpc.LsarSidArrayX : LsarSidArray {
+    internal LsarSidArrayX(Sid[] sids);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcDfsRootEnum : NetrDfsEnumEx {
+    public MsrpcDfsRootEnum(string server);
+    public virtual IFileEntry[] GetEntries();
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcEnumerateAliasesInDomain : SamrEnumerateAliasesInDomain {
+    public MsrpcEnumerateAliasesInDomain(SamrDomainHandle domainHandle, int acctFlags, SamrSamArray sam);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcGetMembersInAlias : SamrGetMembersInAlias {
+    public MsrpcGetMembersInAlias(SamrAliasHandle aliasHandle, LsarSidArray sids);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcLookupSids : LsarLookupSids {
+    internal Sid[] sids;
+    public MsrpcLookupSids(LsaPolicyHandle policyHandle, Sid[] sids);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcLsarOpenPolicy2 : LsarOpenPolicy2 {
+    public MsrpcLsarOpenPolicy2(string server, int access, LsaPolicyHandle policyHandle);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcQueryInformationPolicy : LsarQueryInformationPolicy {
+    public MsrpcQueryInformationPolicy(LsaPolicyHandle policyHandle, short level, NdrObject info);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcSamrConnect2 : SamrConnect2 {
+    public MsrpcSamrConnect2(string server, int access, SamrPolicyHandle policyHandle);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcSamrConnect4 : SamrConnect4 {
+    public MsrpcSamrConnect4(string server, int access, SamrPolicyHandle policyHandle);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcSamrOpenAlias : SamrOpenAlias {
+    public MsrpcSamrOpenAlias(SamrDomainHandle handle, int access, int rid, SamrAliasHandle aliasHandle);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcSamrOpenDomain : SamrOpenDomain {
+    public MsrpcSamrOpenDomain(SamrPolicyHandle handle, int access, SidT sid, SamrDomainHandle domainHandle);
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcShareEnum : ShareEnumAll {
+    public MsrpcShareEnum(string server);
+    public virtual IFileEntry[] GetEntries();
+}
+public class SharpCifs.Dcerpc.Msrpc.MsrpcShareGetInfo : ShareGetInfo {
+    public MsrpcShareGetInfo(string server, string sharename);
+    public virtual Ace[] GetSecurity();
+}
+public class SharpCifs.Dcerpc.Msrpc.Netdfs : object {
+    public static int DfsVolumeFlavorStandalone;
+    public static int DfsVolumeFlavorAdBlob;
+    public static int DfsStorageStateOffline;
+    public static int DfsStorageStateOnline;
+    public static int DfsStorageStateActive;
+    public static string GetSyntax();
+}
+public class SharpCifs.Dcerpc.Msrpc.Samr : object {
+    public static int AcbDisabled;
+    public static int AcbHomdirreq;
+    public static int AcbPwnotreq;
+    public static int AcbTempdup;
+    public static int AcbNormal;
+    public static int AcbMns;
+    public static int AcbDomtrust;
+    public static int AcbWstrust;
+    public static int AcbSvrtrust;
+    public static int AcbPwnoexp;
+    public static int AcbAutolock;
+    public static int AcbEncTxtPwdAllowed;
+    public static int AcbSmartcardRequired;
+    public static int AcbTrustedForDelegation;
+    public static int AcbNotDelegated;
+    public static int AcbUseDesKeyOnly;
+    public static int AcbDontRequirePreauth;
+    public static int SeGroupMandatory;
+    public static int SeGroupEnabledByDefault;
+    public static int SeGroupEnabled;
+    public static int SeGroupOwner;
+    public static int SeGroupUseForDenyOnly;
+    public static int SeGroupResource;
+    public static int SeGroupLogonId;
+    public static string GetSyntax();
+}
+public class SharpCifs.Dcerpc.Msrpc.SamrAliasHandle : PolicyHandle {
+    public SamrAliasHandle(DcerpcHandle handle, SamrDomainHandle domainHandle, int access, int rid);
+    public virtual void Close();
+}
+public class SharpCifs.Dcerpc.Msrpc.SamrDomainHandle : PolicyHandle {
+    public SamrDomainHandle(DcerpcHandle handle, SamrPolicyHandle policyHandle, int access, SidT sid);
+    public virtual void Close();
+}
+public class SharpCifs.Dcerpc.Msrpc.SamrPolicyHandle : PolicyHandle {
+    public SamrPolicyHandle(DcerpcHandle handle, string server, int access);
+    public virtual void Close();
+}
+public class SharpCifs.Dcerpc.Msrpc.Srvsvc : object {
+    public static string GetSyntax();
+}
+public class SharpCifs.Dcerpc.Ndr.NdrBuffer : object {
+    internal int Referent;
+    internal Hashtable Referents;
+    public Byte[] Buf;
+    public int Start;
+    public int Index;
+    public int Length;
+    public NdrBuffer Deferred;
+    public NdrBuffer(Byte[] buf, int start);
+    public virtual NdrBuffer Derive(int idx);
+    public virtual void Reset();
+    public virtual int GetIndex();
+    public virtual void SetIndex(int index);
+    public virtual int GetCapacity();
+    public virtual int GetTailSpace();
+    public virtual Byte[] GetBuffer();
+    public virtual int Align(int boundary, byte value);
+    public virtual void WriteOctetArray(Byte[] b, int i, int l);
+    public virtual void ReadOctetArray(Byte[] b, int i, int l);
+    public virtual int GetLength();
+    public virtual void SetLength(int length);
+    public virtual void Advance(int n);
+    public virtual int Align(int boundary);
+    public virtual void Enc_ndr_small(int s);
+    public virtual int Dec_ndr_small();
+    public virtual void Enc_ndr_short(int s);
+    public virtual int Dec_ndr_short();
+    public virtual void Enc_ndr_long(int l);
+    public virtual int Dec_ndr_long();
+    public virtual void Enc_ndr_hyper(long h);
+    public virtual long Dec_ndr_hyper();
+    public virtual void Enc_ndr_string(string s);
+    public virtual string Dec_ndr_string();
+    private int GetDceReferent(object obj);
+    public virtual void Enc_ndr_referent(object obj, int type);
+    public virtual string ToString();
+}
+public class SharpCifs.Dcerpc.Ndr.NdrException : IOException {
+    public static string NoNullRef;
+    public static string InvalidConformance;
+    public NdrException(string msg);
+    private static NdrException();
+}
+public class SharpCifs.Dcerpc.Ndr.NdrHyper : NdrObject {
+    public long Value;
+    public NdrHyper(long value);
+    public virtual void Encode(NdrBuffer dst);
+    public virtual void Decode(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.Ndr.NdrLong : NdrObject {
+    public int Value;
+    public NdrLong(int value);
+    public virtual void Encode(NdrBuffer dst);
+    public virtual void Decode(NdrBuffer src);
+}
+public abstract class SharpCifs.Dcerpc.Ndr.NdrObject : object {
+    public abstract virtual void Encode(NdrBuffer dst);
+    public abstract virtual void Decode(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.Ndr.NdrShort : NdrObject {
+    public int Value;
+    public NdrShort(int value);
+    public virtual void Encode(NdrBuffer dst);
+    public virtual void Decode(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.Ndr.NdrSmall : NdrObject {
+    public int Value;
+    public NdrSmall(int value);
+    public virtual void Encode(NdrBuffer dst);
+    public virtual void Decode(NdrBuffer src);
+}
+public class SharpCifs.Dcerpc.Rpc : object {
+}
+public class SharpCifs.Dcerpc.UnicodeString : Unicode_string {
+    internal bool Zterm;
+    public UnicodeString(bool zterm);
+    public UnicodeString(Unicode_string rus, bool zterm);
+    public UnicodeString(string str, bool zterm);
+    public virtual string ToString();
+}
+public class SharpCifs.Dcerpc.Uuid : UuidT {
+    internal static Char[] Hexchars;
+    public Uuid(UuidT uuid);
+    public Uuid(string str);
+    private static Uuid();
+    public static int Hex_to_bin(Char[] arr, int offset, int length);
+    public static string Bin_to_hex(int value, int length);
+    private static byte B(int i);
+    private static short S(int i);
+    public virtual string ToString();
+}
+public class SharpCifs.Netbios.Lmhosts : object {
+    private static string Filename;
+    private static Hashtable Tab;
+    private static long _lastModified;
+    private static int _alt;
+    private static LogStream _log;
+    private static Lmhosts();
+    public static NbtAddress GetByName(string host);
+    internal static NbtAddress GetByName(Name name);
+    internal static void Populate(StreamReader r);
+}
+public class SharpCifs.Netbios.Name : object {
+    private static int TypeOffset;
+    private static int ScopeOffset;
+    private static string DefaultScope;
+    internal static string OemEncoding;
+    public string name;
+    public string Scope;
+    public int HexCode;
+    internal int SrcHashCode;
+    public Name(string name, int hexCode, string scope);
+    private static Name();
+    internal virtual int WriteWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadWireFormat(Byte[] src, int srcIndex);
+    internal int ReadWireFormatDos(Byte[] src, int srcIndex);
+    internal virtual int WriteScopeWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadScopeWireFormat(Byte[] src, int srcIndex);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+}
+internal class SharpCifs.Netbios.NameQueryRequest : NameServicePacket {
+    internal NameQueryRequest(Name name);
+    internal virtual int WriteBodyWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadBodyWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteRDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadRDataWireFormat(Byte[] src, int srcIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Netbios.NameQueryResponse : NameServicePacket {
+    internal virtual int WriteBodyWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadBodyWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteRDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadRDataWireFormat(Byte[] src, int srcIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Netbios.NameServiceClient : object {
+    internal static int DefaultSoTimeout;
+    internal static int DefaultRcvBufSize;
+    internal static int DefaultSndBufSize;
+    internal static int NameServiceUdpPort;
+    internal static int DefaultRetryCount;
+    internal static int DefaultRetryTimeout;
+    internal static int ResolverLmhosts;
+    internal static int ResolverBcast;
+    internal static int ResolverWins;
+    private static int SndBufSize;
+    private static int RcvBufSize;
+    private static int SoTimeout;
+    private static int RetryCount;
+    private static int RetryTimeout;
+    private static int Lport;
+    private static IPAddress Laddr;
+    private static string Ro;
+    private static LogStream _log;
+    private object _lock;
+    private int _lport;
+    private int _closeTimeout;
+    private Byte[] _sndBuf;
+    private Byte[] _rcvBuf;
+    private SocketEx _socketSender;
+    private Hashtable _responseTable;
+    private Thread _thread;
+    private int _nextNameTrnId;
+    private Int32[] _resolveOrder;
+    private bool _waitResponse;
+    private bool _isActive;
+    private AutoResetEvent _autoResetWaitReceive;
+    internal IPAddress laddr;
+    internal IPAddress Baddr;
+    private int _recievedLength;
+    internal NameServiceClient(int lport, IPAddress laddr);
+    private static NameServiceClient();
+    internal virtual int GetNextNameTrnId();
+    internal virtual void EnsureOpen(int timeout);
+    internal virtual void TryClose();
+    public virtual void Run();
+    private void OnReceiveCompleted(object sender, SocketAsyncEventArgs e);
+    internal virtual void Send(NameServicePacket request, NameServicePacket response, int timeout);
+    internal virtual NbtAddress[] GetAllByName(Name name, IPAddress addr);
+    internal virtual NbtAddress GetByName(Name name, IPAddress addr);
+    internal virtual NbtAddress[] GetNodeStatus(NbtAddress addr);
+    internal virtual NbtAddress[] GetHosts();
+}
+internal abstract class SharpCifs.Netbios.NameServicePacket : object {
+    internal static int Query;
+    internal static int Wack;
+    internal static int FmtErr;
+    internal static int SrvErr;
+    internal static int ImpErr;
+    internal static int RfsErr;
+    internal static int ActErr;
+    internal static int CftErr;
+    internal static int NbIn;
+    internal static int NbstatIn;
+    internal static int Nb;
+    internal static int Nbstat;
+    internal static int In;
+    internal static int A;
+    internal static int Ns;
+    internal static int Null;
+    internal static int HeaderLength;
+    internal static int OpcodeOffset;
+    internal static int QuestionOffset;
+    internal static int AnswerOffset;
+    internal static int AuthorityOffset;
+    internal static int AdditionalOffset;
+    internal int AddrIndex;
+    internal NbtAddress[] AddrEntry;
+    internal int NameTrnId;
+    internal int OpCode;
+    internal int ResultCode;
+    internal int QuestionCount;
+    internal int AnswerCount;
+    internal int AuthorityCount;
+    internal int AdditionalCount;
+    internal bool Received;
+    internal bool IsResponse;
+    internal bool IsAuthAnswer;
+    internal bool IsTruncated;
+    internal bool IsRecurDesired;
+    internal bool IsRecurAvailable;
+    internal bool IsBroadcast;
+    internal Name QuestionName;
+    internal Name RecordName;
+    internal int QuestionType;
+    internal int QuestionClass;
+    internal int RecordType;
+    internal int RecordClass;
+    internal int Ttl;
+    internal int RDataLength;
+    internal IPAddress Addr;
+    internal static void WriteInt2(int val, Byte[] dst, int dstIndex);
+    internal static void WriteInt4(int val, Byte[] dst, int dstIndex);
+    internal static int ReadInt2(Byte[] src, int srcIndex);
+    internal static int ReadInt4(Byte[] src, int srcIndex);
+    internal static int ReadNameTrnId(Byte[] src, int srcIndex);
+    internal virtual int WriteWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteHeaderWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadHeaderWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteQuestionSectionWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadQuestionSectionWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteResourceRecordWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadResourceRecordWireFormat(Byte[] src, int srcIndex);
+    internal abstract virtual int WriteBodyWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadBodyWireFormat(Byte[] src, int srcIndex);
+    internal abstract virtual int WriteRDataWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadRDataWireFormat(Byte[] src, int srcIndex);
+    public virtual string ToString();
+}
+public class SharpCifs.Netbios.NbtAddress : object {
+    internal static string AnyHostsName;
+    public static string MasterBrowserName;
+    public static string SmbserverName;
+    public static int BNode;
+    public static int PNode;
+    public static int MNode;
+    public static int HNode;
+    internal static IPAddress[] Nbns;
+    private static NameServiceClient Client;
+    private static int DefaultCachePolicy;
+    private static int CachePolicy;
+    private static int Forever;
+    private static int _nbnsIndex;
+    private static Hashtable AddressCache;
+    private static Hashtable LookupTable;
+    internal static Name UnknownName;
+    internal static NbtAddress UnknownAddress;
+    internal static Byte[] UnknownMacAddress;
+    private static NbtAddress Localhost;
+    internal Name HostName;
+    internal int Address;
+    internal int NodeType;
+    internal bool GroupName;
+    internal bool isBeingDeleted;
+    internal bool isInConflict;
+    internal bool isActive;
+    internal bool isPermanent;
+    internal bool IsDataFromNodeStatus;
+    internal Byte[] MacAddress;
+    internal string CalledName;
+    private static NbtAddress();
+    internal NbtAddress(Name hostName, int address, bool groupName, int nodeType);
+    internal NbtAddress(Name hostName, int address, bool groupName, int nodeType, bool isBeingDeleted, bool isInConflict, bool isActive, bool isPermanent, Byte[] macAddress);
+    private static void CacheAddress(Name hostName, NbtAddress addr);
+    private static void CacheAddress(Name hostName, NbtAddress addr, long expiration);
+    private static void CacheAddressArray(NbtAddress[] addrs);
+    private static NbtAddress GetCachedAddress(Name hostName);
+    private static NbtAddress DoNameQuery(Name name, IPAddress svr);
+    private static object CheckLookupTable(Name name);
+    private static void UpdateLookupTable(Name name);
+    public static NbtAddress GetLocalHost();
+    public static NbtAddress[] GetHosts();
+    public static Name GetLocalName();
+    public static NbtAddress GetByName(string host);
+    public static NbtAddress GetByName(string host, int type, string scope);
+    public static NbtAddress GetByName(string host, int type, string scope, IPAddress svr);
+    public static NbtAddress[] GetAllByName(string host, int type, string scope, IPAddress svr);
+    public static NbtAddress[] GetAllByAddress(string host);
+    public static NbtAddress[] GetAllByAddress(string host, int type, string scope);
+    public static NbtAddress[] GetAllByAddress(NbtAddress addr);
+    public static IPAddress GetWinsAddress();
+    public static bool IsWins(IPAddress svr);
+    internal static IPAddress SwitchWins();
+    public string FirstCalledName();
+    public string NextCalledName();
+    internal void CheckData();
+    internal void CheckNodeStatusData();
+    public bool IsGroupAddress();
+    public int GetNodeType();
+    public bool IsBeingDeleted();
+    public bool IsInConflict();
+    public bool IsActive();
+    public bool IsPermanent();
+    public Byte[] GetMacAddress();
+    public string GetHostName();
+    public Byte[] GetAddress();
+    public IPAddress GetInetAddress();
+    public string GetHostAddress();
+    public int GetNameType();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+}
+public class SharpCifs.Netbios.NbtException : IOException {
+    public static int Success;
+    public static int ErrNamSrvc;
+    public static int ErrSsnSrvc;
+    public static int FmtErr;
+    public static int SrvErr;
+    public static int ImpErr;
+    public static int RfsErr;
+    public static int ActErr;
+    public static int CftErr;
+    public static int ConnectionRefused;
+    public static int NotListeningCalled;
+    public static int NotListeningCalling;
+    public static int CalledNotPresent;
+    public static int NoResources;
+    public static int Unspecified;
+    public int ErrorClass;
+    public int ErrorCode;
+    public NbtException(int errorClass, int errorCode);
+    public static string GetErrorString(int errorClass, int errorCode);
+    public virtual string ToString();
+}
+internal class SharpCifs.Netbios.NodeStatusRequest : NameServicePacket {
+    internal NodeStatusRequest(Name name);
+    internal virtual int WriteBodyWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadBodyWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteRDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadRDataWireFormat(Byte[] src, int srcIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Netbios.NodeStatusResponse : NameServicePacket {
+    private NbtAddress _queryAddress;
+    private int _numberOfNames;
+    private Byte[] _macAddress;
+    private Byte[] _stats;
+    internal NbtAddress[] AddressArray;
+    internal NodeStatusResponse(NbtAddress queryAddress);
+    internal virtual int WriteBodyWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadBodyWireFormat(Byte[] src, int srcIndex);
+    internal virtual int WriteRDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadRDataWireFormat(Byte[] src, int srcIndex);
+    private int ReadNodeNameArray(Byte[] src, int srcIndex);
+    public virtual string ToString();
+}
+public class SharpCifs.Netbios.SessionRequestPacket : SessionServicePacket {
+    private Name _calledName;
+    private Name _callingName;
+    public SessionRequestPacket(Name calledName, Name callingName);
+    internal virtual int WriteTrailerWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadTrailerWireFormat(InputStream in, Byte[] buffer, int bufferIndex);
+}
+internal class SharpCifs.Netbios.SessionRetargetResponsePacket : SessionServicePacket {
+    private NbtAddress _retargetAddress;
+    private int _retargetPort;
+    internal virtual int WriteTrailerWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadTrailerWireFormat(InputStream in, Byte[] buffer, int bufferIndex);
+}
+public abstract class SharpCifs.Netbios.SessionServicePacket : object {
+    internal static int SessionMessage;
+    internal static int SessionRequest;
+    public static int PositiveSessionResponse;
+    public static int NegativeSessionResponse;
+    internal static int SessionRetargetResponse;
+    internal static int SessionKeepAlive;
+    internal static int MaxMessageSize;
+    internal static int HeaderLength;
+    internal int Type;
+    internal int Length;
+    internal static void WriteInt2(int val, Byte[] dst, int dstIndex);
+    internal static void WriteInt4(int val, Byte[] dst, int dstIndex);
+    internal static int ReadInt2(Byte[] src, int srcIndex);
+    internal static int ReadInt4(Byte[] src, int srcIndex);
+    internal static int ReadLength(Byte[] src, int srcIndex);
+    internal static int Readn(InputStream in, Byte[] b, int off, int len);
+    internal static int ReadPacketType(InputStream in, Byte[] buffer, int bufferIndex);
+    public virtual int WriteWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadWireFormat(InputStream in, Byte[] buffer, int bufferIndex);
+    internal virtual int WriteHeaderWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadHeaderWireFormat(InputStream in, Byte[] buffer, int bufferIndex);
+    internal abstract virtual int WriteTrailerWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadTrailerWireFormat(InputStream in, Byte[] buffer, int bufferIndex);
+}
+public abstract class SharpCifs.Ntlmssp.NtlmFlags : object {
+    public static int NtlmsspNegotiateUnicode;
+    public static int NtlmsspNegotiateOem;
+    public static int NtlmsspRequestTarget;
+    public static int NtlmsspNegotiateSign;
+    public static int NtlmsspNegotiateSeal;
+    public static int NtlmsspNegotiateDatagramStyle;
+    public static int NtlmsspNegotiateLmKey;
+    public static int NtlmsspNegotiateNetware;
+    public static int NtlmsspNegotiateNtlm;
+    public static int NtlmsspNegotiateOemDomainSupplied;
+    public static int NtlmsspNegotiateOemWorkstationSupplied;
+    public static int NtlmsspNegotiateLocalCall;
+    public static int NtlmsspNegotiateAlwaysSign;
+    public static int NtlmsspTargetTypeDomain;
+    public static int NtlmsspTargetTypeServer;
+    public static int NtlmsspTargetTypeShare;
+    public static int NtlmsspNegotiateNtlm2;
+    public static int NtlmsspRequestInitResponse;
+    public static int NtlmsspRequestAcceptResponse;
+    public static int NtlmsspRequestNonNtSessionKey;
+    public static int NtlmsspNegotiateTargetInfo;
+    public static int NtlmsspNegotiate128;
+    public static int NtlmsspNegotiateKeyExch;
+    public static int NtlmsspNegotiate56;
+}
+public abstract class SharpCifs.Ntlmssp.NtlmMessage : NtlmFlags {
+    protected internal static Byte[] NtlmsspSignature;
+    private static string OemEncoding;
+    protected internal static string UniEncoding;
+    private int _flags;
+    private static NtlmMessage();
+    public virtual int GetFlags();
+    public virtual void SetFlags(int flags);
+    public virtual bool GetFlag(int flag);
+    public virtual void SetFlag(int flag, bool value);
+    internal static int ReadULong(Byte[] src, int index);
+    internal static int ReadUShort(Byte[] src, int index);
+    internal static Byte[] ReadSecurityBuffer(Byte[] src, int index);
+    internal static void WriteULong(Byte[] dest, int offset, int value);
+    internal static void WriteUShort(Byte[] dest, int offset, int value);
+    internal static void WriteSecurityBuffer(Byte[] dest, int offset, int bodyOffset, Byte[] src);
+    internal static string GetOemEncoding();
+    public abstract virtual Byte[] ToByteArray();
+}
+public class SharpCifs.Ntlmssp.Type1Message : NtlmMessage {
+    private static int DefaultFlags;
+    private static string DefaultDomain;
+    private static string DefaultWorkstation;
+    private string _suppliedDomain;
+    private string _suppliedWorkstation;
+    private static Type1Message();
+    public Type1Message(int flags, string suppliedDomain, string suppliedWorkstation);
+    public Type1Message(Byte[] material);
+    public virtual string GetSuppliedDomain();
+    public virtual void SetSuppliedDomain(string suppliedDomain);
+    public virtual string GetSuppliedWorkstation();
+    public virtual void SetSuppliedWorkstation(string suppliedWorkstation);
+    public virtual Byte[] ToByteArray();
+    public virtual string ToString();
+    public static int GetDefaultFlags();
+    public static string GetDefaultDomain();
+    public static string GetDefaultWorkstation();
+    private void Parse(Byte[] material);
+}
+public class SharpCifs.Ntlmssp.Type2Message : NtlmMessage {
+    private static int DefaultFlags;
+    private static string DefaultDomain;
+    private static Byte[] DefaultTargetInformation;
+    private Byte[] _challenge;
+    private string _target;
+    private Byte[] _context;
+    private Byte[] _targetInformation;
+    private static Type2Message();
+    public Type2Message(Type1Message type1);
+    public Type2Message(Type1Message type1, Byte[] challenge, string target);
+    public Type2Message(int flags, Byte[] challenge, string target);
+    public Type2Message(Byte[] material);
+    public virtual Byte[] GetChallenge();
+    public virtual void SetChallenge(Byte[] challenge);
+    public virtual string GetTarget();
+    public virtual void SetTarget(string target);
+    public virtual Byte[] GetTargetInformation();
+    public virtual void SetTargetInformation(Byte[] targetInformation);
+    public virtual Byte[] GetContext();
+    public virtual void SetContext(Byte[] context);
+    public virtual Byte[] ToByteArray();
+    public virtual string ToString();
+    public static int GetDefaultFlags();
+    public static int GetDefaultFlags(Type1Message type1);
+    public static string GetDefaultDomain();
+    public static Byte[] GetDefaultTargetInformation();
+    private void Parse(Byte[] material);
+}
+public class SharpCifs.Ntlmssp.Type3Message : NtlmMessage {
+    internal static long MillisecondsBetween1970And1601;
+    private static int DefaultFlags;
+    private static string DefaultDomain;
+    private static string DefaultUser;
+    private static string DefaultPassword;
+    private static string DefaultWorkstation;
+    private static int LmCompatibility;
+    private Byte[] _lmResponse;
+    private Byte[] _ntResponse;
+    private string _domain;
+    private string _user;
+    private string _workstation;
+    private Byte[] _masterKey;
+    private Byte[] _sessionKey;
+    private static Type3Message();
+    public Type3Message(Type2Message type2);
+    public Type3Message(Type2Message type2, string password, string domain, string user, string workstation, int flags);
+    public Type3Message(int flags, Byte[] lmResponse, Byte[] ntResponse, string domain, string user, string workstation);
+    public Type3Message(Byte[] material);
+    public virtual Byte[] GetLMResponse();
+    public virtual void SetLmResponse(Byte[] lmResponse);
+    public virtual Byte[] GetNTResponse();
+    public virtual void SetNtResponse(Byte[] ntResponse);
+    public virtual string GetDomain();
+    public virtual void SetDomain(string domain);
+    public virtual string GetUser();
+    public virtual void SetUser(string user);
+    public virtual string GetWorkstation();
+    public virtual void SetWorkstation(string workstation);
+    public virtual Byte[] GetMasterKey();
+    public virtual Byte[] GetSessionKey();
+    public virtual void SetSessionKey(Byte[] sessionKey);
+    public virtual Byte[] ToByteArray();
+    public virtual string ToString();
+    public static int GetDefaultFlags();
+    public static int GetDefaultFlags(Type2Message type2);
+    public static Byte[] GetLMResponse(Type2Message type2, string password);
+    public static Byte[] GetLMv2Response(Type2Message type2, string domain, string user, string password, Byte[] clientChallenge);
+    public static Byte[] GetNtlMv2Response(Type2Message type2, Byte[] responseKeyNt, Byte[] clientChallenge);
+    public static Byte[] GetNTResponse(Type2Message type2, string password);
+    public static string GetDefaultDomain();
+    public static string GetDefaultUser();
+    public static string GetDefaultPassword();
+    public static string GetDefaultWorkstation();
+    private void Parse(Byte[] material);
+}
+public class SharpCifs.Smb.Ace : object {
+    public static int FileReadData;
+    public static int FileWriteData;
+    public static int FileAppendData;
+    public static int FileReadEa;
+    public static int FileWriteEa;
+    public static int FileExecute;
+    public static int FileDelete;
+    public static int FileReadAttributes;
+    public static int FileWriteAttributes;
+    public static int Delete;
+    public static int ReadControl;
+    public static int WriteDac;
+    public static int WriteOwner;
+    public static int Synchronize;
+    public static int GenericAll;
+    public static int GenericExecute;
+    public static int GenericWrite;
+    public static int GenericRead;
+    public static int FlagsObjectInherit;
+    public static int FlagsContainerInherit;
+    public static int FlagsNoPropagate;
+    public static int FlagsInheritOnly;
+    public static int FlagsInherited;
+    internal bool Allow;
+    internal int Flags;
+    internal int Access;
+    internal Sid Sid;
+    public virtual bool IsAllow();
+    public virtual bool IsInherited();
+    public virtual int GetFlags();
+    public virtual string GetApplyToText();
+    public virtual int GetAccessMask();
+    public virtual Sid GetSid();
+    internal virtual int Decode(Byte[] buf, int bi);
+    internal virtual void AppendCol(StringBuilder sb, string str, int width);
+    public virtual string ToString();
+}
+internal abstract class SharpCifs.Smb.AndXServerMessageBlock : ServerMessageBlock {
+    private static int AndxCommandOffset;
+    private static int AndxReservedOffset;
+    private static int AndxOffsetOffset;
+    private byte _andxCommand;
+    private int _andxOffset;
+    internal ServerMessageBlock Andx;
+    internal AndXServerMessageBlock(ServerMessageBlock andx);
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int Encode(Byte[] dst, int dstIndex);
+    internal virtual int Decode(Byte[] buffer, int bufferIndex);
+    internal virtual int WriteAndXWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadAndXWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.BufferCache : object {
+    private static int MaxBuffers;
+    internal static Object[] Cache;
+    private static int _freeBuffers;
+    private static BufferCache();
+    public static Byte[] GetBuffer();
+    internal static void GetBuffers(SmbComTransaction req, SmbComTransactionResponse rsp);
+    public static void ReleaseBuffer(Byte[] buf);
+}
+public class SharpCifs.Smb.Dfs : object {
+    internal static LogStream Log;
+    internal static bool StrictView;
+    internal static long Ttl;
+    internal static bool Disabled;
+    internal static CacheEntry FalseEntry;
+    internal CacheEntry Domains;
+    internal CacheEntry Referrals;
+    private static Dfs();
+    public virtual Hashtable GetTrustedDomains(NtlmPasswordAuthentication auth);
+    public virtual bool IsTrustedDomain(string domain, NtlmPasswordAuthentication auth);
+    public virtual SmbTransport GetDc(string domain, NtlmPasswordAuthentication auth);
+    public virtual DfsReferral GetReferral(SmbTransport trans, string domain, string root, string path, NtlmPasswordAuthentication auth);
+    public virtual DfsReferral Resolve(string domain, string root, string path, NtlmPasswordAuthentication auth);
+    internal virtual void Insert(string path, DfsReferral dr);
+}
+public class SharpCifs.Smb.DfsReferral : SmbException {
+    public int PathConsumed;
+    public long Ttl;
+    public string Server;
+    public string Share;
+    public string Link;
+    public string Path;
+    public bool ResolveHashes;
+    public long Expiration;
+    internal DfsReferral Next;
+    internal IDictionary`2<string, DfsReferral> Map;
+    internal string Key;
+    internal virtual void Append(DfsReferral dr);
+    public virtual string ToString();
+}
+public static class SharpCifs.Smb.DosError : object {
+    public static Int32[][] DosErrorCodes;
+    public static String[] DosErrorMessages;
+    private static DosError();
+}
+public class SharpCifs.Smb.DosFileFilter : object {
+    protected internal string Wildcard;
+    protected internal int Attributes;
+    public DosFileFilter(string wildcard, int attributes);
+    public virtual bool Accept(SmbFile file);
+}
+internal interface SharpCifs.Smb.IAllocInfo {
+    public abstract virtual long GetCapacity();
+    public abstract virtual long GetFree();
+}
+public interface SharpCifs.Smb.IFileEntry {
+    public abstract virtual string GetName();
+    public abstract virtual int GetType();
+    public abstract virtual int GetAttributes();
+    public abstract virtual long CreateTime();
+    public abstract virtual long LastModified();
+    public abstract virtual long Length();
+}
+internal interface SharpCifs.Smb.IInfo {
+    public abstract virtual int GetAttributes();
+    public abstract virtual long GetCreateTime();
+    public abstract virtual long GetLastWriteTime();
+    public abstract virtual long GetSize();
+}
+public interface SharpCifs.Smb.ISmbFileFilter {
+    public abstract virtual bool Accept(SmbFile file);
+}
+public interface SharpCifs.Smb.ISmbFilenameFilter {
+    public abstract virtual bool Accept(SmbFile dir, string name);
+}
+internal class SharpCifs.Smb.NetServerEnum2 : SmbComTransaction {
+    internal static int SvTypeAll;
+    internal static int SvTypeDomainEnum;
+    internal static String[] Descr;
+    internal string Domain;
+    internal string LastName;
+    internal int ServerTypes;
+    internal NetServerEnum2(string domain, int serverTypes);
+    private static NetServerEnum2();
+    internal virtual void Reset(int key, string lastName);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.NetServerEnum2Response : SmbComTransactionResponse {
+    private int _converter;
+    private int _totalAvailableEntries;
+    internal string LastName;
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.NetShareEnum : SmbComTransaction {
+    private static string Descr;
+    private static NetShareEnum();
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.NetShareEnumResponse : SmbComTransactionResponse {
+    private int _converter;
+    private int _totalAvailableEntries;
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+public abstract class SharpCifs.Smb.NtlmAuthenticator : object {
+    private static NtlmAuthenticator _auth;
+    private string _url;
+    private SmbAuthException _sae;
+    private void Reset();
+    public static void SetDefault(NtlmAuthenticator a);
+    protected internal string GetRequestingUrl();
+    protected internal SmbAuthException GetRequestingException();
+    public static NtlmPasswordAuthentication RequestNtlmPasswordAuthentication(string url, SmbAuthException sae);
+    protected internal virtual NtlmPasswordAuthentication GetNtlmPasswordAuthentication();
+}
+public class SharpCifs.Smb.NtlmChallenge : object {
+    public Byte[] Challenge;
+    public UniAddress Dc;
+    internal NtlmChallenge(Byte[] challenge, UniAddress dc);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.NtlmContext : object {
+    internal NtlmPasswordAuthentication Auth;
+    internal int NtlmsspFlags;
+    internal string Workstation;
+    internal bool isEstablished;
+    internal Byte[] ServerChallenge;
+    internal Byte[] SigningKey;
+    internal string NetbiosName;
+    internal int State;
+    internal LogStream Log;
+    public NtlmContext(NtlmPasswordAuthentication auth, bool doSigning);
+    public virtual string ToString();
+    public virtual bool IsEstablished();
+    public virtual Byte[] GetServerChallenge();
+    public virtual Byte[] GetSigningKey();
+    public virtual string GetNetbiosName();
+    private string GetNtlmsspListItem(Byte[] type2Token, int id0);
+    public virtual Byte[] InitSecContext(Byte[] token, int offset, int len);
+}
+public class SharpCifs.Smb.NtlmPasswordAuthentication : Principal {
+    private static int LmCompatibility;
+    private static Random Random;
+    private static LogStream _log;
+    private static Byte[] S8;
+    internal static string DefaultDomain;
+    internal static string DefaultUsername;
+    internal static string DefaultPassword;
+    internal static string Blank;
+    public static NtlmPasswordAuthentication Anonymous;
+    internal static NtlmPasswordAuthentication Null;
+    internal static NtlmPasswordAuthentication Guest;
+    internal static NtlmPasswordAuthentication Default;
+    internal string Domain;
+    internal string Username;
+    internal string Password;
+    internal Byte[] AnsiHash;
+    internal Byte[] UnicodeHash;
+    internal bool HashesExternal;
+    internal Byte[] ClientChallenge;
+    internal Byte[] Challenge;
+    public NtlmPasswordAuthentication(string userInfo);
+    public NtlmPasswordAuthentication(string domain, string username, string password);
+    public NtlmPasswordAuthentication(string domain, string username, Byte[] challenge, Byte[] ansiHash, Byte[] unicodeHash);
+    private static NtlmPasswordAuthentication();
+    private static void E(Byte[] key, Byte[] data, Byte[] e);
+    internal static void InitDefaults();
+    public static Byte[] GetPreNtlmResponse(string password, Byte[] challenge);
+    public static Byte[] GetNtlmResponse(string password, Byte[] challenge);
+    public static Byte[] GetLMv2Response(string domain, string user, string password, Byte[] challenge, Byte[] clientChallenge);
+    public static Byte[] GetNtlm2Response(Byte[] nTowFv1, Byte[] serverChallenge, Byte[] clientChallenge);
+    public static Byte[] NtowFv1(string password);
+    public static Byte[] NtowFv2(string domain, string username, string password);
+    internal static Byte[] ComputeResponse(Byte[] responseKey, Byte[] serverChallenge, Byte[] clientData, int offset, int length);
+    public static Byte[] GetLMv2Response(Byte[] responseKeyLm, Byte[] serverChallenge, Byte[] clientChallenge);
+    public static Byte[] GetNtlMv2Response(Byte[] responseKeyNt, Byte[] serverChallenge, Byte[] clientChallenge, long nanos1601, Byte[] targetInfo);
+    public string GetDomain();
+    public string GetUsername();
+    public string GetPassword();
+    public string GetName();
+    public Byte[] GetAnsiHash(Byte[] challenge);
+    public Byte[] GetUnicodeHash(Byte[] challenge);
+    public Byte[] GetSigningKey(Byte[] challenge);
+    public Byte[] GetUserSessionKey(Byte[] challenge);
+    internal void GetUserSessionKey(Byte[] challenge, Byte[] dest, int offset);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    internal static string Unescape(string str);
+}
+public static class SharpCifs.Smb.NtStatus : object {
+    public static int NtStatusOk;
+    public static int NtStatusUnsuccessful;
+    public static int NtStatusNotImplemented;
+    public static int NtStatusInvalidInfoClass;
+    public static int NtStatusAccessViolation;
+    public static int NtStatusInvalidHandle;
+    public static int NtStatusInvalidParameter;
+    public static int NtStatusNoSuchDevice;
+    public static int NtStatusNoSuchFile;
+    public static int NtStatusMoreProcessingRequired;
+    public static int NtStatusAccessDenied;
+    public static int NtStatusBufferTooSmall;
+    public static int NtStatusObjectNameInvalid;
+    public static int NtStatusObjectNameNotFound;
+    public static int NtStatusObjectNameCollision;
+    public static int NtStatusPortDisconnected;
+    public static int NtStatusObjectPathInvalid;
+    public static int NtStatusObjectPathNotFound;
+    public static int NtStatusObjectPathSyntaxBad;
+    public static int NtStatusSharingViolation;
+    public static int NtStatusDeletePending;
+    public static int NtStatusNoLogonServers;
+    public static int NtStatusUserExists;
+    public static int NtStatusNoSuchUser;
+    public static int NtStatusWrongPassword;
+    public static int NtStatusLogonFailure;
+    public static int NtStatusAccountRestriction;
+    public static int NtStatusInvalidLogonHours;
+    public static int NtStatusInvalidWorkstation;
+    public static int NtStatusPasswordExpired;
+    public static int NtStatusAccountDisabled;
+    public static int NtStatusNoneMapped;
+    public static int NtStatusInvalidSid;
+    public static int NtStatusInstanceNotAvailable;
+    public static int NtStatusPipeNotAvailable;
+    public static int NtStatusInvalidPipeState;
+    public static int NtStatusPipeBusy;
+    public static int NtStatusPipeDisconnected;
+    public static int NtStatusPipeClosing;
+    public static int NtStatusPipeListening;
+    public static int NtStatusFileIsADirectory;
+    public static int NtStatusDuplicateName;
+    public static int NtStatusNetworkNameDeleted;
+    public static int NtStatusNetworkAccessDenied;
+    public static int NtStatusBadNetworkName;
+    public static int NtStatusRequestNotAccepted;
+    public static int NtStatusCantAccessDomainInfo;
+    public static int NtStatusNoSuchDomain;
+    public static int NtStatusNotADirectory;
+    public static int NtStatusCannotDelete;
+    public static int NtStatusInvalidComputerName;
+    public static int NtStatusPipeBroken;
+    public static int NtStatusNoSuchAlias;
+    public static int NtStatusLogonTypeNotGranted;
+    public static int NtStatusNoTrustSamAccount;
+    public static int NtStatusTrustedDomainFailure;
+    public static int NtStatusNologonWorkstationTrustAccount;
+    public static int NtStatusPasswordMustChange;
+    public static int NtStatusNotFound;
+    public static int NtStatusAccountLockedOut;
+    public static int NtStatusPathNotCovered;
+    public static int NtStatusIoReparseTagNotHandled;
+    public static Int32[] NtStatusCodes;
+    public static String[] NtStatusMessages;
+    private static NtStatus();
+}
+internal class SharpCifs.Smb.NtTransQuerySecurityDesc : SmbComNtTransaction {
+    internal int Fid;
+    internal int SecurityInformation;
+    internal NtTransQuerySecurityDesc(int fid, int securityInformation);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.NtTransQuerySecurityDescResponse : SmbComNtTransactionResponse {
+    internal SecurityDescriptor SecurityDescriptor;
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.Principal : object {
+    private string _name;
+    public string GetName();
+}
+public class SharpCifs.Smb.SecurityDescriptor : object {
+    public int Type;
+    public Ace[] Aces;
+    public SecurityDescriptor(Byte[] buffer, int bufferIndex, int len);
+    public virtual int Decode(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+public abstract class SharpCifs.Smb.ServerMessageBlock : Response {
+    internal static LogStream Log;
+    internal static long Ticks1601;
+    internal static Byte[] Header;
+    internal static byte SmbComCreateDirectory;
+    internal static byte SmbComDeleteDirectory;
+    internal static byte SmbComClose;
+    internal static byte SmbComDelete;
+    internal static byte SmbComRename;
+    internal static byte SmbComQueryInformation;
+    internal static byte SmbComWrite;
+    internal static byte SmbComCheckDirectory;
+    internal static byte SmbComTransaction;
+    internal static byte SmbComTransactionSecondary;
+    internal static byte SmbComMove;
+    internal static byte SmbComEcho;
+    internal static byte SmbComOpenAndx;
+    internal static byte SmbComReadAndx;
+    internal static byte SmbComWriteAndx;
+    internal static byte SmbComTransaction2;
+    internal static byte SmbComFindClose2;
+    internal static byte SmbComTreeDisconnect;
+    internal static byte SmbComNegotiate;
+    internal static byte SmbComSessionSetupAndx;
+    internal static byte SmbComLogoffAndx;
+    internal static byte SmbComTreeConnectAndx;
+    internal static byte SmbComNtTransact;
+    internal static byte SmbComNtTransactSecondary;
+    internal static byte SmbComNtCreateAndx;
+    internal byte Command;
+    internal byte Flags;
+    internal int HeaderStart;
+    internal int Length;
+    internal int BatchLevel;
+    internal int ErrorCode;
+    internal int Flags2;
+    internal int Tid;
+    internal int Pid;
+    internal int Uid;
+    internal int Mid;
+    internal int WordCount;
+    internal int ByteCount;
+    internal bool UseUnicode;
+    internal bool Received;
+    internal bool ExtendedSecurity;
+    internal long ResponseTimeout;
+    internal int SignSeq;
+    internal bool VerifyFailed;
+    internal NtlmPasswordAuthentication Auth;
+    internal string Path;
+    internal SigningDigest Digest;
+    internal ServerMessageBlock Response;
+    private static ServerMessageBlock();
+    internal static void WriteInt2(long val, Byte[] dst, int dstIndex);
+    internal static void WriteInt4(long val, Byte[] dst, int dstIndex);
+    internal static int ReadInt2(Byte[] src, int srcIndex);
+    internal static int ReadInt4(Byte[] src, int srcIndex);
+    internal static long ReadInt8(Byte[] src, int srcIndex);
+    internal static void WriteInt8(long val, Byte[] dst, int dstIndex);
+    internal static long ReadTime(Byte[] src, int srcIndex);
+    internal static void WriteTime(long t, Byte[] dst, int dstIndex);
+    internal static long ReadUTime(Byte[] buffer, int bufferIndex);
+    internal static void WriteUTime(long t, Byte[] dst, int dstIndex);
+    internal virtual void Reset();
+    internal virtual int WriteString(string str, Byte[] dst, int dstIndex);
+    internal virtual int WriteString(string str, Byte[] dst, int dstIndex, bool useUnicode);
+    internal virtual string ReadString(Byte[] src, int srcIndex);
+    internal virtual string ReadString(Byte[] src, int srcIndex, int maxLen, bool useUnicode);
+    internal virtual string ReadString(Byte[] src, int srcIndex, int srcEnd, int maxLen, bool useUnicode);
+    internal virtual int StringWireLength(string str, int offset);
+    internal virtual int ReadStringLength(Byte[] src, int srcIndex, int max);
+    internal virtual int Encode(Byte[] dst, int dstIndex);
+    internal virtual int Decode(Byte[] buffer, int bufferIndex);
+    internal virtual int WriteHeaderWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadHeaderWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual bool IsResponse();
+    internal abstract virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal abstract virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.Sid : SidT {
+    public static int SidTypeUseNone;
+    public static int SidTypeUser;
+    public static int SidTypeDomGrp;
+    public static int SidTypeDomain;
+    public static int SidTypeAlias;
+    public static int SidTypeWknGrp;
+    public static int SidTypeDeleted;
+    public static int SidTypeInvalid;
+    public static int SidTypeUnknown;
+    internal static String[] SidTypeNames;
+    public static int SidFlagResolveSids;
+    public static Sid Everyone;
+    public static Sid CreatorOwner;
+    public static Sid SYSTEM;
+    internal static Hashtable SidCache;
+    internal int Type;
+    internal string DomainName;
+    internal string AcctName;
+    internal string OriginServer;
+    internal NtlmPasswordAuthentication OriginAuth;
+    private static Sid();
+    public Sid(Byte[] src, int si);
+    public Sid(string textual);
+    public Sid(Sid domsid, int rid);
+    public Sid(SidT sid, int type, string domainName, string acctName, bool decrementAuthority);
+    internal static void ResolveSids(DcerpcHandle handle, LsaPolicyHandle policyHandle, Sid[] sids);
+    internal static void ResolveSids0(string authorityServerName, NtlmPasswordAuthentication auth, Sid[] sids);
+    public static void ResolveSids(string authorityServerName, NtlmPasswordAuthentication auth, Sid[] sids, int offset, int length);
+    public static void ResolveSids(string authorityServerName, NtlmPasswordAuthentication auth, Sid[] sids);
+    public static Sid GetServerSid(string server, NtlmPasswordAuthentication auth);
+    public static Byte[] ToByteArray(SidT sid);
+    public virtual Sid GetDomainSid();
+    public virtual int GetRid();
+    public virtual int GetType();
+    public virtual string GetTypeText();
+    public virtual string GetDomainName();
+    public virtual string GetAccountName();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+    public virtual string ToDisplayString();
+    public virtual void Resolve(string authorityServerName, NtlmPasswordAuthentication auth);
+    internal virtual void ResolveWeak();
+    internal static Sid[] GetGroupMemberSids0(DcerpcHandle handle, SamrDomainHandle domainHandle, Sid domsid, int rid, int flags);
+    public virtual Sid[] GetGroupMemberSids(string authorityServerName, NtlmPasswordAuthentication auth, int flags);
+    internal static Hashtable GetLocalGroupsMap(string authorityServerName, NtlmPasswordAuthentication auth, int flags);
+}
+public class SharpCifs.Smb.SigningDigest : object {
+    internal static LogStream Log;
+    private MessageDigest _digest;
+    private Byte[] _macSigningKey;
+    private bool _bypass;
+    private int _updates;
+    private int _signSequence;
+    public SigningDigest(Byte[] macSigningKey, bool bypass);
+    public SigningDigest(SmbTransport transport, NtlmPasswordAuthentication auth);
+    private static SigningDigest();
+    public virtual void Update(Byte[] input, int offset, int len);
+    public virtual Byte[] Digest();
+    internal virtual void Sign(Byte[] data, int offset, int length, ServerMessageBlock request, ServerMessageBlock response);
+    internal virtual bool Verify(Byte[] data, int offset, ServerMessageBlock response);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.SmbAuthException : SmbException {
+    internal SmbAuthException(int errcode);
+}
+internal class SharpCifs.Smb.SmbComBlankResponse : ServerMessageBlock {
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComClose : ServerMessageBlock {
+    private int _fid;
+    private long _lastWriteTime;
+    internal SmbComClose(int fid, long lastWriteTime);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComCreateDirectory : ServerMessageBlock {
+    internal SmbComCreateDirectory(string directoryName);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComDelete : ServerMessageBlock {
+    private int _searchAttributes;
+    internal SmbComDelete(string fileName);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComDeleteDirectory : ServerMessageBlock {
+    internal SmbComDeleteDirectory(string directoryName);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComFindClose2 : ServerMessageBlock {
+    private int _sid;
+    internal SmbComFindClose2(int sid);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComLogoffAndX : AndXServerMessageBlock {
+    internal SmbComLogoffAndX(ServerMessageBlock andx);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComNegotiate : ServerMessageBlock {
+    private static string Dialects;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComNegotiateResponse : ServerMessageBlock {
+    internal int DialectIndex;
+    internal ServerData Server;
+    internal SmbComNegotiateResponse(ServerData server);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComNtCreateAndX : AndXServerMessageBlock {
+    internal static int FileSupersede;
+    internal static int FileOpen;
+    internal static int FileCreate;
+    internal static int FileOpenIf;
+    internal static int FileOverwrite;
+    internal static int FileOverwriteIf;
+    internal static int FileWriteThrough;
+    internal static int FileSequentialOnly;
+    internal static int FileSynchronousIoAlert;
+    internal static int FileSynchronousIoNonalert;
+    internal static int SecurityContextTracking;
+    internal static int SecurityEffectiveOnly;
+    private int _rootDirectoryFid;
+    private int _extFileAttributes;
+    private int _shareAccess;
+    private int _createDisposition;
+    private int _createOptions;
+    private int _impersonationLevel;
+    private long _allocationSize;
+    private byte _securityFlags;
+    private int _namelenIndex;
+    internal int Flags0;
+    internal int DesiredAccess;
+    internal SmbComNtCreateAndX(string name, int flags, int access, int shareAccess, int extFileAttributes, int createOptions, ServerMessageBlock andx);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComNtCreateAndXResponse : AndXServerMessageBlock {
+    internal static int ExclusiveOplockGranted;
+    internal static int BatchOplockGranted;
+    internal static int LevelIiOplockGranted;
+    internal byte OplockLevel;
+    internal int Fid;
+    internal int CreateAction;
+    internal int ExtFileAttributes;
+    internal int FileType;
+    internal int DeviceState;
+    internal long CreationTime;
+    internal long LastAccessTime;
+    internal long LastWriteTime;
+    internal long ChangeTime;
+    internal long AllocationSize;
+    internal long EndOfFile;
+    internal bool Directory;
+    internal bool IsExtended;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal abstract class SharpCifs.Smb.SmbComNtTransaction : SmbComTransaction {
+    private static int NttPrimarySetupOffset;
+    private static int NttSecondaryParameterOffset;
+    internal static int NtTransactQuerySecurityDesc;
+    internal int Function;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+}
+internal abstract class SharpCifs.Smb.SmbComNtTransactionResponse : SmbComTransactionResponse {
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+}
+internal class SharpCifs.Smb.SmbComOpenAndX : AndXServerMessageBlock {
+    private static int FlagsReturnAdditionalInfo;
+    private static int FlagsRequestOplock;
+    private static int FlagsRequestBatchOplock;
+    private static int SharingCompatibility;
+    private static int SharingDenyReadWriteExecute;
+    private static int SharingDenyWrite;
+    private static int SharingDenyReadExecute;
+    private static int SharingDenyNone;
+    private static int DoNotCache;
+    private static int WriteThrough;
+    private static int OpenFnCreate;
+    private static int OpenFnFailIfExists;
+    private static int OpenFnOpen;
+    private static int OpenFnTrunc;
+    private static int BatchLimit;
+    internal int flags;
+    internal int DesiredAccess;
+    internal int SearchAttributes;
+    internal int FileAttributes;
+    internal int CreationTime;
+    internal int OpenFunction;
+    internal int AllocationSize;
+    internal SmbComOpenAndX(string fileName, int access, int flags, ServerMessageBlock andx);
+    private static SmbComOpenAndX();
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComOpenAndXResponse : AndXServerMessageBlock {
+    internal int Fid;
+    internal int FileAttributes;
+    internal int DataSize;
+    internal int GrantedAccess;
+    internal int FileType;
+    internal int DeviceState;
+    internal int Action;
+    internal int ServerFid;
+    internal long LastWriteTime;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComQueryInformation : ServerMessageBlock {
+    internal SmbComQueryInformation(string filename);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComQueryInformationResponse : ServerMessageBlock {
+    private int _fileAttributes;
+    private long _lastWriteTime;
+    private long _serverTimeZoneOffset;
+    private int _fileSize;
+    internal SmbComQueryInformationResponse(long serverTimeZoneOffset);
+    public virtual int GetAttributes();
+    public virtual long GetCreateTime();
+    public virtual long GetLastWriteTime();
+    public virtual long GetSize();
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComReadAndX : AndXServerMessageBlock {
+    private static int BatchLimit;
+    private long _offset;
+    private int _fid;
+    private int _openTimeout;
+    internal int MaxCount;
+    internal int MinCount;
+    internal int Remaining;
+    internal SmbComReadAndX(int fid, long offset, int maxCount, ServerMessageBlock andx);
+    private static SmbComReadAndX();
+    internal virtual void SetParam(int fid, long offset, int maxCount);
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComReadAndXResponse : AndXServerMessageBlock {
+    internal Byte[] B;
+    internal int Off;
+    internal int DataCompactionMode;
+    internal int DataLength;
+    internal int DataOffset;
+    internal SmbComReadAndXResponse(Byte[] b, int off);
+    internal virtual void SetParam(Byte[] b, int off);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComRename : ServerMessageBlock {
+    private int _searchAttributes;
+    private string _oldFileName;
+    private string _newFileName;
+    internal SmbComRename(string oldFileName, string newFileName);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComSessionSetupAndX : AndXServerMessageBlock {
+    private static int BatchLimit;
+    private static bool DisablePlainTextPasswords;
+    private Byte[] _lmHash;
+    private Byte[] _ntHash;
+    private Byte[] _blob;
+    private int _sessionKey;
+    private int _capabilities;
+    private string _accountName;
+    private string _primaryDomain;
+    internal SmbSession Session;
+    internal object Cred;
+    internal SmbComSessionSetupAndX(SmbSession session, ServerMessageBlock andx, object cred);
+    private static SmbComSessionSetupAndX();
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComSessionSetupAndXResponse : AndXServerMessageBlock {
+    private string _nativeOs;
+    private string _nativeLanMan;
+    private string _primaryDomain;
+    internal bool IsLoggedInAsGuest;
+    internal Byte[] Blob;
+    internal SmbComSessionSetupAndXResponse(ServerMessageBlock andx);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal abstract class SharpCifs.Smb.SmbComTransaction : ServerMessageBlock {
+    private static int DefaultMaxDataCount;
+    private static int PrimarySetupOffset;
+    private static int SecondaryParameterOffset;
+    private static int DisconnectTid;
+    private static int OneWayTransaction;
+    private static int PaddingSize;
+    private int _flags;
+    private int _fid;
+    private int _pad;
+    private int _pad1;
+    private bool _hasMore;
+    private bool _isPrimary;
+    private int _bufParameterOffset;
+    private int _bufDataOffset;
+    internal static int TransactionBufSize;
+    internal static byte Trans2FindFirst2;
+    internal static byte Trans2FindNext2;
+    internal static byte Trans2QueryFsInformation;
+    internal static byte Trans2QueryPathInformation;
+    internal static byte Trans2GetDfsReferral;
+    internal static byte Trans2SetFileInformation;
+    internal static int NetShareEnum;
+    internal static int NetServerEnum2;
+    internal static int NetServerEnum3;
+    internal static byte TransPeekNamedPipe;
+    internal static byte TransWaitNamedPipe;
+    internal static byte TransCallNamedPipe;
+    internal static byte TransTransactNamedPipe;
+    protected internal int primarySetupOffset;
+    protected internal int secondaryParameterOffset;
+    protected internal int ParameterCount;
+    protected internal int ParameterOffset;
+    protected internal int ParameterDisplacement;
+    protected internal int DataCount;
+    protected internal int DataOffset;
+    protected internal int DataDisplacement;
+    internal int TotalParameterCount;
+    internal int TotalDataCount;
+    internal int MaxParameterCount;
+    internal int MaxDataCount;
+    internal byte MaxSetupCount;
+    internal int Timeout;
+    internal int SetupCount;
+    internal byte SubCommand;
+    internal string Name;
+    internal int MaxBufferSize;
+    internal Byte[] TxnBuf;
+    private static SmbComTransaction();
+    internal virtual void Reset();
+    internal virtual void Reset(int key, string lastName);
+    public virtual bool MoveNext();
+    public virtual object Current();
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    internal abstract virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal abstract virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal abstract virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal abstract class SharpCifs.Smb.SmbComTransactionResponse : ServerMessageBlock {
+    private static int SetupOffset;
+    private static int DisconnectTid;
+    private static int OneWayTransaction;
+    private int _pad;
+    private int _pad1;
+    private bool _parametersDone;
+    private bool _dataDone;
+    protected internal int TotalParameterCount;
+    protected internal int TotalDataCount;
+    protected internal int ParameterCount;
+    protected internal int ParameterOffset;
+    protected internal int ParameterDisplacement;
+    protected internal int DataOffset;
+    protected internal int DataDisplacement;
+    protected internal int SetupCount;
+    protected internal int BufParameterStart;
+    protected internal int BufDataStart;
+    internal int DataCount;
+    internal byte SubCommand;
+    internal bool HasMore;
+    internal bool IsPrimary;
+    internal Byte[] TxnBuf;
+    internal int Status;
+    internal int NumEntries;
+    internal IFileEntry[] Results;
+    internal virtual void Reset();
+    public virtual bool MoveNext();
+    public virtual object Current();
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    internal abstract virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal abstract virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal abstract virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal abstract virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComTreeConnectAndX : AndXServerMessageBlock {
+    private static bool DisablePlainTextPasswords;
+    private SmbSession _session;
+    private bool _disconnectTid;
+    private string _service;
+    private Byte[] _password;
+    private int _passwordLength;
+    internal string path;
+    private static Byte[] _batchLimits;
+    private static SmbComTreeConnectAndX();
+    internal SmbComTreeConnectAndX(SmbSession session, string path, string service, ServerMessageBlock andx);
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComTreeConnectAndXResponse : AndXServerMessageBlock {
+    private static int SmbSupportSearchBits;
+    private static int SmbShareIsInDfs;
+    internal bool SupportSearchBits;
+    internal bool ShareIsInDfs;
+    internal string Service;
+    internal string NativeFileSystem;
+    internal SmbComTreeConnectAndXResponse(ServerMessageBlock andx);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComTreeDisconnect : ServerMessageBlock {
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComWrite : ServerMessageBlock {
+    private int _fid;
+    private int _count;
+    private int _offset;
+    private int _remaining;
+    private int _off;
+    private Byte[] _b;
+    internal SmbComWrite(int fid, int offset, int remaining, Byte[] b, int off, int len);
+    internal virtual void SetParam(int fid, long offset, int remaining, Byte[] b, int off, int len);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComWriteAndX : AndXServerMessageBlock {
+    private static int ReadAndxBatchLimit;
+    private static int CloseBatchLimit;
+    private int _fid;
+    private int _remaining;
+    private int _dataLength;
+    private int _dataOffset;
+    private int _off;
+    private Byte[] _b;
+    private long _offset;
+    private int _pad;
+    internal int WriteMode;
+    internal SmbComWriteAndX(int fid, long offset, int remaining, Byte[] b, int off, int len, ServerMessageBlock andx);
+    private static SmbComWriteAndX();
+    internal virtual void SetParam(int fid, long offset, int remaining, Byte[] b, int off, int len);
+    internal virtual int GetBatchLimit(byte command);
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComWriteAndXResponse : AndXServerMessageBlock {
+    internal long Count;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.SmbComWriteResponse : ServerMessageBlock {
+    internal long Count;
+    internal virtual int WriteParameterWordsWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteBytesWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParameterWordsWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadBytesWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal static class SharpCifs.Smb.SmbConstants : object {
+    public static int DefaultPort;
+    public static int DefaultMaxMpxCount;
+    public static int DefaultResponseTimeout;
+    public static int DefaultSoTimeout;
+    public static int DefaultRcvBufSize;
+    public static int DefaultSndBufSize;
+    public static int DefaultSsnLimit;
+    public static int DefaultConnTimeout;
+    [CompilerGeneratedAttribute]
+private static IPAddress <Laddr>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <Lport>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <MaxMpxCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <SndBufSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <RcvBufSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <UseUnicode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <ForceUnicode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <UseNtstatus>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <Signpref>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <UseNtsmbs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <UseExtsec>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static string <NetbiosHostname>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <LmCompatibility>k__BackingField;
+    public static int FlagsNone;
+    public static int FlagsLockAndReadWriteAndUnlock;
+    public static int FlagsReceiveBufferPosted;
+    public static int FlagsPathNamesCaseless;
+    public static int FlagsPathNamesCanonicalized;
+    public static int FlagsOplockRequestedOrGranted;
+    public static int FlagsNotifyOfModifyAction;
+    public static int FlagsResponse;
+    public static int Flags2None;
+    public static int Flags2LongFilenames;
+    public static int Flags2ExtendedAttributes;
+    public static int Flags2SecuritySignatures;
+    public static int Flags2ExtendedSecurityNegotiation;
+    public static int Flags2ResolvePathsInDfs;
+    public static int Flags2PermitReadIfExecutePerm;
+    public static int Flags2Status32;
+    public static int Flags2Unicode;
+    public static int CapNone;
+    public static int CapRawMode;
+    public static int CapMpxMode;
+    public static int CapUnicode;
+    public static int CapLargeFiles;
+    public static int CapNtSmbs;
+    public static int CapRpcRemoteApis;
+    public static int CapStatus32;
+    public static int CapLevelIiOplocks;
+    public static int CapLockAndRead;
+    public static int CapNtFind;
+    public static int CapDfs;
+    public static int CapExtendedSecurity;
+    public static int AttrReadonly;
+    public static int AttrHidden;
+    public static int AttrSystem;
+    public static int AttrVolume;
+    public static int AttrDirectory;
+    public static int AttrArchive;
+    public static int AttrCompressed;
+    public static int AttrNormal;
+    public static int AttrTemporary;
+    public static int FileReadData;
+    public static int FileWriteData;
+    public static int FileAppendData;
+    public static int FileReadEa;
+    public static int FileWriteEa;
+    public static int FileExecute;
+    public static int FileDelete;
+    public static int FileReadAttributes;
+    public static int FileWriteAttributes;
+    public static int Delete;
+    public static int ReadControl;
+    public static int WriteDac;
+    public static int WriteOwner;
+    public static int Synchronize;
+    public static int GenericAll;
+    public static int GenericExecute;
+    public static int GenericWrite;
+    public static int GenericRead;
+    public static int FlagsTargetMustBeFile;
+    public static int FlagsTargetMustBeDirectory;
+    public static int FlagsCopyTargetModeAscii;
+    public static int FlagsCopySourceModeAscii;
+    public static int FlagsVerifyAllWrites;
+    public static int FlagsTreeCopy;
+    public static int OpenFunctionFailIfExists;
+    public static int OpenFunctionOverwriteIfExists;
+    public static int Pid;
+    public static int SecurityShare;
+    public static int SecurityUser;
+    public static int CmdOffset;
+    public static int ErrorCodeOffset;
+    public static int FlagsOffset;
+    public static int SignatureOffset;
+    public static int TidOffset;
+    public static int HeaderLength;
+    public static long MillisecondsBetween1970And1601;
+    public static TimeZoneInfo Tz;
+    [CompilerGeneratedAttribute]
+private static bool <UseBatching>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static string <OemEncoding>k__BackingField;
+    public static string UniEncoding;
+    [CompilerGeneratedAttribute]
+private static int <DefaultFlags2>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <DefaultCapabilities>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <Flags2>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <Capabilities>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <TcpNodelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <ResponseTimeout>k__BackingField;
+    public static List`1<SmbTransport> Connections;
+    [CompilerGeneratedAttribute]
+private static int <SsnLimit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <SoTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static int <ConnTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static string <NativeOs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static string <NativeLanman>k__BackingField;
+    public static int VcNumber;
+    public static SmbTransport NullTransport;
+    public static IPAddress Laddr { get; internal set; }
+    public static int Lport { get; internal set; }
+    public static int MaxMpxCount { get; internal set; }
+    public static int SndBufSize { get; internal set; }
+    public static int RcvBufSize { get; internal set; }
+    public static bool UseUnicode { get; internal set; }
+    public static bool ForceUnicode { get; internal set; }
+    public static bool UseNtstatus { get; internal set; }
+    public static bool Signpref { get; internal set; }
+    public static bool UseNtsmbs { get; internal set; }
+    public static bool UseExtsec { get; internal set; }
+    public static string NetbiosHostname { get; internal set; }
+    public static int LmCompatibility { get; internal set; }
+    public static bool UseBatching { get; internal set; }
+    public static string OemEncoding { get; internal set; }
+    public static int DefaultFlags2 { get; internal set; }
+    public static int DefaultCapabilities { get; internal set; }
+    public static int Flags2 { get; internal set; }
+    public static int Capabilities { get; internal set; }
+    public static bool TcpNodelay { get; internal set; }
+    public static int ResponseTimeout { get; internal set; }
+    public static int SsnLimit { get; internal set; }
+    public static int SoTimeout { get; internal set; }
+    public static int ConnTimeout { get; internal set; }
+    public static string NativeOs { get; internal set; }
+    public static string NativeLanman { get; internal set; }
+    private static SmbConstants();
+    internal static void ApplyConfig();
+    [CompilerGeneratedAttribute]
+public static IPAddress get_Laddr();
+    [CompilerGeneratedAttribute]
+internal static void set_Laddr(IPAddress value);
+    [CompilerGeneratedAttribute]
+public static int get_Lport();
+    [CompilerGeneratedAttribute]
+internal static void set_Lport(int value);
+    [CompilerGeneratedAttribute]
+public static int get_MaxMpxCount();
+    [CompilerGeneratedAttribute]
+internal static void set_MaxMpxCount(int value);
+    [CompilerGeneratedAttribute]
+public static int get_SndBufSize();
+    [CompilerGeneratedAttribute]
+internal static void set_SndBufSize(int value);
+    [CompilerGeneratedAttribute]
+public static int get_RcvBufSize();
+    [CompilerGeneratedAttribute]
+internal static void set_RcvBufSize(int value);
+    [CompilerGeneratedAttribute]
+public static bool get_UseUnicode();
+    [CompilerGeneratedAttribute]
+internal static void set_UseUnicode(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_ForceUnicode();
+    [CompilerGeneratedAttribute]
+internal static void set_ForceUnicode(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_UseNtstatus();
+    [CompilerGeneratedAttribute]
+internal static void set_UseNtstatus(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_Signpref();
+    [CompilerGeneratedAttribute]
+internal static void set_Signpref(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_UseNtsmbs();
+    [CompilerGeneratedAttribute]
+internal static void set_UseNtsmbs(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_UseExtsec();
+    [CompilerGeneratedAttribute]
+internal static void set_UseExtsec(bool value);
+    [CompilerGeneratedAttribute]
+public static string get_NetbiosHostname();
+    [CompilerGeneratedAttribute]
+internal static void set_NetbiosHostname(string value);
+    [CompilerGeneratedAttribute]
+public static int get_LmCompatibility();
+    [CompilerGeneratedAttribute]
+internal static void set_LmCompatibility(int value);
+    [CompilerGeneratedAttribute]
+public static bool get_UseBatching();
+    [CompilerGeneratedAttribute]
+internal static void set_UseBatching(bool value);
+    [CompilerGeneratedAttribute]
+public static string get_OemEncoding();
+    [CompilerGeneratedAttribute]
+internal static void set_OemEncoding(string value);
+    [CompilerGeneratedAttribute]
+public static int get_DefaultFlags2();
+    [CompilerGeneratedAttribute]
+internal static void set_DefaultFlags2(int value);
+    [CompilerGeneratedAttribute]
+public static int get_DefaultCapabilities();
+    [CompilerGeneratedAttribute]
+internal static void set_DefaultCapabilities(int value);
+    [CompilerGeneratedAttribute]
+public static int get_Flags2();
+    [CompilerGeneratedAttribute]
+internal static void set_Flags2(int value);
+    [CompilerGeneratedAttribute]
+public static int get_Capabilities();
+    [CompilerGeneratedAttribute]
+internal static void set_Capabilities(int value);
+    [CompilerGeneratedAttribute]
+public static bool get_TcpNodelay();
+    [CompilerGeneratedAttribute]
+internal static void set_TcpNodelay(bool value);
+    [CompilerGeneratedAttribute]
+public static int get_ResponseTimeout();
+    [CompilerGeneratedAttribute]
+internal static void set_ResponseTimeout(int value);
+    [CompilerGeneratedAttribute]
+public static int get_SsnLimit();
+    [CompilerGeneratedAttribute]
+internal static void set_SsnLimit(int value);
+    [CompilerGeneratedAttribute]
+public static int get_SoTimeout();
+    [CompilerGeneratedAttribute]
+internal static void set_SoTimeout(int value);
+    [CompilerGeneratedAttribute]
+public static int get_ConnTimeout();
+    [CompilerGeneratedAttribute]
+internal static void set_ConnTimeout(int value);
+    [CompilerGeneratedAttribute]
+public static string get_NativeOs();
+    [CompilerGeneratedAttribute]
+internal static void set_NativeOs(string value);
+    [CompilerGeneratedAttribute]
+public static string get_NativeLanman();
+    [CompilerGeneratedAttribute]
+internal static void set_NativeLanman(string value);
+}
+public class SharpCifs.Smb.SmbException : IOException {
+    private int _status;
+    private Exception _rootCause;
+    internal SmbException(int errcode, Exception rootCause);
+    public SmbException(string msg);
+    public SmbException(string msg, Exception rootCause);
+    public SmbException(int errcode, bool winerr);
+    internal static string GetMessageByCode(int errcode);
+    internal static int GetStatusByCode(int errcode);
+    internal static string GetMessageByWinerrCode(int errcode);
+    public virtual int GetNtStatus();
+    public virtual Exception GetRootCause();
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.SmbFile : UrlConnection {
+    internal static int ORdonly;
+    internal static int OWronly;
+    internal static int ORdwr;
+    internal static int OAppend;
+    internal static int OCreat;
+    internal static int OExcl;
+    internal static int OTrunc;
+    public static int FileNoShare;
+    public static int FileShareRead;
+    public static int FileShareWrite;
+    public static int FileShareDelete;
+    public static int AttrReadonly;
+    public static int AttrHidden;
+    public static int AttrSystem;
+    public static int AttrVolume;
+    public static int AttrDirectory;
+    public static int AttrArchive;
+    internal static int AttrCompressed;
+    internal static int AttrNormal;
+    internal static int AttrTemporary;
+    internal static int AttrGetMask;
+    internal static int AttrSetMask;
+    internal static int DefaultAttrExpirationPeriod;
+    internal static int HashDot;
+    internal static int HashDotDot;
+    internal static long AttrExpirationPeriod;
+    internal static bool IgnoreCopyToException;
+    public static int TypeFilesystem;
+    public static int TypeWorkgroup;
+    public static int TypeServer;
+    public static int TypeShare;
+    public static int TypeNamedPipe;
+    public static int TypePrinter;
+    public static int TypeComm;
+    private string _canon;
+    private string _share;
+    private long _createTime;
+    private long _lastModified;
+    private int _attributes;
+    private long _attrExpiration;
+    private long _size;
+    private long _sizeExpiration;
+    private bool _isExists;
+    private int _shareAccess;
+    private bool _enableDfs;
+    private SmbComBlankResponse _blankResp;
+    private DfsReferral _dfsReferral;
+    protected internal static Dfs Dfs;
+    internal NtlmPasswordAuthentication Auth;
+    internal SmbTree Tree;
+    internal string Unc;
+    internal int Fid;
+    internal int Type;
+    internal bool Opened;
+    internal int TreeNum;
+    internal UniAddress[] Addresses;
+    internal int AddressIndex;
+    public LogStream Log { get; }
+    public bool EnableDfs { get; public set; }
+    private static SmbFile();
+    public SmbFile(string url);
+    public SmbFile(SmbFile context, string name);
+    public SmbFile(string context, string name);
+    public SmbFile(string url, NtlmPasswordAuthentication auth);
+    public SmbFile(string url, NtlmPasswordAuthentication auth, int shareAccess);
+    public SmbFile(string context, string name, NtlmPasswordAuthentication auth);
+    public SmbFile(string context, string name, NtlmPasswordAuthentication auth, int shareAccess);
+    public SmbFile(SmbFile context, string name, int shareAccess);
+    protected SmbFile(Uri url);
+    public SmbFile(Uri url, NtlmPasswordAuthentication auth);
+    internal SmbFile(SmbFile context, string name, int type, int attributes, long createTime, long lastModified, long size);
+    public static void Initialize();
+    public LogStream get_Log();
+    public bool get_EnableDfs();
+    public void set_EnableDfs(bool value);
+    private SmbComBlankResponse Blank_resp();
+    internal virtual void ResolveDfs(ServerMessageBlock request);
+    internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response);
+    internal static string QueryLookup(string query, string param);
+    internal virtual UniAddress GetAddress();
+    internal virtual UniAddress GetFirstAddress();
+    internal virtual UniAddress GetNextAddress();
+    internal virtual bool HasNextAddress();
+    internal virtual void Connect0();
+    internal virtual void DoConnect();
+    public void Connect();
+    internal virtual bool IsConnected();
+    internal virtual int Open0(int flags, int access, int attrs, int options);
+    internal virtual void Open(int flags, int access, int attrs, int options);
+    internal virtual bool IsOpen();
+    internal virtual void Close(int f, long lastWriteTime);
+    internal virtual void Close(long lastWriteTime);
+    internal virtual void Close();
+    public virtual Principal GetPrincipal();
+    public virtual string GetName();
+    public virtual string GetParent();
+    public virtual string GetPath();
+    internal virtual string GetUncPath0();
+    public virtual string GetUncPath();
+    public virtual string GetCanonicalPath();
+    public virtual string GetShare();
+    internal virtual string GetServerWithDfs();
+    public virtual string GetServer();
+    public virtual int GetType();
+    internal virtual bool IsWorkgroup0();
+    internal virtual IInfo QueryPath(string path, int infoLevel);
+    public virtual bool Exists();
+    public virtual bool CanRead();
+    public virtual bool CanWrite();
+    public virtual bool IsDirectory();
+    public virtual bool IsFile();
+    public virtual bool IsHidden();
+    public virtual string GetDfsPath();
+    public virtual long CreateTime();
+    public virtual long LastModified();
+    public virtual String[] List();
+    public virtual String[] List(ISmbFilenameFilter filter);
+    public virtual SmbFile[] ListFiles();
+    public virtual SmbFile[] ListFiles(string wildcard);
+    public virtual SmbFile[] ListFiles(ISmbFilenameFilter filter);
+    public virtual SmbFile[] ListFiles(ISmbFileFilter filter);
+    internal virtual String[] List(string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    internal virtual SmbFile[] ListFiles(string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    internal virtual void DoEnum(List`1<object> list, bool files, string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    private void RemoveCurrentAddress();
+    internal virtual void DoShareEnum(List`1<object> list, bool files, string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    internal virtual IFileEntry[] DoDfsRootEnum();
+    internal virtual IFileEntry[] DoMsrpcShareEnum();
+    internal virtual IFileEntry[] DoNetShareEnum();
+    internal virtual void DoNetServerEnum(List`1<object> list, bool files, string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    internal virtual void DoFindFirstNext(List`1<object> list, bool files, string wildcard, int searchAttributes, ISmbFilenameFilter fnf, ISmbFileFilter ff);
+    public virtual void RenameTo(SmbFile dest);
+    internal virtual void CopyTo0(SmbFile dest, Byte[][] b, int bsize, WriterThread w, SmbComReadAndX req, SmbComReadAndXResponse resp);
+    public virtual void CopyTo(SmbFile dest);
+    public virtual void Delete();
+    internal virtual void Delete(string fileName);
+    public virtual long Length();
+    public virtual long GetDiskFreeSpace();
+    private long QueryFsInformation(int level);
+    public virtual void Mkdir();
+    public virtual void Mkdirs();
+    public virtual void CreateNewFile();
+    internal virtual void SetPathInformation(int attrs, long ctime, long mtime);
+    public virtual void SetCreateTime(long time);
+    public virtual void SetLastModified(long time);
+    public virtual int GetAttributes();
+    public virtual void SetAttributes(int attrs);
+    public virtual void SetReadOnly();
+    public virtual void SetReadWrite();
+    [ObsoleteAttribute("Use getURL() instead")]
+public virtual Uri ToUrl();
+    public virtual int GetHashCode();
+    protected internal virtual bool PathNamesPossiblyEqual(string path1, string path2);
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+    public int GetContentLength();
+    public long GetDate();
+    public long GetLastModified();
+    public InputStream GetInputStream();
+    public OutputStream GetOutputStream();
+    private void ProcessAces(Ace[] aces, bool resolveSids);
+    public virtual Ace[] GetSecurity(bool resolveSids);
+    public virtual Ace[] GetShareSecurity(bool resolveSids);
+    public virtual Ace[] GetSecurity();
+}
+[ExtensionAttribute]
+public static class SharpCifs.Smb.SmbFileExtensions : object {
+    [ExtensionAttribute]
+public static DateTime GetLocalCreateTime(SmbFile smbFile);
+    [ExtensionAttribute]
+public static DateTime GetLocalLastModified(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task`1<SmbFile[]> ListFilesAsync(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task`1<SmbFile[]> ListFilesAsync(SmbFile smbFile, string wildcard);
+    [ExtensionAttribute]
+public static Task`1<String[]> ListAsync(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task MkDirAsync(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task DeleteAsync(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task RenameToAsync(SmbFile smbFile, SmbFile destination);
+    [ExtensionAttribute]
+public static Task`1<InputStream> GetInputStreamAsync(SmbFile smbFile);
+    [ExtensionAttribute]
+public static Task`1<OutputStream> GetOutputStreamAsync(SmbFile smbFile, bool append);
+}
+public class SharpCifs.Smb.SmbFileInputStream : InputStream {
+    private long _fp;
+    private int _readSize;
+    private int _openFlags;
+    private int _access;
+    private Byte[] _tmp;
+    internal SmbFile File;
+    internal long Position { get; internal set; }
+    public long Length { get; }
+    public SmbFileInputStream(string url);
+    public SmbFileInputStream(SmbFile file);
+    internal SmbFileInputStream(SmbFile file, int openFlags);
+    protected internal virtual IOException SeToIoe(SmbException se);
+    public virtual void Close();
+    public virtual int Read();
+    public virtual int Read(Byte[] b);
+    public virtual int Read(Byte[] b, int off, int len);
+    public virtual int ReadDirect(Byte[] b, int off, int len);
+    public virtual int Available();
+    public virtual long Skip(long n);
+    internal virtual long get_Position();
+    internal virtual void set_Position(long value);
+    internal virtual bool CanSeek();
+    public virtual long get_Length();
+}
+public class SharpCifs.Smb.SmbFileOutputStream : OutputStream {
+    private SmbFile _file;
+    private bool _append;
+    private bool _useNtSmbs;
+    private int _openFlags;
+    private int _access;
+    private int _writeSize;
+    private long _fp;
+    private Byte[] _tmp;
+    private SmbComWriteAndX _reqx;
+    private SmbComWriteAndXResponse _rspx;
+    private SmbComWrite _req;
+    private SmbComWriteResponse _rsp;
+    public SmbFileOutputStream(string url);
+    public SmbFileOutputStream(SmbFile file);
+    public SmbFileOutputStream(string url, bool append);
+    public SmbFileOutputStream(SmbFile file, bool append);
+    public SmbFileOutputStream(string url, int shareAccess);
+    internal SmbFileOutputStream(SmbFile file, bool append, int openFlags);
+    public virtual void Close();
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b);
+    public virtual bool IsOpen();
+    internal virtual void EnsureOpen();
+    public virtual void Write(Byte[] b, int off, int len);
+    public virtual void WriteDirect(Byte[] b, int off, int len, int flags);
+}
+public class SharpCifs.Smb.SmbNamedPipe : SmbFile {
+    public static int PipeTypeRdonly;
+    public static int PipeTypeWronly;
+    public static int PipeTypeRdwr;
+    public static int PipeTypeCall;
+    public static int PipeTypeTransact;
+    public static int PipeTypeDceTransact;
+    internal InputStream PipeIn;
+    internal OutputStream PipeOut;
+    internal int PipeType;
+    public SmbNamedPipe(string url, int pipeType);
+    public SmbNamedPipe(string url, int pipeType, NtlmPasswordAuthentication auth);
+    public SmbNamedPipe(Uri url, int pipeType, NtlmPasswordAuthentication auth);
+    public virtual InputStream GetNamedPipeInputStream();
+    public virtual OutputStream GetNamedPipeOutputStream();
+}
+public class SharpCifs.Smb.SmbRandomAccessFile : object {
+    private static int WriteOptions;
+    private SmbFile _file;
+    private long _fp;
+    private int _openFlags;
+    private int _access;
+    private int _readSize;
+    private int _writeSize;
+    private int _ch;
+    private int _options;
+    private Byte[] _tmp;
+    private SmbComWriteAndXResponse _writeAndxResp;
+    public SmbRandomAccessFile(string url, string mode, int shareAccess);
+    public SmbRandomAccessFile(SmbFile file, string mode);
+    public virtual int Read();
+    public virtual int Read(Byte[] b);
+    public virtual int Read(Byte[] b, int off, int len);
+    public void ReadFully(Byte[] b);
+    public void ReadFully(Byte[] b, int off, int len);
+    public virtual int SkipBytes(int n);
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b);
+    public virtual void Write(Byte[] b, int off, int len);
+    public virtual long GetFilePointer();
+    public virtual void Seek(long pos);
+    public virtual long Length();
+    public virtual void SetLength(long newLength);
+    public virtual void Close();
+    public bool ReadBoolean();
+    public byte ReadByte();
+    public int ReadUnsignedByte();
+    public short ReadShort();
+    public int ReadUnsignedShort();
+    public char ReadChar();
+    public int ReadInt();
+    public long ReadLong();
+    public float ReadFloat();
+    public double ReadDouble();
+    public string ReadLine();
+    public string ReadUtf();
+    public void WriteBoolean(bool v);
+    public void WriteByte(int v);
+    public void WriteShort(int v);
+    public void WriteChar(int v);
+    public void WriteInt(int v);
+    public void WriteLong(long v);
+    public void WriteFloat(float v);
+    public void WriteDouble(double v);
+    public void WriteBytes(string s);
+    public void WriteUtf(string str);
+}
+public class SharpCifs.Smb.SmbSession : object {
+    private static string LogonShare;
+    private static int LookupRespLimit;
+    private static string Domain;
+    private static string Username;
+    private static int CachePolicy;
+    internal static NbtAddress[] DcList;
+    internal static long DcListExpiration;
+    internal static int DcListCounter;
+    internal int ConnectionState;
+    internal int Uid;
+    internal List`1<object> Trees;
+    private UniAddress _address;
+    private int _port;
+    private int _localPort;
+    private IPAddress _localAddr;
+    internal SmbTransport transport;
+    internal NtlmPasswordAuthentication Auth;
+    internal long Expiration;
+    internal string NetbiosName;
+    internal SmbSession(UniAddress address, int port, IPAddress localAddr, int localPort, NtlmPasswordAuthentication auth);
+    private static SmbSession();
+    private static NtlmChallenge Interrogate(NbtAddress addr);
+    public static NtlmChallenge GetChallengeForDomain();
+    public static Byte[] GetChallenge(UniAddress dc);
+    public static Byte[] GetChallenge(UniAddress dc, int port);
+    public static void Logon(UniAddress dc, NtlmPasswordAuthentication auth);
+    public static void Logon(UniAddress dc, int port, NtlmPasswordAuthentication auth);
+    public static void ClearCachedConnections();
+    internal SmbTree GetSmbTree(string share, string service);
+    internal bool Matches(NtlmPasswordAuthentication auth);
+    internal SmbTransport Transport();
+    internal void Send(ServerMessageBlock request, ServerMessageBlock response);
+    internal void SessionSetup(ServerMessageBlock andx, ServerMessageBlock andxResponse);
+    internal void Logoff(bool inError);
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.SmbShareInfo : object {
+    protected internal string NetName;
+    protected internal int Type;
+    protected internal string Remark;
+    public SmbShareInfo(string netName, int type, string remark);
+    public virtual string GetName();
+    public virtual int GetType();
+    public virtual int GetAttributes();
+    public virtual long CreateTime();
+    public virtual long LastModified();
+    public virtual long Length();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class SharpCifs.Smb.SmbTransport : Transport {
+    internal static Byte[] Buf;
+    internal static SmbComNegotiate NegotiateRequest;
+    internal static LogStream LogStatic;
+    internal static Hashtable DfsRoots;
+    internal IPAddress LocalAddr;
+    internal int LocalPort;
+    internal UniAddress Address;
+    internal SocketEx Socket;
+    internal int Port;
+    internal int Mid;
+    internal OutputStream Out;
+    internal InputStream In;
+    internal Byte[] Sbuf;
+    internal SmbComBlankResponse Key;
+    internal long SessionExpiration;
+    internal List`1<object> Referrals;
+    internal SigningDigest Digest;
+    internal List`1<SmbSession> Sessions;
+    internal ServerData Server;
+    internal int Flags2;
+    internal int MaxMpxCount;
+    internal int SndBufSize;
+    internal int RcvBufSize;
+    internal int Capabilities;
+    internal int SessionKey;
+    internal bool UseUnicode;
+    internal string TconHostName;
+    internal SmbTransport(UniAddress address, int port, IPAddress localAddr, int localPort);
+    private static SmbTransport();
+    internal static SmbTransport GetSmbTransport(UniAddress address, int port);
+    internal static SmbTransport GetSmbTransport(UniAddress address, int port, IPAddress localAddr, int localPort, string hostName);
+    public static void ClearCachedConnections(bool force);
+    internal virtual SmbSession GetSmbSession();
+    internal virtual SmbSession GetSmbSession(NtlmPasswordAuthentication auth);
+    internal virtual bool Matches(UniAddress address, int port, IPAddress localAddr, int localPort, string hostName);
+    internal virtual bool HasCapability(int cap);
+    internal virtual bool IsSignatureSetupRequired(NtlmPasswordAuthentication auth);
+    internal virtual void Ssn139();
+    private void Negotiate(int port, ServerMessageBlock resp);
+    public virtual void Connect();
+    protected internal virtual void DoConnect();
+    protected internal virtual void DoDisconnect(bool hard);
+    protected internal virtual void MakeKey(ServerMessageBlock request);
+    protected internal virtual ServerMessageBlock PeekKey();
+    protected internal virtual void DoSend(ServerMessageBlock request);
+    protected internal virtual void DoSend0(ServerMessageBlock request);
+    protected internal virtual void DoRecv(Response response);
+    protected internal virtual void DoSkip();
+    internal virtual void CheckStatus(ServerMessageBlock req, ServerMessageBlock resp);
+    internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response);
+    public virtual string ToString();
+    internal virtual void DfsPathSplit(string path, String[] result);
+    internal virtual DfsReferral GetDfsReferrals(NtlmPasswordAuthentication auth, string path, int rn);
+    internal virtual DfsReferral[] __getDfsReferrals(NtlmPasswordAuthentication auth, string path, int rn);
+}
+internal class SharpCifs.Smb.SmbTree : object {
+    private static int _treeConnCounter;
+    internal int ConnectionState;
+    internal int Tid;
+    internal string Share;
+    internal string Service;
+    internal string Service0;
+    internal SmbSession Session;
+    internal bool InDfs;
+    internal bool InDomainDfs;
+    internal int TreeNum;
+    internal SmbTree(SmbSession session, string share, string service);
+    internal virtual bool Matches(string share, string service);
+    public virtual bool Equals(object obj);
+    internal virtual void Send(ServerMessageBlock request, ServerMessageBlock response);
+    internal virtual void TreeConnect(ServerMessageBlock andx, ServerMessageBlock andxResponse);
+    internal virtual void TreeDisconnect(bool inError);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2FindFirst2 : SmbComTransaction {
+    private static int FlagsCloseAfterThisRequest;
+    private static int FlagsCloseIfEndReached;
+    private static int FlagsReturnResumeKeys;
+    private static int FlagsResumeFromPreviousEnd;
+    private static int FlagsFindWithBackupIntent;
+    private static int DefaultListSize;
+    private static int DefaultListCount;
+    private int _searchAttributes;
+    private int _flags;
+    private int _informationLevel;
+    private int _searchStorageType;
+    private string _wildcard;
+    internal static int SmbInfoStandard;
+    internal static int SmbInfoQueryEaSize;
+    internal static int SmbInfoQueryEasFromList;
+    internal static int SmbFindFileDirectoryInfo;
+    internal static int SmbFindFileFullDirectoryInfo;
+    internal static int SmbFileNamesInfo;
+    internal static int SmbFileBothDirectoryInfo;
+    internal static int ListSize;
+    internal static int ListCount;
+    internal Trans2FindFirst2(string filename, string wildcard, int searchAttributes);
+    private static Trans2FindFirst2();
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2FindFirst2Response : SmbComTransactionResponse {
+    internal static int SmbInfoStandard;
+    internal static int SmbInfoQueryEaSize;
+    internal static int SmbInfoQueryEasFromList;
+    internal static int SmbFindFileDirectoryInfo;
+    internal static int SmbFindFileFullDirectoryInfo;
+    internal static int SmbFileNamesInfo;
+    internal static int SmbFileBothDirectoryInfo;
+    internal int Sid;
+    internal bool IsEndOfSearch;
+    internal int EaErrorOffset;
+    internal int LastNameOffset;
+    internal int LastNameBufferIndex;
+    internal string LastName;
+    internal int ResumeKey;
+    internal virtual string ReadString(Byte[] src, int srcIndex, int len);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2FindNext2 : SmbComTransaction {
+    private int _sid;
+    private int _informationLevel;
+    private int _resumeKey;
+    private int _flags;
+    private string _filename;
+    internal Trans2FindNext2(int sid, int resumeKey, string filename);
+    internal virtual void Reset(int resumeKey, string lastName);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2GetDfsReferral : SmbComTransaction {
+    private int _maxReferralLevel;
+    internal Trans2GetDfsReferral(string filename);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2GetDfsReferralResponse : SmbComTransactionResponse {
+    internal int PathConsumed;
+    internal int NumReferrals;
+    internal int flags;
+    internal Referral[] Referrals;
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2QueryFsInformation : SmbComTransaction {
+    private int _informationLevel;
+    internal Trans2QueryFsInformation(int informationLevel);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2QueryFsInformationResponse : SmbComTransactionResponse {
+    internal static int SMB_INFO_ALLOCATION;
+    internal static int SmbQueryFsSizeInfo;
+    internal static int SmbFsFullSizeInformation;
+    private int _informationLevel;
+    internal IAllocInfo Info;
+    internal Trans2QueryFsInformationResponse(int informationLevel);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadSmbInfoAllocationWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadSmbQueryFsSizeInfoWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadFsFullSizeInformationWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2QueryPathInformation : SmbComTransaction {
+    private int _informationLevel;
+    internal Trans2QueryPathInformation(string filename, int informationLevel);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2QueryPathInformationResponse : SmbComTransactionResponse {
+    internal static int SMB_QUERY_FILE_BASIC_INFO;
+    internal static int SMB_QUERY_FILE_STANDARD_INFO;
+    private int _informationLevel;
+    internal IInfo Info;
+    internal Trans2QueryPathInformationResponse(int informationLevel);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadSmbQueryFileStandardInfoWireFormat(Byte[] buffer, int bufferIndex);
+    internal virtual int ReadSmbQueryFileBasicInfoWireFormat(Byte[] buffer, int bufferIndex);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2SetFileInformation : SmbComTransaction {
+    internal static int SmbFileBasicInfo;
+    private int _fid;
+    private int _attributes;
+    private long _createTime;
+    private long _lastWriteTime;
+    internal Trans2SetFileInformation(int fid, int attributes, long createTime, long lastWriteTime);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.Trans2SetFileInformationResponse : SmbComTransactionResponse {
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransactNamedPipeInputStream : SmbFileInputStream {
+    private static int InitPipeSize;
+    private Byte[] _pipeBuf;
+    private int _begIdx;
+    private int _nxtIdx;
+    private int _used;
+    private bool _dcePipe;
+    internal object Lock;
+    internal TransactNamedPipeInputStream(SmbNamedPipe pipe);
+    public virtual int Read();
+    public virtual int Read(Byte[] b);
+    public virtual int Read(Byte[] b, int off, int len);
+    public virtual int Available();
+    internal virtual int Receive(Byte[] b, int off, int len);
+    public virtual int Dce_read(Byte[] b, int off, int len);
+}
+internal class SharpCifs.Smb.TransactNamedPipeOutputStream : SmbFileOutputStream {
+    private string _path;
+    private SmbNamedPipe _pipe;
+    private Byte[] _tmp;
+    private bool _dcePipe;
+    internal TransactNamedPipeOutputStream(SmbNamedPipe pipe);
+    public virtual void Close();
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b);
+    public virtual void Write(Byte[] b, int off, int len);
+}
+internal class SharpCifs.Smb.TransCallNamedPipe : SmbComTransaction {
+    private Byte[] _pipeData;
+    private int _pipeDataOff;
+    private int _pipeDataLen;
+    internal TransCallNamedPipe(string pipeName, Byte[] data, int off, int len);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransCallNamedPipeResponse : SmbComTransactionResponse {
+    private SmbNamedPipe _pipe;
+    internal TransCallNamedPipeResponse(SmbNamedPipe pipe);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransPeekNamedPipe : SmbComTransaction {
+    private int _fid;
+    internal TransPeekNamedPipe(string pipeName, int fid);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransPeekNamedPipeResponse : SmbComTransactionResponse {
+    private SmbNamedPipe _pipe;
+    private int _head;
+    internal static int StatusDisconnected;
+    internal static int StatusListening;
+    internal static int StatusConnectionOk;
+    internal static int StatusServerEndClosed;
+    internal int status;
+    internal int Available;
+    internal TransPeekNamedPipeResponse(SmbNamedPipe pipe);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransTransactNamedPipe : SmbComTransaction {
+    private Byte[] _pipeData;
+    private int _pipeFid;
+    private int _pipeDataOff;
+    private int _pipeDataLen;
+    internal TransTransactNamedPipe(int fid, Byte[] data, int off, int len);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransTransactNamedPipeResponse : SmbComTransactionResponse {
+    private SmbNamedPipe _pipe;
+    internal TransTransactNamedPipeResponse(SmbNamedPipe pipe);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransWaitNamedPipe : SmbComTransaction {
+    internal TransWaitNamedPipe(string pipeName);
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+internal class SharpCifs.Smb.TransWaitNamedPipeResponse : SmbComTransactionResponse {
+    internal virtual int WriteSetupWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteParametersWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int WriteDataWireFormat(Byte[] dst, int dstIndex);
+    internal virtual int ReadSetupWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadParametersWireFormat(Byte[] buffer, int bufferIndex, int len);
+    internal virtual int ReadDataWireFormat(Byte[] buffer, int bufferIndex, int len);
+    public virtual string ToString();
+}
+public static class SharpCifs.Smb.WinError : object {
+    public static int ErrorSuccess;
+    public static int ErrorAccessDenied;
+    public static int ErrorReqNotAccep;
+    public static int ErrorBadPipe;
+    public static int ErrorPipeBusy;
+    public static int ErrorNoData;
+    public static int ErrorPipeNotConnected;
+    public static int ErrorMoreData;
+    public static int ErrorNoBrowserServersFound;
+    public static Int32[] WinerrCodes;
+    public static String[] WinerrMessages;
+    private static WinError();
+}
+public class SharpCifs.UniAddress : object {
+    private static int ResolverWins;
+    private static int ResolverBcast;
+    private static int ResolverDns;
+    private static int ResolverLmhosts;
+    private static Int32[] _resolveOrder;
+    private static IPAddress _baddr;
+    private static LogStream _log;
+    internal object Addr;
+    internal string CalledName;
+    private static UniAddress();
+    public UniAddress(object addr);
+    internal static NbtAddress[] LookupServerOrWorkgroup(string name, IPAddress svr);
+    public static UniAddress GetByName(string hostname);
+    internal static bool IsDotQuadIp(string hostname);
+    internal static bool IsAllDigits(string hostname);
+    public static UniAddress GetByName(string hostname, bool possibleNtDomainOrWorkgroup);
+    public static UniAddress[] GetAllByName(string hostname, bool possibleNtDomainOrWorkgroup);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string FirstCalledName();
+    public virtual string NextCalledName();
+    public virtual object GetAddress();
+    public virtual string GetHostName();
+    public virtual string GetHostAddress();
+    public virtual IPAddress GetHostIpAddress();
+    public virtual string ToString();
+}
+public class SharpCifs.Util.Base64 : object {
+    private static string Alphabet;
+    private static Base64();
+    public static string Encode(Byte[] bytes);
+    public static Byte[] Decode(string string);
+}
+public class SharpCifs.Util.DbsHelper.Log : object {
+    [CompilerGeneratedAttribute]
+private static bool <IsActive>k__BackingField;
+    public static bool IsActive { get; public set; }
+    private static Log();
+    [CompilerGeneratedAttribute]
+public static bool get_IsActive();
+    [CompilerGeneratedAttribute]
+public static void set_IsActive(bool value);
+    public static void Out(string message);
+    public static void Out(Exception ex);
+    private static string GetHighlighted(String[] messages);
+    private static String[] GetErrorString(Exception ex);
+}
+public class SharpCifs.Util.DES : object {
+    private Int32[] _encryptKeys;
+    private Int32[] _decryptKeys;
+    private Int32[] _tempInts;
+    private static Byte[] _bytebit;
+    private static Int32[] _bigbyte;
+    private static Byte[] _pc1;
+    private static Int32[] _totrot;
+    private static Byte[] _pc2;
+    private static Int32[] _sp1;
+    private static Int32[] _sp2;
+    private static Int32[] _sp3;
+    private static Int32[] _sp4;
+    private static Int32[] _sp5;
+    private static Int32[] _sp6;
+    private static Int32[] _sp7;
+    private static Int32[] _sp8;
+    public DES(Byte[] key);
+    private static DES();
+    public static void MakeSmbKey(Byte[] key7, Byte[] key8);
+    public virtual void SetKey(Byte[] key);
+    private void Deskey(Byte[] keyBlock, bool encrypting, Int32[] knL);
+    private void Cookey(Int32[] raw, Int32[] knL);
+    private void Encrypt(Byte[] clearText, int clearOff, Byte[] cipherText, int cipherOff);
+    private void Decrypt(Byte[] cipherText, int cipherOff, Byte[] clearText, int clearOff);
+    private void Des(Int32[] inInts, Int32[] outInts, Int32[] keys);
+    public virtual void Encrypt(Byte[] clearText, Byte[] cipherText);
+    public virtual void Decrypt(Byte[] cipherText, Byte[] clearText);
+    public virtual Byte[] Encrypt(Byte[] clearText);
+    public virtual Byte[] Decrypt(Byte[] cipherText);
+    public static void SquashBytesToInts(Byte[] inBytes, int inOff, Int32[] outInts, int outOff, int intLen);
+    public static void SpreadIntsToBytes(Int32[] inInts, int inOff, Byte[] outBytes, int outOff, int intLen);
+}
+public class SharpCifs.Util.Encdec : object {
+    public static long MillisecondsBetween1970And1601;
+    public static long SecBetweeen1904And1970;
+    public static int Time1970Sec32Be;
+    public static int Time1970Sec32Le;
+    public static int Time1904Sec32Be;
+    public static int Time1904Sec32Le;
+    public static int Time1601Nanos64Le;
+    public static int Time1601Nanos64Be;
+    public static int Time1970Millis64Be;
+    public static int Time1970Millis64Le;
+    public static int Enc_uint16be(short s, Byte[] dst, int di);
+    public static int Enc_uint32be(int i, Byte[] dst, int di);
+    public static int Enc_uint16le(short s, Byte[] dst, int di);
+    public static int Enc_uint32le(int i, Byte[] dst, int di);
+    public static short Dec_uint16be(Byte[] src, int si);
+    public static int Dec_uint32be(Byte[] src, int si);
+    public static short Dec_uint16le(Byte[] src, int si);
+    public static int Dec_uint32le(Byte[] src, int si);
+    public static int Enc_uint64be(long l, Byte[] dst, int di);
+    public static int Enc_uint64le(long l, Byte[] dst, int di);
+    public static long Dec_uint64be(Byte[] src, int si);
+    public static long Dec_uint64le(Byte[] src, int si);
+    public static int Enc_floatle(float f, Byte[] dst, int di);
+    public static int Enc_floatbe(float f, Byte[] dst, int di);
+    public static float Dec_floatle(Byte[] src, int si);
+    public static float Dec_floatbe(Byte[] src, int si);
+    public static int Enc_doublele(double d, Byte[] dst, int di);
+    public static int Enc_doublebe(double d, Byte[] dst, int di);
+    public static double Dec_doublele(Byte[] src, int si);
+    public static double Dec_doublebe(Byte[] src, int si);
+    public static int Enc_time(DateTime date, Byte[] dst, int di, int enc);
+    public static DateTime Dec_time(Byte[] src, int si, int enc);
+    public static int Enc_utf8(string str, Byte[] dst, int di, int dlim);
+    public static string Dec_utf8(Byte[] src, int si, int slim);
+    public static string Dec_ucs2le(Byte[] src, int si, int slim, Char[] buf);
+}
+public class SharpCifs.Util.Hexdump : object {
+    private static int NlLength;
+    private static Char[] SpaceChars;
+    public static Char[] HexDigits;
+    private static Hexdump();
+    private static bool IsIsoControl(char c);
+    public static void ToHexdump(TextWriter ps, Byte[] src, int srcIndex, int length);
+    public static string ToHexString(int val, int size);
+    public static string ToHexString(long val, int size);
+    public static string ToHexString(Byte[] src, int srcIndex, int size);
+    public static void ToHexChars(int val, Char[] dst, int dstIndex, int size);
+    public static void ToHexChars(long val, Char[] dst, int dstIndex, int size);
+}
+public class SharpCifs.Util.Hmact64 : MessageDigest {
+    private static int BlockLength;
+    private static byte Ipad;
+    private static byte Opad;
+    private MessageDigest _md5;
+    private Byte[] _ipad;
+    private Byte[] _opad;
+    public Hmact64(Byte[] key);
+    protected Byte[] EngineDigest();
+    protected int EngineDigest(Byte[] buf, int offset, int len);
+    protected int EngineGetDigestLength();
+    protected void EngineReset();
+    protected void EngineUpdate(byte b);
+    protected void EngineUpdate(Byte[] input, int offset, int len);
+    public virtual Byte[] Digest();
+    public virtual int GetDigestLength();
+    public virtual void Reset();
+    public virtual void Update(Byte[] b);
+    public virtual void Update(byte b);
+    public virtual void Update(Byte[] b, int offset, int len);
+}
+public class SharpCifs.Util.LogStream : PrintWriter {
+    private static LogStream _inst;
+    public int Level;
+    public Encoding Encoding { get; }
+    public LogStream(TextWriter other);
+    private static LogStream();
+    public void SetLevel(int level);
+    public static void SetInstance(TextWriter other);
+    public static LogStream GetInstance();
+    public virtual Encoding get_Encoding();
+}
+public class SharpCifs.Util.Md4 : MessageDigest {
+    private static int BlockLength;
+    private Int32[] _context;
+    private long _count;
+    private Byte[] _buffer;
+    private Int32[] _x;
+    private Md4(Md4 md);
+    public object Clone();
+    protected void EngineReset();
+    protected void EngineUpdate(byte b);
+    protected void EngineUpdate(Byte[] input, int offset, int len);
+    protected Byte[] EngineDigest();
+    private void Transform(Byte[] block, int offset);
+    private int Ff(int a, int b, int c, int d, int x, int s);
+    private int Gg(int a, int b, int c, int d, int x, int s);
+    private int Hh(int a, int b, int c, int d, int x, int s);
+    public virtual Byte[] Digest();
+    public virtual int GetDigestLength();
+    public virtual void Reset();
+    public virtual void Update(Byte[] b);
+    public virtual void Update(byte b);
+    public virtual void Update(Byte[] b, int offset, int len);
+}
+public class SharpCifs.Util.Rc4 : object {
+    internal Byte[] S;
+    internal int I;
+    internal int J;
+    public Rc4(Byte[] key);
+    public virtual void Init(Byte[] key, int ki, int klen);
+    public virtual void Update(Byte[] src, int soff, int slen, Byte[] dst, int doff);
+}
+internal class SharpCifs.Util.Sharpen.AbcdStruct : ValueType {
+    public UInt32 A;
+    public UInt32 B;
+    public UInt32 C;
+    public UInt32 D;
+}
+[DefaultMemberAttribute("Item")]
+public abstract class SharpCifs.Util.Sharpen.AbstractMap`2 : object {
+    public int Count { get; }
+    public TU Item { get; public set; }
+    public IEnumerable`1<T> Keys { get; }
+    private int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.Count { get; }
+    private bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.IsReadOnly { get; }
+    private ICollection`1<T> System.Collections.Generic.IDictionary<T,TU>.Keys { get; }
+    private ICollection`1<TU> System.Collections.Generic.IDictionary<T,TU>.Values { get; }
+    public IEnumerable`1<TU> Values { get; }
+    public virtual void Clear();
+    public virtual bool ContainsKey(object name);
+    public abstract virtual ICollection`1<KeyValuePair`2<T, TU>> EntrySet();
+    public virtual TU Get(object key);
+    protected virtual IEnumerator`1<KeyValuePair`2<T, TU>> InternalGetEnumerator();
+    public virtual bool IsEmpty();
+    public virtual TU Put(T key, TU value);
+    public virtual TU Remove(object key);
+    private sealed virtual override void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.Add(KeyValuePair`2<T, TU> item);
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.Contains(KeyValuePair`2<T, TU> item);
+    private sealed virtual override void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.Remove(KeyValuePair`2<T, TU> item);
+    private sealed virtual override void System.Collections.Generic.IDictionary<T,TU>.Add(T key, TU value);
+    private sealed virtual override bool System.Collections.Generic.IDictionary<T,TU>.ContainsKey(T key);
+    private sealed virtual override bool System.Collections.Generic.IDictionary<T,TU>.Remove(T key);
+    private sealed virtual override bool System.Collections.Generic.IDictionary<T,TU>.TryGetValue(T key, TU& value);
+    private sealed virtual override IEnumerator`1<KeyValuePair`2<T, TU>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<T,TU>>.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual int get_Count();
+    public sealed virtual TU get_Item(T key);
+    public sealed virtual void set_Item(T key, TU value);
+    public virtual IEnumerable`1<T> get_Keys();
+    private sealed virtual override int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.get_Count();
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<T,TU>>.get_IsReadOnly();
+    private sealed virtual override ICollection`1<T> System.Collections.Generic.IDictionary<T,TU>.get_Keys();
+    private sealed virtual override ICollection`1<TU> System.Collections.Generic.IDictionary<T,TU>.get_Values();
+    public virtual IEnumerable`1<TU> get_Values();
+}
+public class SharpCifs.Util.Sharpen.Arrays : object {
+    public static List`1<T> AsList(T[] array);
+    public static bool Equals(T[] a1, T[] a2);
+    public static void Fill(T[] array, T val);
+    public static void Fill(T[] array, int start, int end, T val);
+    public static void Sort(String[] array);
+    public static void Sort(T[] array);
+    public static void Sort(T[] array, IComparer`1<T> c);
+    public static void Sort(T[] array, int start, int count);
+    public static void Sort(T[] array, int start, int count, IComparer`1<T> c);
+}
+public class SharpCifs.Util.Sharpen.BrokenBarrierException : Exception {
+}
+public class SharpCifs.Util.Sharpen.BufferedReader : StreamReader {
+    public BufferedReader(InputStreamReader r);
+}
+public class SharpCifs.Util.Sharpen.BufferedWriter : object {
+    private StreamWriter _writer;
+    public BufferedWriter(StreamWriter w);
+    public void Write(string s);
+    public void NewLine();
+    public void Close();
+}
+internal class SharpCifs.Util.Sharpen.BufferUnderflowException : Exception {
+}
+public class SharpCifs.Util.Sharpen.CharacterCodingException : Exception {
+}
+internal class SharpCifs.Util.Sharpen.CharBuffer : CharSequence {
+    internal string Wrapped;
+    public virtual string ToString();
+    public static CharBuffer Wrap(string str);
+}
+public class SharpCifs.Util.Sharpen.CharSequence : object {
+    public static CharSequence op_Implicit(string str);
+    public static CharSequence op_Implicit(StringBuilder str);
+}
+public static class SharpCifs.Util.Sharpen.Collections : object {
+    public static bool AddAll(ICollection`1<T> list, IEnumerable toAdd);
+    public static TV Remove(IDictionary`2<TK, TV> map, TK toRemove);
+    public static T[] ToArray(ICollection`1<T> list);
+    public static T[] ToArray(List`1<object> list);
+    public static TU[] ToArray(ICollection`1<T> list, TU[] res);
+    public static IDictionary`2<TK, TV> EmptyMap();
+    public static IList`1<T> EmptyList();
+    public static ICollection`1<T> EmptySet();
+    public static IList`1<T> NCopies(int n, T elem);
+    public static void Reverse(IList`1<T> list);
+    public static ICollection`1<T> Singleton(T item);
+    public static IList`1<T> SingletonList(T item);
+    public static IList`1<T> SynchronizedList(IList`1<T> list);
+    public static ICollection`1<T> UnmodifiableCollection(ICollection`1<T> list);
+    public static IList`1<T> UnmodifiableList(IList`1<T> list);
+    public static ICollection`1<T> UnmodifiableSet(ICollection`1<T> list);
+    public static IDictionary`2<TK, TV> UnmodifiableMap(IDictionary`2<TK, TV> dict);
+}
+internal static class SharpCifs.Util.Sharpen.Collections`1 : object {
+    private static IList`1<T> Empty;
+    public static IList`1<T> EmptySet { get; }
+    private static Collections`1();
+    public static IList`1<T> get_EmptySet();
+}
+internal class SharpCifs.Util.Sharpen.ConcurrentHashMap`2 : AbstractMap`2<T, TU> {
+    private Dictionary`2<T, TU> _table;
+    public IEnumerable`1<T> Keys { get; }
+    public IEnumerable`1<TU> Values { get; }
+    public ConcurrentHashMap`2(int initialCapacity, float loadFactor, int concurrencyLevel);
+    public virtual void Clear();
+    public virtual bool ContainsKey(object name);
+    public virtual ICollection`1<KeyValuePair`2<T, TU>> EntrySet();
+    public virtual TU Get(object key);
+    protected virtual IEnumerator`1<KeyValuePair`2<T, TU>> InternalGetEnumerator();
+    public virtual bool IsEmpty();
+    public virtual TU Put(T key, TU value);
+    public sealed virtual TU PutIfAbsent(T key, TU value);
+    public virtual TU Remove(object key);
+    public sealed virtual bool Remove(object key, object value);
+    public sealed virtual bool Replace(T key, TU oldValue, TU newValue);
+    public virtual IEnumerable`1<T> get_Keys();
+    public virtual IEnumerable`1<TU> get_Values();
+}
+public class SharpCifs.Util.Sharpen.ConnectException : Exception {
+    public ConnectException(string msg);
+}
+public class SharpCifs.Util.Sharpen.DataFormatException : Exception {
+}
+public abstract class SharpCifs.Util.Sharpen.DateFormat : object {
+    public static int Default;
+    private TimeZoneInfo _timeZone;
+    public static DateFormat GetDateTimeInstance(int dateStyle, int timeStyle);
+    public static DateFormat GetDateTimeInstance(int dateStyle, int timeStyle, CultureInfo aLocale);
+    public abstract virtual DateTime Parse(string value);
+    public TimeZoneInfo GetTimeZone();
+    public void SetTimeZone(TimeZoneInfo timeZone);
+    public abstract virtual string Format(DateTime time);
+}
+internal class SharpCifs.Util.Sharpen.EnumeratorWrapper`1 : Iterator`1<T> {
+    private object _collection;
+    private IEnumerator`1<T> _e;
+    private T _lastVal;
+    private bool _more;
+    private bool _copied;
+    public EnumeratorWrapper`1(object collection, IEnumerator`1<T> e);
+    public virtual bool HasNext();
+    public virtual T Next();
+    public virtual void Remove();
+}
+public class SharpCifs.Util.Sharpen.EofException : Exception {
+    public EofException(string msg);
+}
+public class SharpCifs.Util.Sharpen.Error : Exception {
+    public Error(Exception ex);
+    public Error(string msg);
+    public Error(string msg, Exception ex);
+}
+public class SharpCifs.Util.Sharpen.ExecutionException : Exception {
+    public ExecutionException(Exception inner);
+}
+[ExtensionAttribute]
+public static class SharpCifs.Util.Sharpen.Extensions : object {
+    private static long EpochTicks;
+    private static Extensions();
+    [ExtensionAttribute]
+public static void Add(IList`1<T> list, int index, T item);
+    [ExtensionAttribute]
+public static void AddFirst(IList`1<T> list, T item);
+    [ExtensionAttribute]
+public static void AddLast(IList`1<T> list, T item);
+    [ExtensionAttribute]
+public static void RemoveLast(IList`1<T> list);
+    [ExtensionAttribute]
+public static StringBuilder AppendRange(StringBuilder sb, string str, int start, int end);
+    [ExtensionAttribute]
+public static StringBuilder Delete(StringBuilder sb, int start, int end);
+    [ExtensionAttribute]
+public static void SetCharAt(StringBuilder sb, int index, char c);
+    [ExtensionAttribute]
+public static int IndexOf(StringBuilder sb, string str);
+    public static int BitCount(int val);
+    public static IndexOutOfRangeException CreateIndexOutOfRangeException(int index);
+    [ExtensionAttribute]
+public static string Decode(Encoding e, Byte[] chars, int start, int len);
+    public static Encoding GetEncoding(string name);
+    [ExtensionAttribute]
+public static ICollection`1<KeyValuePair`2<T, TU>> EntrySet(IDictionary`2<T, TU> s);
+    [ExtensionAttribute]
+public static bool AddItem(IList`1<T> list, T item);
+    [ExtensionAttribute]
+public static bool AddItem(ICollection`1<T> list, T item);
+    [ExtensionAttribute]
+public static TU Get(IDictionary`2<T, TU> d, T key);
+    [ExtensionAttribute]
+public static TU Put(IDictionary`2<T, TU> d, T key, TU value);
+    [ExtensionAttribute]
+public static void PutAll(IDictionary`2<T, TU> d, IDictionary`2<T, TU> values);
+    public static CultureInfo GetEnglishCulture();
+    [ExtensionAttribute]
+public static T GetFirst(IList`1<T> list);
+    public static CultureInfo GetGermanCulture();
+    [ExtensionAttribute]
+public static T GetLast(IList`1<T> list);
+    [ExtensionAttribute]
+public static int GetOffset(TimeZoneInfo tzone, long date);
+    [ExtensionAttribute]
+public static InputStream GetResourceAsStream(Type type, string name);
+    [ExtensionAttribute]
+public static long GetTime(DateTime dateTime);
+    [ExtensionAttribute]
+public static void InitCause(Exception ex, Exception cause);
+    [ExtensionAttribute]
+public static bool IsEmpty(ICollection`1<T> col);
+    [ExtensionAttribute]
+public static bool IsEmpty(Stack`1<T> col);
+    [ExtensionAttribute]
+public static bool IsLower(char c);
+    [ExtensionAttribute]
+public static bool IsUpper(char c);
+    [ExtensionAttribute]
+public static Iterator`1<T> Iterator(ICollection`1<T> col);
+    [ExtensionAttribute]
+public static Iterator`1<T> Iterator(IEnumerable`1<T> col);
+    [ExtensionAttribute]
+public static T Last(ICollection`1<T> col);
+    public static int LowestOneBit(int val);
+    [ExtensionAttribute]
+public static bool Matches(string str, string regex);
+    public static DateTime CreateDate(long milliSecondsSinceEpoch);
+    public static DateTime CreateDateFromUTC(long milliSecondsSinceEpoch);
+    public static DateTimeOffset MillisToDateTimeOffset(long milliSecondsSinceEpoch, long offsetMinutes);
+    public static int NumberOfLeadingZeros(int val);
+    public static int NumberOfTrailingZeros(int val);
+    [ExtensionAttribute]
+public static int Read(StreamReader reader, Char[] data);
+    [ExtensionAttribute]
+public static T Remove(IList`1<T> list, T item);
+    [ExtensionAttribute]
+public static T Remove(IList`1<T> list, int i);
+    [ExtensionAttribute]
+public static T RemoveFirst(IList`1<T> list);
+    [ExtensionAttribute]
+public static string ReplaceAll(string str, string regex, string replacement);
+    [ExtensionAttribute]
+public static bool RegionMatches(string str, bool ignoreCase, int toOffset, string other, int ooffset, int len);
+    [ExtensionAttribute]
+public static T Set(IList`1<T> list, int index, T item);
+    public static int Signum(long val);
+    [ExtensionAttribute]
+public static void RemoveAll(ICollection`1<T> col, ICollection`1<TU> items);
+    [ExtensionAttribute]
+public static bool ContainsAll(ICollection`1<T> col, ICollection`1<TU> items);
+    [ExtensionAttribute]
+public static bool Contains(ICollection`1<T> col, object item);
+    [ExtensionAttribute]
+public static void Sort(IList`1<T> list);
+    [ExtensionAttribute]
+public static void Sort(IList`1<T> list, IComparer`1<T> comparer);
+    [ExtensionAttribute]
+public static String[] Split(string str, string regex);
+    [ExtensionAttribute]
+public static String[] Split(string str, string regex, int limit);
+    [ExtensionAttribute]
+public static IList`1<T> SubList(IList`1<T> list, int start, int len);
+    [ExtensionAttribute]
+public static Char[] ToCharArray(string str);
+    [ExtensionAttribute]
+public static long ToMillisecondsSinceEpoch(DateTime dateTime);
+    [ExtensionAttribute]
+public static long ToMillisecondsSinceEpoch(DateTimeOffset dateTimeOffset);
+    public static string ToOctalString(int val);
+    public static string ToHexString(int val);
+    public static string ToString(object val);
+    public static string ToString(int val, int bas);
+    [ExtensionAttribute]
+public static IList`1<TU> UpcastTo(IList`1<T> s);
+    [ExtensionAttribute]
+public static ICollection`1<TU> UpcastTo(ICollection`1<T> s);
+    public static T ValueOf(T val);
+    [ExtensionAttribute]
+public static string GetHostAddress(IPAddress addr);
+    public static IPAddress GetAddressByName(string host);
+    public static IPAddress[] GetAddressesByName(string host);
+    public static IPAddress[] GetLocalAddresses();
+    [ExtensionAttribute]
+public static string GetImplementationVersion(Assembly asm);
+    [ExtensionAttribute]
+public static string GetHost(Uri uri);
+    [ExtensionAttribute]
+public static string GetUserInfo(Uri uri);
+    [ExtensionAttribute]
+public static string GetQuery(Uri uri);
+    [ExtensionAttribute]
+public static int GetLocalPort(Socket socket);
+    [ExtensionAttribute]
+public static IPAddress GetLocalInetAddress(Socket socket);
+    [ExtensionAttribute]
+public static int GetPort(Socket socket);
+    [ExtensionAttribute]
+public static IPAddress GetInetAddress(Socket socket);
+    public static Semaphore CreateSemaphore(int count);
+}
+public class SharpCifs.Util.Sharpen.FileInputStream : InputStream {
+    public FileInputStream(FilePath file);
+    public FileInputStream(string file);
+}
+internal class SharpCifs.Util.Sharpen.FileOutputStream : OutputStream {
+    public FileOutputStream(FilePath file);
+    public FileOutputStream(string file);
+    public FileOutputStream(FilePath file, bool append);
+    public FileOutputStream(string file, bool append);
+}
+public class SharpCifs.Util.Sharpen.FilePath : object {
+    private string _path;
+    private static long _tempCounter;
+    internal static string PathSeparator { get; }
+    internal static char PathSeparatorChar { get; }
+    internal static char SeparatorChar { get; }
+    internal static string Separator { get; }
+    public FilePath(string path);
+    public FilePath(FilePath other, string child);
+    public FilePath(string other, string child);
+    public static FilePath op_Implicit(string name);
+    public static string op_Implicit(FilePath filePath);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public bool CreateNewFile();
+    public static FilePath CreateTempFile();
+    public static FilePath CreateTempFile(string prefix, string suffix);
+    public static FilePath CreateTempFile(string prefix, string suffix, FilePath directory);
+    public void DeleteOnExit();
+    public FilePath GetAbsoluteFile();
+    public string GetAbsolutePath();
+    public FilePath GetCanonicalFile();
+    public string GetCanonicalPath();
+    public string GetName();
+    public FilePath GetParentFile();
+    public string GetPath();
+    public bool IsAbsolute();
+    public bool IsDirectory();
+    public bool IsFile();
+    public long LastModified();
+    public long Length();
+    public String[] List();
+    public String[] List(IFilenameFilter filter);
+    public FilePath[] ListFiles();
+    private static void MakeDirWritable(string dir);
+    private static void MakeFileWritable(string file);
+    public bool Mkdir();
+    public bool Mkdirs();
+    public bool RenameTo(FilePath file);
+    public bool RenameTo(string name);
+    public bool SetLastModified(long milis);
+    public bool SetReadOnly();
+    public Uri ToUri();
+    public bool CanExecute();
+    public bool SetExecutable(bool exec);
+    public string GetParent();
+    public virtual string ToString();
+    internal static string get_PathSeparator();
+    internal static char get_PathSeparatorChar();
+    internal static char get_SeparatorChar();
+    internal static string get_Separator();
+}
+public class SharpCifs.Util.Sharpen.FileReader : InputStreamReader {
+    public FileReader(InputStream s);
+}
+public class SharpCifs.Util.Sharpen.FilterInputStream : InputStream {
+    protected InputStream In;
+    public FilterInputStream(InputStream s);
+    public virtual int Available();
+    public virtual void Close();
+    public virtual void Mark(int readlimit);
+    public virtual bool MarkSupported();
+    public virtual int Read();
+    public virtual int Read(Byte[] buf);
+    public virtual int Read(Byte[] b, int off, int len);
+    public virtual void Reset();
+    public virtual long Skip(long cnt);
+}
+public class SharpCifs.Util.Sharpen.FilterOutputStream : OutputStream {
+    protected OutputStream Out;
+    public FilterOutputStream(OutputStream os);
+    public virtual void Close();
+    public virtual void Flush();
+    public virtual void Write(Byte[] b);
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b, int offset, int len);
+}
+public class SharpCifs.Util.Sharpen.GitException : Exception {
+}
+public class SharpCifs.Util.Sharpen.Hashtable : Dictionary`2<object, object> {
+    public void Put(object key, object value);
+    public object Get(object key);
+}
+internal interface SharpCifs.Util.Sharpen.ICallable`1 {
+    public abstract virtual T Call();
+}
+internal interface SharpCifs.Util.Sharpen.IConcurrentMap`2 {
+    public abstract virtual TU PutIfAbsent(T key, TU value);
+    public abstract virtual bool Remove(object key, object value);
+    public abstract virtual bool Replace(T key, TU oldValue, TU newValue);
+}
+public interface SharpCifs.Util.Sharpen.IExecutor {
+    public abstract virtual void Execute(IRunnable runnable);
+}
+public interface SharpCifs.Util.Sharpen.IFilenameFilter {
+    public abstract virtual bool Accept(FilePath dir, string name);
+}
+internal interface SharpCifs.Util.Sharpen.IFuture`1 {
+    public abstract virtual bool Cancel(bool mayInterruptIfRunning);
+    public abstract virtual T Get();
+}
+internal class SharpCifs.Util.Sharpen.IllegalCharsetNameException : Exception {
+    public IllegalCharsetNameException(string msg);
+}
+public class SharpCifs.Util.Sharpen.InputStream : object {
+    private long _mark;
+    protected Stream Wrapped;
+    protected Stream BaseStream;
+    internal long Position { get; internal set; }
+    public long Length { get; }
+    public static InputStream op_Implicit(Stream s);
+    public static Stream op_Implicit(InputStream s);
+    public virtual int Available();
+    public virtual void Close();
+    public sealed virtual void Dispose();
+    internal Stream GetWrappedStream();
+    public virtual void Mark(int readlimit);
+    public virtual bool MarkSupported();
+    public virtual int Read();
+    public virtual int Read(Byte[] buf);
+    public virtual int Read(Byte[] b, int off, int len);
+    public virtual void Reset();
+    public virtual long Skip(long cnt);
+    internal virtual bool CanSeek();
+    internal virtual long get_Position();
+    internal virtual void set_Position(long value);
+    public virtual long get_Length();
+    internal static InputStream Wrap(Stream s);
+}
+public class SharpCifs.Util.Sharpen.InputStreamReader : StreamReader {
+    public InputStreamReader(InputStream s);
+    public InputStreamReader(InputStream s, string encoding);
+    public InputStreamReader(InputStream s, Encoding e);
+}
+public class SharpCifs.Util.Sharpen.InstantiationException : Exception {
+}
+public class SharpCifs.Util.Sharpen.InterruptedIoException : Exception {
+    public InterruptedIoException(string msg);
+}
+internal interface SharpCifs.Util.Sharpen.IPrivilegedAction`1 {
+    public abstract virtual T Run();
+}
+public interface SharpCifs.Util.Sharpen.IRunnable {
+    public abstract virtual void Run();
+}
+public interface SharpCifs.Util.Sharpen.ITerator {
+    public abstract virtual bool HasNext();
+    public abstract virtual object Next();
+    public abstract virtual void Remove();
+}
+public abstract class SharpCifs.Util.Sharpen.Iterator`1 : object {
+    private T _lastValue;
+    private T System.Collections.Generic.IEnumerator<T>.Current { get; }
+    private object System.Collections.IEnumerator.Current { get; }
+    private sealed virtual override object SharpCifs.Util.Sharpen.ITerator.Next();
+    public abstract virtual bool HasNext();
+    public abstract virtual T Next();
+    public abstract virtual void Remove();
+    private sealed virtual override bool System.Collections.IEnumerator.MoveNext();
+    private sealed virtual override void System.Collections.IEnumerator.Reset();
+    private sealed virtual override void System.IDisposable.Dispose();
+    private sealed virtual override T System.Collections.Generic.IEnumerator<T>.get_Current();
+    private sealed virtual override object System.Collections.IEnumerator.get_Current();
+}
+internal class SharpCifs.Util.Sharpen.KeyManagementException : Exception {
+}
+internal class SharpCifs.Util.Sharpen.LinkageError : Exception {
+    public LinkageError(string msg);
+}
+internal class SharpCifs.Util.Sharpen.Matcher : object {
+    private int _current;
+    private MatchCollection _matches;
+    private Regex _regex;
+    private string _str;
+    internal Matcher(Regex regex, string str);
+    public int End();
+    public bool Find();
+    public bool Find(int index);
+    public string Group(int n);
+    public bool Matches();
+    public string ReplaceFirst(string txt);
+    public Matcher Reset(CharSequence str);
+    public Matcher Reset(string str);
+    public int Start();
+}
+public class SharpCifs.Util.Sharpen.Md5Core : object {
+    public static Byte[] GetHash(string input, Encoding encoding);
+    public static Byte[] GetHash(string input);
+    public static string GetHashString(Byte[] input);
+    public static string GetHashString(string input, Encoding encoding);
+    public static string GetHashString(string input);
+    public static Byte[] GetHash(Byte[] input);
+    internal static Byte[] GetHashFinalBlock(Byte[] input, int ibStart, int cbSize, AbcdStruct abcd, long len);
+    internal static void GetHashBlock(Byte[] input, AbcdStruct& abcdValue, int ibStart);
+    private static UInt32 R1(UInt32 a, UInt32 b, UInt32 c, UInt32 d, UInt32 x, int s, UInt32 t);
+    private static UInt32 R2(UInt32 a, UInt32 b, UInt32 c, UInt32 d, UInt32 x, int s, UInt32 t);
+    private static UInt32 R3(UInt32 a, UInt32 b, UInt32 c, UInt32 d, UInt32 x, int s, UInt32 t);
+    private static UInt32 R4(UInt32 a, UInt32 b, UInt32 c, UInt32 d, UInt32 x, int s, UInt32 t);
+    private static UInt32 Lsr(UInt32 i, int s);
+    private static UInt32[] Converter(Byte[] input, int ibStart);
+}
+public class SharpCifs.Util.Sharpen.Md5Managed : HashAlgorithm {
+    private Byte[] _data;
+    private AbcdStruct _abcd;
+    private long _totalLength;
+    private int _dataSize;
+    public static Md5Managed Create();
+    public virtual void Initialize();
+    protected virtual void HashCore(Byte[] array, int ibStart, int cbSize);
+    protected virtual Byte[] HashFinal();
+}
+public abstract class SharpCifs.Util.Sharpen.MessageDigest : object {
+    public void Digest(Byte[] buffer, int o, int len);
+    public Byte[] Digest(Byte[] buffer);
+    public abstract virtual Byte[] Digest();
+    public abstract virtual int GetDigestLength();
+    public static MessageDigest GetInstance(string algorithm);
+    public abstract virtual void Reset();
+    public abstract virtual void Update(Byte[] b);
+    public abstract virtual void Update(byte b);
+    public abstract virtual void Update(Byte[] b, int offset, int len);
+}
+public class SharpCifs.Util.Sharpen.MessageDigest`1 : MessageDigest {
+    private TAlgorithm _hash;
+    private MemoryStream _stream;
+    public virtual Byte[] Digest();
+    public void Dispose();
+    public virtual int GetDigestLength();
+    private void Init();
+    public virtual void Reset();
+    public virtual void Update(Byte[] input);
+    public virtual void Update(byte input);
+    public virtual void Update(Byte[] input, int index, int count);
+}
+public class SharpCifs.Util.Sharpen.MissingResourceException : Exception {
+}
+public class SharpCifs.Util.Sharpen.NetworkStream : Stream {
+    private SocketEx _socket;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public NetworkStream(SocketEx socket);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual void Flush();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+public class SharpCifs.Util.Sharpen.NoSuchAlgorithmException : Exception {
+}
+public class SharpCifs.Util.Sharpen.NoSuchElementException : Exception {
+}
+internal class SharpCifs.Util.Sharpen.NoSuchMethodException : Exception {
+}
+internal class SharpCifs.Util.Sharpen.ObjectInputStream : InputStream {
+    private BinaryReader _reader;
+    public ObjectInputStream(InputStream s);
+    public int ReadInt();
+    public object ReadObject();
+}
+internal class SharpCifs.Util.Sharpen.ObjectOutputStream : OutputStream {
+    private BinaryWriter _bw;
+    public ObjectOutputStream(OutputStream os);
+    public virtual void WriteInt(int i);
+}
+public class SharpCifs.Util.Sharpen.OutputStream : object {
+    protected Stream Wrapped;
+    public static OutputStream op_Implicit(Stream s);
+    public static Stream op_Implicit(OutputStream s);
+    public virtual void Close();
+    public sealed virtual void Dispose();
+    public virtual void Flush();
+    internal Stream GetWrappedStream();
+    internal static OutputStream Wrap(Stream s);
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b);
+    public virtual void Write(Byte[] b, int offset, int len);
+}
+internal class SharpCifs.Util.Sharpen.OutputStreamWriter : StreamWriter {
+    public OutputStreamWriter(OutputStream stream);
+    public OutputStreamWriter(OutputStream stream, string encoding);
+    public OutputStreamWriter(OutputStream stream, Encoding encoding);
+}
+internal class SharpCifs.Util.Sharpen.OverlappingFileLockException : Exception {
+}
+public class SharpCifs.Util.Sharpen.ParseException : Exception {
+    public ParseException(string msg, int errorOffset);
+}
+internal class SharpCifs.Util.Sharpen.PipedInputStream : InputStream {
+    private Byte[] _oneBuffer;
+    public static int PipeSize;
+    protected Byte[] Buffer;
+    private bool _closed;
+    private ManualResetEvent _dataEvent;
+    private int _end;
+    private int _start;
+    private object _thisLock;
+    private bool _allowGrow;
+    public int In { get; public set; }
+    public int Out { get; public set; }
+    public PipedInputStream(PipedOutputStream os);
+    public int get_In();
+    public void set_In(int value);
+    public int get_Out();
+    public void set_Out(int value);
+    public virtual void Close();
+    public virtual int Available();
+    public virtual int Read();
+    public virtual int Read(Byte[] b, int offset, int len);
+    private int Allocate(int len);
+    private int TryAllocate(int len);
+    internal void Write(int b);
+    internal void Write(Byte[] b, int offset, int len);
+}
+internal class SharpCifs.Util.Sharpen.PipedOutputStream : OutputStream {
+    private PipedInputStream _ips;
+    public PipedOutputStream(PipedInputStream iss);
+    public virtual void Close();
+    internal void Attach(PipedInputStream iss);
+    public virtual void Write(int b);
+    public virtual void Write(Byte[] b, int offset, int len);
+}
+public class SharpCifs.Util.Sharpen.PrintWriter : TextWriter {
+    private TextWriter _writer;
+    private FileStream _stream;
+    public Encoding Encoding { get; }
+    public IFormatProvider FormatProvider { get; }
+    public string NewLine { get; public set; }
+    public PrintWriter(FilePath path);
+    public PrintWriter(TextWriter other);
+    public virtual Encoding get_Encoding();
+    public void Close();
+    public virtual void Flush();
+    public virtual IFormatProvider get_FormatProvider();
+    public virtual string get_NewLine();
+    public virtual void set_NewLine(string value);
+    public virtual void Write(Char[] buffer, int index, int count);
+    public virtual void Write(Char[] buffer);
+    public void Write(string format, object arg0, object arg1, object arg2);
+    public virtual void Write(string format, object arg0, object arg1);
+    public virtual void Write(string format, object arg0);
+    public virtual void Write(string format, Object[] arg);
+    public virtual void WriteLine(Char[] buffer, int index, int count);
+    public virtual void WriteLine(Char[] buffer);
+    public void WriteLine(string format, object arg0, object arg1, object arg2);
+    public virtual void WriteLine(string format, object arg0, object arg1);
+    public virtual void WriteLine(string format, object arg0);
+    public virtual void WriteLine(string format, Object[] arg);
+    public virtual void WriteLine(ulong value);
+    public virtual void WriteLine(UInt32 value);
+    public virtual void WriteLine(string value);
+    public virtual void WriteLine(float value);
+    public virtual void WriteLine(object value);
+    public virtual void WriteLine(long value);
+    public virtual void WriteLine(int value);
+    public virtual void WriteLine(double value);
+    public virtual void WriteLine(decimal value);
+    public virtual void WriteLine(char value);
+    public virtual void WriteLine(bool value);
+    public virtual void WriteLine();
+    public virtual void Write(bool value);
+    public virtual void Write(char value);
+    public virtual void Write(decimal value);
+    public virtual void Write(double value);
+    public virtual void Write(int value);
+    public virtual void Write(long value);
+    public virtual void Write(object value);
+    public virtual void Write(float value);
+    public virtual void Write(string value);
+    public virtual void Write(UInt32 value);
+    public virtual void Write(ulong value);
+}
+public class SharpCifs.Util.Sharpen.Properties : object {
+    protected Hashtable _properties;
+    public Properties(Properties defaultProp);
+    public void PutAll(Hashtable properties);
+    public void SetProperty(object key, object value);
+    public object GetProperty(object key);
+    public object GetProperty(object key, object def);
+    public void Load(InputStream input);
+    public void Store(OutputStream output);
+    public void Store(TextWriter output);
+}
+public class SharpCifs.Util.Sharpen.RandomAccessFile : object {
+    private FileStream _stream;
+    public RandomAccessFile(FilePath file, string mode);
+    public RandomAccessFile(string file, string mode);
+    public void Close();
+    public long GetFilePointer();
+    public long Length();
+    public int Read(Byte[] buffer);
+    public int Read(Byte[] buffer, int start, int size);
+    public void ReadFully(Byte[] buffer, int start, int size);
+    public void Seek(long pos);
+    public void SetLength(long len);
+    public void Write(int value);
+    public void Write(Byte[] buffer);
+    public void Write(Byte[] buffer, int start, int size);
+}
+internal class SharpCifs.Util.Sharpen.ReentrantLock : object {
+    public void Lock();
+    public bool TryLock();
+    public void Unlock();
+}
+internal abstract class SharpCifs.Util.Sharpen.Reference`1 : object {
+    public abstract virtual T Get();
+}
+internal class SharpCifs.Util.Sharpen.RunnableAction : object {
+    private Action _action;
+    public RunnableAction(Action a);
+    public sealed virtual void Run();
+}
+public class SharpCifs.Util.Sharpen.Runtime : object {
+    private static Runtime _instance;
+    private List`1<ShutdownHook> _shutdownHooks;
+    private static Hashtable _properties;
+    internal void AddShutdownHook(IRunnable r);
+    internal int AvailableProcessors();
+    public static long CurrentTimeMillis();
+    public static Hashtable GetProperties();
+    public static string GetProperty(string key);
+    public static void SetProperty(string key, string value);
+    public static Runtime GetRuntime();
+    public static int IdentityHashCode(object ob);
+    internal long MaxMemory();
+    public static void DeleteCharAt(StringBuilder sb, int index);
+    public static Byte[] GetBytesForString(string str);
+    public static Byte[] GetBytesForString(string str, string encoding);
+    public static FieldInfo[] GetDeclaredFields(Type t);
+    public static void NotifyAll(object ob);
+    public static void Notify(object obj);
+    public static void PrintStackTrace(Exception ex);
+    public static void PrintStackTrace(Exception ex, TextWriter tw);
+    public static string Substring(string str, int index);
+    public static string Substring(string str, int index, int endIndex);
+    public static void Wait(object ob);
+    public static bool Wait(object ob, long milis);
+    public static Type GetType(string name);
+    public static void SetCharAt(StringBuilder sb, int index, char c);
+    public static bool EqualsIgnoreCase(string s1, string s2);
+    internal static long NanoTime();
+    internal static int CompareOrdinal(string s1, string s2);
+    public static string GetStringForBytes(Byte[] chars);
+    public static string GetStringForBytes(Byte[] chars, string encoding);
+    public static string GetStringForBytes(Byte[] chars, int start, int len);
+    public static string GetStringForBytes(Byte[] chars, int start, int len, string encoding);
+    public static Encoding GetEncoding(string name);
+}
+public class SharpCifs.Util.Sharpen.RuntimeException : Exception {
+    public RuntimeException(Exception ex);
+    public RuntimeException(string msg);
+    public RuntimeException(string msg, Exception ex);
+}
+public class SharpCifs.Util.Sharpen.SimpleDateFormat : DateFormat {
+    private string _format;
+    [CompilerGeneratedAttribute]
+private CultureInfo <Culture>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Lenient>k__BackingField;
+    private CultureInfo Culture { get; private set; }
+    private bool Lenient { get; private set; }
+    public SimpleDateFormat(string format);
+    public SimpleDateFormat(string format, CultureInfo c);
+    [CompilerGeneratedAttribute]
+private CultureInfo get_Culture();
+    [CompilerGeneratedAttribute]
+private void set_Culture(CultureInfo value);
+    [CompilerGeneratedAttribute]
+private bool get_Lenient();
+    [CompilerGeneratedAttribute]
+private void set_Lenient(bool value);
+    public bool IsLenient();
+    public void SetLenient(bool lenient);
+    public virtual DateTime Parse(string value);
+    public virtual string Format(DateTime date);
+    public string Format(long date);
+}
+public class SharpCifs.Util.Sharpen.SocketEx : Socket {
+    private int _soTimeOut;
+    public int SoTimeOut { get; public set; }
+    public SocketEx(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType);
+    public int get_SoTimeOut();
+    public void set_SoTimeOut(int value);
+    public void Connect(IPEndPoint endPoint, int timeOut);
+    public void Bind2(EndPoint ep);
+    public int Receive(Byte[] buffer, int offset, int count);
+    public void Send(Byte[] buffer, int offset, int length, EndPoint destination);
+    public InputStream GetInputStream();
+    public OutputStream GetOutputStream();
+}
+public class SharpCifs.Util.Sharpen.StackOverflowError : VirtualMachineError {
+}
+internal class SharpCifs.Util.Sharpen.StringCharSequence : CharSequence {
+    private string _str;
+    public StringCharSequence(string str);
+    public virtual string ToString();
+}
+internal class SharpCifs.Util.Sharpen.StringIndexOutOfBoundsException : Exception {
+}
+public class SharpCifs.Util.Sharpen.StringTokenizer : object {
+    private String[] _tokens;
+    private int _pos;
+    public StringTokenizer(string text, string delim);
+    public int CountTokens();
+    public string NextToken();
+    public bool HasMoreTokens();
+}
+[DefaultMemberAttribute("Item")]
+internal class SharpCifs.Util.Sharpen.SynchronizedList`1 : object {
+    private IList`1<T> _list;
+    public T Item { get; public set; }
+    private int System.Collections.Generic.ICollection<T>.Count { get; }
+    private bool System.Collections.Generic.ICollection<T>.IsReadOnly { get; }
+    public SynchronizedList`1(IList`1<T> list);
+    public sealed virtual int IndexOf(T item);
+    public sealed virtual void Insert(int index, T item);
+    public sealed virtual void RemoveAt(int index);
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.Add(T item);
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.Clear();
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.Contains(T item);
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.CopyTo(T[] array, int arrayIndex);
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.Remove(T item);
+    private sealed virtual override IEnumerator`1<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual T get_Item(int index);
+    public sealed virtual void set_Item(int index, T value);
+    private sealed virtual override int System.Collections.Generic.ICollection<T>.get_Count();
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.get_IsReadOnly();
+}
+public class SharpCifs.Util.Sharpen.Thread : object {
+    private static ThreadGroup DefaultGroup;
+    [ThreadStaticAttribute]
+private static Thread WrapperThread;
+    private IRunnable _runnable;
+    private ThreadGroup _tgroup;
+    private Task _task;
+    private CancellationTokenSource _canceller;
+    private string _name;
+    private bool _isBackground;
+    private bool _interrupted;
+    private Nullable`1<int> _id;
+    private bool _isRunning;
+    private bool _isCanceled;
+    public CancellationTokenSource Canceller { get; }
+    public bool IsCanceled { get; }
+    public Thread(string name);
+    public Thread(ThreadGroup grp, string name);
+    public Thread(IRunnable runnable);
+    private Thread(IRunnable runnable, ThreadGroup grp, string name);
+    private Thread(int threadId);
+    private static Thread();
+    public static Thread CurrentThread();
+    public CancellationTokenSource get_Canceller();
+    public bool get_IsCanceled();
+    public string GetName();
+    public ThreadGroup GetThreadGroup();
+    public static void Yield();
+    public void Interrupt();
+    public static bool Interrupted();
+    public bool IsAlive();
+    public void Join();
+    public void Join(long timeout);
+    public virtual void Run();
+    public void SetDaemon(bool daemon);
+    public void SetName(string name);
+    public static void Sleep(long milis);
+    public void Start(bool isSynced);
+    public void Cancel(bool isSynced);
+    public bool Equals(Thread thread);
+    public void Dispose();
+    [CompilerGeneratedAttribute]
+private void <Start>b__35_0();
+}
+internal class SharpCifs.Util.Sharpen.ThreadFactory : object {
+    public Thread NewThread(IRunnable r);
+}
+public class SharpCifs.Util.Sharpen.ThreadGroup : object {
+    private List`1<Thread> _threads;
+    public ThreadGroup(string name);
+    internal void Add(Thread t);
+    internal void Remove(Thread t);
+    public int Enumerate(Thread[] array);
+}
+internal class SharpCifs.Util.Sharpen.ThreadPoolExecutor : object {
+    private ThreadFactory _tf;
+    private int _corePoolSize;
+    private int _maxPoolSize;
+    private List`1<Thread> _pool;
+    private int _runningThreads;
+    private int _freeThreads;
+    private bool _shutdown;
+    private Queue`1<IRunnable> _pendingTasks;
+    public ThreadPoolExecutor(int corePoolSize, ThreadFactory factory);
+    public void SetMaximumPoolSize(int size);
+    public bool IsShutdown();
+    public virtual bool IsTerminated();
+    public virtual bool IsTerminating();
+    public int GetCorePoolSize();
+    public void PrestartAllCoreThreads();
+    public void SetThreadFactory(ThreadFactory f);
+    public void Execute(IRunnable r);
+    internal void InternalExecute(IRunnable r, bool checkShutdown);
+    private void StartPoolThread();
+    public void RunPoolThread();
+    public virtual void Shutdown();
+    public virtual List`1<IRunnable> ShutdownNow();
+}
+public class SharpCifs.Util.Sharpen.UnknownHostException : Exception {
+    public UnknownHostException(string message);
+    public UnknownHostException(Exception ex);
+}
+internal class SharpCifs.Util.Sharpen.UnsupportedCharsetException : Exception {
+    public UnsupportedCharsetException(string msg);
+}
+public class SharpCifs.Util.Sharpen.UnsupportedEncodingException : Exception {
+}
+internal class SharpCifs.Util.Sharpen.UriSyntaxException : Exception {
+    public UriSyntaxException(string s, string msg);
+}
+public class SharpCifs.Util.Sharpen.UrlConnection : object {
+    protected Uri Url;
+}
+public class SharpCifs.Util.Sharpen.VirtualMachineError : Error {
+}
+internal class SharpCifs.Util.Sharpen.WrappedSystemStream : Stream {
+    private InputStream _ist;
+    private OutputStream _ost;
+    private int _position;
+    private int _markedPosition;
+    public InputStream InputStream { get; }
+    public OutputStream OutputStream { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public WrappedSystemStream(InputStream ist);
+    public WrappedSystemStream(OutputStream ost);
+    public InputStream get_InputStream();
+    public OutputStream get_OutputStream();
+    public void Close();
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual int ReadByte();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    internal void OnMark(int nb);
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    protected virtual void Dispose(bool disposing);
+}
+internal class SharpCifs.Util.Sharpen.ZipException : Exception {
+}
+public interface SharpCifs.Util.Transport.IRequest {
+}
+public abstract class SharpCifs.Util.Transport.Response : object {
+    public long Expiration;
+    public bool IsReceived;
+}
+public abstract class SharpCifs.Util.Transport.Transport : object {
+    internal static int Id;
+    internal int State;
+    internal string Name;
+    internal Thread Thread;
+    internal TransportException Te;
+    protected internal Hashtable ResponseMap;
+    public LogStream Log { get; }
+    public LogStream get_Log();
+    public static int Readn(InputStream in, Byte[] b, int off, int len);
+    protected internal abstract virtual void MakeKey(ServerMessageBlock request);
+    protected internal abstract virtual ServerMessageBlock PeekKey();
+    protected internal abstract virtual void DoSend(ServerMessageBlock request);
+    protected internal abstract virtual void DoRecv(Response response);
+    protected internal abstract virtual void DoSkip();
+    public virtual void Sendrecv(ServerMessageBlock request, Response response, long timeout);
+    private void Loop();
+    protected internal abstract virtual void DoConnect();
+    protected internal abstract virtual void DoDisconnect(bool hard);
+    public virtual void Connect(long timeout);
+    public virtual void Disconnect(bool hard);
+    public virtual void Run();
+    public virtual string ToString();
+}
+public class SharpCifs.Util.Transport.TransportException : IOException {
+    private Exception _rootCause;
+    public TransportException(string msg);
+    public TransportException(Exception rootCause);
+    public TransportException(string msg, Exception rootCause);
+    public virtual Exception GetRootCause();
+    public virtual string ToString();
+}

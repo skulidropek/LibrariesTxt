@@ -1,0 +1,1616 @@
+internal static class FxResources.System.ServiceModel.NetFramingBase.SR : object {
+}
+[ExtensionAttribute]
+internal static class System.ServiceModel.Channels.AddressingVersionExtensions : object {
+    [ExtensionAttribute]
+public static Uri AnonymousUri(AddressingVersion thisPtr);
+    [ExtensionAttribute]
+public static Uri NoneUri(AddressingVersion thisPtr);
+}
+internal class System.ServiceModel.Channels.BufferedConnection : DelegatingConnection {
+    private Memory`1<byte> _writeBuffer;
+    private int _writeBufferSize;
+    private int _pendingWriteSize;
+    private Exception _pendingWriteException;
+    private Timer _flushTimer;
+    private long _flushTimeout;
+    private TimeSpan _pendingTimeout;
+    private static int MaxFlushSkew;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <ThisLock>k__BackingField;
+    private SemaphoreSlim ThisLock { get; }
+    public BufferedConnection(IConnection connection, TimeSpan flushTimeout, int writeBufferSize);
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim get_ThisLock();
+    private void CancelFlushTimer();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnection/<FlushAsync>d__13")]
+private ValueTask FlushAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnection/<FlushCoreAsync>d__14")]
+private ValueTask FlushCoreAsync(TimeSpan timeout);
+    private static void OnFlushTimer(object state);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnection/<OnFlushTimerCore>d__16")]
+private void OnFlushTimerCore();
+    private void SetFlushTimer();
+    public virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, bool immediate, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnection/<WriteNowAsync>d__19")]
+private ValueTask WriteNowAsync(ReadOnlyMemory`1<byte> buffer, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnection/<WriteLaterAsync>d__20")]
+private ValueTask WriteLaterAsync(ReadOnlyMemory`1<byte> buffer, TimeSpan timeout);
+    private void ThrowPendingWriteException();
+}
+internal class System.ServiceModel.Channels.BufferedConnectionInitiator : object {
+    private int _writeBufferSize;
+    private TimeSpan _flushTimeout;
+    private IConnectionInitiator _connectionInitiator;
+    protected TimeSpan FlushTimeout { get; }
+    protected int WriteBufferSize { get; }
+    public BufferedConnectionInitiator(IConnectionInitiator connectionInitiator, TimeSpan flushTimeout, int writeBufferSize);
+    protected TimeSpan get_FlushTimeout();
+    protected int get_WriteBufferSize();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.BufferedConnectionInitiator/<ConnectAsync>d__8")]
+public sealed virtual ValueTask`1<IConnection> ConnectAsync(Uri uri, TimeSpan timeout);
+}
+internal static class System.ServiceModel.Channels.ChannelBindingUtility : object {
+    public static ChannelBinding GetToken(SslStream stream);
+    public static ChannelBinding GetToken(TransportContext context);
+    public static void TryAddToMessage(ChannelBinding channelBindingToken, Message message, bool messagePropertyOwnsCleanup);
+    public static void Dispose(ChannelBinding& channelBinding);
+}
+internal class System.ServiceModel.Channels.ClientDuplexConnectionReader : SessionConnectionReader {
+    private ClientDuplexDecoder _decoder;
+    private int _maxBufferSize;
+    private BufferManager _bufferManager;
+    private MessageEncoder _messageEncoder;
+    private ClientFramingDuplexSessionChannel _channel;
+    public ClientDuplexConnectionReader(ClientFramingDuplexSessionChannel channel, IConnection connection, ClientDuplexDecoder decoder, IConnectionOrientedTransportFactorySettings settings, MessageEncoder messageEncoder);
+    protected virtual void EnsureDecoderAtEof();
+    private static IDisposable CreateProcessActionActivity();
+    protected virtual Message DecodeMessage(Byte[] buffer, Int32& offset, Int32& size, Boolean& isAtEOF, TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.ClientDuplexDecoder : ClientFramingDecoder {
+    private IntDecoder _sizeDecoder;
+    private FaultStringDecoder _faultDecoder;
+    private int _envelopeBytesNeeded;
+    private int _envelopeSize;
+    public int EnvelopeSize { get; }
+    public string Fault { get; }
+    public ClientDuplexDecoder(long streamPosition);
+    public int get_EnvelopeSize();
+    public virtual string get_Fault();
+    public virtual int Decode(Byte[] bytes, int offset, int size);
+}
+internal class System.ServiceModel.Channels.ClientDuplexEncoder : SessionEncoder {
+    public static ReadOnlyMemory`1<byte> ModeBytes;
+    private static ClientDuplexEncoder();
+}
+internal abstract class System.ServiceModel.Channels.ClientFramingDecoder : FramingDecoder {
+    [CompilerGeneratedAttribute]
+private ClientFramingDecoderState <CurrentState>k__BackingField;
+    public ClientFramingDecoderState CurrentState { get; protected set; }
+    protected string CurrentStateAsString { get; }
+    public string Fault { get; }
+    protected ClientFramingDecoder(long streamPosition);
+    [CompilerGeneratedAttribute]
+public ClientFramingDecoderState get_CurrentState();
+    [CompilerGeneratedAttribute]
+protected void set_CurrentState(ClientFramingDecoderState value);
+    protected virtual string get_CurrentStateAsString();
+    public abstract virtual string get_Fault();
+    public abstract virtual int Decode(Byte[] bytes, int offset, int size);
+}
+internal enum System.ServiceModel.Channels.ClientFramingDecoderState : Enum {
+    public int value__;
+    public static ClientFramingDecoderState ReadingUpgradeRecord;
+    public static ClientFramingDecoderState ReadingUpgradeMode;
+    public static ClientFramingDecoderState UpgradeResponse;
+    public static ClientFramingDecoderState ReadingAckRecord;
+    public static ClientFramingDecoderState Start;
+    public static ClientFramingDecoderState ReadingFault;
+    public static ClientFramingDecoderState ReadingFaultString;
+    public static ClientFramingDecoderState Fault;
+    public static ClientFramingDecoderState ReadingEnvelopeRecord;
+    public static ClientFramingDecoderState ReadingEnvelopeSize;
+    public static ClientFramingDecoderState EnvelopeStart;
+    public static ClientFramingDecoderState ReadingEnvelopeBytes;
+    public static ClientFramingDecoderState EnvelopeEnd;
+    public static ClientFramingDecoderState ReadingEndRecord;
+    public static ClientFramingDecoderState End;
+}
+internal class System.ServiceModel.Channels.ClientFramingDuplexSessionChannel : FramingDuplexSessionChannel {
+    private IConnectionOrientedTransportChannelFactorySettings _settings;
+    private ClientDuplexDecoder _decoder;
+    private StreamUpgradeProvider _upgrade;
+    private ConnectionPoolHelper _connectionPoolHelper;
+    public ClientFramingDuplexSessionChannel(ChannelManagerBase factory, IConnectionOrientedTransportChannelFactorySettings settings, EndpointAddress remoteAddress, Uri via, IConnectionInitiator connectionInitiator, ConnectionPool connectionPool);
+    private Memory`1<byte> CreatePreamble();
+    protected virtual IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndOpen(IAsyncResult result);
+    public virtual T GetProperty();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ClientFramingDuplexSessionChannel/<SendPreambleAsync>d__9")]
+private Task`1<IConnection> SendPreambleAsync(IConnection connection, Memory`1<byte> preamble, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ClientFramingDuplexSessionChannel/<OnOpenAsync>d__10")]
+protected internal virtual Task OnOpenAsync(TimeSpan timeout);
+    protected virtual void OnOpen(TimeSpan timeout);
+    protected virtual void ReturnConnectionIfNecessary(bool abort, TimeSpan timeout);
+    private void AcceptConnection(IConnection connection);
+    private void SetRemoteSecurity(StreamUpgradeInitiator upgradeInitiator);
+    protected virtual void PrepareMessage(Message message);
+}
+internal class System.ServiceModel.Channels.ClientSimplexEncoder : SessionEncoder {
+    public static Byte[] ModeBytes;
+    private static ClientSimplexEncoder();
+}
+internal class System.ServiceModel.Channels.ClientSingletonDecoder : ClientFramingDecoder {
+    private FaultStringDecoder _faultDecoder;
+    public string Fault { get; }
+    public ClientSingletonDecoder(long streamPosition);
+    public virtual string get_Fault();
+    public virtual int Decode(Byte[] bytes, int offset, int size);
+}
+internal class System.ServiceModel.Channels.ClientSingletonEncoder : SingletonEncoder {
+    public static Memory`1<byte> PreambleEndBytes;
+    public static Memory`1<byte> ModeBytes;
+    private static ClientSingletonEncoder();
+    public static int CalcStartSize(EncodedVia via, EncodedContentType contentType);
+    public static void EncodeStart(Memory`1<byte> buffer, EncodedVia via, EncodedContentType contentType);
+}
+internal abstract class System.ServiceModel.Channels.CommunicationPool`2 : object {
+    private Dictionary`2<TKey, EndpointConnectionPool<TKey, TItem>> _endpointPools;
+    private int _pruneAccrual;
+    private static int pruneThreshold;
+    [CompilerGeneratedAttribute]
+private int <MaxIdleConnectionPoolCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <ThisLock>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <OpenCount>k__BackingField;
+    public int MaxIdleConnectionPoolCount { get; }
+    protected SemaphoreSlim ThisLock { get; }
+    internal int OpenCount { get; internal set; }
+    protected CommunicationPool`2(int maxCount);
+    [CompilerGeneratedAttribute]
+public int get_MaxIdleConnectionPoolCount();
+    [CompilerGeneratedAttribute]
+protected SemaphoreSlim get_ThisLock();
+    [CompilerGeneratedAttribute]
+internal int get_OpenCount();
+    [CompilerGeneratedAttribute]
+internal void set_OpenCount(int value);
+    protected abstract virtual void AbortItem(TItem item);
+    protected abstract virtual ValueTask CloseItemAsync(TItem item, TimeSpan timeout);
+    protected abstract virtual TKey GetPoolKey(EndpointAddress address, Uri via);
+    protected virtual EndpointConnectionPool<TKey, TItem> CreateEndpointConnectionPool(TKey key);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.CommunicationPool`2/<CloseAsync>d__18")]
+public ValueTask`1<bool> CloseAsync(TimeSpan timeout);
+    private List`1<TItem> PruneIfNecessary();
+    private EndpointConnectionPool<TKey, TItem> GetEndpointPool(TKey key, TimeSpan timeout);
+    public bool TryOpen();
+    protected virtual void OnClosed();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.CommunicationPool`2/<OnCloseAsync>d__23")]
+private ValueTask OnCloseAsync(TimeSpan timeout);
+    public void AddConnection(TKey key, TItem connection, TimeSpan timeout);
+    public TItem TakeConnection(EndpointAddress address, Uri via, TimeSpan timeout, TKey& key);
+    public void ReturnConnection(TKey key, TItem connection, bool connectionIsStillGood, TimeSpan timeout);
+}
+public abstract class System.ServiceModel.Channels.ConnectionOrientedTransportBindingElement : TransportBindingElement {
+    private int _connectionBufferSize;
+    private int _maxBufferSize;
+    private bool _maxBufferSizeInitialized;
+    private TransferMode _transferMode;
+    [CompilerGeneratedAttribute]
+private TimeSpan <MaxOutputDelay>k__BackingField;
+    [DefaultValueAttribute("8192")]
+public int ConnectionBufferSize { get; public set; }
+    [DefaultValueAttribute("65536")]
+public int MaxBufferSize { get; public set; }
+    internal TimeSpan MaxOutputDelay { get; }
+    [DefaultValueAttribute]
+public TransferMode TransferMode { get; public set; }
+    public ConnectionOrientedTransportBindingElement(ConnectionOrientedTransportBindingElement elementToBeCloned);
+    public int get_ConnectionBufferSize();
+    public void set_ConnectionBufferSize(int value);
+    public int get_MaxBufferSize();
+    public void set_MaxBufferSize(int value);
+    [CompilerGeneratedAttribute]
+internal TimeSpan get_MaxOutputDelay();
+    public TransferMode get_TransferMode();
+    public void set_TransferMode(TransferMode value);
+    public virtual bool CanBuildChannelFactory(BindingContext context);
+    public virtual T GetProperty(BindingContext context);
+}
+internal static class System.ServiceModel.Channels.ConnectionOrientedTransportDefaults : object {
+    public static bool AllowNtlm;
+    public static int ConnectionBufferSize;
+    public static ProtectionLevel ProtectionLevel;
+    public static TransferMode TransferMode;
+    public static TimeSpan MaxOutputDelay { get; }
+    public static TimeSpan get_MaxOutputDelay();
+}
+internal class System.ServiceModel.Channels.ConnectionPool : IdlingCommunicationPool`2<string, IConnection> {
+    private int _connectionBufferSize;
+    private TimeSpan _maxOutputDelay;
+    private IConnectionPoolSettings _poolSettings;
+    private IConnectionOrientedTransportChannelFactorySettings _settings;
+    private PoolNameCache _poolNameCache;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    public string Name { get; }
+    public ConnectionPool(IConnectionOrientedTransportChannelFactorySettings settings, TimeSpan leaseTimeout);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    protected virtual void AbortItem(IConnection item);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionPool/<CloseItemAsync>d__10")]
+protected virtual ValueTask CloseItemAsync(IConnection item, TimeSpan timeout);
+    public virtual bool IsCompatible(IConnectionOrientedTransportChannelFactorySettings settings);
+    protected virtual string GetPoolKey(EndpointAddress address, Uri via);
+}
+internal abstract class System.ServiceModel.Channels.ConnectionPoolHelper : object {
+    private IConnectionInitiator _connectionInitiator;
+    private ConnectionPool _connectionPool;
+    private Uri _via;
+    private bool _closed;
+    private string _connectionKey;
+    private bool _isConnectionFromPool;
+    private IConnection _rawConnection;
+    private IConnection _upgradedConnection;
+    private object ThisLock { get; }
+    public ConnectionPoolHelper(ConnectionPool connectionPool, IConnectionInitiator connectionInitiator, Uri via);
+    private object get_ThisLock();
+    protected abstract virtual Task`1<IConnection> AcceptPooledConnectionAsync(IConnection connection, TimeoutHelper timeoutHelper);
+    protected abstract virtual TimeoutException CreateNewConnectionTimeoutException(TimeSpan timeout, TimeoutException innerException);
+    private IConnection TakeConnection(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionPoolHelper/<EstablishConnectionAsync>d__14")]
+public Task`1<IConnection> EstablishConnectionAsync(TimeSpan timeout);
+    private void SnapshotConnection(IConnection upgradedConnection, IConnection rawConnection, bool isConnectionFromPool);
+    public void Abort();
+    public void Close(TimeSpan timeout);
+    private void ReleaseConnection(bool abort, TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.ConnectionPoolRegistry : object {
+    private Dictionary`2<string, List`1<ConnectionPool>> _registry;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <ThisLock>k__BackingField;
+    private SemaphoreSlim ThisLock { get; }
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim get_ThisLock();
+    public ConnectionPool Lookup(IConnectionOrientedTransportChannelFactorySettings settings);
+    protected ConnectionPool CreatePool(IConnectionOrientedTransportChannelFactorySettings settings);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionPoolRegistry/<ReleaseAsync>d__7")]
+public ValueTask ReleaseAsync(ConnectionPool pool, TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.ConnectionStream : Stream {
+    private int _readTimeout;
+    private int _writeTimeout;
+    [CompilerGeneratedAttribute]
+private IConnection <Connection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <CloseTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Immediate>k__BackingField;
+    public IConnection Connection { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanTimeout { get; }
+    public bool CanWrite { get; }
+    public TimeSpan CloseTimeout { get; public set; }
+    public int ReadTimeout { get; public set; }
+    public int WriteTimeout { get; public set; }
+    public bool Immediate { get; public set; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public ConnectionStream(IConnection connection, IDefaultCommunicationTimeouts defaultTimeouts);
+    [CompilerGeneratedAttribute]
+public IConnection get_Connection();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanTimeout();
+    public virtual bool get_CanWrite();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_CloseTimeout();
+    [CompilerGeneratedAttribute]
+public void set_CloseTimeout(TimeSpan value);
+    public virtual int get_ReadTimeout();
+    public virtual void set_ReadTimeout(int value);
+    public virtual int get_WriteTimeout();
+    public virtual void set_WriteTimeout(int value);
+    [CompilerGeneratedAttribute]
+public bool get_Immediate();
+    [CompilerGeneratedAttribute]
+public void set_Immediate(bool value);
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public void Abort();
+    protected virtual void Dispose(bool disposing);
+    public virtual void Flush();
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void Write(ReadOnlySpan`1<byte> buffer);
+    public virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual IAsyncResult BeginWrite(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual void EndWrite(IAsyncResult asyncResult);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual int Read(Span`1<byte> buffer);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    protected int Read(Byte[] buffer, int offset, int count, TimeSpan timeout);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+}
+internal class System.ServiceModel.Channels.ConnectionUpgradeHelper : object {
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionUpgradeHelper/<DecodeFramingFaultAsync>d__0")]
+public static Task DecodeFramingFaultAsync(ClientFramingDecoder decoder, IConnection connection, Uri via, string contentType, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionUpgradeHelper/<InitiateUpgradeAsync>d__1")]
+public static Task`1<ValueTuple`2<bool, IConnection>> InitiateUpgradeAsync(StreamUpgradeInitiator upgradeInitiator, IConnection connection, ClientFramingDecoder decoder, IDefaultCommunicationTimeouts defaultTimeouts, TimeSpan timeout);
+    private static void ValidateReadingFaultString(ClientFramingDecoder decoder);
+    public static bool ValidatePreambleResponse(Byte[] buffer, int count, ClientFramingDecoder decoder, Uri via);
+    private static bool ValidateUpgradeResponse(Byte[] buffer, int count, ClientFramingDecoder decoder);
+}
+internal static class System.ServiceModel.Channels.ConnectionUtilities : object {
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.ConnectionUtilities/<CloseNoThrowAsync>d__0")]
+internal static ValueTask CloseNoThrowAsync(IConnection connection, TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.ContentTypeStringDecoder : StringDecoder {
+    public ContentTypeStringDecoder(int sizeQuota);
+    protected virtual Exception OnSizeQuotaExceeded(int size);
+    public static string GetString(FramingEncodingType type);
+}
+internal static class System.ServiceModel.Channels.DecoderHelper : object {
+    public static void ValidateSize(long size);
+}
+internal abstract class System.ServiceModel.Channels.DelegatingConnection : object {
+    [CompilerGeneratedAttribute]
+private IConnection <Connection>k__BackingField;
+    protected IConnection Connection { get; }
+    public int ConnectionBufferSize { get; }
+    protected DelegatingConnection(IConnection connection);
+    [CompilerGeneratedAttribute]
+protected IConnection get_Connection();
+    public virtual int get_ConnectionBufferSize();
+    public virtual void Abort();
+    public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, TimeSpan timeout);
+    public virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, bool immediate, TimeSpan timeout);
+    public virtual ValueTask CloseAsync(TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.EncodedContentType : EncodedFramingRecord {
+    private EncodedContentType(FramingEncodingType encodingType);
+    private EncodedContentType(string contentType);
+    public static EncodedContentType Create(string contentType);
+}
+internal class System.ServiceModel.Channels.EncodedFault : EncodedFramingRecord {
+    public EncodedFault(string fault);
+}
+internal abstract class System.ServiceModel.Channels.EncodedFramingRecord : object {
+    [CompilerGeneratedAttribute]
+private Memory`1<byte> <EncodedBytes>k__BackingField;
+    public Memory`1<byte> EncodedBytes { get; private set; }
+    protected EncodedFramingRecord(Byte[] encodedBytes);
+    internal EncodedFramingRecord(FramingRecordType recordType, string value);
+    [CompilerGeneratedAttribute]
+public Memory`1<byte> get_EncodedBytes();
+    [CompilerGeneratedAttribute]
+private void set_EncodedBytes(Memory`1<byte> value);
+    protected void SetEncodedBytes(Memory`1<byte> encodedBytes);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object o);
+    public bool Equals(EncodedFramingRecord other);
+}
+internal class System.ServiceModel.Channels.EncodedUpgrade : EncodedFramingRecord {
+    public EncodedUpgrade(string contentType);
+}
+internal class System.ServiceModel.Channels.EncodedVia : EncodedFramingRecord {
+    public EncodedVia(string via);
+}
+internal class System.ServiceModel.Channels.FaultStringDecoder : StringDecoder {
+    internal static int FaultSizeQuota;
+    protected virtual Exception OnSizeQuotaExceeded(int size);
+    public static Exception GetFaultException(string faultString, string via, string contentType);
+}
+internal abstract class System.ServiceModel.Channels.FramingDecoder : object {
+    [CompilerGeneratedAttribute]
+private long <StreamPosition>k__BackingField;
+    protected string CurrentStateAsString { get; }
+    public long StreamPosition { get; public set; }
+    protected FramingDecoder(long streamPosition);
+    protected abstract virtual string get_CurrentStateAsString();
+    [CompilerGeneratedAttribute]
+public long get_StreamPosition();
+    [CompilerGeneratedAttribute]
+public void set_StreamPosition(long value);
+    protected void ValidateFramingMode(FramingMode mode);
+    protected void ValidateRecordType(FramingRecordType expectedType, FramingRecordType foundType);
+    protected void ValidatePreambleAck(FramingRecordType foundType);
+    private Exception CreateInvalidRecordTypeException(FramingRecordType expectedType, FramingRecordType foundType);
+    protected void ValidateMajorVersion(int majorVersion);
+    public Exception CreatePrematureEOFException();
+    protected Exception CreateException(InvalidDataException innerException, string framingFault);
+    protected Exception CreateException(InvalidDataException innerException);
+}
+internal abstract class System.ServiceModel.Channels.FramingDuplexSessionChannel : TransportDuplexSessionChannel {
+    private static EndpointAddress s_anonymousEndpointAddress;
+    [CompilerGeneratedAttribute]
+private IConnection <Connection>k__BackingField;
+    protected IConnection Connection { get; protected set; }
+    protected bool IsStreamedOutput { get; }
+    private FramingDuplexSessionChannel(ChannelManagerBase manager, IConnectionOrientedTransportFactorySettings settings, EndpointAddress localAddress, Uri localVia, EndpointAddress remoteAddress, Uri via);
+    protected FramingDuplexSessionChannel(ChannelManagerBase factory, IConnectionOrientedTransportFactorySettings settings, EndpointAddress remoteAddress, Uri via);
+    private static FramingDuplexSessionChannel();
+    [CompilerGeneratedAttribute]
+protected IConnection get_Connection();
+    [CompilerGeneratedAttribute]
+protected void set_Connection(IConnection value);
+    protected virtual bool get_IsStreamedOutput();
+    protected virtual ValueTask CloseOutputSessionCoreAsync(TimeSpan timeout);
+    protected virtual void CompleteClose(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.FramingDuplexSessionChannel/<OnSendCoreAsync>d__11")]
+protected virtual ValueTask OnSendCoreAsync(Message message, TimeSpan timeout);
+    protected virtual ValueTask CloseOutputAsync(TimeSpan timeout);
+    protected virtual ValueTask StartWritingBufferedMessage(Message message, ArraySegment`1<byte> messageData, bool allowOutputBatching, TimeSpan timeout);
+    protected virtual ValueTask StartWritingStreamedMessage(Message message, TimeSpan timeout);
+    protected virtual ArraySegment`1<byte> EncodeMessage(Message message);
+}
+internal static class System.ServiceModel.Channels.FramingEncodingString : object {
+    public static string Soap11Utf8;
+    public static string Soap11Utf16;
+    public static string Soap11Utf16FFFE;
+    public static string Soap12Utf8;
+    public static string Soap12Utf16;
+    public static string Soap12Utf16FFFE;
+    public static string MTOM;
+    public static string Binary;
+    public static string BinarySession;
+    public static string ExtendedBinaryGZip;
+    public static string ExtendedBinarySessionGZip;
+    public static string ExtendedBinaryDeflate;
+    public static string ExtendedBinarySessionDeflate;
+    public static string NamespaceUri;
+    private static string FaultBaseUri;
+    public static string ContentTypeInvalidFault;
+    public static string ContentTypeTooLongFault;
+    public static string ConnectionDispatchFailedFault;
+    public static string EndpointNotFoundFault;
+    public static string EndpointUnavailableFault;
+    public static string MaxMessageSizeExceededFault;
+    public static string ServerTooBusyFault;
+    public static string ServiceActivationFailedFault;
+    public static string UnsupportedModeFault;
+    public static string UnsupportedVersionFault;
+    public static string UpgradeInvalidFault;
+    public static string ViaTooLongFault;
+    private static string ExceptionKey;
+    public static bool TryGetFaultString(Exception exception, String& framingFault);
+    public static void AddFaultString(Exception exception, string framingFault);
+}
+internal enum System.ServiceModel.Channels.FramingEncodingType : Enum {
+    public int value__;
+    public static FramingEncodingType Soap11Utf8;
+    public static FramingEncodingType Soap11Utf16;
+    public static FramingEncodingType Soap11Utf16FFFE;
+    public static FramingEncodingType Soap12Utf8;
+    public static FramingEncodingType Soap12Utf16;
+    public static FramingEncodingType Soap12Utf16FFFE;
+    public static FramingEncodingType MTOM;
+    public static FramingEncodingType Binary;
+    public static FramingEncodingType BinarySession;
+}
+internal enum System.ServiceModel.Channels.FramingMode : Enum {
+    public int value__;
+    public static FramingMode Singleton;
+    public static FramingMode Duplex;
+    public static FramingMode Simplex;
+    public static FramingMode SingletonSized;
+}
+internal enum System.ServiceModel.Channels.FramingRecordType : Enum {
+    public int value__;
+    public static FramingRecordType Version;
+    public static FramingRecordType Mode;
+    public static FramingRecordType Via;
+    public static FramingRecordType KnownEncoding;
+    public static FramingRecordType ExtensibleEncoding;
+    public static FramingRecordType UnsizedEnvelope;
+    public static FramingRecordType SizedEnvelope;
+    public static FramingRecordType End;
+    public static FramingRecordType Fault;
+    public static FramingRecordType UpgradeRequest;
+    public static FramingRecordType UpgradeResponse;
+    public static FramingRecordType PreambleAck;
+    public static FramingRecordType PreambleEnd;
+}
+internal static class System.ServiceModel.Channels.FramingUpgradeString : object {
+    public static string SslOrTls;
+    public static string Negotiate;
+}
+internal static class System.ServiceModel.Channels.FramingVersion : object {
+    public static int Major;
+    public static int Minor;
+}
+public interface System.ServiceModel.Channels.IConnection {
+    public int ConnectionBufferSize { get; }
+    public abstract virtual int get_ConnectionBufferSize();
+    public abstract virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, TimeSpan timeout);
+    public abstract virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, bool immediate, TimeSpan timeout);
+    public abstract virtual void Abort();
+    public abstract virtual ValueTask CloseAsync(TimeSpan timeout);
+}
+public interface System.ServiceModel.Channels.IConnectionInitiator {
+    public abstract virtual ValueTask`1<IConnection> ConnectAsync(Uri uri, TimeSpan timeout);
+}
+internal interface System.ServiceModel.Channels.IConnectionOrientedConnectionSettings {
+    public int ConnectionBufferSize { get; }
+    public TimeSpan MaxOutputDelay { get; }
+    public TimeSpan IdleTimeout { get; }
+    public abstract virtual int get_ConnectionBufferSize();
+    public abstract virtual TimeSpan get_MaxOutputDelay();
+    public abstract virtual TimeSpan get_IdleTimeout();
+}
+internal interface System.ServiceModel.Channels.IConnectionOrientedTransportChannelFactorySettings {
+    public string ConnectionPoolGroupName { get; }
+    public int MaxOutboundConnectionsPerEndpoint { get; }
+    public abstract virtual string get_ConnectionPoolGroupName();
+    public abstract virtual int get_MaxOutboundConnectionsPerEndpoint();
+    public abstract virtual string GetConnectionPoolKey(EndpointAddress address, Uri via);
+}
+internal interface System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings {
+    public int MaxBufferSize { get; }
+    public StreamUpgradeProvider Upgrade { get; }
+    public TransferMode TransferMode { get; }
+    public abstract virtual int get_MaxBufferSize();
+    public abstract virtual StreamUpgradeProvider get_Upgrade();
+    public abstract virtual TransferMode get_TransferMode();
+}
+public interface System.ServiceModel.Channels.IConnectionPoolSettings {
+    public abstract virtual T GetConnectionPoolSetting(string settingName);
+    public abstract virtual bool IsCompatible(IConnectionPoolSettings other);
+}
+internal abstract class System.ServiceModel.Channels.IdlingCommunicationPool`2 : CommunicationPool`2<TKey, TItem> {
+    private TimeSpan _leaseTimeout;
+    [CompilerGeneratedAttribute]
+private TimeSpan <IdleTimeout>k__BackingField;
+    public TimeSpan IdleTimeout { get; }
+    protected TimeSpan LeaseTimeout { get; }
+    protected IdlingCommunicationPool`2(int maxCount, TimeSpan idleTimeout, TimeSpan leaseTimeout);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_IdleTimeout();
+    protected TimeSpan get_LeaseTimeout();
+    protected virtual EndpointConnectionPool<TKey, TItem> CreateEndpointConnectionPool(TKey key);
+}
+internal interface System.ServiceModel.Channels.IMessageSource {
+    public abstract virtual Task`1<Message> ReceiveAsync(TimeSpan timeout);
+    public abstract virtual Task`1<bool> WaitForMessageAsync(TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.IntDecoder : ValueType {
+    private int _value;
+    private short _index;
+    private static int LastIndex;
+    [CompilerGeneratedAttribute]
+private bool <IsValueDecoded>k__BackingField;
+    public int Value { get; }
+    public bool IsValueDecoded { get; private set; }
+    public int get_Value();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public bool get_IsValueDecoded();
+    [CompilerGeneratedAttribute]
+private void set_IsValueDecoded(bool value);
+    public void Reset();
+    public int Decode(Byte[] buffer, int offset, int size);
+}
+internal static class System.ServiceModel.Channels.IntEncoder : object {
+    public static int MaxEncodedSize;
+    public static int Encode(int value, Memory`1<byte> bytes);
+    public static int GetEncodedSize(int value);
+}
+internal interface System.ServiceModel.Channels.IStreamUpgradeChannelBindingProvider {
+    public abstract virtual ChannelBinding GetChannelBinding(StreamUpgradeInitiator upgradeInitiator, ChannelBindingKind kind);
+}
+public abstract class System.ServiceModel.Channels.NetFramingTransportChannelFactory`1 : ChannelFactoryBase`1<TChannel> {
+    private static Hashtable s_connectionPoolRegistries;
+    private ConnectionPoolRegistry _connectionPoolRegistry;
+    private IConnectionInitiator _connectionInitiator;
+    private ConnectionPool _connectionPool;
+    private int _maxOutboundConnectionsPerEndpoint;
+    private ISecurityCapabilities _securityCapabilities;
+    private StreamUpgradeProvider _upgrade;
+    [CompilerGeneratedAttribute]
+private BufferManager <BufferManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ConnectionBufferSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionPoolGroupName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <IdleTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ManualAddressing>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxBufferPoolSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxBufferSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <MaxOutputDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxReceivedMessageSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageEncoderFactory <MessageEncoderFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageVersion <MessageVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TransferMode <TransferMode>k__BackingField;
+    internal BufferManager BufferManager { get; private set; }
+    public int ConnectionBufferSize { get; }
+    internal IConnectionInitiator ConnectionInitiator { get; }
+    public string ConnectionPoolGroupName { get; }
+    public TimeSpan IdleTimeout { get; }
+    internal bool ManualAddressing { get; }
+    internal long MaxBufferPoolSize { get; }
+    public int MaxBufferSize { get; }
+    public int MaxOutboundConnectionsPerEndpoint { get; }
+    public TimeSpan MaxOutputDelay { get; }
+    internal long MaxReceivedMessageSize { get; }
+    internal MessageEncoderFactory MessageEncoderFactory { get; }
+    internal MessageVersion MessageVersion { get; }
+    public StreamUpgradeProvider Upgrade { get; }
+    public string Scheme { get; }
+    public TransferMode TransferMode { get; }
+    private long System.ServiceModel.Channels.ITransportFactorySettings.MaxReceivedMessageSize { get; }
+    private BufferManager System.ServiceModel.Channels.ITransportFactorySettings.BufferManager { get; }
+    private bool System.ServiceModel.Channels.ITransportFactorySettings.ManualAddressing { get; }
+    private MessageEncoderFactory System.ServiceModel.Channels.ITransportFactorySettings.MessageEncoderFactory { get; }
+    private MessageVersion System.ServiceModel.Channels.ITransportFactorySettings.MessageVersion { get; }
+    private int System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.MaxBufferSize { get; }
+    private TransferMode System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.TransferMode { get; }
+    private StreamUpgradeProvider System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.Upgrade { get; }
+    public NetFramingTransportChannelFactory`1(ConnectionOrientedTransportBindingElement bindingElement, BindingContext context, string connectionPoolGroupName, TimeSpan idleTimeout, int maxOutboundConnectionsPerEndpoint);
+    private static NetFramingTransportChannelFactory`1();
+    [CompilerGeneratedAttribute]
+internal BufferManager get_BufferManager();
+    [CompilerGeneratedAttribute]
+private void set_BufferManager(BufferManager value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_ConnectionBufferSize();
+    internal IConnectionInitiator get_ConnectionInitiator();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConnectionPoolGroupName();
+    [CompilerGeneratedAttribute]
+public sealed virtual TimeSpan get_IdleTimeout();
+    [CompilerGeneratedAttribute]
+internal bool get_ManualAddressing();
+    [CompilerGeneratedAttribute]
+internal long get_MaxBufferPoolSize();
+    [CompilerGeneratedAttribute]
+public int get_MaxBufferSize();
+    public sealed virtual int get_MaxOutboundConnectionsPerEndpoint();
+    [CompilerGeneratedAttribute]
+public sealed virtual TimeSpan get_MaxOutputDelay();
+    [CompilerGeneratedAttribute]
+internal long get_MaxReceivedMessageSize();
+    [CompilerGeneratedAttribute]
+internal MessageEncoderFactory get_MessageEncoderFactory();
+    [CompilerGeneratedAttribute]
+internal MessageVersion get_MessageVersion();
+    public StreamUpgradeProvider get_Upgrade();
+    public abstract virtual string get_Scheme();
+    [CompilerGeneratedAttribute]
+public TransferMode get_TransferMode();
+    public virtual T GetProperty();
+    internal int GetMaxBufferSize();
+    public abstract virtual IConnectionInitiator GetConnectionInitiator();
+    internal ConnectionPool GetConnectionPool();
+    private void EnsureConnectionPoolRegistry();
+    internal ValueTask ReleaseConnectionPoolAsync(ConnectionPool pool, TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndClose(IAsyncResult result);
+    protected virtual TChannel OnCreateChannel(EndpointAddress address, Uri via);
+    private bool GetUpgradeAndConnectionPool(StreamUpgradeProvider& upgradeCopy, ConnectionPool& poolCopy);
+    protected virtual void OnAbort();
+    protected virtual void OnClose(TimeSpan timeout);
+    protected virtual void OnOpening();
+    protected virtual IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndOpen(IAsyncResult result);
+    protected virtual void OnOpen(TimeSpan timeout);
+    protected internal virtual Task OnOpenAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.NetFramingTransportChannelFactory`1/<OnCloseAsync>d__70")]
+protected internal virtual Task OnCloseAsync(TimeSpan timeout);
+    protected virtual bool SupportsUpgrade(StreamUpgradeBindingElement upgradeBindingElement);
+    internal void ValidateScheme(Uri via);
+    protected abstract virtual string GetConnectionPoolKey(EndpointAddress address, Uri via);
+    private sealed virtual override long System.ServiceModel.Channels.ITransportFactorySettings.get_MaxReceivedMessageSize();
+    private sealed virtual override BufferManager System.ServiceModel.Channels.ITransportFactorySettings.get_BufferManager();
+    private sealed virtual override bool System.ServiceModel.Channels.ITransportFactorySettings.get_ManualAddressing();
+    private sealed virtual override MessageEncoderFactory System.ServiceModel.Channels.ITransportFactorySettings.get_MessageEncoderFactory();
+    private sealed virtual override MessageVersion System.ServiceModel.Channels.ITransportFactorySettings.get_MessageVersion();
+    private sealed virtual override int System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.get_MaxBufferSize();
+    private sealed virtual override TransferMode System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.get_TransferMode();
+    private sealed virtual override StreamUpgradeProvider System.ServiceModel.Channels.IConnectionOrientedTransportFactorySettings.get_Upgrade();
+    private sealed virtual override string System.ServiceModel.Channels.IConnectionOrientedTransportChannelFactorySettings.GetConnectionPoolKey(EndpointAddress address, Uri via);
+}
+internal class System.ServiceModel.Channels.NFTransportDefaults : object {
+    public static bool ExtractGroupsForWindowsAccounts;
+    public static long MaxReceivedMessageSize;
+    public static int MaxBufferSize;
+    public static bool RequireClientCertificate;
+    public static SslProtocols SslProtocols;
+    public static MessageEncoderFactory GetDefaultMessageEncoderFactory();
+}
+internal abstract class System.ServiceModel.Channels.OutputChannel : ChannelBase {
+    public EndpointAddress RemoteAddress { get; }
+    public Uri Via { get; }
+    protected OutputChannel(ChannelManagerBase manager);
+    public abstract virtual EndpointAddress get_RemoteAddress();
+    public abstract virtual Uri get_Via();
+    public sealed virtual IAsyncResult BeginSend(Message message, AsyncCallback callback, object state);
+    public sealed virtual IAsyncResult BeginSend(Message message, TimeSpan timeout, AsyncCallback callback, object state);
+    public sealed virtual void EndSend(IAsyncResult result);
+    public virtual T GetProperty();
+    protected abstract virtual void OnSend(Message message, TimeSpan timeout);
+    protected abstract virtual Task OnSendAsync(Message message, TimeSpan timeout);
+    public sealed virtual void Send(Message message);
+    public sealed virtual void Send(Message message, TimeSpan timeout);
+    public Task SendAsync(Message message);
+    public Task SendAsync(Message message, TimeSpan timeout);
+    private void EmitTrace(Message message);
+    protected virtual void AddHeadersTo(Message message);
+}
+internal class System.ServiceModel.Channels.PreReadConnection : DelegatingConnection {
+    private Memory`1<byte> _preReadData;
+    public PreReadConnection(IConnection innerConnection, Memory`1<byte> initialData);
+    public void AddPreReadData(Memory`1<byte> initialData);
+    public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, TimeSpan timeout);
+}
+internal abstract class System.ServiceModel.Channels.ServerSessionEncoder : SessionEncoder {
+    public static Byte[] AckResponseBytes;
+    public static Byte[] UpgradeResponseBytes;
+    private static ServerSessionEncoder();
+}
+internal class System.ServiceModel.Channels.ServerSingletonEncoder : SingletonEncoder {
+    public static Byte[] AckResponseBytes;
+    public static Byte[] UpgradeResponseBytes;
+    private static ServerSingletonEncoder();
+}
+internal abstract class System.ServiceModel.Channels.SessionConnectionReader : object {
+    private bool _isAtEOF;
+    private IConnection _connection;
+    private Byte[] _buffer;
+    private int _offset;
+    private int _size;
+    private int _envelopeSize;
+    private bool _readIntoEnvelopeBuffer;
+    private Message _pendingMessage;
+    private Exception _pendingException;
+    [CompilerGeneratedAttribute]
+private Byte[] <EnvelopeBuffer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <EnvelopeOffset>k__BackingField;
+    protected Byte[] EnvelopeBuffer { get; protected set; }
+    protected int EnvelopeOffset { get; protected set; }
+    protected int EnvelopeSize { get; protected set; }
+    protected SessionConnectionReader(IConnection connection);
+    private Message DecodeMessage(TimeSpan timeout);
+    protected abstract virtual Message DecodeMessage(Byte[] buffer, Int32& offset, Int32& size, Boolean& isAtEof, TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+protected Byte[] get_EnvelopeBuffer();
+    [CompilerGeneratedAttribute]
+protected void set_EnvelopeBuffer(Byte[] value);
+    [CompilerGeneratedAttribute]
+protected int get_EnvelopeOffset();
+    [CompilerGeneratedAttribute]
+protected void set_EnvelopeOffset(int value);
+    protected int get_EnvelopeSize();
+    protected void set_EnvelopeSize(int value);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SessionConnectionReader/<ReceiveAsync>d__23")]
+public sealed virtual Task`1<Message> ReceiveAsync(TimeSpan timeout);
+    private Message GetPendingMessage();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SessionConnectionReader/<WaitForMessageAsync>d__25")]
+public sealed virtual Task`1<bool> WaitForMessageAsync(TimeSpan timeout);
+    protected abstract virtual void EnsureDecoderAtEof();
+    private void HandleReadComplete(int bytesRead, bool readIntoEnvelopeBuffer);
+    protected virtual void PrepareMessage(Message message);
+}
+internal abstract class System.ServiceModel.Channels.SessionEncoder : object {
+    public static int MaxMessageFrameSize;
+    public static ReadOnlyMemory`1<byte> PreambleEndBytes;
+    public static ReadOnlyMemory`1<byte> EndBytes;
+    private static SessionEncoder();
+    public static int CalcStartSize(EncodedVia via, EncodedContentType contentType);
+    public static void EncodeStart(Memory`1<byte> buffer, EncodedVia via, EncodedContentType contentType);
+    public static ArraySegment`1<byte> EncodeMessageFrame(ArraySegment`1<byte> messageFrame);
+}
+internal abstract class System.ServiceModel.Channels.SingletonConnectionReader : object {
+    private bool _doneReceiving;
+    private bool _doneSending;
+    private bool _isAtEof;
+    private bool _isClosed;
+    private SecurityMessageProperty _security;
+    private IConnectionOrientedTransportFactorySettings _transportSettings;
+    private Uri _via;
+    private Stream _inputStream;
+    [CompilerGeneratedAttribute]
+private IConnection <Connection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <ThisLock>k__BackingField;
+    protected IConnection Connection { get; }
+    protected object ThisLock { get; }
+    protected string ContentType { get; }
+    protected long StreamPosition { get; }
+    protected SingletonConnectionReader(IConnection connection, SecurityMessageProperty security, IConnectionOrientedTransportFactorySettings transportSettings, Uri via);
+    [CompilerGeneratedAttribute]
+protected IConnection get_Connection();
+    [CompilerGeneratedAttribute]
+protected object get_ThisLock();
+    protected virtual string get_ContentType();
+    protected abstract virtual long get_StreamPosition();
+    public void Abort();
+    public void DoneReceiving(bool atEof);
+    private void DoneReceiving(bool atEof, TimeSpan timeout);
+    public void Close(TimeSpan timeout);
+    protected abstract virtual void OnClose(TimeSpan timeout);
+    public void DoneSending(TimeSpan timeout);
+    protected abstract virtual bool DecodeBytes(Byte[] buffer, Int32& offset, Int32& size, Boolean& isAtEof);
+    protected virtual void PrepareMessage(Message message);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SingletonConnectionReader/<ReceiveAsync>d__27")]
+public Task`1<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
+}
+internal abstract class System.ServiceModel.Channels.SingletonEncoder : object {
+    public static Memory`1<byte> EnvelopeStartBytes;
+    public static Memory`1<byte> EnvelopeEndBytes;
+    public static Memory`1<byte> EnvelopeEndFramingEndBytes;
+    public static Memory`1<byte> EndBytes;
+    private static SingletonEncoder();
+    public static ArraySegment`1<byte> EncodeMessageFrame(ArraySegment`1<byte> messageFrame);
+}
+internal class System.ServiceModel.Channels.SingletonMessageDecoder : FramingDecoder {
+    private IntDecoder _sizeDecoder;
+    private int _chunkBytesNeeded;
+    private int _chunkSize;
+    [CompilerGeneratedAttribute]
+private State <CurrentState>k__BackingField;
+    public State CurrentState { get; private set; }
+    protected string CurrentStateAsString { get; }
+    public int ChunkSize { get; }
+    public SingletonMessageDecoder(long streamPosition);
+    public void Reset();
+    [CompilerGeneratedAttribute]
+public State get_CurrentState();
+    [CompilerGeneratedAttribute]
+private void set_CurrentState(State value);
+    protected virtual string get_CurrentStateAsString();
+    public int get_ChunkSize();
+    public int Decode(Byte[] bytes, int offset, int size);
+}
+internal static class System.ServiceModel.Channels.SslProtocolsHelper : object {
+    internal static bool IsDefined(SslProtocols value);
+    internal static void Validate(SslProtocols value);
+}
+public class System.ServiceModel.Channels.SslStreamSecurityBindingElement : StreamUpgradeBindingElement {
+    private IdentityVerifier _identityVerifier;
+    private SslProtocols _sslProtocols;
+    [CompilerGeneratedAttribute]
+private bool <RequireClientCertificate>k__BackingField;
+    public IdentityVerifier IdentityVerifier { get; public set; }
+    [DefaultValueAttribute("False")]
+public bool RequireClientCertificate { get; public set; }
+    [DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+public SslProtocols SslProtocols { get; public set; }
+    protected SslStreamSecurityBindingElement(SslStreamSecurityBindingElement elementToBeCloned);
+    public IdentityVerifier get_IdentityVerifier();
+    public void set_IdentityVerifier(IdentityVerifier value);
+    [CompilerGeneratedAttribute]
+public bool get_RequireClientCertificate();
+    [CompilerGeneratedAttribute]
+public void set_RequireClientCertificate(bool value);
+    public SslProtocols get_SslProtocols();
+    public void set_SslProtocols(SslProtocols value);
+    public virtual IChannelFactory`1<TChannel> BuildChannelFactory(BindingContext context);
+    public virtual bool CanBuildChannelFactory(BindingContext context);
+    public virtual BindingElement Clone();
+    public virtual T GetProperty(BindingContext context);
+    public virtual StreamUpgradeProvider BuildClientStreamUpgradeProvider(BindingContext context);
+}
+internal class System.ServiceModel.Channels.SslStreamSecurityUpgradeInitiator : StreamSecurityUpgradeInitiatorBase {
+    private SslStreamSecurityUpgradeProvider _parent;
+    private SecurityMessageProperty _serverSecurity;
+    private SecurityTokenProvider _clientCertificateProvider;
+    private X509SecurityToken _clientToken;
+    private SecurityTokenAuthenticator _serverCertificateAuthenticator;
+    private ChannelBinding _channelBindingToken;
+    private static LocalCertificateSelectionCallback s_clientCertificateSelectionCallback;
+    private static string RequirementNamespace;
+    private static string PreferSslCertificateAuthenticatorProperty;
+    private static string SecurityTokenTypesNamespace;
+    private static string X509CertificateTokenType;
+    private static LocalCertificateSelectionCallback ClientCertificateSelectionCallback { get; }
+    internal ChannelBinding ChannelBinding { get; }
+    internal bool IsChannelBindingSupportEnabled { get; }
+    public SslStreamSecurityUpgradeInitiator(SslStreamSecurityUpgradeProvider parent, EndpointAddress remoteAddress, Uri via);
+    private static LocalCertificateSelectionCallback get_ClientCertificateSelectionCallback();
+    internal ChannelBinding get_ChannelBinding();
+    internal bool get_IsChannelBindingSupportEnabled();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SslStreamSecurityUpgradeInitiator/<OpenAsync>d__18")]
+internal virtual ValueTask OpenAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SslStreamSecurityUpgradeInitiator/<CloseAsync>d__19")]
+internal virtual ValueTask CloseAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SslStreamSecurityUpgradeInitiator/<OnInitiateUpgradeAsync>d__20")]
+protected virtual Task`1<ValueTuple`2<Stream, SecurityMessageProperty>> OnInitiateUpgradeAsync(Stream stream);
+    private static X509Certificate SelectClientCertificate(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, String[] acceptableIssuers);
+    private bool ValidateRemoteCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors);
+    private static void EnsureOutgoingIdentity(IdentityVerifier verifier, EndpointAddress serviceReference, Uri via, AuthorizationContext authorizationContext);
+    private static Exception CreateIdentityCheckException(EndpointIdentity identity, AuthorizationContext authorizationContext, string errorString, EndpointAddress serviceReference);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__0(TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__1(TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.SslStreamSecurityUpgradeProvider : StreamSecurityUpgradeProvider {
+    private SecurityTokenAuthenticator _clientCertificateAuthenticator;
+    private SecurityTokenProvider _serverTokenProvider;
+    private bool _enableChannelBinding;
+    [CompilerGeneratedAttribute]
+private IdentityVerifier <IdentityVerifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <RequireClientCertificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private X509Certificate2 <ServerCertificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SecurityTokenManager <ClientSecurityTokenManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Scheme>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SslProtocols <SslProtocols>k__BackingField;
+    private static X509CertificateValidator s_defaultCertificateValidator;
+    public IdentityVerifier IdentityVerifier { get; }
+    public bool RequireClientCertificate { get; }
+    public X509Certificate2 ServerCertificate { get; private set; }
+    public SecurityTokenAuthenticator ClientCertificateAuthenticator { get; }
+    public SecurityTokenManager ClientSecurityTokenManager { get; }
+    public string Scheme { get; }
+    public SslProtocols SslProtocols { get; }
+    private bool System.ServiceModel.Channels.IChannelBindingProvider.IsChannelBindingSupportEnabled { get; }
+    internal static X509CertificateValidator DefaultCertificateValidator { get; }
+    private SslStreamSecurityUpgradeProvider(IDefaultCommunicationTimeouts timeouts, SecurityTokenManager clientSecurityTokenManager, bool requireClientCertificate, string scheme, IdentityVerifier identityVerifier, SslProtocols sslProtocols);
+    private SslStreamSecurityUpgradeProvider(IDefaultCommunicationTimeouts timeouts, SecurityTokenProvider serverTokenProvider, bool requireClientCertificate, SecurityTokenAuthenticator clientCertificateAuthenticator, string scheme, IdentityVerifier identityVerifier, SslProtocols sslProtocols);
+    public static SslStreamSecurityUpgradeProvider CreateClientProvider(SslStreamSecurityBindingElement bindingElement, BindingContext context);
+    [CompilerGeneratedAttribute]
+public IdentityVerifier get_IdentityVerifier();
+    [CompilerGeneratedAttribute]
+public bool get_RequireClientCertificate();
+    [CompilerGeneratedAttribute]
+public X509Certificate2 get_ServerCertificate();
+    [CompilerGeneratedAttribute]
+private void set_ServerCertificate(X509Certificate2 value);
+    public SecurityTokenAuthenticator get_ClientCertificateAuthenticator();
+    [CompilerGeneratedAttribute]
+public SecurityTokenManager get_ClientSecurityTokenManager();
+    [CompilerGeneratedAttribute]
+public string get_Scheme();
+    [CompilerGeneratedAttribute]
+public SslProtocols get_SslProtocols();
+    public virtual T GetProperty();
+    private sealed virtual override ChannelBinding System.ServiceModel.Channels.IStreamUpgradeChannelBindingProvider.GetChannelBinding(StreamUpgradeInitiator upgradeInitiator, ChannelBindingKind kind);
+    private sealed virtual override void System.ServiceModel.Channels.IChannelBindingProvider.EnableChannelBindingSupport();
+    private sealed virtual override bool System.ServiceModel.Channels.IChannelBindingProvider.get_IsChannelBindingSupportEnabled();
+    public virtual StreamUpgradeInitiator CreateUpgradeInitiator(EndpointAddress remoteAddress, Uri via);
+    protected virtual void OnAbort();
+    protected virtual void OnClose(TimeSpan timeout);
+    protected internal virtual Task OnCloseAsync(TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndClose(IAsyncResult result);
+    private void SetupServerCertificate(SecurityToken token);
+    private void CleanupServerCertificate();
+    protected virtual void OnOpen(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SslStreamSecurityUpgradeProvider/<OnOpenAsync>d__41")]
+protected internal virtual Task OnOpenAsync(TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndOpen(IAsyncResult result);
+    internal static X509CertificateValidator get_DefaultCertificateValidator();
+}
+internal class System.ServiceModel.Channels.StreamConnection : object {
+    private ConnectionStream _innerStream;
+    [CompilerGeneratedAttribute]
+private Stream <Stream>k__BackingField;
+    public Stream Stream { get; }
+    public object ThisLock { get; }
+    public int ConnectionBufferSize { get; }
+    public StreamConnection(Stream stream, ConnectionStream innerStream);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamConnection/<ReadAsync>d__2")]
+public sealed virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamConnection/<WriteAsync>d__3")]
+public sealed virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, bool immediate, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamConnection/<CloseAsync>d__4")]
+public sealed virtual ValueTask CloseAsync(TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+public Stream get_Stream();
+    public object get_ThisLock();
+    public sealed virtual int get_ConnectionBufferSize();
+    public sealed virtual void Abort();
+    private Exception ConvertIOException(IOException ioException);
+    public void Write(Byte[] buffer, int offset, int size, bool immediate, TimeSpan timeout);
+    public void Write(Byte[] buffer, int offset, int size, bool immediate, TimeSpan timeout, BufferManager bufferManager);
+    private void SetReadTimeout(TimeSpan timeout);
+    private void SetWriteTimeout(TimeSpan timeout);
+    public int Read(Byte[] buffer, int offset, int size, TimeSpan timeout);
+}
+internal class System.ServiceModel.Channels.StreamedFramingRequestChannel : RequestChannel {
+    internal IConnectionInitiator _connectionInitiator;
+    internal ConnectionPool _connectionPool;
+    private MessageEncoder _messageEncoder;
+    private IConnectionOrientedTransportFactorySettings _settings;
+    private StreamUpgradeProvider _upgrade;
+    private ChannelBinding _channelBindingToken;
+    [CompilerGeneratedAttribute]
+private Memory`1<byte> <Preamble>k__BackingField;
+    private Memory`1<byte> Preamble { get; private set; }
+    public StreamedFramingRequestChannel(ChannelManagerBase factory, IConnectionOrientedTransportChannelFactorySettings settings, EndpointAddress remoteAddress, Uri via, IConnectionInitiator connectionInitiator, ConnectionPool connectionPool);
+    [CompilerGeneratedAttribute]
+private Memory`1<byte> get_Preamble();
+    [CompilerGeneratedAttribute]
+private void set_Preamble(Memory`1<byte> value);
+    protected virtual IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndOpen(IAsyncResult result);
+    protected virtual void OnOpen(TimeSpan timeout);
+    protected internal virtual Task OnOpenAsync(TimeSpan timeout);
+    protected virtual void OnOpened();
+    protected virtual IAsyncRequest CreateAsyncRequest(Message message);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamedFramingRequestChannel/<SendPreambleAsync>d__17")]
+internal Task`1<ValueTuple`2<IConnection, SecurityMessageProperty>> SendPreambleAsync(IConnection connection, TimeoutHelper timeoutHelper, ClientFramingDecoder decoder);
+    protected virtual void OnClose(TimeSpan timeout);
+    protected internal virtual Task OnCloseAsync(TimeSpan timeout);
+    protected virtual void OnClosed();
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndClose(IAsyncResult result);
+}
+internal static class System.ServiceModel.Channels.StreamingConnectionHelper : object {
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamingConnectionHelper/<WriteMessageAsync>d__0")]
+public static Task WriteMessageAsync(Message message, IConnection connection, bool isRequest, IConnectionOrientedTransportFactorySettings settings, TimeoutHelper timeoutHelper);
+}
+public abstract class System.ServiceModel.Channels.StreamSecurityUpgradeInitiator : StreamUpgradeInitiator {
+    public abstract virtual SecurityMessageProperty GetRemoteSecurity();
+    internal static SecurityMessageProperty GetRemoteSecurity(StreamUpgradeInitiator upgradeInitiator);
+}
+internal abstract class System.ServiceModel.Channels.StreamSecurityUpgradeInitiatorBase : StreamSecurityUpgradeInitiator {
+    private SecurityMessageProperty _remoteSecurity;
+    private bool _securityUpgraded;
+    private string _nextUpgrade;
+    private bool _isOpen;
+    [CompilerGeneratedAttribute]
+private EndpointAddress <RemoteAddress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <Via>k__BackingField;
+    protected EndpointAddress RemoteAddress { get; }
+    protected Uri Via { get; }
+    protected StreamSecurityUpgradeInitiatorBase(string upgradeString, EndpointAddress remoteAddress, Uri via);
+    [CompilerGeneratedAttribute]
+protected EndpointAddress get_RemoteAddress();
+    [CompilerGeneratedAttribute]
+protected Uri get_Via();
+    public virtual string GetNextUpgrade();
+    public virtual SecurityMessageProperty GetRemoteSecurity();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamSecurityUpgradeInitiatorBase/<InitiateUpgradeAsync>d__13")]
+public virtual Task`1<Stream> InitiateUpgradeAsync(Stream stream);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamSecurityUpgradeInitiatorBase/<OpenAsync>d__14")]
+internal virtual ValueTask OpenAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.StreamSecurityUpgradeInitiatorBase/<CloseAsync>d__15")]
+internal virtual ValueTask CloseAsync(TimeSpan timeout);
+    protected abstract virtual Task`1<ValueTuple`2<Stream, SecurityMessageProperty>> OnInitiateUpgradeAsync(Stream stream);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__0(TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__1(TimeSpan timeout);
+}
+public abstract class System.ServiceModel.Channels.StreamSecurityUpgradeProvider : StreamUpgradeProvider {
+    protected StreamSecurityUpgradeProvider(IDefaultCommunicationTimeouts timeouts);
+}
+public abstract class System.ServiceModel.Channels.StreamUpgradeBindingElement : BindingElement {
+    protected StreamUpgradeBindingElement(StreamUpgradeBindingElement elementToBeCloned);
+    public abstract virtual StreamUpgradeProvider BuildClientStreamUpgradeProvider(BindingContext context);
+}
+public abstract class System.ServiceModel.Channels.StreamUpgradeInitiator : object {
+    public abstract virtual string GetNextUpgrade();
+    public abstract virtual Task`1<Stream> InitiateUpgradeAsync(Stream stream);
+    internal virtual ValueTask OpenAsync(TimeSpan timeout);
+    internal virtual ValueTask CloseAsync(TimeSpan timeout);
+}
+public abstract class System.ServiceModel.Channels.StreamUpgradeProvider : CommunicationObject {
+    private TimeSpan _closeTimeout;
+    private TimeSpan _openTimeout;
+    protected TimeSpan DefaultCloseTimeout { get; }
+    protected TimeSpan DefaultOpenTimeout { get; }
+    protected StreamUpgradeProvider(IDefaultCommunicationTimeouts timeouts);
+    protected virtual TimeSpan get_DefaultCloseTimeout();
+    protected virtual TimeSpan get_DefaultOpenTimeout();
+    public virtual T GetProperty();
+    public abstract virtual StreamUpgradeInitiator CreateUpgradeInitiator(EndpointAddress remoteAddress, Uri via);
+}
+internal abstract class System.ServiceModel.Channels.StringDecoder : object {
+    private int _encodedSize;
+    private Byte[] _encodedBytes;
+    private int _bytesNeeded;
+    private string _value;
+    private State _currentState;
+    private IntDecoder _sizeDecoder;
+    private int _sizeQuota;
+    private int _valueLengthInBytes;
+    public bool IsValueDecoded { get; }
+    public string Value { get; }
+    public StringDecoder(int sizeQuota);
+    public bool get_IsValueDecoded();
+    public string get_Value();
+    public int Decode(Byte[] buffer, int offset, int size);
+    protected virtual void OnComplete(string value);
+    private static bool CompareBuffers(Byte[] buffer1, Byte[] buffer2, int offset);
+    protected abstract virtual Exception OnSizeQuotaExceeded(int size);
+    public void Reset();
+}
+internal class System.ServiceModel.Channels.SynchronizedMessageSource : object {
+    private IMessageSource _source;
+    private SemaphoreSlim _sourceLock;
+    public SynchronizedMessageSource(IMessageSource source);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SynchronizedMessageSource/<WaitForMessageAsync>d__3")]
+public Task`1<bool> WaitForMessageAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.SynchronizedMessageSource/<ReceiveAsync>d__4")]
+public Task`1<Message> ReceiveAsync(TimeSpan timeout);
+}
+internal abstract class System.ServiceModel.Channels.TransportChannelFactory`1 : ChannelFactoryBase`1<TChannel> {
+    private long _maxReceivedMessageSize;
+    private MessageVersion _messageVersion;
+    [CompilerGeneratedAttribute]
+private BufferManager <BufferManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxBufferPoolSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageEncoderFactory <MessageEncoderFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ManualAddressing>k__BackingField;
+    public BufferManager BufferManager { get; private set; }
+    public long MaxBufferPoolSize { get; }
+    public long MaxReceivedMessageSize { get; }
+    public MessageEncoderFactory MessageEncoderFactory { get; }
+    public MessageVersion MessageVersion { get; }
+    public bool ManualAddressing { get; }
+    private long System.ServiceModel.Channels.ITransportFactorySettings.MaxReceivedMessageSize { get; }
+    private BufferManager System.ServiceModel.Channels.ITransportFactorySettings.BufferManager { get; }
+    private bool System.ServiceModel.Channels.ITransportFactorySettings.ManualAddressing { get; }
+    private MessageEncoderFactory System.ServiceModel.Channels.ITransportFactorySettings.MessageEncoderFactory { get; }
+    protected TransportChannelFactory`1(TransportBindingElement bindingElement, BindingContext context);
+    protected TransportChannelFactory`1(TransportBindingElement bindingElement, BindingContext context, MessageEncoderFactory defaultMessageEncoderFactory);
+    [CompilerGeneratedAttribute]
+public BufferManager get_BufferManager();
+    [CompilerGeneratedAttribute]
+private void set_BufferManager(BufferManager value);
+    [CompilerGeneratedAttribute]
+public long get_MaxBufferPoolSize();
+    public long get_MaxReceivedMessageSize();
+    [CompilerGeneratedAttribute]
+public MessageEncoderFactory get_MessageEncoderFactory();
+    public sealed virtual MessageVersion get_MessageVersion();
+    [CompilerGeneratedAttribute]
+public bool get_ManualAddressing();
+    public virtual T GetProperty();
+    protected virtual void OnAbort();
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnClose(TimeSpan timeout);
+    private void OnCloseOrAbort();
+    public virtual int GetMaxBufferSize();
+    protected virtual void OnOpening();
+    private sealed virtual override long System.ServiceModel.Channels.ITransportFactorySettings.get_MaxReceivedMessageSize();
+    private sealed virtual override BufferManager System.ServiceModel.Channels.ITransportFactorySettings.get_BufferManager();
+    private sealed virtual override bool System.ServiceModel.Channels.ITransportFactorySettings.get_ManualAddressing();
+    private sealed virtual override MessageEncoderFactory System.ServiceModel.Channels.ITransportFactorySettings.get_MessageEncoderFactory();
+}
+internal abstract class System.ServiceModel.Channels.TransportDuplexSessionChannel : TransportOutputChannel {
+    private bool _isInputSessionClosed;
+    private bool _isOutputSessionClosed;
+    private Uri _localVia;
+    private ChannelBinding _channelBindingToken;
+    [CompilerGeneratedAttribute]
+private EndpointAddress <LocalAddress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SecurityMessageProperty <RemoteSecurity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDuplexSession <Session>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <SendLock>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BufferManager <BufferManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageEncoder <MessageEncoder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SynchronizedMessageSource <MessageSource>k__BackingField;
+    public EndpointAddress LocalAddress { get; }
+    public SecurityMessageProperty RemoteSecurity { get; protected set; }
+    public IDuplexSession Session { get; protected set; }
+    protected SemaphoreSlim SendLock { get; }
+    protected ChannelBinding ChannelBinding { get; }
+    protected BufferManager BufferManager { get; }
+    protected MessageEncoder MessageEncoder { get; protected set; }
+    internal SynchronizedMessageSource MessageSource { get; private set; }
+    protected bool IsStreamedOutput { get; }
+    private IAsyncDuplexSession System.ServiceModel.Channels.ISessionChannel<System.ServiceModel.Channels.IAsyncDuplexSession>.Session { get; }
+    protected TransportDuplexSessionChannel(ChannelManagerBase manager, ITransportFactorySettings settings, EndpointAddress localAddress, Uri localVia, EndpointAddress remoteAddress, Uri via);
+    [CompilerGeneratedAttribute]
+public sealed virtual EndpointAddress get_LocalAddress();
+    [CompilerGeneratedAttribute]
+public SecurityMessageProperty get_RemoteSecurity();
+    [CompilerGeneratedAttribute]
+protected void set_RemoteSecurity(SecurityMessageProperty value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDuplexSession get_Session();
+    [CompilerGeneratedAttribute]
+protected void set_Session(IDuplexSession value);
+    [CompilerGeneratedAttribute]
+protected SemaphoreSlim get_SendLock();
+    protected ChannelBinding get_ChannelBinding();
+    [CompilerGeneratedAttribute]
+protected BufferManager get_BufferManager();
+    [CompilerGeneratedAttribute]
+protected MessageEncoder get_MessageEncoder();
+    [CompilerGeneratedAttribute]
+protected void set_MessageEncoder(MessageEncoder value);
+    [CompilerGeneratedAttribute]
+internal SynchronizedMessageSource get_MessageSource();
+    [CompilerGeneratedAttribute]
+private void set_MessageSource(SynchronizedMessageSource value);
+    protected abstract virtual bool get_IsStreamedOutput();
+    private sealed virtual override IAsyncDuplexSession System.ServiceModel.Channels.ISessionChannel<System.ServiceModel.Channels.IAsyncDuplexSession>.get_Session();
+    public sealed virtual Message Receive();
+    public sealed virtual Message Receive(TimeSpan timeout);
+    public sealed virtual Task`1<Message> ReceiveAsync();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<ReceiveAsync>d__39")]
+public sealed virtual Task`1<Message> ReceiveAsync(TimeSpan timeout);
+    public sealed virtual IAsyncResult BeginReceive(AsyncCallback callback, object state);
+    public sealed virtual IAsyncResult BeginReceive(TimeSpan timeout, AsyncCallback callback, object state);
+    public sealed virtual Message EndReceive(IAsyncResult result);
+    public sealed virtual IAsyncResult BeginTryReceive(TimeSpan timeout, AsyncCallback callback, object state);
+    public sealed virtual bool EndTryReceive(IAsyncResult result, Message& message);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<TryReceiveAsync>d__45")]
+public sealed virtual Task`1<ValueTuple`2<bool, Message>> TryReceiveAsync(TimeSpan timeout);
+    public sealed virtual bool TryReceive(TimeSpan timeout, Message& message);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<WaitForMessageAsync>d__47")]
+public sealed virtual Task`1<bool> WaitForMessageAsync(TimeSpan timeout);
+    public sealed virtual bool WaitForMessage(TimeSpan timeout);
+    public sealed virtual IAsyncResult BeginWaitForMessage(TimeSpan timeout, AsyncCallback callback, object state);
+    public sealed virtual bool EndWaitForMessage(IAsyncResult result);
+    protected void SetChannelBinding(ChannelBinding channelBinding);
+    protected void SetMessageSource(IMessageSource messageSource);
+    protected abstract virtual ValueTask CloseOutputSessionCoreAsync(TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<CloseOutputSessionAsync>d__54")]
+protected Task CloseOutputSessionAsync(TimeSpan timeout);
+    protected abstract virtual void ReturnConnectionIfNecessary(bool abort, TimeSpan timeout);
+    protected virtual void OnAbort();
+    protected virtual void OnFaulted();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<OnCloseAsync>d__58")]
+protected internal virtual Task OnCloseAsync(TimeSpan timeout);
+    protected virtual void OnClose(TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndClose(IAsyncResult result);
+    protected virtual void OnClosed();
+    protected virtual void OnReceiveMessage(Message message);
+    protected void ApplyChannelBinding(Message message);
+    protected virtual void PrepareMessage(Message message);
+    protected abstract virtual ValueTask StartWritingBufferedMessage(Message message, ArraySegment`1<byte> messageData, bool allowOutputBatching, TimeSpan timeout);
+    protected abstract virtual ValueTask CloseOutputAsync(TimeSpan timeout);
+    protected abstract virtual ArraySegment`1<byte> EncodeMessage(Message message);
+    protected abstract virtual ValueTask OnSendCoreAsync(Message message, TimeSpan timeout);
+    protected abstract virtual ValueTask StartWritingStreamedMessage(Message message, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<OnSendAsync>d__71")]
+protected virtual Task OnSendAsync(Message message, TimeSpan timeout);
+    protected virtual void OnSend(Message message, TimeSpan timeout);
+    protected abstract virtual void CompleteClose(TimeSpan timeout);
+    private void ThrowIfOutputSessionClosed();
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.TransportDuplexSessionChannel/<EnsureInputClosedAsync>d__75")]
+private Task EnsureInputClosedAsync(TimeSpan timeout);
+    private void OnInputSessionClosed();
+    private void OnOutputSessionClosed(TimeoutHelper& timeoutHelper);
+    internal static ProtocolException ReceiveShutdownReturnedNonNull(Message message);
+}
+internal class System.ServiceModel.Channels.ViaStringDecoder : StringDecoder {
+    private Uri _via;
+    public Uri ValueAsUri { get; }
+    public ViaStringDecoder(int sizeQuota);
+    protected virtual Exception OnSizeQuotaExceeded(int size);
+    protected virtual void OnComplete(string value);
+    public Uri get_ValueAsUri();
+}
+public class System.ServiceModel.Channels.WindowsStreamSecurityBindingElement : StreamUpgradeBindingElement {
+    private ProtectionLevel _protectionLevel;
+    [DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+public ProtectionLevel ProtectionLevel { get; public set; }
+    protected WindowsStreamSecurityBindingElement(WindowsStreamSecurityBindingElement elementToBeCloned);
+    public ProtectionLevel get_ProtectionLevel();
+    public void set_ProtectionLevel(ProtectionLevel value);
+    public virtual BindingElement Clone();
+    public virtual IChannelFactory`1<TChannel> BuildChannelFactory(BindingContext context);
+    public virtual bool CanBuildChannelFactory(BindingContext context);
+    public virtual StreamUpgradeProvider BuildClientStreamUpgradeProvider(BindingContext context);
+    public virtual T GetProperty(BindingContext context);
+}
+internal class System.ServiceModel.Channels.WindowsStreamSecurityUpgradeProvider : StreamSecurityUpgradeProvider {
+    internal static string NegotiateUpgradeString;
+    private bool _extractGroupsForWindowsAccounts;
+    private SecurityTokenManager _securityTokenManager;
+    [CompilerGeneratedAttribute]
+private string <Scheme>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IdentityVerifier <IdentityVerifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProtectionLevel <ProtectionLevel>k__BackingField;
+    public string Scheme { get; }
+    internal bool ExtractGroupsForWindowsAccounts { get; }
+    internal IdentityVerifier IdentityVerifier { get; private set; }
+    public ProtectionLevel ProtectionLevel { get; }
+    public WindowsStreamSecurityUpgradeProvider(WindowsStreamSecurityBindingElement bindingElement, BindingContext context);
+    [CompilerGeneratedAttribute]
+public string get_Scheme();
+    internal bool get_ExtractGroupsForWindowsAccounts();
+    [CompilerGeneratedAttribute]
+internal IdentityVerifier get_IdentityVerifier();
+    [CompilerGeneratedAttribute]
+private void set_IdentityVerifier(IdentityVerifier value);
+    [CompilerGeneratedAttribute]
+public ProtectionLevel get_ProtectionLevel();
+    public virtual StreamUpgradeInitiator CreateUpgradeInitiator(EndpointAddress remoteAddress, Uri via);
+    protected virtual void OnAbort();
+    protected virtual void OnClose(TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndClose(IAsyncResult result);
+    protected internal virtual Task OnCloseAsync(TimeSpan timeout);
+    protected virtual void OnOpen(TimeSpan timeout);
+    protected virtual IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state);
+    protected virtual void OnEndOpen(IAsyncResult result);
+    protected internal virtual Task OnOpenAsync(TimeSpan timeout);
+    protected virtual void OnOpened();
+}
+internal static class System.ServiceModel.Channels.WindowsStreamTransportSecurityHelpers : object {
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.WindowsStreamTransportSecurityHelpers/<GetSspiCredentialAsync>d__0")]
+public static ValueTask`1<ValueTuple`3<NetworkCredential, TokenImpersonationLevel, bool>> GetSspiCredentialAsync(SecurityTokenProvider tokenProvider, TimeSpan timeout);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.WindowsStreamTransportSecurityHelpers/<GetSspiCredentialCoreAsync>d__1")]
+public static ValueTask`1<ValueTuple`4<NetworkCredential, bool, TokenImpersonationLevel, bool>> GetSspiCredentialCoreAsync(SecurityTokenProvider tokenProvider, TimeSpan timeout);
+    internal static SecurityTokenRequirement CreateSspiTokenRequirement(EndpointAddress target, Uri via, string transportScheme);
+    public static SecurityTokenProvider GetSspiTokenProvider(SecurityTokenManager tokenManager, EndpointAddress target, Uri via, string transportScheme);
+    [AsyncStateMachineAttribute("System.ServiceModel.Channels.WindowsStreamTransportSecurityHelpers/<GetTokenAsync>d__4`1")]
+private static Task`1<T> GetTokenAsync(SecurityTokenProvider tokenProvider, TimeSpan timeout);
+    public static Uri GetListenUri(Uri baseAddress, string relativeAddress);
+    private static void FixIpv6Hostname(UriBuilder uriBuilder, Uri originalUri);
+}
+internal class System.ServiceModel.Pool`1 : object {
+    private T[] _items;
+    [CompilerGeneratedAttribute]
+private int <Count>k__BackingField;
+    public int Count { get; private set; }
+    public Pool`1(int maxCount);
+    [CompilerGeneratedAttribute]
+public int get_Count();
+    [CompilerGeneratedAttribute]
+private void set_Count(int value);
+    public T Take();
+    public bool Return(T item);
+    public void Clear();
+}
+internal class System.ServiceModel.Security.SecurityUtilsEx : object {
+    private static ClaimSet s_anonymousClaimSet;
+    internal static ClaimSet AnonymousClaimSet { get; }
+    internal static ClaimSet get_AnonymousClaimSet();
+    internal static void AbortTokenProviderIfRequired(SecurityTokenProvider tokenProvider);
+    internal static Task CloseTokenProviderIfRequiredAsync(SecurityTokenProvider tokenProvider, TimeSpan timeout);
+    internal static Task OpenTokenProviderIfRequiredAsync(SecurityTokenProvider tokenProvider, TimeSpan timeout);
+    internal static void AbortTokenAuthenticatorIfRequired(SecurityTokenAuthenticator tokenAuthenticator);
+    internal static Task CloseTokenAuthenticatorIfRequiredAsync(SecurityTokenAuthenticator tokenAuthenticator, TimeSpan timeout);
+    internal static Task OpenTokenAuthenticatorIfRequiredAsync(SecurityTokenAuthenticator tokenAuthenticator, TimeSpan timeout);
+    private static void AbortCommunicationObject(object obj);
+    private static Task CloseCommunicationObjectAsync(object obj, TimeSpan timeout);
+    private static Task OpenCommunicationObjectAsync(ICommunicationObject obj, TimeSpan timeout);
+    internal static string GetIdentityNamesFromContext(AuthorizationContext authContext);
+    internal static void AppendIdentityName(StringBuilder str, IIdentity identity);
+}
+internal class System.ServiceModel.System.IdentityModel.SecurityUniqueId : object {
+    private static long s_nextId;
+    private static string s_commonPrefix;
+    private long _id;
+    private string _prefix;
+    private string _val;
+    public string Value { get; }
+    private SecurityUniqueId(string prefix, long id);
+    private static SecurityUniqueId();
+    public static SecurityUniqueId Create();
+    public static SecurityUniqueId Create(string prefix);
+    public string get_Value();
+}
+internal static class System.ServiceModel.TimeSpanHelper : object {
+    public static TimeSpan FromMinutes(int minutes, string text);
+    public static TimeSpan FromSeconds(int seconds, string text);
+    public static TimeSpan FromMilliseconds(int ms, string text);
+}
+internal static class System.SR : object {
+    private static ResourceManager s_resourceManager;
+    [CompilerGeneratedAttribute]
+private static CultureInfo <Culture>k__BackingField;
+    internal static ResourceManager ResourceManager { get; }
+    internal static CultureInfo Culture { get; internal set; }
+    internal static string CommunicationObjectCannotBeUsed { get; }
+    internal static string CommunicationObjectFaulted1 { get; }
+    internal static string InvalidTokenProvided { get; }
+    internal static string OperationInvalidBeforeSecurityNegotiation { get; }
+    internal static string NegotiationFailedIO { get; }
+    internal static string RemoteIdentityFailedVerification { get; }
+    internal static string StreamMutualAuthNotSatisfied { get; }
+    internal static string ValueMustBeNonNegative { get; }
+    internal static string ValueMustBePositive { get; }
+    internal static string MaxReceivedMessageSizeMustBeInIntegerRange { get; }
+    internal static string MultipleMebesInParameters { get; }
+    internal static string MultipleStreamUpgradeProvidersInParameters { get; }
+    internal static string InvalidUriScheme { get; }
+    internal static string TimeoutOnOpen { get; }
+    internal static string OpenTimedOutEstablishingTransportSession { get; }
+    internal static string SFxTimeoutOutOfRange0 { get; }
+    internal static string CloseTimedOut { get; }
+    internal static string DuplexChannelAbortedDuringOpen { get; }
+    internal static string FramingError { get; }
+    internal static string FramingPrematureEOF { get; }
+    internal static string FramingRecordTypeMismatch { get; }
+    internal static string FramingVersionNotSupported { get; }
+    internal static string FramingModeNotSupported { get; }
+    internal static string FramingSizeTooLarge { get; }
+    internal static string FramingViaTooLong { get; }
+    internal static string FramingViaNotUri { get; }
+    internal static string FramingFaultTooLong { get; }
+    internal static string FramingContentTypeTooLong { get; }
+    internal static string FramingValueNotAvailable { get; }
+    internal static string FramingAtEnd { get; }
+    internal static string InvalidDecoderStateMachine { get; }
+    internal static string PreambleAckIncorrect { get; }
+    internal static string PreambleAckIncorrectMaybeHttp { get; }
+    internal static string FramingContentTypeMismatch { get; }
+    internal static string FramingFaultUnrecognized { get; }
+    internal static string FramingContentTypeTooLongFault { get; }
+    internal static string FramingViaTooLongFault { get; }
+    internal static string FramingModeNotSupportedFault { get; }
+    internal static string FramingVersionNotSupportedFault { get; }
+    internal static string FramingUpgradeInvalid { get; }
+    internal static string FramingMaxMessageSizeExceeded { get; }
+    internal static string Hosting_ServiceActivationFailed { get; }
+    internal static string Sharing_ConnectionDispatchFailed { get; }
+    internal static string Sharing_EndpointUnavailable { get; }
+    internal static string EndpointNotFound { get; }
+    internal static string ServerTooBusy { get; }
+    internal static string SizeExceedsRemainingBufferSpace { get; }
+    internal static string ServerRejectedUpgradeRequest { get; }
+    internal static string ValueMustBeInRange { get; }
+    internal static string SPS_SeekNotSupported { get; }
+    internal static string StreamError { get; }
+    internal static string ServerRejectedSessionPreamble { get; }
+    internal static string RequestChannelSendTimedOut { get; }
+    internal static string RequestChannelWaitForReplyTimedOut { get; }
+    internal static string MaxReceivedMessageSizeExceeded { get; }
+    internal static string MaxSentMessageSizeExceeded { get; }
+    internal static string ActivityProcessingMessage { get; }
+    internal static string MessageXmlProtocolError { get; }
+    internal static string WaitForMessageTimedOut { get; }
+    internal static string ReceiveTimedOut2 { get; }
+    internal static string SendToViaTimedOut { get; }
+    internal static string SendCannotBeCalledAfterCloseOutputSession { get; }
+    internal static string ReceiveShutdownReturnedFault { get; }
+    internal static string ReceiveShutdownReturnedLargeFault { get; }
+    internal static string ReceiveShutdownReturnedMessage { get; }
+    internal static string UriGeneratorSchemeMustNotBeEmpty { get; }
+    internal static string RequestTimedOutEstablishingTransportSession { get; }
+    internal static string TimeoutOnRequest { get; }
+    internal static string CannotDetermineSPNBasedOnAddress { get; }
+    internal static string SpaceNeededExceedsMessageFrameOffset { get; }
+    internal static string OperationAbortedDuringConnectionEstablishment { get; }
+    internal static string StreamDoesNotSupportTimeout { get; }
+    internal static string SecurityServerTooBusy { get; }
+    internal static string SecurityEndpointNotFound { get; }
+    internal static string TraceCodeConnectionPoolIdleTimeoutReached { get; }
+    internal static string TraceCodeConnectionPoolLeaseTimeoutReached { get; }
+    internal static string TraceCodeConnectionPoolMaxOutboundConnectionsPerEndpointQuotaReached { get; }
+    internal static string IdentityCheckFailedForOutgoingMessage { get; }
+    internal static string DnsIdentityCheckFailedForOutgoingMessageLackOfDnsClaim { get; }
+    internal static string DnsIdentityCheckFailedForOutgoingMessage { get; }
+    internal static string ClientCredentialsUnableToCreateLocalTokenProvider { get; }
+    internal static string ActivityBoundary { get; }
+    internal static string InsufficentMemory { get; }
+    internal static string ActivityProcessAction { get; }
+    internal static string LockTimeoutExceptionMessage { get; }
+    internal static string UnsupportedUpgradeInitiator { get; }
+    internal static string StreamUpgradeUnsupportedChannelBindingKind { get; }
+    private static bool UsingResourceKeys();
+    internal static string Format(string resourceFormat, Object[] args);
+    internal static string Format(string resourceFormat, object p1);
+    internal static string Format(string resourceFormat, object p1, object p2);
+    internal static string Format(string resourceFormat, object p1, object p2, object p3);
+    internal static ResourceManager get_ResourceManager();
+    [CompilerGeneratedAttribute]
+internal static CultureInfo get_Culture();
+    [CompilerGeneratedAttribute]
+internal static void set_Culture(CultureInfo value);
+    internal static string GetResourceString(string resourceKey, string defaultValue);
+    internal static string get_CommunicationObjectCannotBeUsed();
+    internal static string get_CommunicationObjectFaulted1();
+    internal static string get_InvalidTokenProvided();
+    internal static string get_OperationInvalidBeforeSecurityNegotiation();
+    internal static string get_NegotiationFailedIO();
+    internal static string get_RemoteIdentityFailedVerification();
+    internal static string get_StreamMutualAuthNotSatisfied();
+    internal static string get_ValueMustBeNonNegative();
+    internal static string get_ValueMustBePositive();
+    internal static string get_MaxReceivedMessageSizeMustBeInIntegerRange();
+    internal static string get_MultipleMebesInParameters();
+    internal static string get_MultipleStreamUpgradeProvidersInParameters();
+    internal static string get_InvalidUriScheme();
+    internal static string get_TimeoutOnOpen();
+    internal static string get_OpenTimedOutEstablishingTransportSession();
+    internal static string get_SFxTimeoutOutOfRange0();
+    internal static string get_CloseTimedOut();
+    internal static string get_DuplexChannelAbortedDuringOpen();
+    internal static string get_FramingError();
+    internal static string get_FramingPrematureEOF();
+    internal static string get_FramingRecordTypeMismatch();
+    internal static string get_FramingVersionNotSupported();
+    internal static string get_FramingModeNotSupported();
+    internal static string get_FramingSizeTooLarge();
+    internal static string get_FramingViaTooLong();
+    internal static string get_FramingViaNotUri();
+    internal static string get_FramingFaultTooLong();
+    internal static string get_FramingContentTypeTooLong();
+    internal static string get_FramingValueNotAvailable();
+    internal static string get_FramingAtEnd();
+    internal static string get_InvalidDecoderStateMachine();
+    internal static string get_PreambleAckIncorrect();
+    internal static string get_PreambleAckIncorrectMaybeHttp();
+    internal static string get_FramingContentTypeMismatch();
+    internal static string get_FramingFaultUnrecognized();
+    internal static string get_FramingContentTypeTooLongFault();
+    internal static string get_FramingViaTooLongFault();
+    internal static string get_FramingModeNotSupportedFault();
+    internal static string get_FramingVersionNotSupportedFault();
+    internal static string get_FramingUpgradeInvalid();
+    internal static string get_FramingMaxMessageSizeExceeded();
+    internal static string get_Hosting_ServiceActivationFailed();
+    internal static string get_Sharing_ConnectionDispatchFailed();
+    internal static string get_Sharing_EndpointUnavailable();
+    internal static string get_EndpointNotFound();
+    internal static string get_ServerTooBusy();
+    internal static string get_SizeExceedsRemainingBufferSpace();
+    internal static string get_ServerRejectedUpgradeRequest();
+    internal static string get_ValueMustBeInRange();
+    internal static string get_SPS_SeekNotSupported();
+    internal static string get_StreamError();
+    internal static string get_ServerRejectedSessionPreamble();
+    internal static string get_RequestChannelSendTimedOut();
+    internal static string get_RequestChannelWaitForReplyTimedOut();
+    internal static string get_MaxReceivedMessageSizeExceeded();
+    internal static string get_MaxSentMessageSizeExceeded();
+    internal static string get_ActivityProcessingMessage();
+    internal static string get_MessageXmlProtocolError();
+    internal static string get_WaitForMessageTimedOut();
+    internal static string get_ReceiveTimedOut2();
+    internal static string get_SendToViaTimedOut();
+    internal static string get_SendCannotBeCalledAfterCloseOutputSession();
+    internal static string get_ReceiveShutdownReturnedFault();
+    internal static string get_ReceiveShutdownReturnedLargeFault();
+    internal static string get_ReceiveShutdownReturnedMessage();
+    internal static string get_UriGeneratorSchemeMustNotBeEmpty();
+    internal static string get_RequestTimedOutEstablishingTransportSession();
+    internal static string get_TimeoutOnRequest();
+    internal static string get_CannotDetermineSPNBasedOnAddress();
+    internal static string get_SpaceNeededExceedsMessageFrameOffset();
+    internal static string get_OperationAbortedDuringConnectionEstablishment();
+    internal static string get_StreamDoesNotSupportTimeout();
+    internal static string get_SecurityServerTooBusy();
+    internal static string get_SecurityEndpointNotFound();
+    internal static string get_TraceCodeConnectionPoolIdleTimeoutReached();
+    internal static string get_TraceCodeConnectionPoolLeaseTimeoutReached();
+    internal static string get_TraceCodeConnectionPoolMaxOutboundConnectionsPerEndpointQuotaReached();
+    internal static string get_IdentityCheckFailedForOutgoingMessage();
+    internal static string get_DnsIdentityCheckFailedForOutgoingMessageLackOfDnsClaim();
+    internal static string get_DnsIdentityCheckFailedForOutgoingMessage();
+    internal static string get_ClientCredentialsUnableToCreateLocalTokenProvider();
+    internal static string get_ActivityBoundary();
+    internal static string get_InsufficentMemory();
+    internal static string get_ActivityProcessAction();
+    internal static string get_LockTimeoutExceptionMessage();
+    internal static string get_UnsupportedUpgradeInitiator();
+    internal static string get_StreamUpgradeUnsupportedChannelBindingKind();
+}

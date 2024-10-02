@@ -1,0 +1,522 @@
+public class Lucene.Net.Spatial.BBox.AreaSimilarity : object {
+    private IRectangle queryExtent;
+    private double queryArea;
+    private double targetPower;
+    private double queryPower;
+    public AreaSimilarity(IRectangle queryExtent, double queryPower, double targetPower);
+    public AreaSimilarity(IRectangle queryExtent);
+    public string GetDelimiterQueryParameters();
+    public sealed virtual double Score(IRectangle target, Explanation exp);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public interface Lucene.Net.Spatial.BBox.BBoxSimilarity {
+    public abstract virtual double Score(IRectangle extent, Explanation exp);
+}
+public class Lucene.Net.Spatial.BBox.BBoxSimilarityValueSource : ValueSource {
+    private BBoxStrategy strategy;
+    private BBoxSimilarity similarity;
+    public BBoxSimilarityValueSource(BBoxStrategy strategy, BBoxSimilarity similarity);
+    public virtual DocValues GetValues(IndexReader reader, IState state);
+    public virtual string Description();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.BBox.BBoxStrategy : SpatialStrategy {
+    public static string SUFFIX_MINX;
+    public static string SUFFIX_MAXX;
+    public static string SUFFIX_MINY;
+    public static string SUFFIX_MAXY;
+    public static string SUFFIX_XDL;
+    public string field_bbox;
+    public string field_minX;
+    public string field_minY;
+    public string field_maxX;
+    public string field_maxY;
+    public string field_xdl;
+    public double queryPower;
+    public double targetPower;
+    public int precisionStep;
+    public BBoxStrategy(SpatialContext ctx, string fieldNamePrefix);
+    private static BBoxStrategy();
+    public void SetPrecisionStep(int p);
+    public virtual AbstractField[] CreateIndexableFields(IShape shape);
+    public AbstractField[] CreateIndexableFields(IRectangle bbox);
+    private AbstractField DoubleField(string field, double value);
+    public virtual ValueSource MakeDistanceValueSource(IPoint queryPoint);
+    public ValueSource MakeBBoxAreaSimilarityValueSource(IRectangle queryBox);
+    public virtual ConstantScoreQuery MakeQuery(SpatialArgs args);
+    public Query MakeQueryWithValueSource(SpatialArgs args, ValueSource valueSource);
+    public virtual Filter MakeFilter(SpatialArgs args);
+    private Query MakeSpatialQuery(SpatialArgs args);
+    protected Query MakeContains(IRectangle bbox);
+    private Query MakeDisjoint(IRectangle bbox);
+    public Query MakeEquals(IRectangle bbox);
+    private Query MakeIntersects(IRectangle bbox);
+    private BooleanQuery MakeQuery(Query[] queries, Occur occur);
+    private Query MakeWithin(IRectangle bbox);
+    public Query MakeXDL(bool crossedDateLine);
+    public Query MakeXDL(bool crossedDateLine, Query query);
+}
+public class Lucene.Net.Spatial.BBox.DistanceSimilarity : object {
+    private IPoint queryPoint;
+    private IDistanceCalculator distCalc;
+    private double nullValue;
+    public DistanceSimilarity(SpatialContext ctx, IPoint queryPoint);
+    public sealed virtual double Score(IRectangle indexRect, Explanation exp);
+}
+public class Lucene.Net.Spatial.Prefix.PointPrefixTreeFieldCacheProvider : ShapeFieldCacheProvider`1<IPoint> {
+    private SpatialPrefixTree grid;
+    private Node scanCell;
+    public PointPrefixTreeFieldCacheProvider(SpatialPrefixTree grid, string shapeField, int defaultSize);
+    protected virtual IPoint ReadShape(Term term);
+}
+public abstract class Lucene.Net.Spatial.Prefix.PrefixTreeStrategy : SpatialStrategy {
+    protected SpatialPrefixTree grid;
+    private ConcurrentDictionary`2<string, PointPrefixTreeFieldCacheProvider> provider;
+    protected int defaultFieldValuesArrayLen;
+    protected double distErrPct;
+    [CompilerGeneratedAttribute]
+private double <DistErrPct>k__BackingField;
+    public double DistErrPct { get; public set; }
+    protected PrefixTreeStrategy(SpatialPrefixTree grid, string fieldName);
+    public void SetDefaultFieldValuesArrayLen(int defaultFieldValuesArrayLen);
+    [CompilerGeneratedAttribute]
+public double get_DistErrPct();
+    [CompilerGeneratedAttribute]
+public void set_DistErrPct(double value);
+    public virtual AbstractField[] CreateIndexableFields(IShape shape);
+    public AbstractField[] CreateIndexableFields(IShape shape, double distErr);
+    public ShapeFieldCacheProvider`1<IPoint> GetCacheProvider();
+    public virtual ValueSource MakeDistanceValueSource(IPoint queryPoint);
+    public SpatialPrefixTree GetGrid();
+    [CompilerGeneratedAttribute]
+private PointPrefixTreeFieldCacheProvider <GetCacheProvider>b__13_0(string key);
+}
+public class Lucene.Net.Spatial.Prefix.RecursivePrefixTreeFilter : Filter {
+    private string fieldName;
+    private SpatialPrefixTree grid;
+    private IShape queryShape;
+    private int prefixGridScanLevel;
+    private int detailLevel;
+    public RecursivePrefixTreeFilter(string fieldName, SpatialPrefixTree grid, IShape queryShape, int prefixGridScanLevel, int detailLevel);
+    public virtual DocIdSet GetDocIdSet(IndexReader reader, IState state);
+    public virtual string ToString();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.Prefix.RecursivePrefixTreeStrategy : PrefixTreeStrategy {
+    private int prefixGridScanLevel;
+    public RecursivePrefixTreeStrategy(SpatialPrefixTree grid, string fieldName);
+    public void SetPrefixGridScanLevel(int prefixGridScanLevel);
+    public virtual Filter MakeFilter(SpatialArgs args);
+    public virtual string ToString();
+}
+public class Lucene.Net.Spatial.Prefix.TermQueryPrefixTreeStrategy : PrefixTreeStrategy {
+    public TermQueryPrefixTreeStrategy(SpatialPrefixTree grid, string fieldName);
+    public virtual Filter MakeFilter(SpatialArgs args);
+}
+public class Lucene.Net.Spatial.Prefix.Tree.GeohashPrefixTree : SpatialPrefixTree {
+    public GeohashPrefixTree(SpatialContext ctx, int maxLevels);
+    public static int GetMaxLevelsPossible();
+    public virtual int GetLevelForDistance(double dist);
+    protected virtual Node GetNode(IPoint p, int level);
+    public virtual Node GetNode(string token);
+    public virtual Node GetNode(Byte[] bytes, int offset, int len);
+    public virtual IList`1<Node> GetNodes(IShape shape, int detailLevel, bool inclParents);
+}
+public abstract class Lucene.Net.Spatial.Prefix.Tree.Node : object {
+    public static byte LEAF_BYTE;
+    private string token;
+    protected SpatialRelation shapeRel;
+    protected SpatialPrefixTree spatialPrefixTree;
+    protected Node(SpatialPrefixTree spatialPrefixTree, string token);
+    private static Node();
+    private void SetToken(string theToken);
+    public virtual void Reset(string newToken);
+    private void b_fixLeaf();
+    public SpatialRelation GetShapeRel();
+    public bool IsLeaf();
+    public void SetLeaf();
+    public string GetTokenString();
+    public int GetLevel();
+    public IList`1<Node> GetSubCells(IShape shapeFilter);
+    public abstract virtual Node GetSubCell(IPoint p);
+    public abstract virtual IList`1<Node> GetSubCells();
+    public abstract virtual int GetSubCellsSize();
+    public abstract virtual IShape GetShape();
+    public virtual IPoint GetCenter();
+    public sealed virtual int CompareTo(Node o);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class Lucene.Net.Spatial.Prefix.Tree.QuadPrefixTree : SpatialPrefixTree {
+    public static int MAX_LEVELS_POSSIBLE;
+    public static int DEFAULT_MAX_LEVELS;
+    private double xmin;
+    private double xmax;
+    private double ymin;
+    private double ymax;
+    private double xmid;
+    private double ymid;
+    private double gridW;
+    private double gridH;
+    private Double[] levelW;
+    private Double[] levelH;
+    private Int32[] levelS;
+    private Int32[] levelN;
+    public QuadPrefixTree(SpatialContext ctx, IRectangle bounds, int maxLevels);
+    public QuadPrefixTree(SpatialContext ctx);
+    public QuadPrefixTree(SpatialContext ctx, int maxLevels);
+    private static QuadPrefixTree();
+    protected void Init(SpatialContext ctx, IRectangle bounds, int maxLevels);
+    public virtual int GetLevelForDistance(double dist);
+    protected virtual Node GetNode(IPoint p, int level);
+    public virtual Node GetNode(string token);
+    public virtual Node GetNode(Byte[] bytes, int offset, int len);
+    public virtual IList`1<Node> GetNodes(IShape shape, int detailLevel, bool inclParents);
+    private void Build(double x, double y, int level, List`1<Node> matches, StringBuilder str, IShape shape, int maxLevel);
+    private void CheckBattenberg(char c, double cx, double cy, int level, List`1<Node> matches, StringBuilder str, IShape shape, int maxLevel);
+}
+public abstract class Lucene.Net.Spatial.Prefix.Tree.SpatialPrefixTree : object {
+    protected int maxLevels;
+    internal SpatialContext ctx;
+    private Node worldNode;
+    protected SpatialPrefixTree(SpatialContext ctx, int maxLevels);
+    public SpatialContext GetSpatialContext();
+    public int GetMaxLevels();
+    public virtual string ToString();
+    public abstract virtual int GetLevelForDistance(double dist);
+    public Node GetWorldNode();
+    public abstract virtual Node GetNode(string token);
+    public abstract virtual Node GetNode(Byte[] bytes, int offset, int len);
+    public Node GetNode(string token, Node target);
+    protected virtual Node GetNode(IPoint p, int level);
+    public virtual IList`1<Node> GetNodes(IShape shape, int detailLevel, bool inclParents);
+    private void RecursiveGetNodes(Node node, IShape shape, int detailLevel, bool inclParents, IList`1<Node> result);
+    private void RecursiveGetNodes(Node node, IPoint point, int detailLevel, bool inclParents, IList`1<Node> result);
+    protected virtual IList`1<Node> GetNodesAltPoint(IPoint p, int detailLevel, bool inclParents);
+    public static List`1<string> NodesToTokenStrings(Collection`1<Node> nodes);
+}
+public abstract class Lucene.Net.Spatial.Prefix.Tree.SpatialPrefixTreeFactory : object {
+    private static double DEFAULT_GEO_MAX_DETAIL_KM;
+    public static string PREFIX_TREE;
+    public static string MAX_LEVELS;
+    public static string MAX_DIST_ERR;
+    protected Dictionary`2<string, string> args;
+    protected SpatialContext ctx;
+    protected Nullable`1<int> maxLevels;
+    private static SpatialPrefixTreeFactory();
+    public static SpatialPrefixTree MakeSPT(Dictionary`2<string, string> args, SpatialContext ctx);
+    protected void Init(Dictionary`2<string, string> args, SpatialContext ctx);
+    protected void InitMaxLevels();
+    protected abstract virtual int GetLevelForDistance(double degrees);
+    protected abstract virtual SpatialPrefixTree NewSPT();
+}
+public class Lucene.Net.Spatial.Queries.SpatialArgs : object {
+    public static double DEFAULT_DISTERRPCT;
+    [CompilerGeneratedAttribute]
+private SpatialOperation <Operation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IShape <Shape>k__BackingField;
+    private Nullable`1<double> distErrPct;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <DistErr>k__BackingField;
+    public SpatialOperation Operation { get; public set; }
+    public IShape Shape { get; public set; }
+    public Nullable`1<double> DistErrPct { get; public set; }
+    public Nullable`1<double> DistErr { get; public set; }
+    public SpatialArgs(SpatialOperation operation, IShape shape);
+    private static SpatialArgs();
+    [CompilerGeneratedAttribute]
+public SpatialOperation get_Operation();
+    [CompilerGeneratedAttribute]
+public void set_Operation(SpatialOperation value);
+    public static double CalcDistanceFromErrPct(IShape shape, double distErrPct, SpatialContext ctx);
+    public double ResolveDistErr(SpatialContext ctx, double defaultDistErrPct);
+    public void Validate();
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+public IShape get_Shape();
+    [CompilerGeneratedAttribute]
+public void set_Shape(IShape value);
+    public Nullable`1<double> get_DistErrPct();
+    public void set_DistErrPct(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_DistErr();
+    [CompilerGeneratedAttribute]
+public void set_DistErr(Nullable`1<double> value);
+}
+public class Lucene.Net.Spatial.Queries.SpatialArgsParser : object {
+    public static string DIST_ERR_PCT;
+    public static string DIST_ERR;
+    public static string WriteSpatialArgs(SpatialArgs args);
+    public SpatialArgs Parse(string v, SpatialContext ctx);
+    protected static Nullable`1<double> ReadDouble(string v);
+    protected static bool ReadBool(string v, bool defaultValue);
+    protected static Dictionary`2<string, string> ParseMap(string body);
+}
+public class Lucene.Net.Spatial.Queries.SpatialOperation : object {
+    private static Dictionary`2<string, SpatialOperation> registry;
+    private static IList`1<SpatialOperation> list;
+    public static SpatialOperation BBoxIntersects;
+    public static SpatialOperation BBoxWithin;
+    public static SpatialOperation Contains;
+    public static SpatialOperation Intersects;
+    public static SpatialOperation IsEqualTo;
+    public static SpatialOperation IsDisjointTo;
+    public static SpatialOperation IsWithin;
+    public static SpatialOperation Overlaps;
+    private bool scoreIsMeaningful;
+    private bool sourceNeedsArea;
+    private bool targetNeedsArea;
+    private string name;
+    protected SpatialOperation(string name, bool scoreIsMeaningful, bool sourceNeedsArea, bool targetNeedsArea);
+    private static SpatialOperation();
+    public static SpatialOperation Get(string v);
+    public static IList`1<SpatialOperation> Values();
+    public static bool Is(SpatialOperation op, SpatialOperation[] tst);
+    public bool IsScoreIsMeaningful();
+    public bool IsSourceNeedsArea();
+    public bool IsTargetNeedsArea();
+    public string GetName();
+    public virtual string ToString();
+}
+public class Lucene.Net.Spatial.Queries.UnsupportedSpatialOperation : InvalidOperationException {
+    public UnsupportedSpatialOperation(SpatialOperation op);
+}
+public abstract class Lucene.Net.Spatial.SpatialStrategy : object {
+    protected SpatialContext ctx;
+    protected string fieldName;
+    protected SpatialStrategy(SpatialContext ctx, string fieldName);
+    public SpatialContext GetSpatialContext();
+    public string GetFieldName();
+    public abstract virtual AbstractField[] CreateIndexableFields(IShape shape);
+    public AbstractField CreateStoredField(IShape shape);
+    public abstract virtual ValueSource MakeDistanceValueSource(IPoint queryPoint);
+    public virtual ConstantScoreQuery MakeQuery(SpatialArgs args);
+    public abstract virtual Filter MakeFilter(SpatialArgs args);
+    public ValueSource MakeRecipDistanceValueSource(IShape queryShape);
+    public virtual string ToString();
+}
+public static class Lucene.Net.Spatial.Util.Arrays : object {
+    public static void Fill(T[] array, int fromIndex, int toIndex, T value);
+}
+public abstract class Lucene.Net.Spatial.Util.Bits : object {
+    public static Bits[] EMPTY_ARRAY;
+    private static Bits();
+    public virtual bool Get(int index);
+    public virtual int Length();
+}
+public class Lucene.Net.Spatial.Util.CachingDoubleValueSource : ValueSource {
+    protected ValueSource source;
+    protected Dictionary`2<int, double> cache;
+    public CachingDoubleValueSource(ValueSource source);
+    public virtual DocValues GetValues(IndexReader reader, IState state);
+    public virtual string Description();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+[ExtensionAttribute]
+public static class Lucene.Net.Spatial.Util.CompatibilityExtensions : object {
+    private static ConcurrentDictionary`2<Key`2<string, IndexReader>, IBits> _docsWithFieldCache;
+    public static Byte[] nlzTable;
+    private static CompatibilityExtensions();
+    [ExtensionAttribute]
+public static void Append(ITermAttribute termAtt, string str);
+    [ExtensionAttribute]
+public static void Append(ITermAttribute termAtt, char ch);
+    [ExtensionAttribute]
+internal static IBits GetDocsWithField(FieldCache fc, IndexReader reader, string field, IState state);
+    [ExtensionAttribute]
+public static void PurgeSpatialCaches(FieldCache fc);
+    private static IBits DocsWithFieldCacheEntry_CreateValue(IndexReader reader, Entry entryKey, bool setDocsWithField, IState state);
+    public static int BitUtilNlz(long x);
+}
+internal class Lucene.Net.Spatial.Util.Entry : object {
+    internal string field;
+    internal object custom;
+    public Entry(string field, object custom);
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.Util.FixedBitSet : DocIdSet {
+    private BitArray bits;
+    public bool IsCacheable { get; }
+    public FixedBitSet(int numBits);
+    public FixedBitSet(FixedBitSet other);
+    public static int bits2words(int numBits);
+    public IBits Bits();
+    public sealed virtual int Length();
+    public virtual bool get_IsCacheable();
+    public int Cardinality();
+    public sealed virtual bool Get(int index);
+    public void Set(int index);
+    public bool GetAndSet(int index);
+    public void Clear(int index);
+    public bool GetAndClear(int index);
+    public int NextSetBit(int index);
+    public int PrevSetBit(int index);
+    public void Or(FixedBitSet other);
+    private void Or(BitArray otherArr, int otherLen);
+    public void And(FixedBitSet other);
+    private void And(BitArray otherArr, int otherLen);
+    public void AndNot(FixedBitSet other);
+    private void AndNot(BitArray otherArr, int otherLen);
+    public void Set(int startIndex, int endIndex);
+    public void Clear(int startIndex, int endIndex);
+    public FixedBitSet Clone();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+    public virtual DocIdSetIterator Iterator(IState state);
+}
+public class Lucene.Net.Spatial.Util.FunctionQuery : Query {
+    protected ValueSource func;
+    public FunctionQuery(ValueSource func);
+    public ValueSource GetValueSource();
+    public virtual Query Rewrite(IndexReader reader, IState state);
+    public virtual void ExtractTerms(ISet`1<Term> terms);
+    public virtual Weight CreateWeight(Searcher searcher, IState state);
+    public virtual string ToString(string field);
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public interface Lucene.Net.Spatial.Util.IBits {
+    public abstract virtual bool Get(int index);
+    public abstract virtual int Length();
+}
+internal class Lucene.Net.Spatial.Util.Key`2 : ValueType {
+    public T1 Item1;
+    public T2 Item2;
+    public Key`2(T1 item1, T2 item2);
+    public sealed virtual bool Equals(Key`2<T1, T2> other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(Key`2<T1, T2> left, Key`2<T1, T2> right);
+    public static bool op_Inequality(Key`2<T1, T2> left, Key`2<T1, T2> right);
+}
+public class Lucene.Net.Spatial.Util.MatchAllBits : Bits {
+    private int len;
+    public MatchAllBits(int len);
+    public virtual bool Get(int index);
+    public virtual int Length();
+}
+public class Lucene.Net.Spatial.Util.MatchNoBits : Bits {
+    private int len;
+    public MatchNoBits(int len);
+    public virtual bool Get(int index);
+    public virtual int Length();
+}
+public class Lucene.Net.Spatial.Util.ReciprocalFloatFunction : ValueSource {
+    protected ValueSource source;
+    protected float m;
+    protected float a;
+    protected float b;
+    public ReciprocalFloatFunction(ValueSource source, float m, float a, float b);
+    public virtual DocValues GetValues(IndexReader reader, IState state);
+    public virtual string Description();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.Util.ShapeFieldCache`1 : object {
+    private IList`1[] cache;
+    public int defaultLength;
+    public ShapeFieldCache`1(int length, int defaultLength);
+    public void Add(int docid, T s);
+    public IList`1<T> GetShapes(int docid);
+}
+public class Lucene.Net.Spatial.Util.ShapeFieldCacheDistanceValueSource : ValueSource {
+    private ShapeFieldCacheProvider`1<IPoint> provider;
+    private SpatialContext ctx;
+    private IPoint from;
+    public ShapeFieldCacheDistanceValueSource(SpatialContext ctx, ShapeFieldCacheProvider`1<IPoint> provider, IPoint from);
+    public virtual DocValues GetValues(IndexReader reader, IState state);
+    public virtual string Description();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public abstract class Lucene.Net.Spatial.Util.ShapeFieldCacheProvider`1 : object {
+    private ConditionalWeakTable`2<IndexReader, ShapeFieldCache`1<T>> sidx;
+    protected int defaultSize;
+    protected string shapeField;
+    private object locker;
+    protected ShapeFieldCacheProvider`1(string shapeField, int defaultSize);
+    protected abstract virtual T ReadShape(Term term);
+    public ShapeFieldCache`1<T> GetCache(IndexReader reader, IState state);
+}
+public class Lucene.Net.Spatial.Util.TermsEnumCompatibility : object {
+    private IndexReader reader;
+    private string fieldName;
+    private TermEnum termEnum;
+    private bool initialState;
+    public TermsEnumCompatibility(IndexReader reader, string fieldName, IState state);
+    public TermEnum GetTermEnum();
+    public Term Term();
+    public Term Next(IState state);
+    public void Close();
+    public SeekStatus Seek(string value, IState state);
+    public SeekStatus SeekCeil(string value, IState state);
+    public int GetDocCount();
+    public void Docs(OpenBitSet bits, IState state);
+    public void Docs(FixedBitSet bits, IState state);
+}
+public class Lucene.Net.Spatial.Util.TermsFilter : Filter {
+    private SortedSet`1<Term> terms;
+    public void AddTerm(Term term);
+    public virtual DocIdSet GetDocIdSet(IndexReader reader, IState state);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.Util.ValueSourceFilter : Filter {
+    private Filter startingFilter;
+    private ValueSource source;
+    public double min;
+    public double max;
+    public ValueSourceFilter(Filter startingFilter, ValueSource source, double min, double max);
+    public virtual DocIdSet GetDocIdSet(IndexReader reader, IState state);
+}
+public class Lucene.Net.Spatial.Vector.DistanceValueSource : ValueSource {
+    private PointVectorStrategy strategy;
+    private IPoint from;
+    public DistanceValueSource(PointVectorStrategy strategy, IPoint from);
+    public virtual DocValues GetValues(IndexReader reader, IState state);
+    public virtual string Description();
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public class Lucene.Net.Spatial.Vector.PointVectorStrategy : SpatialStrategy {
+    public static string SUFFIX_X;
+    public static string SUFFIX_Y;
+    private string fieldNameX;
+    private string fieldNameY;
+    public int precisionStep;
+    public PointVectorStrategy(SpatialContext ctx, string fieldNamePrefix);
+    private static PointVectorStrategy();
+    public void SetPrecisionStep(int p);
+    public string GetFieldNameX();
+    public string GetFieldNameY();
+    public virtual AbstractField[] CreateIndexableFields(IShape shape);
+    public AbstractField[] CreateIndexableFields(IPoint point);
+    public virtual ValueSource MakeDistanceValueSource(IPoint queryPoint);
+    public virtual ConstantScoreQuery MakeQuery(SpatialArgs args);
+    public Query MakeQueryDistanceScore(SpatialArgs args);
+    public virtual Filter MakeFilter(SpatialArgs args);
+    private Query MakeWithin(IRectangle bbox);
+    private NumericRangeQuery`1<double> RangeQuery(string fieldName, Nullable`1<double> min, Nullable`1<double> max);
+    private Query MakeDisjoint(IRectangle bbox);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+public class Spatial4n.Exceptions.InvalidSpatialArgument : ArgumentException {
+    public InvalidSpatialArgument(string reason);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
