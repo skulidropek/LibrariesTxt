@@ -1,0 +1,372 @@
+internal class Microsoft.ServiceFabric.FabricTransport.Client.FabricTransportCallbackClient : object {
+    private TimeSpan defaultTimeout;
+    private IFabricClientConnection nativeClientConnection;
+    private string clientId;
+    private bool disposedValue;
+    public FabricTransportCallbackClient(IFabricClientConnection nativeClientConnection);
+    public string GetClientId();
+    public Task`1<Byte[]> RequestResponseAsync(Byte[] messageHeaders, Byte[] requestBody);
+    public void OneWayMessage(Byte[] messageHeaders, Byte[] requestBody);
+    internal IFabricAsyncOperationContext BeginRequest(Byte[] headers, Byte[] body, TimeSpan timeout, IFabricAsyncOperationCallback callback);
+    internal Byte[] EndRequest(IFabricAsyncOperationContext context);
+    protected virtual void Dispose(bool disposing);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Client.FabricTransportCallbackHandlerBroker : object {
+    private IFabricTransportCallbackMessageHandler callImpl;
+    public FabricTransportCallbackHandlerBroker(IFabricTransportCallbackMessageHandler callImpl);
+    public sealed virtual IFabricAsyncOperationContext BeginProcessRequest(IntPtr nativeClientId, IFabricServiceCommunicationMessage message, UInt32 timeoutMilliseconds, IFabricAsyncOperationCallback callback);
+    public sealed virtual IFabricServiceCommunicationMessage EndProcessRequest(IFabricAsyncOperationContext context);
+    public sealed virtual void HandleOneWay(IntPtr nativeClientId, IFabricServiceCommunicationMessage message);
+    private Task`1<Byte[]> RequestResponseAsync(string clientId, Byte[] header, Byte[] body, TimeSpan timeout);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Client.FabricTransportClient : object {
+    private IFabricServiceCommunicationClient2 nativeClient;
+    protected FabricTransportSettings settings;
+    [CompilerGeneratedAttribute]
+private string <ConnectionAddress>k__BackingField;
+    private bool disposedValue;
+    [CompilerGeneratedAttribute]
+private bool <IsValid>k__BackingField;
+    public FabricTransportSettings Settings { get; }
+    public string ConnectionAddress { get; private set; }
+    public bool IsValid { get; public set; }
+    public FabricTransportClient(FabricTransportSettings transportSettings, string connectionAddress, IFabricTransportClientConnectionHandler eventHandler, IFabricTransportCallbackMessageHandler contract);
+    public FabricTransportSettings get_Settings();
+    [CompilerGeneratedAttribute]
+public string get_ConnectionAddress();
+    [CompilerGeneratedAttribute]
+private void set_ConnectionAddress(string value);
+    [AsyncStateMachineAttribute("Microsoft.ServiceFabric.FabricTransport.Client.FabricTransportClient/<RequestResponseAsync>d__9")]
+public virtual Task`1<FabricTransportReplyMessage> RequestResponseAsync(Byte[] header, Byte[] requestBody, TimeSpan timeout);
+    public virtual void SendOneWay(Byte[] header, Byte[] requestBody);
+    private bool IsSecurityMismatch();
+    private void CreateNativeClient(FabricTransportSettings transportSettings, string connectionAddress, IFabricTransportClientConnectionHandler eventHandler, IFabricTransportCallbackMessageHandler contract);
+    private IFabricAsyncOperationContext BeginRequest(Byte[] headers, Byte[] body, TimeSpan timeout, IFabricAsyncOperationCallback callback);
+    private FabricTransportReplyMessage EndRequest(IFabricAsyncOperationContext context);
+    protected virtual void Dispose(bool disposing);
+    public void Abort();
+    private void internalAbort();
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public bool get_IsValid();
+    [CompilerGeneratedAttribute]
+public void set_IsValid(bool value);
+    [CompilerGeneratedAttribute]
+private void <Abort>b__18_0();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Client.FabricTransportNativeClientConnectionEventHandler : object {
+    private IFabricTransportClientConnectionHandler clientConnectionHandler;
+    public FabricTransportNativeClientConnectionEventHandler(IFabricTransportClientConnectionHandler clientConnectionHandler);
+    private sealed virtual override void Microsoft.ServiceFabric.FabricTransport.NativeServiceCommunication.IFabricServiceConnectionEventHandler.OnConnected(IntPtr connectionAddress);
+    private sealed virtual override void Microsoft.ServiceFabric.FabricTransport.NativeServiceCommunication.IFabricServiceConnectionEventHandler.OnDisconnected(IntPtr connectionAddress, int errorCode);
+}
+internal interface Microsoft.ServiceFabric.FabricTransport.Client.IFabricTransportCallbackMessageHandler {
+    public abstract virtual Task`1<Byte[]> RequestResponseAsync(Byte[] messageHeaders, Byte[] requestBody);
+    public abstract virtual void OneWayMessage(Byte[] messageHeaders, Byte[] requestBody);
+}
+internal interface Microsoft.ServiceFabric.FabricTransport.Client.IFabricTransportClientConnectionHandler {
+    public abstract virtual void OnConnected();
+    public abstract virtual void OnDisconnected();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.FabricServiceCommunicationMessage : object {
+    private PinCollection pin;
+    private IntPtr nativeHeaders;
+    private IntPtr nativeBody;
+    private bool disposedValue;
+    public FabricServiceCommunicationMessage(Byte[] headers, Byte[] body);
+    public sealed virtual IntPtr Get_Body();
+    public sealed virtual IntPtr Get_Headers();
+    protected virtual void Dispose(bool disposing);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.FabricServiceConfig : object {
+    private static FabricServiceConfig instance;
+    private static object instanceLock;
+    private static string TraceType;
+    private static string DefaultPackageName;
+    public SettingsType Settings;
+    public ConfigurationSettings configurationSettings;
+    private static FabricServiceConfig();
+    public static bool InitializeFromConfigPackage(string configPackageName);
+    public static bool Initialize(string fullFilePath, IFabricServiceConfigParser configParser);
+    private static bool InitializeWithCallerHoldingLock(string fullFilePath, IFabricServiceConfigParser configParser);
+    public static FabricServiceConfig GetConfig();
+    private static bool TryGetConfigPackageObject(string configPackageName, ConfigurationPackage& package);
+    private static string GetExeSettingsFilePath();
+    private static bool CheckifFileIsPresent(string fileName);
+    private static bool InitializeFromConfigPkgWithCallerHoldingLock(string configPackageName);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.FabricServiceConfigSection : object {
+    private static string TraceType;
+    private Action onInitialize;
+    private string sectionName;
+    private SettingsTypeSection exeSection;
+    private ConfigurationSection configSection;
+    public FabricServiceConfigSection(string sectionName, Action onInitialize);
+    private static FabricServiceConfigSection();
+    public bool Initialize();
+    private static bool DoesConfigurationSectionExist(FabricServiceConfig config);
+    private static bool IsExeSettingsFileEmpty(FabricServiceConfig config);
+    public T GetSetting(string settingName, T defaultValue);
+    private static T CastParameter(string param);
+    public IList`1<T> GetSettingsList(string settingName);
+    private static IList`1<T> CastParameterAsList(string param);
+    public Dictionary`2<string, string> GetSettingsMapFromPrefix(string settingPrefix);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.FabricTransportReplyMessage : object {
+    private Byte[] reply;
+    [CompilerGeneratedAttribute]
+private bool <IsException>k__BackingField;
+    public bool IsException { get; private set; }
+    public FabricTransportReplyMessage(bool isException, Byte[] reply);
+    [CompilerGeneratedAttribute]
+public bool get_IsException();
+    [CompilerGeneratedAttribute]
+private void set_IsException(bool value);
+    public Byte[] GetBody();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.FabricTransportSettings : object {
+    internal static string DefaultSectionName;
+    private static UInt32 DefaultQueueSize;
+    private static int DefaultConcurrentCalls;
+    private static string TraceType;
+    private static string RemoteSecurityPrincipalName;
+    private static string CertificateFindType;
+    private static string CertificateFindValue;
+    private static string CertificateStoreLocation;
+    private static string CertificateStoreName;
+    private static string CertificateRemoteCommonNames;
+    private static string CertificateRemoteThumbprints;
+    private static string CertificateIssuerThumbprints;
+    private static string CertificateFindValuebySecondary;
+    private static string CertificateProtectionLevel;
+    private static string CertificateApplicationIssuerStorePrefix;
+    private static string SecurityCredentialsType;
+    private static string MaxQueueSizeSettingName;
+    private static string MaxMessageSizeSettingName;
+    private static string MaxConcurrentCallsSettingName;
+    private static string OperationTimeoutInSecondsSettingName;
+    private static string KeepAliveTimeoutInSecondsSettingName;
+    private static string ConnectTimeoutInMillisecondsSettingName;
+    internal static UInt32 DefaultMaxReceivedMessageSize;
+    internal static TimeSpan DefaultConnectTimeout;
+    internal static TimeSpan DefaultOperationTimeout;
+    internal static TimeSpan DefaultKeepAliveTimeout;
+    [CompilerGeneratedAttribute]
+private TimeSpan <OperationTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <KeepAliveTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ConnectTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxMessageSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <MaxConcurrentCalls>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SecurityCredentials <SecurityCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FabricServiceConfigSection <ConfigSection>k__BackingField;
+    public TimeSpan OperationTimeout { get; public set; }
+    public TimeSpan KeepAliveTimeout { get; public set; }
+    public TimeSpan ConnectTimeout { get; public set; }
+    public long MaxMessageSize { get; public set; }
+    public long MaxQueueSize { get; public set; }
+    public long MaxConcurrentCalls { get; public set; }
+    public SecurityCredentials SecurityCredentials { get; public set; }
+    internal FabricServiceConfigSection ConfigSection { get; private set; }
+    private static FabricTransportSettings();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_OperationTimeout();
+    [CompilerGeneratedAttribute]
+public void set_OperationTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_KeepAliveTimeout();
+    [CompilerGeneratedAttribute]
+public void set_KeepAliveTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ConnectTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ConnectTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public long get_MaxMessageSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxMessageSize(long value);
+    [CompilerGeneratedAttribute]
+public long get_MaxQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxQueueSize(long value);
+    [CompilerGeneratedAttribute]
+public long get_MaxConcurrentCalls();
+    [CompilerGeneratedAttribute]
+public void set_MaxConcurrentCalls(long value);
+    [CompilerGeneratedAttribute]
+public SecurityCredentials get_SecurityCredentials();
+    [CompilerGeneratedAttribute]
+public void set_SecurityCredentials(SecurityCredentials value);
+    [CompilerGeneratedAttribute]
+internal FabricServiceConfigSection get_ConfigSection();
+    [CompilerGeneratedAttribute]
+private void set_ConfigSection(FabricServiceConfigSection value);
+    public static FabricTransportSettings LoadFrom(string sectionName, string filepath, string configPackageName);
+    public static bool TryLoadFrom(string sectionName, FabricTransportSettings& settings, string filepath, string configPackageName);
+    internal static FabricTransportSettings GetDefault(string sectionName);
+    internal bool InitializeConfigFileFromConfigPackage(string configPackageName);
+    internal bool InitializeConfigFile(string filePath);
+    internal bool InitializeSettingsFromConfig(string sectionName);
+    internal virtual void OnInitialize();
+    internal IntPtr ToNative(PinCollection pin);
+    private SecurityCredentials LoadSecurityCredential();
+    private SecurityCredentials WindowsSecurityCredentialsBuilder();
+    private SecurityCredentials X509SecurityCredentialsBuilder();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Helper : object {
+    internal static string Secure;
+    public static void ThrowIfValueOutOfBounds(long value, string argumentName);
+    public static Byte[] Get_Byte(IntPtr message);
+    internal static int GetEndpointPort(ICodePackageActivationContext codePackageActivationContext, string endpointResourceName);
+}
+internal interface Microsoft.ServiceFabric.FabricTransport.IFabricServiceConfigParser {
+    public abstract virtual SettingsType Parse(string fileName);
+}
+internal static class Microsoft.ServiceFabric.FabricTransport.NativeServiceCommunication : object {
+    internal static IFabricServiceCommunicationListener CreateServiceCommunicationListener(Guid& iid, IntPtr transportSettingsPtr, IntPtr listenerAddressPtr, IFabricCommunicationMessageHandler messageHandler, IFabricServiceConnectionHandler clientConnectionHandler);
+    internal static IFabricServiceCommunicationClient CreateServiceCommunicationClient(Guid& iid, IntPtr transportSettingsPtr, IntPtr connectionAddress, IFabricCommunicationMessageHandler notificationHandler, IFabricServiceConnectionEventHandler connectionEventHandler);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportListener : object {
+    private IFabricServiceCommunicationListener nativeListner;
+    private bool disposedValue;
+    public FabricTransportListener(FabricTransportSettings transportSettings, FabricTransportListenerAddress listenerAddress, IFabricTransportMessageHandler serviceImplementation, IFabricTransportConnectionHandler remotingConnectionHandler);
+    private void CreateNativeListener(IFabricTransportMessageHandler contract, FabricTransportSettings transportSettings, FabricTransportListenerAddress listenerAddress, IFabricTransportConnectionHandler connectionHandler);
+    private IFabricAsyncOperationContext OpenBeginWrapper(IFabricAsyncOperationCallback callback);
+    private string OpenEndWrapper(IFabricAsyncOperationContext context);
+    public Task`1<string> OpenAsync(CancellationToken cancellationToken);
+    public Task CloseAsync(CancellationToken cancellationToken);
+    public void Abort();
+    protected virtual override void Finalize();
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private IFabricAsyncOperationContext <OpenAsync>b__5_0(IFabricAsyncOperationCallback callback);
+    [CompilerGeneratedAttribute]
+private IFabricAsyncOperationContext <CloseAsync>b__6_0(IFabricAsyncOperationCallback callback);
+    [CompilerGeneratedAttribute]
+private void <Abort>b__7_0();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportListenerAddress : object {
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <IpAddressOrFQDN>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Port>k__BackingField;
+    public string Path { get; public set; }
+    public string IpAddressOrFQDN { get; public set; }
+    public int Port { get; public set; }
+    public FabricTransportListenerAddress(string ipAddressOrFQDN, int port, string path);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public string get_IpAddressOrFQDN();
+    [CompilerGeneratedAttribute]
+public void set_IpAddressOrFQDN(string value);
+    [CompilerGeneratedAttribute]
+public int get_Port();
+    [CompilerGeneratedAttribute]
+public void set_Port(int value);
+    internal IntPtr ToNative(PinCollection pin);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportListenerSettings : FabricTransportSettings {
+    internal static string DefaultEndpointResourceName;
+    private static string Tracetype;
+    private static string DefaultPackageName;
+    [CompilerGeneratedAttribute]
+private string <EndpointResourceName>k__BackingField;
+    public string EndpointResourceName { get; public set; }
+    private static FabricTransportListenerSettings();
+    [CompilerGeneratedAttribute]
+public string get_EndpointResourceName();
+    [CompilerGeneratedAttribute]
+public void set_EndpointResourceName(string value);
+    public static FabricTransportListenerSettings LoadFrom(string sectionName, string configPackageName);
+    public static bool TryLoadFrom(string sectionName, FabricTransportListenerSettings& listenerSettings, string configPackageName);
+    internal static FabricTransportListenerSettings GetDefault(string sectionName);
+    internal FabricTransportListenerAddress GetListenerAddress(ServiceContext serviceContext);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportMessageHandlerBroker : object {
+    private IFabricTransportMessageHandler service;
+    private IFabricTransportConnectionHandler nativeConnectionHandler;
+    public FabricTransportMessageHandlerBroker(IFabricTransportMessageHandler service, IFabricTransportConnectionHandler nativeConnectionHandler);
+    public sealed virtual IFabricAsyncOperationContext BeginProcessRequest(IntPtr nativeClientId, IFabricServiceCommunicationMessage message, UInt32 timeoutMilliseconds, IFabricAsyncOperationCallback callback);
+    public sealed virtual IFabricServiceCommunicationMessage EndProcessRequest(IFabricAsyncOperationContext context);
+    public sealed virtual void HandleOneWay(IntPtr nativeClientId, IFabricServiceCommunicationMessage message);
+    [AsyncStateMachineAttribute("Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportMessageHandlerBroker/<RequestResponseAsync>d__6")]
+private Task`1<FabricServiceCommunicationMessage> RequestResponseAsync(string clientId, Byte[] header, Byte[] body, TimeSpan timeout);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportRequestContext : object {
+    private string clientId;
+    private Func`2<string, FabricTransportCallbackClient> getCallBack;
+    private FabricTransportCallbackClient callback;
+    public string ClientId { get; public set; }
+    public FabricTransportRequestContext(string clientId, Func`2<string, FabricTransportCallbackClient> getCallBack);
+    public string get_ClientId();
+    public void set_ClientId(string value);
+    public FabricTransportCallbackClient GetCallbackClient();
+}
+internal class Microsoft.ServiceFabric.FabricTransport.Runtime.FabricTransportServiceConnectionHandlerBroker : object {
+    private IFabricTransportConnectionHandler connectionHandler;
+    public FabricTransportServiceConnectionHandlerBroker(IFabricTransportConnectionHandler serviceConnectionHandler);
+    public sealed virtual IFabricAsyncOperationContext BeginProcessConnect(IFabricClientConnection nativeClientConnection, UInt32 timeoutMilliseconds, IFabricAsyncOperationCallback callback);
+    public sealed virtual void EndProcessConnect(IFabricAsyncOperationContext context);
+    public sealed virtual IFabricAsyncOperationContext BeginProcessDisconnect(IntPtr nativeClientId, UInt32 timeoutMilliseconds, IFabricAsyncOperationCallback callback);
+    public sealed virtual void EndProcessDisconnect(IFabricAsyncOperationContext context);
+}
+internal interface Microsoft.ServiceFabric.FabricTransport.Runtime.IFabricTransportConnectionHandler {
+    public abstract virtual Task ConnectAsync(FabricTransportCallbackClient fabricTransportServiceRemotingCallback, TimeSpan timeout);
+    public abstract virtual Task DisconnectAsync(string clientId, TimeSpan timeout);
+    public abstract virtual FabricTransportCallbackClient GetCallBack(string clientId);
+}
+internal interface Microsoft.ServiceFabric.FabricTransport.Runtime.IFabricTransportMessageHandler {
+    public abstract virtual Task`1<FabricTransportReplyMessage> RequestResponseAsync(FabricTransportRequestContext requestContext, Byte[] messageHeaders, Byte[] requestBody);
+    public abstract virtual void HandleOneWay(FabricTransportRequestContext requestContext, Byte[] messageHeaders, Byte[] requestBody);
+}
+internal class Microsoft.ServiceFabric.FabricTransport.SettingsConfigParser : object {
+    public sealed virtual SettingsType Parse(string fileName);
+}
+[GeneratedCodeAttribute("Microsoft.Build.Tasks.StronglyTypedResourceBuilder", "15.1.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.ServiceFabric.FabricTransport.SR : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string Error_ConnectionDenied { get; }
+    internal static string Error_InvalidOperation { get; }
+    internal static string ErrorClientCallbackChannelNotFound { get; }
+    internal static string ErrorConfigFileNotFound { get; }
+    internal static string ErrorConfigPackageNotFound { get; }
+    internal static string ErrorInvalidAddress { get; }
+    internal static string ErrorSectionNameNotFound { get; }
+    internal static string ErrorServiceTooBusy { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_Error_ConnectionDenied();
+    internal static string get_Error_InvalidOperation();
+    internal static string get_ErrorClientCallbackChannelNotFound();
+    internal static string get_ErrorConfigFileNotFound();
+    internal static string get_ErrorConfigPackageNotFound();
+    internal static string get_ErrorInvalidAddress();
+    internal static string get_ErrorSectionNameNotFound();
+    internal static string get_ErrorServiceTooBusy();
+}

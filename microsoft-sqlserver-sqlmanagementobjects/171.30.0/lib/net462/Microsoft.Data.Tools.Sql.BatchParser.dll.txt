@@ -1,0 +1,381 @@
+internal static class Microsoft.Data.Tools.Sql.BatchParser.AssemblyVersionInfo : object {
+    public static string VersionString;
+    public static int MajorVersion;
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.BatchParser : object {
+    protected ScriptMessageDelegate _scriptMessageDelegate;
+    protected ScriptErrorDelegate _scriptErrorDelegate;
+    protected ExecuteDelegate _executeDelegate;
+    protected HaltParserDelegate _haltParserDelegate;
+    private int _startingLine;
+    protected bool _variableSubstitutionDisabled;
+    public ScriptMessageDelegate Message { get; public set; }
+    public ScriptErrorDelegate ErrorMessage { get; public set; }
+    public ExecuteDelegate Execute { get; public set; }
+    public HaltParserDelegate HaltParser { get; public set; }
+    public int StartingLine { get; public set; }
+    public ScriptMessageDelegate get_Message();
+    public void set_Message(ScriptMessageDelegate value);
+    public ScriptErrorDelegate get_ErrorMessage();
+    public void set_ErrorMessage(ScriptErrorDelegate value);
+    public ExecuteDelegate get_Execute();
+    public void set_Execute(ExecuteDelegate value);
+    public HaltParserDelegate get_HaltParser();
+    public void set_HaltParser(HaltParserDelegate value);
+    public int get_StartingLine();
+    public void set_StartingLine(int value);
+    public sealed virtual BatchParserAction Go(TextBlock batch, int repeatCount);
+    protected void RaiseScriptError(string message, ScriptMessageType messageType);
+    protected void RaiseScriptMessage(string message);
+    protected void RaiseHaltParser();
+    public virtual BatchParserAction OnError(Token token, OnErrorAction action);
+    public virtual BatchParserAction Include(TextBlock filename, TextReader& stream, String& newFilename);
+    public virtual string GetVariable(PositionStruct pos, string name);
+    public virtual void SetVariable(PositionStruct pos, string name, string value);
+    internal void DisableVariableSubstitution();
+}
+internal enum Microsoft.Data.Tools.Sql.BatchParser.BatchParserAction : Enum {
+    public int value__;
+    public static BatchParserAction Continue;
+    public static BatchParserAction Abort;
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.BatchParserException : Exception {
+    private static string ErrorCodeName;
+    private static string BeginName;
+    private static string EndName;
+    private static string TextName;
+    private static string TokenTypeName;
+    private ErrorCode _errorCode;
+    private PositionStruct _begin;
+    private PositionStruct _end;
+    private string _text;
+    private LexerTokenType _tokenType;
+    public ErrorCode ErrorCode { get; }
+    public PositionStruct Begin { get; }
+    public PositionStruct End { get; }
+    public string Text { get; }
+    public LexerTokenType TokenType { get; }
+    public BatchParserException(ErrorCode errorCode, Token token, string message);
+    public ErrorCode get_ErrorCode();
+    public PositionStruct get_Begin();
+    public PositionStruct get_End();
+    public string get_Text();
+    public LexerTokenType get_TokenType();
+}
+internal enum Microsoft.Data.Tools.Sql.BatchParser.ErrorCode : Enum {
+    public int value__;
+    public static ErrorCode ErrorCodeBase;
+    public static ErrorCode Success;
+    public static ErrorCode UnsupportedCommand;
+    public static ErrorCode UnrecognizedToken;
+    public static ErrorCode StringNotTerminated;
+    public static ErrorCode CommentNotTerminated;
+    public static ErrorCode InvalidVariableName;
+    public static ErrorCode InvalidNumber;
+    public static ErrorCode TokenExpected;
+    public static ErrorCode Aborted;
+    public static ErrorCode CircularReference;
+    public static ErrorCode VariableNotDefined;
+}
+internal interface Microsoft.Data.Tools.Sql.BatchParser.ICommandHandler {
+    public abstract virtual BatchParserAction Go(TextBlock batch, int repeatCount);
+    public abstract virtual BatchParserAction OnError(Token token, OnErrorAction action);
+    public abstract virtual BatchParserAction Include(TextBlock filename, TextReader& stream, String& newFilename);
+}
+internal interface Microsoft.Data.Tools.Sql.BatchParser.IVariableResolver {
+    public abstract virtual string GetVariable(PositionStruct pos, string name);
+    public abstract virtual void SetVariable(PositionStruct pos, string name, string value);
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.Lexer : object {
+    private LexerInput _currentInput;
+    private bool _popInputAtNextConsume;
+    private Token _currentToken;
+    private ErrorCode _errorCode;
+    private Stack`1<LexerInput> _inputStack;
+    private Func`1<bool> _lexerFunc;
+    private TextRuleFlags _textRuleFlags;
+    private PositionStruct _tokenBeginPosition;
+    [CompilerGeneratedAttribute]
+private bool <RecognizeSqlCmdSyntax>k__BackingField;
+    public Token CurrentToken { get; }
+    public LexerTokenType CurrentTokenType { get; }
+    public bool RecognizeSqlCmdSyntax { get; public set; }
+    public Lexer(TextReader input, string name);
+    public Token get_CurrentToken();
+    public LexerTokenType get_CurrentTokenType();
+    public void ConsumeToken();
+    public sealed virtual void Dispose();
+    public void PopAndCloseInput();
+    private static string GetCircularReferenceErrorMessage(string filename);
+    public void PushInput(TextReader reader, string name);
+    private void AcceptBlockComment();
+    private void AcceptLineComment();
+    private void AcceptIdentifier();
+    private void AcceptNewLine();
+    private void AcceptEscapableQuotedText(char closingChar);
+    private void AcceptQuotedText(char closingChar);
+    private void AcceptWhitespace();
+    private void Consume();
+    private void ChangeStateToBatchCommand(Token token);
+    private static bool IsDigit(char ch);
+    private static bool IsLetter(char ch);
+    private bool IsNewLineChar(char ch);
+    private bool IsWhitespaceChar(char ch);
+    private Nullable`1<char> Lookahead();
+    private Nullable`1<char> Lookahead(int lookahead);
+    private bool RuleError();
+    private bool RuleLine();
+    private bool RuleSetvar();
+    private bool RuleText();
+    private void RaiseError(ErrorCode code, string message);
+    private void SetState(Func`1<bool> lexerFunc);
+    internal void SetTextState(TextRuleFlags textRuleFlags);
+    private void SetToken(LexerTokenType lexerTokenType);
+    private bool TryAccept(string text, bool wordBoundary);
+    private bool TryAcceptBatchCommandAndSetToken();
+    internal static bool IsIdentifierChar(char ch);
+    internal static bool IsStartIdentifierChar(char ch);
+    [CompilerGeneratedAttribute]
+public bool get_RecognizeSqlCmdSyntax();
+    [CompilerGeneratedAttribute]
+public void set_RecognizeSqlCmdSyntax(bool value);
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.LexerInput : object {
+    private string _filename;
+    private TextReader _input;
+    private int _currentLine;
+    private int _currentColumn;
+    private int _bufferStartOffset;
+    private int _currentSbOffset;
+    private StringBuilder _buffer;
+    public string Filename { get; }
+    public int CurrentLine { get; }
+    public int CurrentColumn { get; }
+    public int CurrentOffset { get; }
+    public LexerInput(TextReader reader, string filename);
+    public string get_Filename();
+    public int get_CurrentLine();
+    public int get_CurrentColumn();
+    public void Consume();
+    public sealed virtual void Dispose();
+    public int get_CurrentOffset();
+    public int EnsureBytes(int bytesToBuffer);
+    public Nullable`1<char> Lookahead();
+    public Nullable`1<char> Lookahead(int lookahead);
+    public string FlushBufferedText();
+}
+internal enum Microsoft.Data.Tools.Sql.BatchParser.LexerTokenType : Enum {
+    public int value__;
+    public static LexerTokenType None;
+    public static LexerTokenType Text;
+    public static LexerTokenType TextVerbatim;
+    public static LexerTokenType Whitespace;
+    public static LexerTokenType NewLine;
+    public static LexerTokenType String;
+    public static LexerTokenType Eof;
+    public static LexerTokenType Error;
+    public static LexerTokenType Comment;
+    public static LexerTokenType Go;
+    public static LexerTokenType Reset;
+    public static LexerTokenType Ed;
+    public static LexerTokenType Execute;
+    public static LexerTokenType Quit;
+    public static LexerTokenType Exit;
+    public static LexerTokenType Include;
+    public static LexerTokenType Serverlist;
+    public static LexerTokenType Setvar;
+    public static LexerTokenType List;
+    public static LexerTokenType ErrorCommand;
+    public static LexerTokenType Out;
+    public static LexerTokenType Perftrace;
+    public static LexerTokenType Connect;
+    public static LexerTokenType OnError;
+    public static LexerTokenType Help;
+    public static LexerTokenType Xml;
+    public static LexerTokenType ListVar;
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.LineInfo : object {
+    private IEnumerable`1<Token> _tokens;
+    private IEnumerable`1<VariableReference> _variableRefs;
+    public LineInfo(IEnumerable`1<Token> tokens, IEnumerable`1<VariableReference> variableRefs);
+    public PositionStruct GetStreamPositionForOffset(int offset);
+    internal static void CalculateLineColumnForOffset(Token token, int offset, Int32& line, Int32& column);
+    internal static void CalculateLineColumnForOffset(string text, int offset, int offsetDelta, int lineDelta, int columnDelta, Int32& line, Int32& column);
+    private int CalculateVarsUnresolvedOffset(int offset);
+}
+internal enum Microsoft.Data.Tools.Sql.BatchParser.OnErrorAction : Enum {
+    public int value__;
+    public static OnErrorAction Ignore;
+    public static OnErrorAction Exit;
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.Parser : object {
+    private ICommandHandler _commandHandler;
+    private Lexer _lexer;
+    private List`1<Token> _tokenBuffer;
+    private IVariableResolver _variableResolver;
+    [CompilerGeneratedAttribute]
+private bool <ThrowOnUnresolvedVariable>k__BackingField;
+    public bool ThrowOnUnresolvedVariable { get; public set; }
+    private Token LookaheadToken { get; }
+    private LexerTokenType LookaheadTokenType { get; }
+    public Parser(ICommandHandler commandHandler, IVariableResolver variableResolver, TextReader reader, string name);
+    [CompilerGeneratedAttribute]
+public bool get_ThrowOnUnresolvedVariable();
+    [CompilerGeneratedAttribute]
+public void set_ThrowOnUnresolvedVariable(bool value);
+    private Token get_LookaheadToken();
+    private LexerTokenType get_LookaheadTokenType();
+    public sealed virtual void Dispose();
+    private bool AcceptWhitespaceOrComment();
+    private bool Accept(LexerTokenType lexerTokenType);
+    private void AddTokenToStringBuffer();
+    private void CheckVariableReferences(Token token);
+    private void AddVariableReferences(Token token, int offset, IList`1<VariableReference> variableRefs);
+    private static Token GetSubToken(Token token, int startOffset, int endOffset, Nullable`1<LexerTokenType> newTokenType);
+    private LexerTokenType Accept();
+    private void ExecuteBatch(int repeatCount);
+    private bool Expect(LexerTokenType lexerTokenType);
+    private bool ExpectAndAccept(LexerTokenType lexerTokenType);
+    internal void Parse();
+    private void ParseGo();
+    private void ParseInclude();
+    private IEnumerable`1<Token> SplitQuotedTextToken(Token token);
+    internal void PushInput(TextReader reader, string filename);
+    private void ParseLines();
+    private void RemoveLastWhitespaceToken();
+    private void ParseOnErrorCommand(Token onErrorToken);
+    private void ParseSetvar(Token setvarToken);
+    internal void RaiseError(ErrorCode errorCode, string message);
+    internal static void RaiseError(ErrorCode errorCode, Token token, string message);
+    internal string ResolveVariables(Token inputToken, int offset, List`1<VariableReference> variableRefs);
+    private string UnquoteVariableValue(string s);
+    public void SetRecognizeSqlCmdSyntax(bool recognizeSqlCmdSyntax);
+    public static TextReader GetBufferedTextReaderForFile(string filename);
+    internal void SetBatchDelimiter(string batchSeparator);
+    public static string TokenTypeToCommandString(LexerTokenType lexerTokenType);
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.PositionStruct : ValueType {
+    private int _line;
+    private int _column;
+    private int _offset;
+    private string _filename;
+    public int Line { get; }
+    public int Column { get; }
+    public int Offset { get; }
+    public string Filename { get; }
+    public PositionStruct(int line, int column, int offset, string filename);
+    public int get_Line();
+    public int get_Column();
+    public int get_Offset();
+    public string get_Filename();
+}
+internal enum Microsoft.Data.Tools.Sql.BatchParser.ScriptMessageType : Enum {
+    public int value__;
+    public static ScriptMessageType FatalError;
+    public static ScriptMessageType Error;
+    public static ScriptMessageType Warning;
+}
+[CompilerGeneratedAttribute]
+internal class Microsoft.Data.Tools.Sql.BatchParser.SR : object {
+    public static CultureInfo Culture { get; public set; }
+    public static string BatchParser_CircularReference { get; }
+    public static string BatchParser_CommentNotTerminated { get; }
+    public static string BatchParser_IncorrectSyntax { get; }
+    public static string BatchParser_StringNotTerminated { get; }
+    public static string BatchParser_VariableNotDefined { get; }
+    public static string EE_ExecutionError_CommandNotSupported { get; }
+    public static CultureInfo get_Culture();
+    public static void set_Culture(CultureInfo value);
+    public static string get_BatchParser_CircularReference();
+    public static string get_BatchParser_CommentNotTerminated();
+    public static string get_BatchParser_IncorrectSyntax();
+    public static string get_BatchParser_StringNotTerminated();
+    public static string get_BatchParser_VariableNotDefined();
+    public static string get_EE_ExecutionError_CommandNotSupported();
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.TextBlock : object {
+    private Parser _parser;
+    private IEnumerable`1<Token> _tokens;
+    public TextBlock(Parser parser, Token token);
+    public TextBlock(Parser parser, IEnumerable`1<Token> tokens);
+    public void GetText(bool resolveVariables, String& text, LineInfo& lineInfo);
+}
+[FlagsAttribute]
+internal enum Microsoft.Data.Tools.Sql.BatchParser.TextRuleFlags : Enum {
+    public int value__;
+    public static TextRuleFlags ReportWhitespace;
+    public static TextRuleFlags RecognizeDoubleQuotedString;
+    public static TextRuleFlags RecognizeSingleQuotedString;
+    public static TextRuleFlags RecognizeLineComment;
+    public static TextRuleFlags RecognizeBlockComment;
+    public static TextRuleFlags RecognizeBrace;
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.Token : object {
+    [CompilerGeneratedAttribute]
+private string <Filename>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PositionStruct <Begin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PositionStruct <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Text>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LexerTokenType <TokenType>k__BackingField;
+    public string Filename { get; private set; }
+    public PositionStruct Begin { get; private set; }
+    public PositionStruct End { get; private set; }
+    public string Text { get; private set; }
+    public LexerTokenType TokenType { get; private set; }
+    internal Token(LexerTokenType tokenType, PositionStruct begin, PositionStruct end, string text, string filename);
+    [CompilerGeneratedAttribute]
+public string get_Filename();
+    [CompilerGeneratedAttribute]
+private void set_Filename(string value);
+    [CompilerGeneratedAttribute]
+public PositionStruct get_Begin();
+    [CompilerGeneratedAttribute]
+private void set_Begin(PositionStruct value);
+    [CompilerGeneratedAttribute]
+public PositionStruct get_End();
+    [CompilerGeneratedAttribute]
+private void set_End(PositionStruct value);
+    [CompilerGeneratedAttribute]
+public string get_Text();
+    [CompilerGeneratedAttribute]
+private void set_Text(string value);
+    [CompilerGeneratedAttribute]
+public LexerTokenType get_TokenType();
+    [CompilerGeneratedAttribute]
+private void set_TokenType(LexerTokenType value);
+}
+internal class Microsoft.Data.Tools.Sql.BatchParser.VariableReference : object {
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Start>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <VariableName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <VariableValue>k__BackingField;
+    public int Length { get; private set; }
+    public int Start { get; private set; }
+    public string VariableName { get; private set; }
+    public string VariableValue { get; internal set; }
+    public VariableReference(int start, int length, string variableName);
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+private void set_Length(int value);
+    [CompilerGeneratedAttribute]
+public int get_Start();
+    [CompilerGeneratedAttribute]
+private void set_Start(int value);
+    [CompilerGeneratedAttribute]
+public string get_VariableName();
+    [CompilerGeneratedAttribute]
+private void set_VariableName(string value);
+    [CompilerGeneratedAttribute]
+public string get_VariableValue();
+    [CompilerGeneratedAttribute]
+internal void set_VariableValue(string value);
+}

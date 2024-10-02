@@ -1,0 +1,523 @@
+public class FastSerialization.DeferedRegion : ValueType {
+    internal Deserializer deserializer;
+    internal StreamLabel startPosition;
+    internal Action fromStream;
+    public bool IsFinished { get; }
+    public Deserializer Deserializer { get; }
+    public StreamLabel StartPosition { get; }
+    public void Write(Serializer serializer, Action toStream);
+    public void Read(Deserializer deserializer, Action fromStream);
+    public void FinishRead(bool preserveStreamPosition);
+    public bool get_IsFinished();
+    public Deserializer get_Deserializer();
+    public StreamLabel get_StartPosition();
+    private void FinishReadHelper(bool preserveStreamPosition);
+}
+public class FastSerialization.Deserializer : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<string, Type> <TypeResolver>k__BackingField;
+    private StreamWriter log;
+    private SerializationType typeBeingRead;
+    internal IStreamReader reader;
+    internal IFastSerializable entryObject;
+    internal IDictionary`2<StreamLabel, IFastSerializable> ObjectsInGraph;
+    internal IDictionary`2<ForwardReference, IFastSerializable> unInitializedForwardReferences;
+    internal List`1<StreamLabel> forwardReferenceDefinitions;
+    internal bool allowLazyDeserialization;
+    internal bool deferForwardReferences;
+    private Dictionary`2<string, Func`1<IFastSerializable>> factories;
+    private Func`2<Type, IFastSerializable> defaultFactory;
+    public int VersionBeingRead { get; }
+    public int MinimumReaderVersionBeingRead { get; }
+    public string Name { get; private set; }
+    public Func`2<string, Type> TypeResolver { get; public set; }
+    public StreamLabel Current { get; }
+    public IStreamReader Reader { get; }
+    public Deserializer(string filePath);
+    public Deserializer(Stream inputStream, string streamName);
+    public Deserializer(Stream inputStream, string streamName, bool leaveOpen);
+    public Deserializer(IStreamReader reader, string streamName);
+    public string GetEntryTypeName();
+    public void GetEntryObject(T& ret);
+    public IFastSerializable GetEntryObject();
+    public void Read(Byte[] buffer, int offset, int length);
+    public void Read(Boolean& ret);
+    public void Read(Byte& ret);
+    public void Read(Int16& ret);
+    public void Read(Int32& ret);
+    public void Read(Int64& ret);
+    public void Read(Guid& ret);
+    public void Read(Single& ret);
+    public void Read(Double& ret);
+    public void Read(String& ret);
+    public void Read(StreamLabel& ret);
+    public void Read(T& ret);
+    public IFastSerializable ReadObject();
+    public bool ReadBool();
+    public byte ReadByte();
+    public short ReadInt16();
+    public int ReadInt();
+    public long ReadInt64();
+    public float ReadFloat();
+    public double ReadDouble();
+    public string ReadString();
+    public StreamLabel ReadLabel();
+    public ForwardReference ReadForwardReference();
+    public StreamLabel ResolveForwardReference(ForwardReference reference, bool preserveCurrent);
+    public int get_VersionBeingRead();
+    public int get_MinimumReaderVersionBeingRead();
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+private void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public Func`2<string, Type> get_TypeResolver();
+    [CompilerGeneratedAttribute]
+public void set_TypeResolver(Func`2<string, Type> value);
+    public void RegisterFactory(Type type, Func`1<IFastSerializable> factory);
+    public void RegisterFactory(string typeName, Func`1<IFastSerializable> factory);
+    public void RegisterDefaultFactory(Func`2<Type, IFastSerializable> defaultFactory);
+    public bool TryReadTagged(Boolean& ret);
+    public bool TryReadTagged(Byte& ret);
+    public bool TryReadTagged(Int16& ret);
+    public bool TryReadTagged(Int32& ret);
+    public bool TryReadTagged(Int64& ret);
+    public bool TryReadTagged(String& ret);
+    public int TryReadTaggedBlobHeader();
+    public bool TryReadTagged(T& ret);
+    public IFastSerializable TryReadTaggedObject();
+    public void Goto(StreamLabel label);
+    public void Goto(ForwardReference reference);
+    public StreamLabel get_Current();
+    public IStreamReader get_Reader();
+    public sealed virtual void Dispose();
+    [ConditionalAttribute("DEBUG_SERIALIZE")]
+public void Log(string str);
+    internal IFastSerializable ReadObject(StreamLabel label);
+    private IFastSerializable ReadObjectDefintion();
+    private IFastSerializable ReadObjectDefinition(Tags tag, StreamLabel objectLabel);
+    internal Func`1<IFastSerializable> GetFactory(string fullName);
+    private void FindEndTag(SerializationType type, IFastSerializable objectBeingDeserialized);
+    private void DefineForwardReference(ForwardReference forwardReference, StreamLabel definitionLabel);
+    private Tags ReadTag();
+}
+public enum FastSerialization.ForwardReference : Enum {
+    public int value__;
+    public static ForwardReference Invalid;
+}
+public interface FastSerialization.IFastSerializable {
+    public abstract virtual void ToStream(Serializer serializer);
+    public abstract virtual void FromStream(Deserializer deserializer);
+}
+public interface FastSerialization.IFastSerializableVersion {
+    public int Version { get; }
+    public int MinimumVersionCanRead { get; }
+    public int MinimumReaderVersion { get; }
+    public abstract virtual int get_Version();
+    public abstract virtual int get_MinimumVersionCanRead();
+    public abstract virtual int get_MinimumReaderVersion();
+}
+public class FastSerialization.IOStreamStreamReader : MemoryStreamReader {
+    internal static int align;
+    internal static int defaultBufferSize;
+    internal Stream inputStream;
+    internal long inputStreamBytesRead;
+    private bool leaveOpen;
+    internal long positionInStream;
+    public StreamLabel Current { get; }
+    public long Length { get; }
+    public bool HasLength { get; }
+    public IOStreamStreamReader(string fileName);
+    public IOStreamStreamReader(Stream inputStream, int bufferSize, bool leaveOpen);
+    public void Close();
+    public virtual StreamLabel get_Current();
+    public virtual void Goto(StreamLabel label);
+    public virtual long get_Length();
+    public virtual bool get_HasLength();
+    public virtual void Read(Byte[] data, int offset, int length);
+    protected virtual void Dispose(bool disposing);
+    internal virtual void Fill(int minimum);
+}
+public class FastSerialization.IOStreamStreamWriter : MemoryStreamWriter {
+    private static int defaultBufferSize;
+    private Stream outputStream;
+    private bool leaveOpen;
+    private long streamLength;
+    public Stream RawStream { get; }
+    public long Length { get; }
+    public IOStreamStreamWriter(string fileName);
+    public IOStreamStreamWriter(Stream outputStream, int bufferSize, bool leaveOpen);
+    public void Flush();
+    public void Close();
+    public Stream get_RawStream();
+    public virtual long get_Length();
+    public virtual StreamLabel GetLabel();
+    public virtual void Clear();
+    public virtual MemoryStreamReader GetReader();
+    public virtual Byte[] GetBytes();
+    internal virtual void MakeSpace();
+    protected virtual void Dispose(bool disposing);
+}
+public interface FastSerialization.IStreamReader {
+    public StreamLabel Current { get; }
+    public abstract virtual byte ReadByte();
+    public abstract virtual short ReadInt16();
+    public abstract virtual int ReadInt32();
+    public abstract virtual long ReadInt64();
+    public abstract virtual string ReadString();
+    public abstract virtual void Read(Byte[] data, int offset, int length);
+    public abstract virtual StreamLabel ReadLabel();
+    public abstract virtual void Goto(StreamLabel label);
+    public abstract virtual StreamLabel get_Current();
+    public abstract virtual void GotoSuffixLabel();
+}
+public interface FastSerialization.IStreamWriter {
+    public abstract virtual void Write(byte value);
+    public abstract virtual void Write(short value);
+    public abstract virtual void Write(int value);
+    public abstract virtual void Write(long value);
+    public abstract virtual void Write(StreamLabel value);
+    public abstract virtual void Write(string value);
+    public abstract virtual StreamLabel GetLabel();
+    public abstract virtual void WriteSuffixLabel(StreamLabel value);
+}
+[ExtensionAttribute]
+public static class FastSerialization.IStreamWriterExentions : object {
+    [ExtensionAttribute]
+public static void Write(IStreamWriter writer, Guid guid);
+    [ExtensionAttribute]
+public static Guid ReadGuid(IStreamReader reader);
+    [ExtensionAttribute]
+public static string ReadNullTerminatedUnicodeString(IStreamReader reader, StringBuilder sb);
+    [ExtensionAttribute]
+public static StreamLabel Add(StreamLabel label, int offset);
+    [ExtensionAttribute]
+public static long Sub(StreamLabel label, StreamLabel other);
+    [ExtensionAttribute]
+public static void Skip(IStreamReader reader, int byteCount);
+}
+public class FastSerialization.MemoryMappedFileStreamReader : object {
+    private static int BlockCopyCapacity;
+    private MemoryMappedFile _file;
+    private long _fileLength;
+    private bool _leaveOpen;
+    private MemoryMappedViewAccessor _view;
+    private IntPtr _viewAddress;
+    private long _viewOffset;
+    private long _capacity;
+    private long _offset;
+    public StreamLabel Current { get; }
+    public long Length { get; }
+    protected MemoryMappedFile File { get; }
+    public MemoryMappedFileStreamReader(string mapName, long length);
+    public MemoryMappedFileStreamReader(MemoryMappedFile file, long length, bool leaveOpen);
+    public static MemoryMappedFileStreamReader CreateFromFile(string path);
+    public sealed virtual StreamLabel get_Current();
+    public long get_Length();
+    protected MemoryMappedFile get_File();
+    public sealed virtual void Dispose();
+    public void Seek(long offset);
+    public sealed virtual void Goto(StreamLabel label);
+    public sealed virtual void GotoSuffixLabel();
+    public sealed virtual void Read(Byte[] data, int offset, int length);
+    public T Read();
+    public sealed virtual byte ReadByte();
+    public sealed virtual short ReadInt16();
+    public sealed virtual int ReadInt32();
+    public sealed virtual long ReadInt64();
+    public sealed virtual StreamLabel ReadLabel();
+    public sealed virtual string ReadString();
+    protected void Resize(int capacity);
+    protected virtual void Dispose(bool disposing);
+}
+public class FastSerialization.MemoryStreamReader : object {
+    internal Byte[] bytes;
+    internal int position;
+    internal int endPosition;
+    private StringBuilder sb;
+    public long Length { get; }
+    public bool HasLength { get; }
+    public StreamLabel Current { get; }
+    public MemoryStreamReader(Byte[] data);
+    public MemoryStreamReader(Byte[] data, int start, int length);
+    public virtual long get_Length();
+    public virtual bool get_HasLength();
+    public virtual void Read(Byte[] data, int offset, int length);
+    public sealed virtual byte ReadByte();
+    public sealed virtual short ReadInt16();
+    public sealed virtual int ReadInt32();
+    public sealed virtual long ReadInt64();
+    public sealed virtual string ReadString();
+    public sealed virtual StreamLabel ReadLabel();
+    public virtual void Goto(StreamLabel label);
+    public virtual StreamLabel get_Current();
+    public virtual void GotoSuffixLabel();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    internal virtual void Fill(int minBytes);
+}
+public class FastSerialization.MemoryStreamWriter : object {
+    internal Byte[] bytes;
+    internal int endPosition;
+    public long Length { get; }
+    public MemoryStreamWriter(int initialSize);
+    public virtual MemoryStreamReader GetReader();
+    public virtual long get_Length();
+    public virtual Byte[] GetBytes();
+    public virtual void Clear();
+    public sealed virtual void Write(byte value);
+    public sealed virtual void Write(short value);
+    public sealed virtual void Write(int value);
+    public sealed virtual void Write(long value);
+    public sealed virtual void Write(StreamLabel value);
+    public sealed virtual void Write(string value);
+    public virtual StreamLabel GetLabel();
+    public sealed virtual void WriteSuffixLabel(StreamLabel value);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    internal virtual void MakeSpace();
+}
+public class FastSerialization.PinnedStreamReader : IOStreamStreamReader {
+    private GCHandle pinningHandle;
+    private Byte* bufferStart;
+    public PinnedStreamReader(string fileName, int bufferSize);
+    public PinnedStreamReader(Stream inputStream, int bufferSize);
+    public PinnedStreamReader Clone();
+    public Byte* GetPointer(StreamLabel Position, int length);
+    public Byte* GetPointer(int length);
+    protected virtual override void Finalize();
+    protected virtual void Dispose(bool disposing);
+}
+public class FastSerialization.SegmentedMemoryStreamReader : object {
+    private static int BlockCopyCapacity;
+    internal SegmentedList`1<byte> bytes;
+    internal int position;
+    internal int endPosition;
+    private StringBuilder sb;
+    public long Length { get; }
+    public StreamLabel Current { get; }
+    public SegmentedMemoryStreamReader(SegmentedList`1<byte> data);
+    public SegmentedMemoryStreamReader(SegmentedList`1<byte> data, int start, int length);
+    public virtual long get_Length();
+    public byte ReadByte();
+    public short ReadInt16();
+    public int ReadInt32();
+    public long ReadInt64();
+    public string ReadString();
+    public StreamLabel ReadLabel();
+    public virtual void Goto(StreamLabel label);
+    public virtual StreamLabel get_Current();
+    public virtual void GotoSuffixLabel();
+    public void Dispose();
+    protected virtual void Dispose(bool disposing);
+    internal virtual void Fill(int minBytes);
+}
+public class FastSerialization.SegmentedMemoryStreamWriter : object {
+    protected SegmentedList`1<byte> bytes;
+    public long Length { get; }
+    public SegmentedMemoryStreamWriter(int initialSize);
+    public virtual long get_Length();
+    public virtual void Clear();
+    public void Write(byte value);
+    public void Write(short value);
+    public void Write(int value);
+    public void Write(long value);
+    public void Write(StreamLabel value);
+    public void Write(string value);
+    public virtual StreamLabel GetLabel();
+    public void WriteSuffixLabel(StreamLabel value);
+    public void WriteToStream(Stream outputStream);
+    public SegmentedMemoryStreamReader GetReader();
+    public void Dispose();
+    protected virtual void MakeSpace();
+    public Byte[] GetBytes();
+}
+public class FastSerialization.SerializationException : Exception {
+    public SerializationException(string message);
+}
+internal class FastSerialization.SerializationType : object {
+    internal int version;
+    internal int minimumReaderVersion;
+    internal string fullName;
+    internal Func`1<IFastSerializable> factory;
+    public int Version { get; }
+    public int MinimumReaderVersion { get; }
+    public string FullName { get; }
+    internal SerializationType(Type type);
+    internal SerializationType(string fullName, Deserializer deserializer);
+    public int get_Version();
+    public int get_MinimumReaderVersion();
+    public string get_FullName();
+    public IFastSerializable CreateInstance();
+    public virtual string ToString();
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class FastSerialization.Serializer : object {
+    private StreamWriter log;
+    internal IStreamWriter writer;
+    internal IDictionary`2<RuntimeTypeHandle, SerializationType> TypesInGraph;
+    internal IDictionary`2<IFastSerializable, StreamLabel> ObjectsInGraph;
+    internal IDictionary`2<IFastSerializable, ForwardReference> ObjectsWithForwardReferences;
+    internal List`1<StreamLabel> forwardReferenceDefinitions;
+    public IStreamWriter Writer { get; }
+    public Serializer(string filePath, IFastSerializable entryObject);
+    public Serializer(Stream outputStream, IFastSerializable entryObject);
+    public Serializer(Stream outputStream, IFastSerializable entryObject, bool leaveOpen);
+    public Serializer(IStreamWriter writer, IFastSerializable entryObject);
+    public void Write(bool value);
+    public void Write(byte value);
+    public void Write(short value);
+    public void Write(int value);
+    public void Write(long value);
+    public void Write(Guid value);
+    public void Write(string value);
+    public void Write(float value);
+    public void Write(double value);
+    public void Write(StreamLabel value);
+    public void Write(ForwardReference value);
+    public void Write(IFastSerializable obj);
+    public void WriteDefered(IFastSerializable obj);
+    public void WritePrivate(IFastSerializable obj);
+    public ForwardReference GetForwardReference();
+    public void DefineForwardReference(ForwardReference forwardReference);
+    public void WriteTagged(bool value);
+    public void WriteTagged(byte value);
+    public void WriteTagged(short value);
+    public void WriteTagged(int value);
+    public void WriteTagged(long value);
+    public void WriteTagged(string value);
+    public void WriteTagged(IFastSerializable value);
+    public void WriteTaggedBlobHeader(int size);
+    public void WriteTaggedEnd();
+    public IStreamWriter get_Writer();
+    public void Close();
+    [ConditionalAttribute("DEBUG_SERIALIZE")]
+public void Log(string str);
+    private void WriteTag(Tags tag);
+    private void WriteObjectRef(IFastSerializable obj, bool defered);
+    private void WriteTypeForObject(IFastSerializable obj);
+    private void WriteObjectData(IFastSerializable obj, Tags beginTag);
+    private void WriteDeferedObjects();
+    private SerializationType CreateTypeForObject(IFastSerializable instance);
+    public sealed virtual void Dispose();
+}
+public enum FastSerialization.StreamLabel : Enum {
+    public long value__;
+    public static StreamLabel Invalid;
+}
+internal enum FastSerialization.Tags : Enum {
+    public byte value__;
+    public static Tags Error;
+    public static Tags NullReference;
+    public static Tags ObjectReference;
+    public static Tags ForwardReference;
+    public static Tags BeginObject;
+    public static Tags BeginPrivateObject;
+    public static Tags EndObject;
+    public static Tags ForwardDefinition;
+    public static Tags Byte;
+    public static Tags Int16;
+    public static Tags Int32;
+    public static Tags Int64;
+    public static Tags SkipRegion;
+    public static Tags String;
+    public static Tags Blob;
+    public static Tags Limit;
+}
+internal class System.Collections.Generic.FunctorComparer`1 : object {
+    private Comparison`1<T> comparison;
+    public FunctorComparer`1(Comparison`1<T> comparison);
+    public sealed virtual int Compare(T x, T y);
+}
+[DefaultMemberAttribute("Item")]
+[DebuggerDisplayAttribute("Count = {Count}")]
+public class System.Collections.Generic.GrowableArray`1 : ValueType {
+    private T[] array;
+    private int arrayLength;
+    public T Item { get; public set; }
+    public int Count { get; public set; }
+    public bool Empty { get; }
+    public T Top { get; }
+    public bool EmptyCapacity { get; }
+    public T[] UnderlyingArray { get; }
+    public GrowableArray`1(int initialSize);
+    public T get_Item(int index);
+    public void set_Item(int index, T value);
+    public int get_Count();
+    public void set_Count(int value);
+    public void Clear();
+    public void Add(T item);
+    public void AddRange(IEnumerable`1<T> items);
+    public void Insert(int index, T item);
+    public void RemoveRange(int index, int count);
+    public void Set(int index, T value);
+    public T& GetRef(int index);
+    public T Get(int index);
+    public bool get_Empty();
+    public T Pop();
+    public T get_Top();
+    public void Trim(int maxWaste);
+    public bool get_EmptyCapacity();
+    public virtual string ToString();
+    public bool BinarySearch(Key key, Int32& index, Func`3<Key, T, int> comparison);
+    public void Sort(int index, int count, Comparison`1<T> comparison);
+    public void Sort(Comparison`1<T> comparison);
+    public GrowableArray`1<T1> Foreach(Func`2<T, T1> func);
+    public bool Search(Key key, int startIndex, Func`3<Key, T, int> compare, Int32& index);
+    public T[] get_UnderlyingArray();
+    private void Realloc(int minSize);
+    public GrowableArrayEnumerator<T> GetEnumerator();
+}
+[DefaultMemberAttribute("Item")]
+public class System.Collections.Generic.SegmentedList`1 : object {
+    private int segmentSize;
+    private int segmentShift;
+    private int offsetMask;
+    private int capacity;
+    private int count;
+    private T[][] items;
+    public int Count { get; public set; }
+    public T[] UnderlyingArray { get; }
+    private bool System.Collections.Generic.ICollection<T>.IsReadOnly { get; }
+    public T Item { get; public set; }
+    public SegmentedList`1(int segmentSize);
+    public SegmentedList`1(int segmentSize, int initialCapacity);
+    public sealed virtual int get_Count();
+    public void set_Count(int value);
+    public T[] get_UnderlyingArray();
+    public T Pop();
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.get_IsReadOnly();
+    public sealed virtual T get_Item(int index);
+    public void set_Item(int index, T value);
+    public bool IsValidIndex(int index);
+    public T[] GetSlot(int index, Int32& slot);
+    public sealed virtual void Add(T item);
+    public void Insert(int index, T item);
+    public void RemoveAt(int index);
+    public int BinarySearch(T item, IComparer`1<T> comparer);
+    public int BinarySearch(T item, int low, int high, IComparer`1<T> comparer);
+    public void Sort();
+    public void Sort(IComparer`1<T> comparer);
+    public void AppendFrom(SegmentedList`1<T> from, int index, int count);
+    public void AppendFrom(T[] from, int index, int count);
+    public Enumerator<T> GetEnumerator();
+    public T[] ToArray();
+    public void CopyTo(T[] array, int arrayIndex);
+    public void CopyRangeTo(T[] array, int arrayIndex, int startIndex, int endIndex);
+    private sealed virtual override IEnumerator`1<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.Clear();
+    public void Clear();
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.Contains(T item);
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.CopyTo(T[] array, int arrayIndex);
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.Remove(T item);
+    private void AddRoomForElement(int index);
+    private void RemoveRoomForElement(int index);
+    private void EnsureCapacity(int minCapacity);
+    private void SwapIfGreaterWithItems(IComparer`1<T> comparer, int a, int b);
+    private void QuickSort(int left, int right, IComparer`1<T> comparer);
+    public int IndexOf(T item);
+}
