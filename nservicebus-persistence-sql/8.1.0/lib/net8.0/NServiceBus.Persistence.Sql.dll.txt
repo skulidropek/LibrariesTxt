@@ -1,0 +1,866 @@
+internal class AdoNetSqlOutboxTransaction : object {
+    private IConnectionManager connectionManager;
+    private IsolationLevel isolationLevel;
+    private ConcurrencyControlStrategy concurrencyControlStrategy;
+    [CompilerGeneratedAttribute]
+private DbTransaction <Transaction>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DbConnection <Connection>k__BackingField;
+    public DbTransaction Transaction { get; private set; }
+    public DbConnection Connection { get; private set; }
+    public AdoNetSqlOutboxTransaction(ConcurrencyControlStrategy concurrencyControlStrategy, IConnectionManager connectionManager, IsolationLevel isolationLevel);
+    [CompilerGeneratedAttribute]
+public sealed virtual DbTransaction get_Transaction();
+    [CompilerGeneratedAttribute]
+private void set_Transaction(DbTransaction value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DbConnection get_Connection();
+    [CompilerGeneratedAttribute]
+private void set_Connection(DbConnection value);
+    public sealed virtual void Prepare(ContextBag context);
+    [AsyncStateMachineAttribute("AdoNetSqlOutboxTransaction/<Begin>d__13")]
+public sealed virtual Task Begin(ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual Task Complete(OutboxMessage outboxMessage, ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    public sealed virtual Task Commit(CancellationToken cancellationToken);
+}
+internal class AsyncTimer : object {
+    private Task task;
+    private CancellationTokenSource tokenSource;
+    private static ILog log;
+    private static AsyncTimer();
+    public sealed virtual void Start(Func`3<DateTime, CancellationToken, Task> callback, TimeSpan interval, Action`1<Exception> errorCallback, Func`3<TimeSpan, CancellationToken, Task> delayStrategy);
+    [AsyncStateMachineAttribute("AsyncTimer/<Stop>d__1")]
+public sealed virtual Task Stop(CancellationToken cancellationToken);
+}
+internal class CharArrayTextWriter : TextWriter {
+    internal static int InitialSize;
+    private static Encoding EncodingValue;
+    private Char[] chars;
+    private int next;
+    private int length;
+    private static ConcurrentStack`1<CharArrayTextWriter> pool;
+    private static Task CompletedTask;
+    public Encoding Encoding { get; }
+    public int Size { get; }
+    private static CharArrayTextWriter();
+    public virtual Encoding get_Encoding();
+    public virtual void Write(char value);
+    private void Ensure(int i);
+    public virtual void Write(Char[] buffer, int index, int count);
+    public virtual void Write(string value);
+    public virtual Task WriteAsync(char value);
+    public virtual Task WriteAsync(string value);
+    public virtual Task WriteAsync(Char[] buffer, int index, int count);
+    public virtual Task WriteLineAsync(char value);
+    public virtual Task WriteLineAsync(string value);
+    public virtual Task WriteLineAsync(Char[] buffer, int index, int count);
+    public virtual Task FlushAsync();
+    public void Release();
+    public static CharArrayTextWriter Lease();
+    public ArraySegment`1<char> ToCharSegment();
+    private void Clear();
+    public int get_Size();
+}
+internal class CommandWrapper : object {
+    protected DbCommand command;
+    private List`1<CharArrayTextWriter> writers;
+    private SqlDialect dialect;
+    private int disposeSignaled;
+    public DbCommand InnerCommand { get; }
+    public string CommandText { get; public set; }
+    public DbTransaction Transaction { get; public set; }
+    public CommandWrapper(DbCommand command, SqlDialect dialect);
+    public DbCommand get_InnerCommand();
+    public string get_CommandText();
+    public void set_CommandText(string value);
+    public DbTransaction get_Transaction();
+    public void set_Transaction(DbTransaction value);
+    public void AddParameter(string name, object value);
+    public void AddJsonParameter(string name, object value);
+    public void AddParameter(string name, Version value);
+    public Task`1<int> ExecuteNonQueryEx(CancellationToken cancellationToken);
+    public Task`1<int> ExecuteNonQueryAsync(CancellationToken cancellationToken);
+    public Task`1<DbDataReader> ExecuteReaderAsync(CancellationToken cancellationToken);
+    public Task`1<DbDataReader> ExecuteReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken);
+    public CharArrayTextWriter LeaseWriter();
+    public sealed virtual void Dispose();
+}
+internal abstract class ConcurrencyControlStrategy : object {
+    public abstract virtual Task Begin(string messageId, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
+    public abstract virtual Task Complete(OutboxMessage outboxMessage, DbConnection connection, DbTransaction transaction, ContextBag context, CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+internal static class ConnectionExtensions : object {
+    [ExtensionAttribute]
+public static bool IsEncrypted(DbConnection dbConnection);
+    private static bool IsConnectionEncrypted(string connectionString);
+}
+internal class ConnectionManager : object {
+    private Func`1<DbConnection> connectionBuilder;
+    public ConnectionManager(Func`1<DbConnection> connectionBuilder);
+    public sealed virtual DbConnection BuildNonContextual();
+    public sealed virtual DbConnection Build(IncomingMessage incomingMessage);
+}
+[ExtensionAttribute]
+internal static class ExceptionExtensions : object {
+    [ExtensionAttribute]
+public static bool IsCausedBy(Exception ex, CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+internal static class Extensions : object {
+    [ExtensionAttribute]
+public static void AddParameter(DbCommand command, string name, object value);
+    [ExtensionAttribute]
+public static void AddParameter(DbCommand command, string name, DateTime value);
+    [ExtensionAttribute]
+public static Task`1<DbConnection> OpenNonContextualConnection(IConnectionManager connectionManager, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+public static Task`1<DbConnection> OpenConnection(IConnectionManager connectionManager, IncomingMessage incomingMessage, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Extensions/<OpenConnection>d__4")]
+private static Task`1<DbConnection> OpenConnection(DbConnection connection, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+public static void AddParameter(DbCommand command, string name, Version value);
+    [AsyncStateMachineAttribute("Extensions/<GetBoolAsync>d__6")]
+[ExtensionAttribute]
+public static Task`1<bool> GetBoolAsync(DbDataReader reader, int position, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Extensions/<GetGuidAsync>d__7")]
+[ExtensionAttribute]
+public static Task`1<Guid> GetGuidAsync(DbDataReader reader, int position, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+internal static Func`2<T, object> GetPropertyAccessor(Type sagaDataType, string propertyName);
+    [AsyncStateMachineAttribute("Extensions/<ExecuteNonQueryEx>d__9")]
+[ExtensionAttribute]
+public static Task`1<int> ExecuteNonQueryEx(DbCommand command, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+public static bool IsSubclassOfRawGeneric(Type toCheck, Type generic);
+    [ExtensionAttribute]
+public static IncomingMessage GetIncomingMessage(ContextBag context);
+    [ExtensionAttribute]
+public static bool EndpointIsMultiTenant(IReadOnlySettings settings);
+}
+internal static class Guard : object {
+    public static void AgainstSqlDelimiters(string argumentName, string value);
+}
+internal interface IAsyncTimer {
+    public abstract virtual void Start(Func`3<DateTime, CancellationToken, Task> callback, TimeSpan interval, Action`1<Exception> errorCallback, Func`3<TimeSpan, CancellationToken, Task> delayStrategy);
+    public abstract virtual Task Stop(CancellationToken cancellationToken);
+}
+internal interface IConnectionManager {
+    public abstract virtual DbConnection BuildNonContextual();
+    public abstract virtual DbConnection Build(IncomingMessage incomingMessage);
+}
+internal class InstallerFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+}
+internal class InstallerSettings : object {
+    [CompilerGeneratedAttribute]
+private bool <Disabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<Type, DbConnection> <ConnectionBuilder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SqlDialect <Dialect>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ScriptDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TablePrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsMultiTenant>k__BackingField;
+    public bool Disabled { get; public set; }
+    public Func`2<Type, DbConnection> ConnectionBuilder { get; public set; }
+    public SqlDialect Dialect { get; public set; }
+    public string ScriptDirectory { get; public set; }
+    public string TablePrefix { get; public set; }
+    public bool IsMultiTenant { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_Disabled();
+    [CompilerGeneratedAttribute]
+public void set_Disabled(bool value);
+    [CompilerGeneratedAttribute]
+public Func`2<Type, DbConnection> get_ConnectionBuilder();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionBuilder(Func`2<Type, DbConnection> value);
+    [CompilerGeneratedAttribute]
+public SqlDialect get_Dialect();
+    [CompilerGeneratedAttribute]
+public void set_Dialect(SqlDialect value);
+    [CompilerGeneratedAttribute]
+public string get_ScriptDirectory();
+    [CompilerGeneratedAttribute]
+public void set_ScriptDirectory(string value);
+    [CompilerGeneratedAttribute]
+public string get_TablePrefix();
+    [CompilerGeneratedAttribute]
+public void set_TablePrefix(string value);
+    [CompilerGeneratedAttribute]
+public bool get_IsMultiTenant();
+    [CompilerGeneratedAttribute]
+public void set_IsMultiTenant(bool value);
+}
+internal interface ISqlOutboxTransaction {
+    public DbTransaction Transaction { get; }
+    public DbConnection Connection { get; }
+    public abstract virtual DbTransaction get_Transaction();
+    public abstract virtual DbConnection get_Connection();
+    public abstract virtual void Prepare(ContextBag context);
+    public abstract virtual Task Begin(ContextBag context, CancellationToken cancellationToken);
+    public abstract virtual Task Complete(OutboxMessage outboxMessage, ContextBag context, CancellationToken cancellationToken);
+}
+internal static class LogManager : object {
+    public static ILog GetLogger();
+}
+internal class MultiTenantConnectionManager : object {
+    private Func`2<IncomingMessage, string> captureTenantId;
+    private Func`2<string, DbConnection> buildConnectionFromTenantData;
+    public MultiTenantConnectionManager(Func`2<IncomingMessage, string> captureTenantId, Func`2<string, DbConnection> buildConnectionFromTenantData);
+    public sealed virtual DbConnection BuildNonContextual();
+    public sealed virtual DbConnection Build(IncomingMessage incomingMessage);
+}
+public interface NServiceBus.Persistence.Sql.IMessagePropertyMapper {
+    public abstract virtual void ConfigureMapping(Expression`1<Func`2<TMessage, object>> messageProperty);
+}
+public interface NServiceBus.Persistence.Sql.ISqlStorageSession {
+    public DbTransaction Transaction { get; }
+    public DbConnection Connection { get; }
+    public abstract virtual DbTransaction get_Transaction();
+    public abstract virtual DbConnection get_Connection();
+    public abstract virtual void OnSaveChanges(Func`3<ISqlStorageSession, CancellationToken, Task> callback);
+}
+public class NServiceBus.Persistence.Sql.RetrieveVersionSpecificJsonSettings : MulticastDelegate {
+    public RetrieveVersionSpecificJsonSettings(object object, IntPtr method);
+    public virtual JsonSerializerSettings Invoke(Type sagaDataType, Version sagaVersion);
+    public virtual IAsyncResult BeginInvoke(Type sagaDataType, Version sagaVersion, AsyncCallback callback, object object);
+    public virtual JsonSerializerSettings EndInvoke(IAsyncResult result);
+}
+public class NServiceBus.Persistence.Sql.SagaSettings : object {
+    private SettingsHolder settings;
+    internal SagaSettings(SettingsHolder settings);
+    public void JsonSettings(JsonSerializerSettings jsonSerializerSettings);
+    internal static JsonSerializerSettings GetJsonSerializerSettings(IReadOnlySettings settings);
+    internal void NameFilter(Func`2<string, string> nameFilter);
+    internal static Func`2<string, string> GetNameFilter(IReadOnlySettings settings);
+    public void ReaderCreator(Func`2<TextReader, JsonReader> readerCreator);
+    internal static Func`2<TextReader, JsonReader> GetReaderCreator(IReadOnlySettings settings);
+    public void JsonSettingsForVersion(RetrieveVersionSpecificJsonSettings builder);
+    internal static RetrieveVersionSpecificJsonSettings GetVersionSettings(IReadOnlySettings settings);
+    public void WriterCreator(Func`2<StringBuilder, JsonWriter> writerCreator);
+    internal static Func`2<TextWriter, JsonWriter> GetWriterCreator(IReadOnlySettings settings);
+}
+public static class NServiceBus.Persistence.Sql.ScriptRunner : object {
+    private static ILog log;
+    private static ScriptRunner();
+    public static Task Install(SqlDialect sqlDialect, string tablePrefix, Func`1<DbConnection> connectionBuilder, string scriptDirectory, bool shouldInstallOutbox, bool shouldInstallSagas, bool shouldInstallSubscriptions, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("NServiceBus.Persistence.Sql.ScriptRunner/<Install>d__2")]
+public static Task Install(SqlDialect sqlDialect, string tablePrefix, Func`2<Type, DbConnection> connectionBuilder, string scriptDirectory, bool shouldInstallOutbox, bool shouldInstallSagas, bool shouldInstallSubscriptions, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("NServiceBus.Persistence.Sql.ScriptRunner/<ExecuteInSeparateConnection>d__3`1")]
+private static Task ExecuteInSeparateConnection(Func`7<string, DbConnection, DbTransaction, string, SqlDialect, CancellationToken, Task> installAction, string scriptDirectory, string tablePrefix, SqlDialect sqlDialect, Func`2<Type, DbConnection> connectionBuilder, CancellationToken cancellationToken);
+    private static Task InstallOutbox(string scriptDirectory, DbConnection connection, DbTransaction transaction, string tablePrefix, SqlDialect sqlDialect, CancellationToken cancellationToken);
+    private static Task InstallSubscriptions(string scriptDirectory, DbConnection connection, DbTransaction transaction, string tablePrefix, SqlDialect sqlDialect, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("NServiceBus.Persistence.Sql.ScriptRunner/<InstallSagas>d__6")]
+private static Task InstallSagas(string scriptDirectory, DbConnection connection, DbTransaction transaction, string tablePrefix, SqlDialect sqlDialect, CancellationToken cancellationToken);
+}
+internal class NServiceBus.Persistence.Sql.SerializationException : Exception {
+    public SerializationException(Exception innerException);
+    public SerializationException(string message);
+}
+[AttributeUsageAttribute("1")]
+public class NServiceBus.Persistence.Sql.SqlPersistenceSettingsAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private bool <MsSqlServerScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MySqlScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PostgreSqlScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <OracleScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ProduceSagaScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ProduceTimeoutScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ProduceSubscriptionScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ProduceOutboxScripts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ScriptPromotionPath>k__BackingField;
+    public bool MsSqlServerScripts { get; public set; }
+    public bool MySqlScripts { get; public set; }
+    public bool PostgreSqlScripts { get; public set; }
+    public bool OracleScripts { get; public set; }
+    public bool ProduceSagaScripts { get; public set; }
+    public bool ProduceTimeoutScripts { get; public set; }
+    public bool ProduceSubscriptionScripts { get; public set; }
+    public bool ProduceOutboxScripts { get; public set; }
+    public string ScriptPromotionPath { get; public set; }
+    [CompilerGeneratedAttribute]
+public bool get_MsSqlServerScripts();
+    [CompilerGeneratedAttribute]
+public void set_MsSqlServerScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_MySqlScripts();
+    [CompilerGeneratedAttribute]
+public void set_MySqlScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_PostgreSqlScripts();
+    [CompilerGeneratedAttribute]
+public void set_PostgreSqlScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_OracleScripts();
+    [CompilerGeneratedAttribute]
+public void set_OracleScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ProduceSagaScripts();
+    [CompilerGeneratedAttribute]
+public void set_ProduceSagaScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ProduceTimeoutScripts();
+    [CompilerGeneratedAttribute]
+public void set_ProduceTimeoutScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ProduceSubscriptionScripts();
+    [CompilerGeneratedAttribute]
+public void set_ProduceSubscriptionScripts(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ProduceOutboxScripts();
+    [CompilerGeneratedAttribute]
+public void set_ProduceOutboxScripts(bool value);
+    [CompilerGeneratedAttribute]
+public string get_ScriptPromotionPath();
+    [CompilerGeneratedAttribute]
+public void set_ScriptPromotionPath(string value);
+}
+public abstract class NServiceBus.Persistence.Sql.SqlSaga`1 : Saga {
+    [CompilerGeneratedAttribute]
+private string <TransitionalCorrelationPropertyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TableSuffix>k__BackingField;
+    protected string CorrelationPropertyName { get; }
+    protected string TransitionalCorrelationPropertyName { get; }
+    protected string TableSuffix { get; }
+    public TSagaData Data { get; public set; }
+    internal void VerifyNoConfigureHowToFindSaga();
+    protected abstract virtual string get_CorrelationPropertyName();
+    [CompilerGeneratedAttribute]
+protected virtual string get_TransitionalCorrelationPropertyName();
+    [CompilerGeneratedAttribute]
+protected virtual string get_TableSuffix();
+    public TSagaData get_Data();
+    public void set_Data(TSagaData value);
+    protected virtual void ConfigureHowToFindSaga(IConfigureHowToFindSagaWithMessage mapper);
+    protected abstract virtual void ConfigureMapping(IMessagePropertyMapper mapper);
+    internal Expression`1<Func`2<TSagaData, object>> GetExpression();
+    private PropertyInfo GetCorrelationProperty();
+}
+[AttributeUsageAttribute("4")]
+public class NServiceBus.Persistence.Sql.SqlSagaAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <CorrelationProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TransitionalCorrelationProperty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TableSuffix>k__BackingField;
+    public string CorrelationProperty { get; }
+    public string TransitionalCorrelationProperty { get; }
+    public string TableSuffix { get; }
+    public SqlSagaAttribute(string correlationProperty, string transitionalCorrelationProperty, string tableSuffix);
+    [CompilerGeneratedAttribute]
+public string get_CorrelationProperty();
+    [CompilerGeneratedAttribute]
+public string get_TransitionalCorrelationProperty();
+    [CompilerGeneratedAttribute]
+public string get_TableSuffix();
+}
+[ExtensionAttribute]
+public static class NServiceBus.Persistence.Sql.SqlStorageSessionTupleExtensions : object {
+    [ExtensionAttribute]
+public static void Deconstruct(ISqlStorageSession session, DbConnection& connection, DbTransaction& transaction);
+}
+public class NServiceBus.Persistence.Sql.SubscriptionSettings : object {
+    private SettingsHolder settings;
+    internal SubscriptionSettings(SettingsHolder settings);
+    public void CacheFor(TimeSpan timeSpan);
+    public void DisableCache();
+    internal static Nullable`1<TimeSpan> GetCacheFor(IReadOnlySettings settings);
+    public void ConnectionBuilder(Func`1<DbConnection> connectionBuilder);
+}
+public abstract class NServiceBus.SqlDialect : object {
+    internal string Name { get; }
+    internal string get_Name();
+    public virtual string ToString();
+    internal virtual void AddCreationScriptParameters(DbCommand command);
+    internal void AddJsonParameter(DbParameter parameter, string paramName, object value);
+    internal abstract virtual void SetJsonParameterValue(DbParameter parameter, object value);
+    internal void AddParameter(DbParameter parameter, string paramName, object value);
+    internal abstract virtual void SetParameterValue(DbParameter parameter, object value);
+    internal abstract virtual CommandWrapper CreateCommand(DbConnection connection);
+    [AsyncStateMachineAttribute("NServiceBus.SqlDialect/<ExecuteTableCommand>d__9")]
+internal Task ExecuteTableCommand(DbConnection connection, DbTransaction transaction, string script, string tablePrefix, CancellationToken cancellationToken);
+    internal abstract virtual CommandBehavior ModifyBehavior(DbConnection connection, CommandBehavior baseBehavior);
+    internal virtual void ValidateTablePrefix(string tablePrefix);
+    internal abstract virtual object GetCustomDialectDiagnosticsInfo();
+    internal virtual void OptimizeForReads(DbCommand command);
+    internal abstract virtual string GetOutboxTableName(string tablePrefix);
+    internal abstract virtual string GetOutboxSetAsDispatchedCommand(string tableName);
+    internal abstract virtual string GetOutboxGetCommand(string tableName);
+    internal abstract virtual string GetOutboxOptimisticStoreCommand(string tableName);
+    internal abstract virtual string GetOutboxPessimisticBeginCommand(string tableName);
+    internal abstract virtual string GetOutboxPessimisticCompleteCommand(string tableName);
+    internal abstract virtual string GetOutboxCleanupCommand(string tableName);
+    internal virtual string AddOutboxPadding(string json);
+    internal abstract virtual string GetSagaTableName(string tablePrefix, string tableSuffix);
+    internal abstract virtual Func`2<string, string> BuildSelectFromCommand(string tableName);
+    internal abstract virtual string BuildCompleteCommand(string tableName);
+    internal abstract virtual string BuildGetBySagaIdCommand(string tableName);
+    internal abstract virtual string BuildSaveCommand(string correlationProperty, string transitionalCorrelationProperty, string tableName);
+    internal abstract virtual string BuildGetByPropertyCommand(string correlationProperty, string tableName);
+    internal abstract virtual string BuildUpdateCommand(string transitionalCorrelationProperty, string tableName);
+    internal virtual object BuildSagaData(CommandWrapper command, RuntimeSagaInfo sagaInfo, IContainSagaData sagaData);
+    internal virtual void ValidateJsonSettings(JsonSerializer jsonSerializer);
+    internal abstract virtual string GetSubscriptionTableName(string tablePrefix);
+    internal abstract virtual string GetSubscriptionSubscribeCommand(string tableName);
+    internal abstract virtual string GetSubscriptionUnsubscribeCommand(string tableName);
+    internal abstract virtual Func`2<List`1<MessageType>, string> GetSubscriptionQueryFactory(string tableName);
+    internal abstract virtual ValueTask`1<ValueTuple`4<bool, DbConnection, DbTransaction, bool>> TryAdaptTransportConnection(TransportTransaction transportTransaction, ContextBag context, IConnectionManager connectionManager, CancellationToken cancellationToken);
+}
+public abstract class NServiceBus.SqlDialectSettings : object {
+    internal SqlDialect Dialect;
+    protected SqlDialectSettings(SqlDialect dialect);
+}
+public class NServiceBus.SqlDialectSettings`1 : SqlDialectSettings {
+    internal T TypedDialect { get; }
+    internal T get_TypedDialect();
+}
+public class NServiceBus.SqlPersistence : PersistenceDefinition {
+}
+[ExtensionAttribute]
+public static class NServiceBus.SqlPersistenceConfig : object {
+    [ExtensionAttribute]
+public static void ConnectionBuilder(PersistenceExtensions`1<SqlPersistence> configuration, Func`1<DbConnection> connectionBuilder);
+    [ExtensionAttribute]
+public static void MultiTenantConnectionBuilder(PersistenceExtensions`1<SqlPersistence> configuration, string tenantIdHeaderName, Func`2<string, DbConnection> buildConnectionFromTenantData);
+    [ExtensionAttribute]
+public static void MultiTenantConnectionBuilder(PersistenceExtensions`1<SqlPersistence> configuration, Func`2<IncomingMessage, string> captureTenantId, Func`2<string, DbConnection> buildConnectionFromTenantData);
+    [ExtensionAttribute]
+internal static IConnectionManager GetConnectionBuilder(IReadOnlySettings settings, Type storageType);
+    [ExtensionAttribute]
+internal static IConnectionManager GetConnectionBuilder(IReadOnlySettings settings);
+    [ExtensionAttribute]
+public static void DisableInstaller(PersistenceExtensions`1<SqlPersistence> configuration);
+    [ExtensionAttribute]
+internal static SqlDialect GetSqlDialect(IReadOnlySettings settings);
+    [ExtensionAttribute]
+public static SqlDialectSettings`1<T> SqlDialect(PersistenceExtensions`1<SqlPersistence> configuration);
+    [ExtensionAttribute]
+public static void Schema(SqlDialectSettings`1<MsSqlServer> dialectSettings, string schema);
+    [ExtensionAttribute]
+public static void DoNotUseSqlServerTransportConnection(SqlDialectSettings`1<MsSqlServer> dialectSettings);
+    [ExtensionAttribute]
+public static void Schema(SqlDialectSettings`1<Oracle> dialectSettings, string schema);
+    [ExtensionAttribute]
+public static void Schema(SqlDialectSettings`1<PostgreSql> dialectSettings, string schema);
+    [ExtensionAttribute]
+public static void JsonBParameterModifier(SqlDialectSettings`1<PostgreSql> dialectSettings, Action`1<DbParameter> modifier);
+    [ExtensionAttribute]
+public static void DoNotUsePostgreSqlTransportConnection(SqlDialectSettings`1<PostgreSql> dialectSettings);
+    [ExtensionAttribute]
+public static void TablePrefix(PersistenceExtensions`1<SqlPersistence> configuration, string tablePrefix);
+    [ExtensionAttribute]
+internal static string GetTablePrefix(IReadOnlySettings settings);
+    [ExtensionAttribute]
+public static SagaSettings SagaSettings(PersistenceExtensions`1<SqlPersistence> configuration);
+    [ExtensionAttribute]
+public static SubscriptionSettings SubscriptionSettings(PersistenceExtensions`1<SqlPersistence> configuration);
+}
+[ExtensionAttribute]
+public static class NServiceBus.SqlPersistenceOutboxSettingsExtensions : object {
+    [ExtensionAttribute]
+public static void KeepDeduplicationDataFor(OutboxSettings configuration, TimeSpan timeToKeepDeduplicationData);
+    [ExtensionAttribute]
+public static void RunDeduplicationDataCleanupEvery(OutboxSettings configuration, TimeSpan frequencyToRunDeduplicationDataCleanup);
+    [ExtensionAttribute]
+public static void DisableCleanup(OutboxSettings configuration);
+    [ExtensionAttribute]
+public static void UsePessimisticConcurrencyControl(OutboxSettings outboxSettings);
+    [ExtensionAttribute]
+public static void TransactionIsolationLevel(OutboxSettings outboxSettings, IsolationLevel isolationLevel);
+    [ExtensionAttribute]
+public static void UseTransactionScope(OutboxSettings outboxSettings);
+    [ExtensionAttribute]
+public static void UseTransactionScope(OutboxSettings outboxSettings, IsolationLevel isolationLevel);
+    [ExtensionAttribute]
+public static void UseTransactionScope(OutboxSettings outboxSettings, IsolationLevel isolationLevel, TimeSpan timeout);
+}
+[ExtensionAttribute]
+public static class NServiceBus.SqlPersistenceStorageSessionExtensions : object {
+    [ExtensionAttribute]
+public static ISqlStorageSession SqlPersistenceSession(ISynchronizedStorageSession session);
+    [ExtensionAttribute]
+private static StorageSession GetInternalSqlStorageSession(ISynchronizedStorageSession session);
+    [ExtensionAttribute]
+public static Task`1<TSagaData> GetSagaData(ISynchronizedStorageSession session, IReadOnlyContextBag context, string whereClause, ParameterAppender appendParameters, CancellationToken cancellationToken);
+}
+internal class NServiceBusPersistenceSql_ProcessedByFody : object {
+    internal static string FodyVersion;
+    internal static string Obsolete;
+}
+[ExtensionAttribute]
+internal static class OperationConverter : object {
+    [ExtensionAttribute]
+public static IEnumerable`1<SerializableOperation> ToSerializable(IEnumerable`1<TransportOperation> operations);
+    [ExtensionAttribute]
+public static IEnumerable`1<TransportOperation> FromSerializable(IEnumerable`1<SerializableOperation> operations);
+}
+internal class OptimisticConcurrencyControlStrategy : ConcurrencyControlStrategy {
+    private SqlDialect sqlDialect;
+    private OutboxCommands outboxCommands;
+    public OptimisticConcurrencyControlStrategy(SqlDialect sqlDialect, OutboxCommands outboxCommands);
+    public virtual Task Begin(string messageId, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("OptimisticConcurrencyControlStrategy/<Complete>d__4")]
+public virtual Task Complete(OutboxMessage outboxMessage, DbConnection connection, DbTransaction transaction, ContextBag context, CancellationToken cancellationToken);
+}
+internal class OutboxCleaner : FeatureStartupTask {
+    private IAsyncTimer timer;
+    private Action`3<string, Exception, CancellationToken> criticalError;
+    private Func`3<DateTime, CancellationToken, Task> cleanup;
+    private TimeSpan timeToKeepDeduplicationData;
+    private TimeSpan frequencyToRunCleanup;
+    private static ILog log;
+    public OutboxCleaner(Func`3<DateTime, CancellationToken, Task> cleanup, Action`3<string, Exception, CancellationToken> criticalError, TimeSpan timeToKeepDeduplicationData, TimeSpan frequencyToRunCleanup, IAsyncTimer timer);
+    private static OutboxCleaner();
+    protected virtual Task OnStart(IMessageSession session, CancellationToken cancellationToken);
+    protected virtual Task OnStop(IMessageSession session, CancellationToken cancellationToken);
+}
+internal static class OutboxCommandBuilder : object {
+    public static OutboxCommands Build(SqlDialect sqlDialect, string tablePrefix);
+}
+internal class OutboxCommands : object {
+    [CompilerGeneratedAttribute]
+private string <PessimisticBegin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PessimisticComplete>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OptimisticStore>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Get>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SetAsDispatched>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Cleanup>k__BackingField;
+    public string PessimisticBegin { get; }
+    public string PessimisticComplete { get; }
+    public string OptimisticStore { get; }
+    public string Get { get; }
+    public string SetAsDispatched { get; }
+    public string Cleanup { get; }
+    public OutboxCommands(string optimisticStore, string pessimisticBegin, string pessimisticComplete, string get, string setAsDispatched, string cleanup);
+    [CompilerGeneratedAttribute]
+public string get_PessimisticBegin();
+    [CompilerGeneratedAttribute]
+public string get_PessimisticComplete();
+    [CompilerGeneratedAttribute]
+public string get_OptimisticStore();
+    [CompilerGeneratedAttribute]
+public string get_Get();
+    [CompilerGeneratedAttribute]
+public string get_SetAsDispatched();
+    [CompilerGeneratedAttribute]
+public string get_Cleanup();
+}
+internal class OutboxPersister : object {
+    private IConnectionManager connectionManager;
+    private SqlDialect sqlDialect;
+    private int cleanupBatchSize;
+    private OutboxCommands outboxCommands;
+    private Func`1<ISqlOutboxTransaction> outboxTransactionFactory;
+    public OutboxPersister(IConnectionManager connectionManager, SqlDialect sqlDialect, OutboxCommands outboxCommands, Func`1<ISqlOutboxTransaction> outboxTransactionFactory, int cleanupBatchSize);
+    public sealed virtual Task`1<IOutboxTransaction> BeginTransaction(ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("OutboxPersister/<BeginTransactionInternal>d__7")]
+private static Task`1<IOutboxTransaction> BeginTransactionInternal(ISqlOutboxTransaction transaction, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("OutboxPersister/<SetAsDispatched>d__8")]
+public sealed virtual Task SetAsDispatched(string messageId, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("OutboxPersister/<Get>d__9")]
+public sealed virtual Task`1<OutboxMessage> Get(string messageId, ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual Task Store(OutboxMessage message, IOutboxTransaction outboxTransaction, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("OutboxPersister/<RemoveEntriesOlderThan>d__11")]
+public Task RemoveEntriesOlderThan(DateTime dateTime, CancellationToken cancellationToken);
+}
+public class ParameterAppender : MulticastDelegate {
+    public ParameterAppender(object object, IntPtr method);
+    public virtual void Invoke(Func`1<DbParameter> parameterBuilder, Action`1<DbParameter> append);
+    public virtual IAsyncResult BeginInvoke(Func`1<DbParameter> parameterBuilder, Action`1<DbParameter> append, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class PessimisticConcurrencyControlStrategy : ConcurrencyControlStrategy {
+    private SqlDialect sqlDialect;
+    private OutboxCommands outboxCommands;
+    public PessimisticConcurrencyControlStrategy(SqlDialect sqlDialect, OutboxCommands outboxCommands);
+    [AsyncStateMachineAttribute("PessimisticConcurrencyControlStrategy/<Begin>d__3")]
+public virtual Task Begin(string messageId, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("PessimisticConcurrencyControlStrategy/<Complete>d__4")]
+public virtual Task Complete(OutboxMessage outboxMessage, DbConnection connection, DbTransaction transaction, ContextBag context, CancellationToken cancellationToken);
+}
+internal class PropertyMapper`1 : object {
+    private IConfigureHowToFindSagaWithMessage sagaMessageFindingConfiguration;
+    private Expression`1<Func`2<TSagaData, object>> sagaEntityProperty;
+    private Type sagaType;
+    internal PropertyMapper`1(IConfigureHowToFindSagaWithMessage sagaMessageFindingConfiguration, Expression`1<Func`2<TSagaData, object>> sagaEntityProperty, Type sagaType);
+    public sealed virtual void ConfigureMapping(Expression`1<Func`2<TMessage, object>> messageProperty);
+}
+internal class ReadOnlyMemoryConverter : JsonConverter {
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    public virtual bool CanConvert(Type objectType);
+}
+internal class RuntimeSagaInfo : object {
+    private Type sagaDataType;
+    private RetrieveVersionSpecificJsonSettings versionSpecificSettings;
+    public Type SagaType;
+    private JsonSerializer jsonSerializer;
+    private Func`2<TextReader, JsonReader> readerCreator;
+    private Func`2<TextWriter, JsonWriter> writerCreator;
+    private SqlDialect sqlDialect;
+    private ConcurrentDictionary`2<Version, JsonSerializer> deserializers;
+    public Version CurrentVersion;
+    public string CompleteCommand;
+    public Func`2<string, string> SelectFromCommandBuilder;
+    public string GetBySagaIdCommand;
+    public string SaveCommand;
+    public string UpdateCommand;
+    public Func`2<IContainSagaData, object> TransitionalAccessor;
+    public bool HasCorrelationProperty;
+    public bool HasTransitionalCorrelationProperty;
+    public string CorrelationProperty;
+    public string TransitionalCorrelationProperty;
+    public string GetByCorrelationPropertyCommand;
+    public string TableName;
+    public RuntimeSagaInfo(Type sagaDataType, RetrieveVersionSpecificJsonSettings versionSpecificSettings, SagaMetadata metadata, JsonSerializer jsonSerializer, Func`2<TextReader, JsonReader> readerCreator, Func`2<TextWriter, JsonWriter> writerCreator, string tablePrefix, SqlDialect sqlDialect, Func`2<string, string> nameFilter);
+    public CommandWrapper CreateCommand(DbConnection connection);
+    public string ToJson(IContainSagaData sagaData);
+    public void ToJson(IContainSagaData sagaData, TextWriter textWriter);
+    public TSagaData FromString(TextReader textReader, Version storedSagaTypeVersion);
+    private JsonSerializer GetDeserialize(Version storedSagaTypeVersion);
+}
+internal class SagaInfoCache : object {
+    private RetrieveVersionSpecificJsonSettings versionSpecificSettings;
+    private ConcurrentDictionary`2<Type, RuntimeSagaInfo> cache;
+    private JsonSerializer jsonSerializer;
+    private Func`2<TextReader, JsonReader> readerCreator;
+    private Func`2<TextWriter, JsonWriter> writerCreator;
+    private Func`2<string, string> nameFilter;
+    private string tablePrefix;
+    private SqlDialect sqlDialect;
+    public SagaInfoCache(RetrieveVersionSpecificJsonSettings versionSpecificSettings, JsonSerializer jsonSerializer, Func`2<TextReader, JsonReader> readerCreator, Func`2<TextWriter, JsonWriter> writerCreator, string tablePrefix, SqlDialect sqlDialect, SagaMetadataCollection metadataCollection, Func`2<string, string> nameFilter);
+    private void Initialize(SagaMetadataCollection metadataCollection);
+    public RuntimeSagaInfo GetInfo(Type sagaDataType);
+    private RuntimeSagaInfo BuildSagaInfo(Type sagaDataType, SagaMetadata metadata);
+}
+internal class SagaPersister : object {
+    private SagaInfoCache sagaInfoCache;
+    private SqlDialect sqlDialect;
+    public SagaPersister(SagaInfoCache sagaInfoCache, SqlDialect sqlDialect);
+    private static void AddTransitionalParameter(IContainSagaData sagaData, RuntimeSagaInfo sagaInfo, CommandWrapper command);
+    private static int GetConcurrency(ContextBag context);
+    public sealed virtual Task Complete(IContainSagaData sagaData, ISynchronizedStorageSession session, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<Complete>d__7")]
+internal Task Complete(IContainSagaData sagaData, ISynchronizedStorageSession session, int concurrency, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<GetByWhereClause>d__8`1")]
+internal static Task`1<TSagaData> GetByWhereClause(string whereClause, ISynchronizedStorageSession session, ContextBag context, ParameterAppender appendParameters, SagaInfoCache sagaInfoCache, CancellationToken cancellationToken);
+    private static Task`1<Concurrency`1<TSagaData>> GetByWhereClause(string whereClause, ISynchronizedStorageSession session, ParameterAppender appendParameters, SagaInfoCache sagaInfoCache, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<Get>d__10`1")]
+public sealed virtual Task`1<TSagaData> Get(string propertyName, object propertyValue, ISynchronizedStorageSession session, ContextBag context, CancellationToken cancellationToken);
+    internal Task`1<Concurrency`1<TSagaData>> Get(string propertyName, object propertyValue, ISynchronizedStorageSession session, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<Get>d__12`1")]
+public sealed virtual Task`1<TSagaData> Get(Guid sagaId, ISynchronizedStorageSession session, ContextBag context, CancellationToken cancellationToken);
+    internal Task`1<Concurrency`1<TSagaData>> Get(Guid sagaId, ISynchronizedStorageSession session, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<GetSagaData>d__14`1")]
+private static Task`1<Concurrency`1<TSagaData>> GetSagaData(ISynchronizedStorageSession session, string commandText, RuntimeSagaInfo sagaInfo, ParameterAppender appendParameters, CancellationToken cancellationToken);
+    private static void ReadMetadata(DbDataReader dataReader, String& originator, String& originalMessageId);
+    private static void ValidatePropertyName(string propertyName, RuntimeSagaInfo sagaInfo);
+    private static TSagaData SetConcurrency(Concurrency`1<TSagaData> result, ContextBag context);
+    public sealed virtual Task Save(IContainSagaData sagaData, SagaCorrelationProperty correlationProperty, ISynchronizedStorageSession session, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<Save>d__19")]
+internal Task Save(IContainSagaData sagaData, ISynchronizedStorageSession session, object correlationId, CancellationToken cancellationToken);
+    public sealed virtual Task Update(IContainSagaData sagaData, ISynchronizedStorageSession session, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SagaPersister/<Update>d__21")]
+internal Task Update(IContainSagaData sagaData, ISynchronizedStorageSession session, int concurrency, CancellationToken cancellationToken);
+}
+internal static class SagaPropertyFilter : object {
+    public static List`1<JsonProperty> FilterProperties(IList`1<JsonProperty> properties);
+    private static bool IsSagaProperty(JsonProperty jsonProperty);
+}
+internal static class ScriptLocation : object {
+    private static string ScriptFolder;
+    public static string FindScriptDirectory(IReadOnlySettings settings);
+    private static string GetScriptsRootPath(IReadOnlySettings settings);
+    public static void ValidateScriptExists(string createScript);
+}
+internal class SerializableOperation : object {
+    public ReadOnlyMemory`1<byte> Body;
+    public Dictionary`2<string, string> Headers;
+    public string MessageId;
+    public Dictionary`2<string, string> Options;
+}
+internal static class Serializer : object {
+    public static JsonSerializer JsonSerializer;
+    private static Serializer();
+    public static T Deserialize(TextReader reader);
+    public static string Serialize(object target);
+}
+internal class SqlOutboxFeature : Feature {
+    internal static string TimeToKeepDeduplicationData;
+    internal static string FrequencyToRunDeduplicationDataCleanup;
+    internal static string DisableCleanup;
+    internal static string ConcurrencyMode;
+    internal static string UseTransactionScope;
+    internal static string AdoTransactionIsolationLevel;
+    internal static string TransactionScopeIsolationLevel;
+    internal static string TransactionScopeTimeout;
+    protected virtual void Setup(FeatureConfigurationContext context);
+}
+internal class SqlPersistenceInstaller : object {
+    private InstallerSettings installerSettings;
+    private IReadOnlySettings settings;
+    public SqlPersistenceInstaller(IReadOnlySettings settings);
+    [AsyncStateMachineAttribute("SqlPersistenceInstaller/<Install>d__3")]
+public sealed virtual Task Install(string identity, CancellationToken cancellationToken);
+}
+internal class SqlSagaFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+    private static SagaInfoCache BuildSagaInfoCache(SqlDialect sqlDialect, IReadOnlySettings settings);
+    private static JsonSerializer BuildJsonSerializer(JsonSerializerSettings jsonSerializerSettings);
+}
+internal class SqlSagaTypeData : object {
+    public string TableSuffix;
+    public string CorrelationProperty;
+    public string TransitionalCorrelationProperty;
+}
+internal static class SqlSagaTypeDataReader : object {
+    public static SqlSagaTypeData GetTypeData(SagaMetadata metadata);
+    private static SqlSagaTypeData GetTypeDataFromSqlSaga(Type sagaType);
+    private static SqlSagaTypeData GetTypeDataFromCoreSaga(SagaMetadata metadata);
+    private static string GetPropertyValue(PropertyInfo property, object instance);
+    private static PropertyInfo GetProperty(Type sagaType, string propertyName);
+}
+internal class SqlStorageSessionFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+}
+internal class SqlSubscriptionFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+}
+internal class SqlValidateStorageTypeCombinationFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+    internal static void ValidateSagaOutboxCombo(IReadOnlySettings settings);
+}
+[ExtensionAttribute]
+internal static class StaticVersions : object {
+    public static Version PersistenceVersion;
+    private static StaticVersions();
+    [ExtensionAttribute]
+internal static Version GetFileVersion(Assembly assembly);
+}
+internal class StorageSession : object {
+    private bool ownsTransaction;
+    private Func`3<ISqlStorageSession, CancellationToken, Task> onSaveChangesCallback;
+    private IConnectionManager connectionManager;
+    private SqlDialect dialect;
+    [CompilerGeneratedAttribute]
+private SagaInfoCache <InfoCache>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DbTransaction <Transaction>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DbConnection <Connection>k__BackingField;
+    internal SagaInfoCache InfoCache { get; }
+    public DbTransaction Transaction { get; private set; }
+    public DbConnection Connection { get; private set; }
+    public StorageSession(IConnectionManager connectionManager, SagaInfoCache infoCache, SqlDialect dialect);
+    [CompilerGeneratedAttribute]
+internal SagaInfoCache get_InfoCache();
+    [CompilerGeneratedAttribute]
+public sealed virtual DbTransaction get_Transaction();
+    [CompilerGeneratedAttribute]
+private void set_Transaction(DbTransaction value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DbConnection get_Connection();
+    [CompilerGeneratedAttribute]
+private void set_Connection(DbConnection value);
+    public sealed virtual void OnSaveChanges(Func`3<ISqlStorageSession, CancellationToken, Task> callback);
+    public sealed virtual ValueTask`1<bool> TryOpen(IOutboxTransaction transaction, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StorageSession/<TryOpen>d__18")]
+public sealed virtual ValueTask`1<bool> TryOpen(TransportTransaction transportTransaction, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StorageSession/<Open>d__19")]
+public sealed virtual Task Open(ContextBag contextBag, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("StorageSession/<CompleteAsync>d__20")]
+public sealed virtual Task CompleteAsync(CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+}
+internal static class SubscriptionCommandBuilder : object {
+    public static SubscriptionCommands Build(SqlDialect sqlDialect, string tablePrefix);
+}
+internal class SubscriptionCommands : object {
+    [CompilerGeneratedAttribute]
+private string <Subscribe>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Unsubscribe>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<List`1<MessageType>, string> <GetSubscribers>k__BackingField;
+    public string Subscribe { get; }
+    public string Unsubscribe { get; }
+    public Func`2<List`1<MessageType>, string> GetSubscribers { get; }
+    public SubscriptionCommands(string subscribe, string unsubscribe, Func`2<List`1<MessageType>, string> getSubscribers);
+    [CompilerGeneratedAttribute]
+public string get_Subscribe();
+    [CompilerGeneratedAttribute]
+public string get_Unsubscribe();
+    [CompilerGeneratedAttribute]
+public Func`2<List`1<MessageType>, string> get_GetSubscribers();
+}
+internal class SubscriptionPersister : object {
+    public ConcurrentDictionary`2<string, CacheItem> Cache;
+    private IConnectionManager connectionManager;
+    private SqlDialect sqlDialect;
+    private Nullable`1<TimeSpan> cacheFor;
+    private SubscriptionCommands subscriptionCommands;
+    private static ILog Log;
+    public SubscriptionPersister(IConnectionManager connectionManager, string tablePrefix, SqlDialect sqlDialect, Nullable`1<TimeSpan> cacheFor);
+    private static SubscriptionPersister();
+    [AsyncStateMachineAttribute("SubscriptionPersister/<Subscribe>d__1")]
+public sealed virtual Task Subscribe(Subscriber subscriber, MessageType messageType, ContextBag context, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("SubscriptionPersister/<Unsubscribe>d__2")]
+public sealed virtual Task Unsubscribe(Subscriber subscriber, MessageType messageType, ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual Task`1<IEnumerable`1<Subscriber>> GetSubscriberAddressesForMessage(IEnumerable`1<MessageType> messageHierarchy, ContextBag context, CancellationToken cancellationToken);
+    private static object Nullable(object value);
+    [AsyncStateMachineAttribute("SubscriptionPersister/<Retry>d__5")]
+private static Task Retry(Func`2<CancellationToken, Task> action, CancellationToken cancellationToken);
+    private void ClearForMessageType(MessageType messageType);
+    private static string GetKey(List`1<MessageType> types);
+    private static string GetKeyPart(MessageType type);
+    [AsyncStateMachineAttribute("SubscriptionPersister/<GetSubscriptions>d__9")]
+private Task`1<IEnumerable`1<Subscriber>> GetSubscriptions(List`1<MessageType> messageHierarchy, CancellationToken cancellationToken);
+}
+internal static class TableNameCleaner : object {
+    public static string Clean(string value);
+}
+internal class TransactionScopeSqlOutboxTransaction : object {
+    private IConnectionManager connectionManager;
+    private IsolationLevel isolationLevel;
+    private ConcurrencyControlStrategy concurrencyControlStrategy;
+    private TransactionScope transactionScope;
+    private Transaction ambientTransaction;
+    private TimeSpan transactionTimeout;
+    [CompilerGeneratedAttribute]
+private DbConnection <Connection>k__BackingField;
+    public DbTransaction Transaction { get; }
+    public DbConnection Connection { get; private set; }
+    public TransactionScopeSqlOutboxTransaction(ConcurrencyControlStrategy concurrencyControlStrategy, IConnectionManager connectionManager, IsolationLevel isolationLevel, TimeSpan transactionTimeout);
+    public sealed virtual DbTransaction get_Transaction();
+    [CompilerGeneratedAttribute]
+public sealed virtual DbConnection get_Connection();
+    [CompilerGeneratedAttribute]
+private void set_Connection(DbConnection value);
+    public sealed virtual void Prepare(ContextBag context);
+    [AsyncStateMachineAttribute("TransactionScopeSqlOutboxTransaction/<Begin>d__14")]
+public sealed virtual Task Begin(ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual Task Complete(OutboxMessage outboxMessage, ContextBag context, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    public sealed virtual Task Commit(CancellationToken cancellationToken);
+}

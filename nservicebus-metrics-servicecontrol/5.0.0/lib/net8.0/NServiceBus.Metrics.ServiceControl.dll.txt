@@ -1,0 +1,164 @@
+[ExtensionAttribute]
+internal static class NServiceBus.ExceptionExtensions : object {
+    [ExtensionAttribute]
+public static bool IsCausedBy(Exception ex, CancellationToken cancellationToken);
+}
+public interface NServiceBus.Metrics.ServiceControl.IReportNativeQueueLength {
+    public IEnumerable`1<string> MonitoredQueues { get; }
+    public abstract virtual void ReportQueueLength(string physicalQueueName, long queueLength);
+    public abstract virtual IEnumerable`1<string> get_MonitoredQueues();
+}
+internal static class NServiceBus.Metrics.ServiceControl.MetricHeaders : object {
+    public static string MetricType;
+    public static string MetricInstanceId;
+}
+internal class NServiceBus.Metrics.ServiceControl.QueueLengthBufferReporter : object {
+    private RingBuffer buffer;
+    private TaggedLongValueWriterV1 writer;
+    private String[] monitoredQueues;
+    public IEnumerable`1<string> MonitoredQueues { get; }
+    public QueueLengthBufferReporter(RingBuffer buffer, TaggedLongValueWriterV1 writer, String[] monitoredQueues);
+    public sealed virtual void ReportQueueLength(string physicalQueueName, long queueLength);
+    public sealed virtual IEnumerable`1<string> get_MonitoredQueues();
+}
+internal class NServiceBus.Metrics.ServiceControl.ReportingFeature : Feature {
+    protected virtual void Setup(FeatureConfigurationContext context);
+    private static Tuple`2<RingBuffer, TaggedLongValueWriterV1> SetupQueueLengthReporting(FeatureConfigurationContext context);
+    private void SetUpServiceControlReporting(FeatureConfigurationContext context, ReportingOptions options, string endpointName, Dictionary`2<string, Tuple`2<RingBuffer, TaggedLongValueWriterV1>> durations);
+    private void SetUpOutgoingMessageMutator(FeatureConfigurationContext context, ReportingOptions options);
+}
+internal class NServiceBus.Metrics.ServiceControl.ReportingOptions : object {
+    private static ConcurrentDictionary`2<MetricsOptions, ReportingOptions> reporting;
+    internal string ServiceControlMetricsAddress;
+    internal TimeSpan ServiceControlReportingInterval;
+    internal string EndpointInstanceIdOverride;
+    [CompilerGeneratedAttribute]
+private TimeSpan <TimeToBeReceived>k__BackingField;
+    public TimeSpan TimeToBeReceived { get; public set; }
+    private static ReportingOptions();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_TimeToBeReceived();
+    [CompilerGeneratedAttribute]
+public void set_TimeToBeReceived(TimeSpan value);
+    internal bool TryGetValidEndpointInstanceIdOverride(String& instanceId);
+    public static ReportingOptions Get(MetricsOptions options);
+}
+internal class NServiceBus.Metrics.ServiceControl.ServiceControlReporting.EndpointMetadata : object {
+    private string localAddress;
+    public EndpointMetadata(string localAddress);
+    public string ToJson();
+}
+internal class NServiceBus.Metrics.ServiceControl.ServiceControlReporting.NServiceBusMetadataReport : object {
+    private UnicastAddressTag destination;
+    private IMessageDispatcher dispatcher;
+    private Dictionary`2<string, string> headers;
+    private EndpointMetadata endpointMetadata;
+    private TimeSpan timeToBeReceived;
+    private static ILog log;
+    public NServiceBusMetadataReport(IMessageDispatcher dispatcher, ReportingOptions options, Dictionary`2<string, string> headers, EndpointMetadata endpointMetadata);
+    private static NServiceBusMetadataReport();
+    [AsyncStateMachineAttribute("NServiceBus.Metrics.ServiceControl.ServiceControlReporting.NServiceBusMetadataReport/<RunReportAsync>d__1")]
+public Task RunReportAsync(CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+public static class NServiceBus.MetricsOptionsExtensions : object {
+    [ExtensionAttribute]
+public static void SendMetricDataToServiceControl(MetricsOptions options, string serviceControlMetricsAddress, TimeSpan interval, string instanceId);
+    [ExtensionAttribute]
+public static void SetServiceControlMetricsMessageTTBR(MetricsOptions options, TimeSpan timeToBeReceived);
+}
+internal class RingBufferExtensions : object {
+    private static int MaxExpectedWriteAttempts;
+    private static ILog log;
+    private static RingBufferExtensions();
+    public static void WriteTaggedValue(RingBuffer buffer, string metricType, long value, int tag);
+}
+internal class ServiceControl.Monitoring.Data.EntryTickComparer : object {
+    public static EntryTickComparer Instance;
+    private static EntryTickComparer();
+    public sealed virtual int Compare(Entry x, Entry y);
+}
+internal static class ServiceControl.Monitoring.Data.LongValueWriterV1 : object {
+    private static long Version;
+    public static void Write(BinaryWriter outputWriter, ArraySegment`1<Entry> chunk);
+}
+internal static class ServiceControl.Monitoring.Data.OccurrenceWriterV1 : object {
+    private static long Version;
+    public static void Write(BinaryWriter outputWriter, ArraySegment`1<Entry> chunk);
+}
+internal class ServiceControl.Monitoring.Data.RawDataReporter : object {
+    private static int DefaultFlushSize;
+    private static int MaxDefaultFlushSize;
+    internal static int MaxParallelConsumers;
+    private RingBuffer buffer;
+    private int flushSize;
+    private int maxFlushSize;
+    private Action`1<ArraySegment`1<Entry>> outputWriter;
+    private BinaryWriter writer;
+    private MemoryStream memoryStream;
+    private CancellationTokenSource stopReporterTokenSource;
+    private TimeSpan maxSpinningTime;
+    private Func`3<Byte[], CancellationToken, Task> sender;
+    private CancellationTokenSource cancelReportingTokenSource;
+    private Task reporter;
+    private static TimeSpan DefaultMaxSpinningTime;
+    private static TimeSpan singleSpinningTime;
+    public RawDataReporter(Func`3<Byte[], CancellationToken, Task> sender, RingBuffer buffer, WriteOutput outputWriter);
+    public RawDataReporter(Func`3<Byte[], CancellationToken, Task> sender, RingBuffer buffer, WriteOutput outputWriter, int flushSize, TimeSpan maxSpinningTime);
+    public RawDataReporter(Func`3<Byte[], CancellationToken, Task> sender, RingBuffer buffer, WriteOutput outputWriter, int flushSize, int maxFlushSize, TimeSpan maxSpinningTime);
+    private static RawDataReporter();
+    public void Start();
+    private Task Consume(CancellationToken cancellationToken);
+    private Task Flush(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("ServiceControl.Monitoring.Data.RawDataReporter/<Stop>d__22")]
+public Task Stop(CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    [NullableContextAttribute("2")]
+[AsyncStateMachineAttribute("ServiceControl.Monitoring.Data.RawDataReporter/<<Start>b__19_0>d")]
+[CompilerGeneratedAttribute]
+private Task <Start>b__19_0();
+    [CompilerGeneratedAttribute]
+private void <Stop>b__22_0();
+}
+internal class ServiceControl.Monitoring.Data.RingBuffer : object {
+    internal static int Size;
+    private static long SizeMask;
+    private static long EpochMask;
+    private long nextToWrite;
+    private long nextToConsume;
+    private Entry[] entries;
+    public bool TryWrite(long value, int tag);
+    internal long RoughlyEstimateItemsToConsume();
+    internal int Consume(int maxFlushSize, Action`1<ArraySegment`1<Entry>> onChunk);
+}
+internal class ServiceControl.Monitoring.Data.TaggedLongValueWriterV1 : object {
+    private static long Version;
+    private static UTF8Encoding NoBom;
+    private ConcurrentDictionary`2<string, Tag> byTagName;
+    private ConcurrentDictionary`2<int, Tag> byTagId;
+    private Func`2<string, Tag> GenerateTag;
+    private int generator;
+    private static TaggedLongValueWriterV1();
+    public void Write(BinaryWriter outputWriter, ArraySegment`1<Entry> chunk);
+    private void WriteTags(BinaryWriter outputWriter, int count, Entry[] array, int offset);
+    public int GetTagId(string tagName);
+    [CompilerGeneratedAttribute]
+private Tag <.ctor>b__6_0(string str);
+}
+[ExtensionAttribute]
+internal static class ServiceControl.Monitoring.Data.Util : object {
+    [ExtensionAttribute]
+public static bool IsPowerOfTwo(int n);
+    [ExtensionAttribute]
+public static bool IsPowerOfTwo(long n);
+    [ExtensionAttribute]
+public static int Log2(int i);
+    [ExtensionAttribute]
+public static int Log2(long i);
+}
+internal class ServiceControl.Monitoring.Data.WriteOutput : MulticastDelegate {
+    public WriteOutput(object object, IntPtr method);
+    public virtual void Invoke(ArraySegment`1<Entry> entries, BinaryWriter outputWriter);
+    public virtual IAsyncResult BeginInvoke(ArraySegment`1<Entry> entries, BinaryWriter outputWriter, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}

@@ -1,0 +1,1531 @@
+public abstract class Oci.Common.Auth.AbstractRequestingAuthenticationDetailsProvider : object {
+    private static Service SERVICE;
+    private static string METADATA_SERVICE_BASE_URL;
+    private static string AUTHORIZATION_HEADER_VALUE;
+    private string federationEndpoint;
+    private IX509CertificateSupplier leafCertificateSupplier;
+    private HashSet`1<IX509CertificateSupplier> intermediateCertificateSuppliers;
+    private string tenancyId;
+    private static Logger logger;
+    private static string IP_DEBUG_INFORMATION_LOG;
+    [CompilerGeneratedAttribute]
+private Region <Region>k__BackingField;
+    protected IFederationClient federationClient;
+    protected ISessionKeySupplier sessionKeySupplier;
+    [CompilerGeneratedAttribute]
+private Char[] <PassPhraseCharacters>k__BackingField;
+    public Region Region { get; public set; }
+    public Char[] PassPhraseCharacters { get; }
+    public string KeyId { get; }
+    public AbstractRequestingAuthenticationDetailsProvider(IFederationClient federationClient, ISessionKeySupplier sessionKeySupplier);
+    private static AbstractRequestingAuthenticationDetailsProvider();
+    [CompilerGeneratedAttribute]
+public sealed virtual Region get_Region();
+    [CompilerGeneratedAttribute]
+public void set_Region(Region value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Char[] get_PassPhraseCharacters();
+    public sealed virtual string get_KeyId();
+    public sealed virtual RsaKeyParameters GetPrivateKey();
+    public sealed virtual string Refresh();
+    protected void AutoDetectUsingMetadataUrl();
+    protected void AutoDetectEndpointUsingMetadataUrl();
+    protected void AutoDetectCertificatesUsingMetadataUrl();
+    private ResourceDetails GetMetadataResourceDetails(string path);
+}
+public abstract class Oci.Common.Auth.AbstractServiceAccountTokenSupplier : object {
+    protected static Logger logger;
+    public string ServiceAccountToken { get; }
+    private static AbstractServiceAccountTokenSupplier();
+    private bool isValidServiceAccountToken(string token);
+    public sealed virtual string get_ServiceAccountToken();
+    protected virtual string getTokenInner();
+}
+public class Oci.Common.Auth.CertificateAndPrivateKeyPair : object {
+    [CompilerGeneratedAttribute]
+private X509Certificate2 <Certificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RsaKeyParameters <PrivateKey>k__BackingField;
+    public X509Certificate2 Certificate { get; public set; }
+    public RsaKeyParameters PrivateKey { get; public set; }
+    [CompilerGeneratedAttribute]
+public X509Certificate2 get_Certificate();
+    [CompilerGeneratedAttribute]
+public void set_Certificate(X509Certificate2 value);
+    [CompilerGeneratedAttribute]
+public RsaKeyParameters get_PrivateKey();
+    [CompilerGeneratedAttribute]
+public void set_PrivateKey(RsaKeyParameters value);
+}
+public class Oci.Common.Auth.ConfigFileAuthenticationDetailsProvider : object {
+    protected static Logger logger;
+    private IBasicAuthenticationDetailsProvider authProvider;
+    private static string CONFIG_FILE_DEBUG_INFORMATION_LOG;
+    public Region Region { get; }
+    public string TenantId { get; }
+    public string Fingerprint { get; }
+    public string UserId { get; }
+    public string KeyId { get; }
+    public Char[] PassPhraseCharacters { get; }
+    public ConfigFileAuthenticationDetailsProvider(string profile, FilePrivateKeySupplier keySupplier);
+    public ConfigFileAuthenticationDetailsProvider(string configurationFilePath, string profile, FilePrivateKeySupplier keySupplier);
+    public ConfigFileAuthenticationDetailsProvider(ConfigFile configFile, FilePrivateKeySupplier keySupplier);
+    private static ConfigFileAuthenticationDetailsProvider();
+    public sealed virtual Region get_Region();
+    public sealed virtual string get_TenantId();
+    public sealed virtual string get_Fingerprint();
+    public sealed virtual string get_UserId();
+    public sealed virtual string get_KeyId();
+    public sealed virtual Char[] get_PassPhraseCharacters();
+    public sealed virtual RsaKeyParameters GetPrivateKey();
+    public sealed virtual string GetDelegationToken();
+    private void SetupConfigFileAuthenticationDetailsProvider(ConfigFile configFile, FilePrivateKeySupplier keySupplier);
+}
+public class Oci.Common.Auth.ConfigFileInstancePrincipalsAuthenticationDetailsProvider : InstancePrincipalsAuthenticationDetailsProvider {
+    [CompilerGeneratedAttribute]
+private string <TenantId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISupplier`1<string> <DelegationTokenSupplier>k__BackingField;
+    protected static Logger logger;
+    public string TenantId { get; }
+    public ISupplier`1<string> DelegationTokenSupplier { get; }
+    public ConfigFileInstancePrincipalsAuthenticationDetailsProvider(string profile);
+    public ConfigFileInstancePrincipalsAuthenticationDetailsProvider(string configurationFilePath, string profile);
+    public ConfigFileInstancePrincipalsAuthenticationDetailsProvider(ConfigFile configFile);
+    private static ConfigFileInstancePrincipalsAuthenticationDetailsProvider();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TenantId();
+    [CompilerGeneratedAttribute]
+public ISupplier`1<string> get_DelegationTokenSupplier();
+    public sealed virtual string GetDelegationToken();
+}
+public abstract class Oci.Common.Auth.CustomerAuthenticationDetailsProvider : object {
+    protected static Logger logger;
+    [CompilerGeneratedAttribute]
+private string <Fingerprint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TenantId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UserId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Char[] <PassPhraseCharacters>k__BackingField;
+    public string KeyId { get; }
+    public string Fingerprint { get; public set; }
+    public string TenantId { get; public set; }
+    public string UserId { get; public set; }
+    public Char[] PassPhraseCharacters { get; public set; }
+    private static CustomerAuthenticationDetailsProvider();
+    public sealed virtual string get_KeyId();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Fingerprint();
+    [CompilerGeneratedAttribute]
+public void set_Fingerprint(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TenantId();
+    [CompilerGeneratedAttribute]
+public void set_TenantId(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_UserId();
+    [CompilerGeneratedAttribute]
+public void set_UserId(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Char[] get_PassPhraseCharacters();
+    [CompilerGeneratedAttribute]
+public void set_PassPhraseCharacters(Char[] value);
+    public abstract virtual RsaKeyParameters GetPrivateKey();
+}
+public class Oci.Common.Auth.CustomerKeyIdFormatter : object {
+    public static string CreateKeyId(string tenantId, string userId, string fingerprint);
+    public static string CreateKeyId(IAuthenticationDetailsProvider provider);
+}
+public class Oci.Common.Auth.DefaultServiceAccountTokenSupplier : AbstractServiceAccountTokenSupplier {
+    protected static Logger logger;
+    private static string KUBERNETES_SERVICE_ACCOUNT_TOKEN_PATH;
+    private string tokenPath;
+    public DefaultServiceAccountTokenSupplier(string tokenPath);
+    private static DefaultServiceAccountTokenSupplier();
+    protected virtual string getTokenInner();
+}
+public class Oci.Common.Auth.FileBasedKeySupplier : object {
+    private AsymmetricCipherKeyPair modreq(System.Runtime.CompilerServices.IsVolatile) keyPair;
+    private string privateKeyPath;
+    private string passphrasePath;
+    public FileBasedKeySupplier(string privateKeyPath, string passphrasePath);
+    public sealed virtual AsymmetricCipherKeyPair GetKeyPair();
+    public sealed virtual void RefreshKeys();
+}
+public class Oci.Common.Auth.FileDelegationTokenSupplier : object {
+    protected string delegationTokenPath;
+    protected string delegationToken;
+    public FileDelegationTokenSupplier(string delegationTokenPath);
+    public sealed virtual string GetKey();
+    private string ReadToken();
+}
+public class Oci.Common.Auth.FilePrivateKeySupplier : object {
+    protected string pemFilePath;
+    protected SecureString passPhrase;
+    protected RsaKeyParameters key;
+    public FilePrivateKeySupplier(string pemFilePath, SecureString passPhrase);
+    public sealed virtual RsaKeyParameters GetKey();
+    private RsaKeyParameters ReadKey();
+}
+public class Oci.Common.Auth.FileSecurePrivateKeySupplier : FilePrivateKeySupplier {
+    public FileSecurePrivateKeySupplier(string pemFilePath, SecureString passPhrase);
+}
+public class Oci.Common.Auth.FixedContentKeySupplier : object {
+    private AsymmetricCipherKeyPair keyPair;
+    public FixedContentKeySupplier(string privateKeyContent, string passphrase);
+    public sealed virtual AsymmetricCipherKeyPair GetKeyPair();
+    public sealed virtual void RefreshKeys();
+}
+public interface Oci.Common.Auth.IAbstractAuthenticationDetailsProvider {
+}
+public interface Oci.Common.Auth.IAuthenticationDetailsProvider {
+    public string Fingerprint { get; }
+    public string TenantId { get; }
+    public string UserId { get; }
+    public abstract virtual string get_Fingerprint();
+    public abstract virtual string get_TenantId();
+    public abstract virtual string get_UserId();
+}
+public interface Oci.Common.Auth.IBasicAuthenticationDetailsProvider {
+    public string KeyId { get; }
+    public Char[] PassPhraseCharacters { get; }
+    public abstract virtual string get_KeyId();
+    public abstract virtual RsaKeyParameters GetPrivateKey();
+    public abstract virtual Char[] get_PassPhraseCharacters();
+}
+public class Oci.Common.Auth.InstancePrincipalsAuthenticationDetailsProvider : AbstractRequestingAuthenticationDetailsProvider {
+}
+public class Oci.Common.Auth.Internal.Constants : object {
+    public static int RETRIES;
+    public static string AUTH_SERVICE_PATH;
+    public static string FED_KEY_PATH;
+    public static string OPC_TENANT;
+    public static string OPC_IDENTITY;
+    public static int RETRY_MILLIS;
+    public static string AUTHORIZATION_HEADER;
+    public static string INSTANCE_CERT;
+    public static string PRIVATE_KEY_CERT;
+    public static string INTERMEDIATE_KEY_CERT;
+    public static string INSTANCE_REGION;
+    public static string ACCEPT_HEADER;
+    public static string ACCEPT_TYPE;
+    private static Constants();
+}
+public class Oci.Common.Auth.Internal.FileBasedResourcePrincipalFederationClient : object {
+    protected static Logger logger;
+    private ISessionKeySupplier sessionKeySupplier;
+    private string resourcePrincipalSessionTokenPath;
+    private SecurityTokenAdapter modreq(System.Runtime.CompilerServices.IsVolatile) securityTokenAdapter;
+    public FileBasedResourcePrincipalFederationClient(ISessionKeySupplier sessionKeySupplier, string resourcePrincipalSessionTokenPath);
+    private static FileBasedResourcePrincipalFederationClient();
+    public sealed virtual string GetSecurityToken();
+    public sealed virtual string RefreshAndGetSecurityToken();
+    private string RefreshAndGetSecurityTokenInner(bool doFinalTokenValidityCheck);
+    public sealed virtual string GetStringClaim(string key);
+    protected SecurityTokenAdapter GetSecurityTokenFromFile();
+}
+public class Oci.Common.Auth.Internal.FixedContentResourcePrincipalFederationClient : object {
+    protected static Logger logger;
+    private SecurityTokenAdapter securityTokenAdapter;
+    public FixedContentResourcePrincipalFederationClient(ISessionKeySupplier sessionKeySupplier, string resourcePrincipalSessionToken);
+    private static FixedContentResourcePrincipalFederationClient();
+    public sealed virtual string GetSecurityToken();
+    public sealed virtual string RefreshAndGetSecurityToken();
+    public sealed virtual string GetStringClaim(string key);
+}
+internal class Oci.Common.Auth.Internal.GetOkeResourcePrincipalSessionTokenDetails : object {
+    [CompilerGeneratedAttribute]
+private string <podKey>k__BackingField;
+    public string podKey { get; }
+    public GetOkeResourcePrincipalSessionTokenDetails(string key);
+    [CompilerGeneratedAttribute]
+public string get_podKey();
+}
+internal class Oci.Common.Auth.Internal.GetOkeResourcePrincipalSessionTokenRequest : object {
+    [CompilerGeneratedAttribute]
+private GetOkeResourcePrincipalSessionTokenDetails <GetOkeResourcePrincipalSessionTokenDetails>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OpcClientRequestId>k__BackingField;
+    [RequiredAttribute]
+[HttpConverterAttribute("3")]
+public GetOkeResourcePrincipalSessionTokenDetails GetOkeResourcePrincipalSessionTokenDetails { get; public set; }
+    [HttpConverterAttribute("1", "opc-client-request-id")]
+public string OpcClientRequestId { get; public set; }
+    [CompilerGeneratedAttribute]
+public GetOkeResourcePrincipalSessionTokenDetails get_GetOkeResourcePrincipalSessionTokenDetails();
+    [CompilerGeneratedAttribute]
+public void set_GetOkeResourcePrincipalSessionTokenDetails(GetOkeResourcePrincipalSessionTokenDetails value);
+    [CompilerGeneratedAttribute]
+public string get_OpcClientRequestId();
+    [CompilerGeneratedAttribute]
+public void set_OpcClientRequestId(string value);
+}
+public interface Oci.Common.Auth.Internal.IFederationClient {
+    public abstract virtual string GetSecurityToken();
+    public abstract virtual string RefreshAndGetSecurityToken();
+    public abstract virtual string GetStringClaim(string key);
+}
+internal class Oci.Common.Auth.Internal.OkeResourcePrincipalSessionToken : object {
+    [CompilerGeneratedAttribute]
+private string <token>k__BackingField;
+    public string token { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_token();
+    [CompilerGeneratedAttribute]
+public void set_token(string value);
+}
+public class Oci.Common.Auth.Internal.OkeWorkloadIdentityResourcePrincipalsFederationClient : object {
+    private static string PROXYMUX_SERVER_PORT;
+    private static string KUBERNETES_SERVICE_HOST;
+    private static string DEFAULT_OCI_KUBERNETES_SERVICE_ACCOUNT_CERT_PATH;
+    private static string OCI_KUBERNETES_SERVICE_ACCOUNT_CERT_PATH;
+    private SecurityTokenAdapter securityTokenAdapter;
+    private ISessionKeySupplier sessionKeySupplier;
+    private IServiceAccountTokenSupplier serviceAccountTokenSupplier;
+    private string resourcePrincipalTokenEndpoint;
+    private string kubernetesCaCertPath;
+    protected static Logger logger;
+    private OkeWorkloadIdentityResourcePrincipalsFederationClient(ISessionKeySupplier keySupplier, string kubernetesCaCertPath, IServiceAccountTokenSupplier tokenSupplier);
+    private static OkeWorkloadIdentityResourcePrincipalsFederationClient();
+    public sealed virtual string GetSecurityToken();
+    public string RefreshAndGetSecurityTokenIfExpiringWithin(bool doFinalTokenValidityCheck, double time);
+    private string RefreshAndGetSecurityTokenInner(bool doFinalTokenValidityCheck, double time);
+    private HttpClientHandler buildOkeHttpClientHandler();
+    private SecurityTokenAdapter GetSecurityTokenFromServer();
+    public sealed virtual string GetStringClaim(string key);
+    public sealed virtual string RefreshAndGetSecurityToken();
+    private static string getRptEndpoint();
+    public static OkeWorkloadIdentityResourcePrincipalsFederationClient CreateFederationClient(ISessionKeySupplier sessionKeySupplier, IServiceAccountTokenSupplier serviceAccountTokenSupplier);
+}
+public class Oci.Common.Auth.Internal.ResourceDetails : object {
+    [CompilerGeneratedAttribute]
+private Uri <Uri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Headers>k__BackingField;
+    public Uri Uri { get; public set; }
+    public Dictionary`2<string, string> Headers { get; public set; }
+    [CompilerGeneratedAttribute]
+public Uri get_Uri();
+    [CompilerGeneratedAttribute]
+public void set_Uri(Uri value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Headers();
+    [CompilerGeneratedAttribute]
+public void set_Headers(Dictionary`2<string, string> value);
+}
+internal class Oci.Common.Auth.Internal.SecurityToken : object {
+    [CompilerGeneratedAttribute]
+private string <Token>k__BackingField;
+    public string Token { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Token();
+    [CompilerGeneratedAttribute]
+public void set_Token(string value);
+}
+public class Oci.Common.Auth.Internal.X509FederationClient : object {
+    private static string DEFAULT_PURPOSE;
+    private IX509CertificateSupplier leafCertificateSupplier;
+    private string tenancyId;
+    private HashSet`1<IX509CertificateSupplier> intermediateCertificateSuppliers;
+    private ISessionKeySupplier sessionKeySupplier;
+    private string purpose;
+    private string federationEndpoint;
+    private SecurityTokenAdapter modreq(System.Runtime.CompilerServices.IsVolatile) securityTokenAdapter;
+    protected static Logger logger;
+    [CompilerGeneratedAttribute]
+private HttpClient <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IFederationRequestSigner <FederationSigner>k__BackingField;
+    public HttpClient Client { get; public set; }
+    public IFederationRequestSigner FederationSigner { get; public set; }
+    public X509FederationClient(string federationEndpoint, string tenancyId, IX509CertificateSupplier leafCertificateSupplier, ISessionKeySupplier sessionKeySupplier, HashSet`1<IX509CertificateSupplier> intermediateCertificateSuppliers);
+    public X509FederationClient(string federationEndpoint, string tenancyId, IX509CertificateSupplier leafCertificateSupplier, ISessionKeySupplier sessionKeySupplier, HashSet`1<IX509CertificateSupplier> intermediateCertificateSuppliers, string purpose, IFederationRequestSigner federationRequestSigner);
+    private static X509FederationClient();
+    [CompilerGeneratedAttribute]
+public HttpClient get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(HttpClient value);
+    [CompilerGeneratedAttribute]
+public IFederationRequestSigner get_FederationSigner();
+    [CompilerGeneratedAttribute]
+public void set_FederationSigner(IFederationRequestSigner value);
+    public sealed virtual string GetSecurityToken();
+    public sealed virtual string GetStringClaim(string key);
+    public sealed virtual string RefreshAndGetSecurityToken();
+    private string RefreshAndGetSecurityTokenInner(bool doFinalTokenValidityCheck);
+    private SecurityTokenAdapter GetSecurityTokenFromServer();
+}
+internal class Oci.Common.Auth.Internal.X509FederationRequest : object {
+    public HashSet`1<string> intermediateCertificates;
+    public string certificate;
+    public string publicKey;
+    public string purpose;
+    public X509FederationRequest(string publicKey, string certificate, HashSet`1<string> intermediateCertificates, string purpose);
+}
+public interface Oci.Common.Auth.IRefreshableOnNotAuthenticatedProvider`1 {
+    public abstract virtual T Refresh();
+}
+public interface Oci.Common.Auth.IRegionProvider {
+    public Region Region { get; }
+    public abstract virtual Region get_Region();
+}
+public interface Oci.Common.Auth.IServiceAccountTokenSupplier {
+    public string ServiceAccountToken { get; }
+    public abstract virtual string get_ServiceAccountToken();
+}
+public interface Oci.Common.Auth.ISessionKeySupplier {
+    public abstract virtual AsymmetricCipherKeyPair GetKeyPair();
+    public abstract virtual void RefreshKeys();
+}
+public interface Oci.Common.Auth.ISupplier`1 {
+    public abstract virtual T GetKey();
+}
+public interface Oci.Common.Auth.IUserDelegationDetailsProvider {
+    public string TenantId { get; }
+    public abstract virtual string get_TenantId();
+    public abstract virtual string GetDelegationToken();
+}
+public interface Oci.Common.Auth.IX509CertificateSupplier {
+    public abstract virtual CertificateAndPrivateKeyPair GetCertificateAndKeyPair();
+    public abstract virtual void Refresh();
+}
+public class Oci.Common.Auth.OkeWorkloadIdentityAuthenticationDetailsProvider : AbstractRequestingAuthenticationDetailsProvider {
+    protected static Logger logger;
+    private static string OCI_RESOURCE_PRINCIPAL_REGION_ENV_VAR_NAME;
+    private OkeWorkloadIdentityAuthenticationDetailsProvider(IFederationClient federationClient, ISessionKeySupplier sessionKeySupplier, Region region);
+    private static OkeWorkloadIdentityAuthenticationDetailsProvider();
+    public static OkeWorkloadIdentityAuthenticationDetailsProvider GetProvider(IServiceAccountTokenSupplier serviceAccountTokenSupplier, string token, string tokenPath);
+    private static OkeWorkloadIdentityAuthenticationDetailsProvider BuildProvider(IServiceAccountTokenSupplier serviceAccountTokenSupplier, string token, string tokenPath);
+}
+public class Oci.Common.Auth.PasswordFinder : object {
+    private SecureString passPhrase;
+    public PasswordFinder(SecureString passPhrase);
+    public sealed virtual Char[] GetPassword();
+}
+public class Oci.Common.Auth.PrivateKeySupplier : object {
+    private RsaKeyParameters privateKey;
+    private string privateKeyContent;
+    private SecureString passPhrase;
+    public PrivateKeySupplier(string keyContent);
+    public PrivateKeySupplier(string keyContent, string passPhrase);
+    public PrivateKeySupplier(RsaKeyParameters privateKey);
+    public sealed virtual RsaKeyParameters GetKey();
+}
+public class Oci.Common.Auth.ResourcePrincipalAuthenticationDetailsProvider : AbstractRequestingAuthenticationDetailsProvider {
+    protected static Logger logger;
+    private static string OCI_RESOURCE_PRINCIPAL_VERSION;
+    private static string RP_VERSION_1_1;
+    private static string RP_VERSION_2_2;
+    private static string OCI_RESOURCE_PRINCIPAL_RPST;
+    private static string OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM;
+    private static string OCI_RESOURCE_PRINCIPAL_PRIVATE_PEM_PASSPHRASE;
+    private static string OCI_RESOURCE_PRINCIPAL_REGION_ENV_VAR_NAME;
+    private static string RP_DEBUG_INFORMATION_LOG;
+    private ResourcePrincipalAuthenticationDetailsProvider(IFederationClient federationClient, ISessionKeySupplier sessionKeySupplier, Region region);
+    private static ResourcePrincipalAuthenticationDetailsProvider();
+    public static ResourcePrincipalAuthenticationDetailsProvider GetProvider();
+    private static ResourcePrincipalAuthenticationDetailsProvider Build_2_2();
+}
+public class Oci.Common.Auth.SecurityTokenAdapter : object {
+    private JwtSecurityToken jwt;
+    private ISessionKeySupplier sessionKeySupplier;
+    protected static Logger logger;
+    public string SecurityToken;
+    public SecurityTokenAdapter(string securityToken, ISessionKeySupplier sessionKeySupplier);
+    private static SecurityTokenAdapter();
+    private JwtSecurityToken Parse(string token);
+    public bool IsValid(double time);
+    public string GetStringClaim(string key);
+    public double GetTokenValidDuration();
+}
+public class Oci.Common.Auth.SessionKey : object {
+    private AsymmetricCipherKeyPair keyPair;
+    public sealed virtual AsymmetricCipherKeyPair GetKeyPair();
+    public sealed virtual void RefreshKeys();
+}
+public class Oci.Common.Auth.SessionTokenAuthenticationDetailsProvider : object {
+    protected static Logger logger;
+    private IBasicAuthenticationDetailsProvider authProvider;
+    private String modreq(System.Runtime.CompilerServices.IsVolatile) sessionToken;
+    private bool skipRefresh;
+    private string sessionTokenFilePath;
+    private static string CONFIG_FILE_DEBUG_INFORMATION_LOG;
+    public Region Region { get; }
+    public string TenantId { get; }
+    public string Fingerprint { get; }
+    public string UserId { get; }
+    public string KeyId { get; }
+    public Char[] PassPhraseCharacters { get; }
+    public SessionTokenAuthenticationDetailsProvider(string profile, FilePrivateKeySupplier keySupplier);
+    public SessionTokenAuthenticationDetailsProvider(string configurationFilePath, string profile, FilePrivateKeySupplier keySupplier);
+    public SessionTokenAuthenticationDetailsProvider(ConfigFile configFile, FilePrivateKeySupplier keySupplier);
+    public SessionTokenAuthenticationDetailsProvider(SimpleAuthenticationDetailsProvider provider, string sessionToken);
+    private static SessionTokenAuthenticationDetailsProvider();
+    public sealed virtual Region get_Region();
+    public sealed virtual string get_TenantId();
+    public sealed virtual string get_Fingerprint();
+    public sealed virtual string get_UserId();
+    public sealed virtual string get_KeyId();
+    public sealed virtual Char[] get_PassPhraseCharacters();
+    public sealed virtual RsaKeyParameters GetPrivateKey();
+    public sealed virtual string Refresh();
+    private void SetupSessionTokenAuthenticationDetailsProvider(ConfigFile configFile, FilePrivateKeySupplier keySupplier);
+    private void SetSessionTokenFromFilePath(string sessionTokenFilePath);
+    public DateTime GetSessionTokenExpiryDate();
+    public bool IsSessionTokenValid();
+    private string GetSessionToken();
+}
+public class Oci.Common.Auth.SimpleAuthenticationDetailsProvider : CustomerAuthenticationDetailsProvider {
+    [CompilerGeneratedAttribute]
+private Region <Region>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISupplier`1<RsaKeyParameters> <PrivateKeySupplier>k__BackingField;
+    public Region Region { get; public set; }
+    public ISupplier`1<RsaKeyParameters> PrivateKeySupplier { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual Region get_Region();
+    [CompilerGeneratedAttribute]
+public void set_Region(Region value);
+    [CompilerGeneratedAttribute]
+public ISupplier`1<RsaKeyParameters> get_PrivateKeySupplier();
+    [CompilerGeneratedAttribute]
+public void set_PrivateKeySupplier(ISupplier`1<RsaKeyParameters> value);
+    public virtual RsaKeyParameters GetPrivateKey();
+}
+public class Oci.Common.Auth.SuppliedServiceAccountTokenProvider : AbstractServiceAccountTokenSupplier {
+    protected static Logger logger;
+    private string token;
+    public SuppliedServiceAccountTokenProvider(string token);
+    private static SuppliedServiceAccountTokenProvider();
+    protected virtual string getTokenInner();
+}
+public class Oci.Common.Auth.URLBasedX509CertificateSupplier : object {
+    private CertificateAndPrivateKeyPair certificateAndKeyPair;
+    private ResourceDetails certificateDetails;
+    private ResourceDetails privateKeyDetails;
+    private Char[] privateKeyPassphraseCharacters;
+    protected static Logger logger;
+    [CompilerGeneratedAttribute]
+private HttpClient <Client>k__BackingField;
+    public HttpClient Client { get; public set; }
+    public URLBasedX509CertificateSupplier(ResourceDetails certificateResourceDetails, ResourceDetails privateKeyResourceDetails, Char[] privateKeyPassphraseCharacters);
+    private static URLBasedX509CertificateSupplier();
+    [CompilerGeneratedAttribute]
+public HttpClient get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(HttpClient value);
+    public sealed virtual CertificateAndPrivateKeyPair GetCertificateAndKeyPair();
+    public sealed virtual void Refresh();
+    private void Dispose();
+    private X509Certificate2 ReadRawCertificate(ResourceDetails certificateDetails);
+    private RsaKeyParameters ReadPrivateKey(ResourceDetails privateKeyResourceDetails, Char[] privateKeyPassphrase);
+    private RsaKeyParameters GetKey(Stream stream, SecureString passPhrase);
+}
+public class Oci.Common.Auth.Utils.AuthUtils : object {
+    public static string GetTenantIdFromCertificate(X509Certificate2 certificate);
+    public static string GetFingerPrint(string thumbprint);
+    public static string GetBase64EncodedKey(RsaKeyParameters key);
+}
+public abstract class Oci.Common.ClientBase : object {
+    private bool disposed;
+    protected static Logger logger;
+    protected RestClient restClient;
+    protected Service service;
+    protected string userAgent;
+    public ClientBase(IBasicAuthenticationDetailsProvider authProvider);
+    public ClientBase(IBasicAuthenticationDetailsProvider authProvider, RequestSigner requestSigner);
+    public ClientBase(IBasicAuthenticationDetailsProvider authProvider, ClientConfiguration clientConfiguration);
+    public ClientBase(IBasicAuthenticationDetailsProvider authProvider, ClientConfiguration clientConfiguration, RequestSigner requestSigner);
+    private static ClientBase();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    public void SetEndpoint(string endpoint);
+    public Uri GetEndpoint();
+    private string BuildUserAgent(string clientUserAgent);
+    public string GetUserAgent();
+    public void SetRealmSpecificEndpointTemplate(string endpoint);
+}
+public class Oci.Common.ClientConfiguration : object {
+    private static int TIMEOUT_MILLIS;
+    private static long RESPONSE_CONTENT_BUFFER_BYTES;
+    [CompilerGeneratedAttribute]
+private int <TimeoutMillis>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <ResponseContentBufferBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientUserAgent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RetryConfiguration <RetryConfiguration>k__BackingField;
+    public int TimeoutMillis { get; public set; }
+    public long ResponseContentBufferBytes { get; public set; }
+    public string ClientUserAgent { get; public set; }
+    public RetryConfiguration RetryConfiguration { get; public set; }
+    private static ClientConfiguration();
+    [CompilerGeneratedAttribute]
+public int get_TimeoutMillis();
+    [CompilerGeneratedAttribute]
+public void set_TimeoutMillis(int value);
+    [CompilerGeneratedAttribute]
+public long get_ResponseContentBufferBytes();
+    [CompilerGeneratedAttribute]
+public void set_ResponseContentBufferBytes(long value);
+    [CompilerGeneratedAttribute]
+public string get_ClientUserAgent();
+    [CompilerGeneratedAttribute]
+public void set_ClientUserAgent(string value);
+    [CompilerGeneratedAttribute]
+public RetryConfiguration get_RetryConfiguration();
+    [CompilerGeneratedAttribute]
+public void set_RetryConfiguration(RetryConfiguration value);
+}
+public class Oci.Common.ConfigFile : object {
+    private ConfigAccumulator accumulator;
+    private string profile;
+    private static string DEFAULT_PROFILE_NAME;
+    public ConfigFile(ConfigAccumulator accumulator, string profile);
+    private static ConfigFile();
+    public string GetValue(string key);
+    public Dictionary`2<string, Dictionary`2<string, string>> GetConfiguration();
+}
+public class Oci.Common.ConfigFileReader : object {
+    protected static Logger logger;
+    public static string DEFAULT_FILE_PATH;
+    public static string FALLBACK_DEFAULT_FILE_PATH;
+    public static string CONFIG_FILE_PATH_ENV_VAR_NAME;
+    private static ConfigFileReader();
+    public static ConfigFile ParseDefault();
+    public static ConfigFile ParseDefault(string profile);
+    public static ConfigFile Parse(string configurationFilePath);
+    public static ConfigFile Parse(string configurationFilePath, string profile);
+    public static ConfigFile Parse(Stream configurationStream, string profile);
+}
+public class Oci.Common.Converter : object {
+    protected static Logger logger;
+    private static HashSet`1<string> settableContentHeaders;
+    private static Converter();
+    public static HttpRequestMessage ToHttpRequestMessage(Uri uri, HttpMethod method, T request);
+    public static T FromHttpResponseMessage(HttpResponseMessage responseMessage);
+}
+public static class Oci.Common.DeveloperToolConfigurations.DeveloperToolConfiguration : object {
+    private static string OCI_DEVELOPER_TOOL_CONFIGURATION_FILE_PATH;
+    private static string OCI_ALLOW_ONLY_DEVELOPER_TOOL_CONFIGURATION_REGIONS;
+    private static Logger logger;
+    private static string DEFAULT_DEVELOPER_TOOL_CONFIGURATION_FILE_PATH;
+    private static bool ociAllowOnlyDeveloperToolConfigurationRegions;
+    [CompilerGeneratedAttribute]
+private static string <DeveloperToolConfigurationProvider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static HashSet`1<string> <OciEnabledServiceSet>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static List`1<RegionSchema> <DeveloperToolConfigurationRegions>k__BackingField;
+    public static string DeveloperToolConfigurationProvider { get; public set; }
+    public static HashSet`1<string> OciEnabledServiceSet { get; public set; }
+    public static List`1<RegionSchema> DeveloperToolConfigurationRegions { get; public set; }
+    private static DeveloperToolConfiguration();
+    private static string getParsedServiceName(string serviceName);
+    private static string getDeveloperToolConfigFilePath();
+    private static void initializeDeveloperToolConfiguration();
+    [CompilerGeneratedAttribute]
+public static string get_DeveloperToolConfigurationProvider();
+    [CompilerGeneratedAttribute]
+public static void set_DeveloperToolConfigurationProvider(string value);
+    [CompilerGeneratedAttribute]
+public static HashSet`1<string> get_OciEnabledServiceSet();
+    [CompilerGeneratedAttribute]
+public static void set_OciEnabledServiceSet(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public static List`1<RegionSchema> get_DeveloperToolConfigurationRegions();
+    [CompilerGeneratedAttribute]
+public static void set_DeveloperToolConfigurationRegions(List`1<RegionSchema> value);
+    public static bool IsServiceEnabled(string service);
+    public static bool IsOCIAllowOnlyDeveloperToolConfigurationRegionsEnabled();
+    public static bool DoesDeveloperToolConfigurationFileExist();
+    public static bool UseOnlyDeveloperToolConfigurationRegions();
+    public static void ReInitialize();
+}
+internal class Oci.Common.GenericHelper : object {
+    public static object InvokeGenericMethod(GenericInvokerParameters parameters);
+}
+internal class Oci.Common.GenericInvoker : object {
+    public T ReadEntity(GenericInvokerParameters parameters);
+}
+internal class Oci.Common.GenericInvokerParameters : object {
+    [CompilerGeneratedAttribute]
+private HttpResponseMessage <ResponseMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <InvokeType>k__BackingField;
+    public HttpResponseMessage ResponseMessage { get; public set; }
+    public Type InvokeType { get; public set; }
+    [CompilerGeneratedAttribute]
+public HttpResponseMessage get_ResponseMessage();
+    [CompilerGeneratedAttribute]
+public void set_ResponseMessage(HttpResponseMessage value);
+    [CompilerGeneratedAttribute]
+public Type get_InvokeType();
+    [CompilerGeneratedAttribute]
+public void set_InvokeType(Type value);
+}
+public enum Oci.Common.Http.CollectionFormatType : Enum {
+    public int value__;
+    public static CollectionFormatType Csv;
+    public static CollectionFormatType Multi;
+    public static CollectionFormatType Pipes;
+    public static CollectionFormatType Ssv;
+    public static CollectionFormatType Tsv;
+}
+[AttributeUsageAttribute("128")]
+public class Oci.Common.Http.HttpConverterAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private TargetEnum <Target>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CollectionFormatType <CollectionFormat>k__BackingField;
+    public TargetEnum Target { get; public set; }
+    public string Name { get; public set; }
+    public CollectionFormatType CollectionFormat { get; public set; }
+    public HttpConverterAttribute(TargetEnum target, string name, CollectionFormatType collectionFormat);
+    public HttpConverterAttribute(TargetEnum target, string name);
+    public HttpConverterAttribute(TargetEnum target);
+    [CompilerGeneratedAttribute]
+public TargetEnum get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(TargetEnum value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public CollectionFormatType get_CollectionFormat();
+    [CompilerGeneratedAttribute]
+public void set_CollectionFormat(CollectionFormatType value);
+}
+public class Oci.Common.Http.Internal.ContentHelper : object {
+    protected static Logger logger;
+    private static ContentHelper();
+    public static HttpContent CreateHttpContent(object content);
+    public static void SerializeJsonIntoStream(object value, Stream stream);
+    public static void UpdateSettableHttpContentHeaders(HttpContent httpContent, Dictionary`2<string, string> contentHeaders);
+}
+public class Oci.Common.Http.Internal.HeaderUtils : object {
+    public static string GetFirstorDefaultHeaderValue(HttpResponseHeaders headers, string headerName);
+    public static string FromValue(object value);
+    public static object ToValue(string strValue, Type type);
+}
+public class Oci.Common.Http.Internal.ResponseHelper : object {
+    private static Logger logger;
+    public static string DEFAULT_OCI_EXCEPTION_MESSAGE;
+    public static string DEFAULT_OCI_EXCEPTION_SERVICE_CODE;
+    public static string INSTANCE_PRINCIPAL_FAILURE_MESSAGE;
+    public static string NOT_APPLICABLE;
+    public static int INSTANCE_PRINCIPAL_FAILURE_CODE;
+    private static ResponseHelper();
+    public static T ReadEntity(HttpResponseMessage response);
+    public static void HandleNonSuccessfulResponse(HttpResponseMessage responseMessage, ApiDetails apiDetails, string caller);
+    private static T ReadEntityInternal(HttpResponseMessage response, string opcRequestId);
+    private static void HandleJsonParseErrors(ErrorEventArgs args, HttpStatusCode statusCode, string content, string opcRequestId);
+}
+public class Oci.Common.Http.RequestCallback : MulticastDelegate {
+    public RequestCallback(object object, IntPtr method);
+    public virtual void Invoke(HttpRequestMessage request);
+    public virtual IAsyncResult BeginInvoke(HttpRequestMessage request, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Oci.Common.Http.RestClient : object {
+    private static Logger logger;
+    private static int MAX_RETRIES_FOR_TOKEN_REFRESH;
+    private Dictionary`2<SigningStrategy, RequestSigner> availableRequestSigners;
+    private RequestSigner requestSigner;
+    private IBasicAuthenticationDetailsProvider authProvider;
+    [CompilerGeneratedAttribute]
+private string <RealmSpecificEndpointTemplate>k__BackingField;
+    private HttpClient httpClient;
+    private RestClientHandler restClientHandler;
+    public string RealmSpecificEndpointTemplate { get; public set; }
+    public RestClient(RestClientHandler handler);
+    public RestClient(RestClientHandler handler, ClientConfiguration clientConfiguration);
+    public RestClient(IBasicAuthenticationDetailsProvider authProvider, RequestSigner requestSigner);
+    public RestClient(IBasicAuthenticationDetailsProvider authProvider, ClientConfiguration clientConfiguration, RequestSigner requestSigner);
+    private static RestClient();
+    [CompilerGeneratedAttribute]
+public string get_RealmSpecificEndpointTemplate();
+    [CompilerGeneratedAttribute]
+public void set_RealmSpecificEndpointTemplate(string value);
+    private void RefreshSigner();
+    public void Dispose();
+    public void SetEndpoint(string endpoint);
+    public Uri GetEndpoint();
+    public void SetDefaultUserAgent(string userAgent);
+    [AsyncStateMachineAttribute("Oci.Common.Http.RestClient/<HttpSend>d__19")]
+public Task`1<HttpResponseMessage> HttpSend(HttpRequestMessage httpRequest, HttpCompletionOption completionOption, CancellationToken cancellationToken);
+    public void CheckHttpResponseMessage(HttpRequestMessage httpRequest, HttpResponseMessage httpResponse, ApiDetails apiDetails);
+    internal void RequestReceptor(HttpRequestMessage requestMessage);
+    private Dictionary`2<SigningStrategy, RequestSigner> GetAvailableRequestSigners(IBasicAuthenticationDetailsProvider authProvider);
+}
+public class Oci.Common.Http.RestClientHandler : HttpClientHandler {
+    protected static Logger logger;
+    private RequestCallback callback;
+    public RestClientHandler(RequestCallback callback);
+    private static RestClientHandler();
+    protected virtual Task`1<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
+}
+public class Oci.Common.Http.Signing.DefaultRequestSigner : RequestSigner {
+    private SigningStrategy signingStrategy;
+    private ISignatureSigner signer;
+    private static string SIGNATURE_VERSION;
+    private static string SIGNATURE_ALGORITHM;
+    protected static Logger logger;
+    public DefaultRequestSigner(IBasicAuthenticationDetailsProvider authDetailsProvider);
+    public DefaultRequestSigner(IBasicAuthenticationDetailsProvider authDetailsProvider, SigningStrategy signingStrategy);
+    public DefaultRequestSigner(IBasicAuthenticationDetailsProvider authDetailsProvider, ISignatureSigner signer);
+    public DefaultRequestSigner(IBasicAuthenticationDetailsProvider authDetailsProvider, SigningStrategy signingStrategy, ISignatureSigner signer);
+    private static DefaultRequestSigner();
+    public virtual void SignRequest(HttpRequestMessage requestMessage);
+}
+public class Oci.Common.Http.Signing.FederationRequestSigner : object {
+    private SigningStrategy signingStrategy;
+    private ISignatureSigner signer;
+    private static string SIGNATURE_VERSION;
+    private static string SIGNATURE_ALGORITHM;
+    protected static Logger logger;
+    public FederationRequestSigner(ISignatureSigner signer);
+    private static FederationRequestSigner();
+    public sealed virtual void SignRequest(HttpRequestMessage requestMessage, RsaKeyParameters privateKey, string keyId);
+}
+public interface Oci.Common.Http.Signing.IFederationRequestSigner {
+    public abstract virtual void SignRequest(HttpRequestMessage httpRequestMessage, RsaKeyParameters privateKey, string KeyId);
+}
+public class Oci.Common.Http.Signing.Internal.Constants : object {
+    public static string AUTHORIZATION_HEADER;
+    public static string REQUEST_TARGET;
+    public static string DATE;
+    public static string CONTENT_LENGTH;
+    public static string CONTENT_TYPE;
+    public static string CONTENT_DISPOSITION;
+    public static string CONTENT_ENCODING;
+    public static string CONTENT_LANGUAGE;
+    public static string CONTENT_MD5;
+    public static string X_CONTENT_SHA256;
+    public static string HOST;
+    public static string CROSS_TENANCY_REQUEST_HEADER_NAME;
+    public static string X_SUBSCRIPTION;
+    public static string OPC_OBO_TOKEN;
+    public static string JSON_CONTENT_TYPE;
+    public static ReadOnlyCollection`1<string> GENERIC_HEADERS;
+    public static ReadOnlyCollection`1<string> BODY_HEADERS;
+    public static ReadOnlyCollection`1<string> ALL_HEADERS;
+    public static Dictionary`2<string, ReadOnlyCollection`1<string>> REQUIRED_SIGNING_HEADERS;
+    public static Dictionary`2<string, ReadOnlyCollection`1<string>> REQUIRED_EXCLUDE_BODY_SIGNING_HEADERS;
+    public static ReadOnlyCollection`1<string> OPTIONAL_HEADERS_NAMES;
+    public static Dictionary`2<string, ReadOnlyCollection`1<string>> OPTIONAL_SIGNING_HEADERS;
+    private static Constants();
+    private static Dictionary`2<string, ReadOnlyCollection`1<string>> CreateHeadersToSignDictionary(ReadOnlyCollection`1<string> getHeaders, ReadOnlyCollection`1<string> headHeaders, ReadOnlyCollection`1<string> deleteHeaders, ReadOnlyCollection`1<string> putHeaders, ReadOnlyCollection`1<string> postHeaders, ReadOnlyCollection`1<string> patchHeaders);
+}
+internal class Oci.Common.Http.Signing.Internal.SigningUtils : object {
+    internal static string CalculateAuthorization(List`1<string> requiredHeaders, string version, string keyId, string algorithm, string signature);
+    internal static void AddMissingHeaders(HttpRequestMessage requestMessage, List`1<string> requiredHeaders);
+    internal static string CalculateStringToSign(HttpRequestMessage requestMessage, List`1<string> requiredHeaders);
+    [AsyncStateMachineAttribute("Oci.Common.Http.Signing.Internal.SigningUtils/<ReadRequestBody>d__3")]
+internal static Task`1<Byte[]> ReadRequestBody(HttpRequestMessage requestMessage);
+    internal static bool IsRequiredHeaderMissing(string headerName, HttpHeaders requestHeaders, List`1<string> requiredHeaders);
+    internal static string BuildRequestTarget(HttpRequestMessage requestMessage);
+    internal static string ToRfc3339Format(DateTime dateTime);
+}
+public interface Oci.Common.Http.Signing.ISignatureSigner {
+    public abstract virtual Byte[] sign(RsaKeyParameters privateKey, Byte[] message);
+}
+public class Oci.Common.Http.Signing.OciHttpClientHandler : object {
+    public static HttpClientHandler FromConfigFile(string configPath, string profile);
+    public static HttpClientHandler FromConfigFile(string configPath, string profile, SigningStrategy signingStrategy);
+    public static HttpMessageHandler FromAuthProvider(IBasicAuthenticationDetailsProvider provider);
+    public static HttpClientHandler FromAuthProvider(IBasicAuthenticationDetailsProvider provider, SigningStrategy signingStrategy);
+    public static HttpClientHandler FromRequestSigner(RequestSigner requestSigner);
+}
+public abstract class Oci.Common.Http.Signing.RequestSigner : object {
+    [CompilerGeneratedAttribute]
+private IBasicAuthenticationDetailsProvider <AuthDetailsProvider>k__BackingField;
+    protected IBasicAuthenticationDetailsProvider AuthDetailsProvider { get; }
+    public RequestSigner(IBasicAuthenticationDetailsProvider authDetailsProvider);
+    public abstract virtual void SignRequest(HttpRequestMessage requestMessage);
+    [CompilerGeneratedAttribute]
+protected IBasicAuthenticationDetailsProvider get_AuthDetailsProvider();
+}
+public class Oci.Common.Http.Signing.SignatureSigner : object {
+    private static Logger logger;
+    private static SignatureSigner();
+    public sealed virtual Byte[] sign(RsaKeyParameters privateKey, Byte[] message);
+}
+public class Oci.Common.Http.Signing.SigningStrategy : object {
+    public static SigningStrategy STANDARD;
+    public static SigningStrategy EXCLUDE_BODY;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, ReadOnlyCollection`1<string>> <RequiredHeaders>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, ReadOnlyCollection`1<string>> <OptionalHeaders>k__BackingField;
+    public static string SIGNING_STRATEGY_PROPERTY_NAME_KEY;
+    public Dictionary`2<string, ReadOnlyCollection`1<string>> RequiredHeaders { get; public set; }
+    public Dictionary`2<string, ReadOnlyCollection`1<string>> OptionalHeaders { get; public set; }
+    public static IEnumerable`1<SigningStrategy> Values { get; }
+    public SigningStrategy(Dictionary`2<string, ReadOnlyCollection`1<string>> requiredHeaders, Dictionary`2<string, ReadOnlyCollection`1<string>> optionalHeaders);
+    private static SigningStrategy();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, ReadOnlyCollection`1<string>> get_RequiredHeaders();
+    [CompilerGeneratedAttribute]
+public void set_RequiredHeaders(Dictionary`2<string, ReadOnlyCollection`1<string>> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, ReadOnlyCollection`1<string>> get_OptionalHeaders();
+    [CompilerGeneratedAttribute]
+public void set_OptionalHeaders(Dictionary`2<string, ReadOnlyCollection`1<string>> value);
+    [IteratorStateMachineAttribute("Oci.Common.Http.Signing.SigningStrategy/<get_Values>d__12")]
+public static IEnumerable`1<SigningStrategy> get_Values();
+}
+public enum Oci.Common.Http.TargetEnum : Enum {
+    public int value__;
+    public static TargetEnum Path;
+    public static TargetEnum Header;
+    public static TargetEnum Query;
+    public static TargetEnum Body;
+}
+public class Oci.Common.Internal.EndpointBuilder : object {
+    protected static Logger logger;
+    private static int SERVICE_NAME_GROUP_INDEX;
+    private static string SERVICE_ENDPOINT_PREFIX_TEMPLATE;
+    private static string SERVICE_TEMPLATE;
+    private static string REGION_ID_TEMPLATE;
+    private static string SECOND_LEVEL_DOMAIN_TEMPLATE;
+    public static string DEFAULT_ENDPOINT_TEMPLATE;
+    public static string DOTTED_REGION_ENDPOINT_TEMPLATE;
+    private static Dictionary`2<string, string> OVERRIDE_REGION_IDS;
+    private static EndpointBuilder();
+    public static string CreateEndpoint(Service service, string regionId, Realm realm);
+    public static string CreateEndpoint(Service service, Region region);
+    public static string BuildEndpoint(string template, string regionId, string endpointPrefix, Realm realm);
+    public static string BuildEndpoint(string template, Service service, string region);
+    public static string GetServiceEndpointTemplateToUse(Service service, string regionId, Realm realm);
+    public static string GetRealmSpecificEndpointTemplate(Service service, string regionId, Realm realm);
+}
+public interface Oci.Common.IOciRequest {
+}
+public interface Oci.Common.IOciResponse {
+    public HttpResponseMessage httpResponseMessage { get; public set; }
+    public abstract virtual HttpResponseMessage get_httpResponseMessage();
+    public abstract virtual void set_httpResponseMessage(HttpResponseMessage value);
+}
+public class Oci.Common.Model.ApiDetails : object {
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperationName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequestEndpoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ApiReferenceLink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UserAgent>k__BackingField;
+    public string ServiceName { get; public set; }
+    public string OperationName { get; public set; }
+    public string RequestEndpoint { get; public set; }
+    public string ApiReferenceLink { get; public set; }
+    public string UserAgent { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_OperationName();
+    [CompilerGeneratedAttribute]
+public void set_OperationName(string value);
+    [CompilerGeneratedAttribute]
+public string get_RequestEndpoint();
+    [CompilerGeneratedAttribute]
+public void set_RequestEndpoint(string value);
+    [CompilerGeneratedAttribute]
+public string get_ApiReferenceLink();
+    [CompilerGeneratedAttribute]
+public void set_ApiReferenceLink(string value);
+    [CompilerGeneratedAttribute]
+public string get_UserAgent();
+    [CompilerGeneratedAttribute]
+public void set_UserAgent(string value);
+    public virtual string ToString();
+}
+public class Oci.Common.Model.DeveloperToolConfigFileSchema : object {
+    [CompilerGeneratedAttribute]
+private List`1<RegionSchema> <regions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <services>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <developerToolConfigurationProvider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <allowOnlyDeveloperToolConfigurationRegions>k__BackingField;
+    public List`1<RegionSchema> regions { get; public set; }
+    public List`1<string> services { get; public set; }
+    public string developerToolConfigurationProvider { get; public set; }
+    public string allowOnlyDeveloperToolConfigurationRegions { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<RegionSchema> get_regions();
+    [CompilerGeneratedAttribute]
+public void set_regions(List`1<RegionSchema> value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_services();
+    [CompilerGeneratedAttribute]
+public void set_services(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_developerToolConfigurationProvider();
+    [CompilerGeneratedAttribute]
+public void set_developerToolConfigurationProvider(string value);
+    [CompilerGeneratedAttribute]
+public string get_allowOnlyDeveloperToolConfigurationRegions();
+    [CompilerGeneratedAttribute]
+public void set_allowOnlyDeveloperToolConfigurationRegions(string value);
+}
+public class Oci.Common.Model.OciException : Exception {
+    [CompilerGeneratedAttribute]
+private HttpStatusCode <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OpcRequestId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ApiDetails <ApiDetails>k__BackingField;
+    public HttpStatusCode StatusCode { get; }
+    public string ServiceCode { get; }
+    public string OpcRequestId { get; }
+    public ApiDetails ApiDetails { get; }
+    public OciException(string message, Exception innerException);
+    public OciException(HttpStatusCode statusCode, string message, string serviceCode, string opcRequestId, ApiDetails apiDetails);
+    public OciException(HttpStatusCode statusCode, string message, string serviceCode, string opcRequestId);
+    public OciException(string message, string serviceCode, string opcRequestId, Exception innerException);
+    public OciException(HttpStatusCode statusCode, string message, string serviceCode, string opcRequestId, Exception innerException);
+    public OciException(HttpStatusCode statusCode, string message, string opcRequestId, Exception innerException);
+    [CompilerGeneratedAttribute]
+public HttpStatusCode get_StatusCode();
+    [CompilerGeneratedAttribute]
+public string get_ServiceCode();
+    [CompilerGeneratedAttribute]
+public string get_OpcRequestId();
+    [CompilerGeneratedAttribute]
+public ApiDetails get_ApiDetails();
+    public virtual string ToString();
+}
+public class Oci.Common.Model.Range : object {
+    private string HEADER_FORMAT;
+    private string START_ONLY_HEADER_FORMAT;
+    private string END_ONLY_HEADER_FORMAT;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <StartByte>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <EndByte>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<long> <ContentLength>k__BackingField;
+    public Nullable`1<long> StartByte { get; public set; }
+    public Nullable`1<long> EndByte { get; public set; }
+    public Nullable`1<long> ContentLength { get; public set; }
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_StartByte();
+    [CompilerGeneratedAttribute]
+public void set_StartByte(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_EndByte();
+    [CompilerGeneratedAttribute]
+public void set_EndByte(Nullable`1<long> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<long> get_ContentLength();
+    [CompilerGeneratedAttribute]
+public void set_ContentLength(Nullable`1<long> value);
+    public virtual string ToString();
+    public static Range ParseRange(string rangeStr);
+}
+public class Oci.Common.Model.RegionSchema : object {
+    [CompilerGeneratedAttribute]
+private string <realmKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <realmDomainComponent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <regionKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <regionIdentifier>k__BackingField;
+    public string realmKey { get; public set; }
+    public string realmDomainComponent { get; public set; }
+    public string regionKey { get; public set; }
+    public string regionIdentifier { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_realmKey();
+    [CompilerGeneratedAttribute]
+public void set_realmKey(string value);
+    [CompilerGeneratedAttribute]
+public string get_realmDomainComponent();
+    [CompilerGeneratedAttribute]
+public void set_realmDomainComponent(string value);
+    [CompilerGeneratedAttribute]
+public string get_regionKey();
+    [CompilerGeneratedAttribute]
+public void set_regionKey(string value);
+    [CompilerGeneratedAttribute]
+public string get_regionIdentifier();
+    [CompilerGeneratedAttribute]
+public void set_regionIdentifier(string value);
+    public bool isValid();
+}
+public class Oci.Common.OCID : object {
+    private static Regex OCID_PATTERN;
+    private static OCID();
+    public static bool IsValidOCID(string ocid);
+}
+public abstract class Oci.Common.OciResponse : object {
+    [CompilerGeneratedAttribute]
+private HttpResponseMessage <httpResponseMessage>k__BackingField;
+    public HttpResponseMessage httpResponseMessage { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual HttpResponseMessage get_httpResponseMessage();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_httpResponseMessage(HttpResponseMessage value);
+}
+public class Oci.Common.Realm : object {
+    protected static Logger logger;
+    private static Dictionary`2<string, Realm> KNOWN_REALMS;
+    private static Dictionary`2<string, Realm> DEVELOPER_TOOL_CONFIG_REALMS;
+    [CompilerGeneratedAttribute]
+private string <RealmId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SecondLevelDomain>k__BackingField;
+    public static string OCI_DEFAULT_REALM;
+    public static Realm OC1;
+    public static Realm OC2;
+    public static Realm OC3;
+    public static Realm OC4;
+    public static Realm OC8;
+    public static Realm OC9;
+    public static Realm OC10;
+    public static Realm OC14;
+    public static Realm OC20;
+    public static Realm OC19;
+    public static Realm OC24;
+    public static Realm OC21;
+    public static Realm OC26;
+    public static Realm OC15;
+    public static Realm OC29;
+    public static Realm OC23;
+    public string RealmId { get; }
+    public string SecondLevelDomain { get; }
+    private Realm(string realmId, string secondlevelDomain, bool isDeveloperToolConfigRealm);
+    private static Realm();
+    [CompilerGeneratedAttribute]
+public string get_RealmId();
+    [CompilerGeneratedAttribute]
+public string get_SecondLevelDomain();
+    private void AddRealm(Realm realm, bool isDeveloperToolConfigRealm);
+    public static Realm[] Values();
+    public static Realm ValueOf(string realmId);
+    public static Realm Register(string realmId, string secondlevelDomain, bool isDeveloperToolConfigRealm);
+    public static void ResetDeveloperToolConfig();
+}
+public class Oci.Common.Region : object {
+    protected static Logger logger;
+    private static Dictionary`2<string, Region> KNOWN_REGIONS;
+    private static Dictionary`2<string, Region> DEVELOPER_TOOL_CONFIG_REGIONS;
+    private static string OCI_REGION_METADATA_ENV_VAR_NAME;
+    private static string REGIONS_CONFIG_FILE_PATH;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasUsedEnvVar;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasUsedConfigFile;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasUsedDeveloperToolConfigFile;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasUsedInstanceMetadataService;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasReceivedInstanceMetadataServiceResponse;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasWarnedAboutValuesWithoutInstanceMetadataService;
+    private static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) HasOptedForInstanceMetadataService;
+    private static Region RegionFromIMDS;
+    private static RegionSchema RegionSchemaFromIMDS;
+    private static string METADATA_SERVICE_BASE_URL;
+    private static string METADATA_SERVICE_API_URL;
+    private static string OCI_DEFAULT_REALM_ENV_VAR_NAME;
+    public static String modreq(System.Runtime.CompilerServices.IsVolatile) DefaultRealmFromEnvironmentVariable;
+    [CompilerGeneratedAttribute]
+private string <RegionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RegionCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Realm <Realm>k__BackingField;
+    public static Region AP_CHUNCHEON_1;
+    public static Region AP_HYDERABAD_1;
+    public static Region AP_MELBOURNE_1;
+    public static Region AP_MUMBAI_1;
+    public static Region AP_OSAKA_1;
+    public static Region AP_SEOUL_1;
+    public static Region AP_SYDNEY_1;
+    public static Region AP_TOKYO_1;
+    public static Region CA_MONTREAL_1;
+    public static Region CA_TORONTO_1;
+    public static Region EU_AMSTERDAM_1;
+    public static Region EU_FRANKFURT_1;
+    public static Region EU_ZURICH_1;
+    public static Region ME_JEDDAH_1;
+    public static Region SA_SAOPAULO_1;
+    public static Region UK_LONDON_1;
+    public static Region US_ASHBURN_1;
+    public static Region US_PHOENIX_1;
+    public static Region US_SANJOSE_1;
+    public static Region ME_DUBAI_1;
+    public static Region UK_CARDIFF_1;
+    public static Region SA_SANTIAGO_1;
+    public static Region SA_VINHEDO_1;
+    public static Region IL_JERUSALEM_1;
+    public static Region EU_MARSEILLE_1;
+    public static Region AP_SINGAPORE_1;
+    public static Region ME_ABUDHABI_1;
+    public static Region EU_MILAN_1;
+    public static Region EU_STOCKHOLM_1;
+    public static Region AF_JOHANNESBURG_1;
+    public static Region EU_PARIS_1;
+    public static Region MX_QUERETARO_1;
+    public static Region EU_MADRID_1;
+    public static Region US_CHICAGO_1;
+    public static Region MX_MONTERREY_1;
+    public static Region US_SALTLAKE_2;
+    public static Region SA_BOGOTA_1;
+    public static Region SA_VALPARAISO_1;
+    public static Region AP_SINGAPORE_2;
+    public static Region ME_RIYADH_1;
+    public static Region US_LANGLEY_1;
+    public static Region US_LUKE_1;
+    public static Region US_GOV_ASHBURN_1;
+    public static Region US_GOV_CHICAGO_1;
+    public static Region US_GOV_PHOENIX_1;
+    public static Region UK_GOV_LONDON_1;
+    public static Region UK_GOV_CARDIFF_1;
+    public static Region AP_CHIYODA_1;
+    public static Region AP_IBARAKI_1;
+    public static Region ME_DCC_MUSCAT_1;
+    public static Region AP_DCC_CANBERRA_1;
+    public static Region EU_DCC_MILAN_1;
+    public static Region EU_DCC_MILAN_2;
+    public static Region EU_DCC_DUBLIN_2;
+    public static Region EU_DCC_RATING_2;
+    public static Region EU_DCC_RATING_1;
+    public static Region EU_DCC_DUBLIN_1;
+    public static Region AP_DCC_GAZIPUR_1;
+    public static Region EU_MADRID_2;
+    public static Region EU_FRANKFURT_2;
+    public static Region EU_JOVANOVAC_1;
+    public static Region ME_DCC_DOHA_1;
+    public static Region US_SOMERSET_1;
+    public static Region US_THAMES_1;
+    public static Region EU_DCC_ZURICH_1;
+    public static Region EU_CRISSIER_1;
+    public static Region ME_ABUDHABI_3;
+    public static Region ME_ABUDHABI_2;
+    public static Region ME_ABUDHABI_4;
+    public string RegionId { get; }
+    public string RegionCode { get; }
+    public Realm Realm { get; }
+    private Region(string regionId, string regionCode, Realm realm, bool isDeveloperToolConfigRegion);
+    private static Region();
+    private static string getDefaultRealmFromEnvironmentVariable();
+    [CompilerGeneratedAttribute]
+public string get_RegionId();
+    [CompilerGeneratedAttribute]
+public string get_RegionCode();
+    [CompilerGeneratedAttribute]
+public Realm get_Realm();
+    public string GetEndpoint(Service service);
+    public static void EnableInstanceMetadataService();
+    public static void SkipInstanceMetadataService();
+    public static void ResetEnvironmentVariableInUse();
+    public static void ResetConfigFileInUse();
+    public static void ResetDeveloperToolConfig();
+    public static string FormatDefaultRegionEndpoint(Service service, Region region);
+    public static string FormatDefaultRegionEndpoint(Service service, string regionId);
+    private static Region MaybeFromRegionId(string regionId);
+    public static Region FromRegionId(string regionId);
+    public static Region FromRegionCodeOrId(string regionCodeOrId);
+    public static Region[] Values();
+    public static Region Register(string regionId, Realm realm, bool isDeveloperToolConfigRegion);
+    public static Region Register(string regionId, Realm realm, string regionCode, bool isDeveloperToolConfig);
+    private static Region GetRegionFromRegionCodeOrIdWithoutRegistering(string regionCodeOrId);
+    private static Region GetDeveloperToolConfigRegionFromRegionCodeOrIdWithoutRegistering(string regionCodeOrId);
+    private static Region GetRegionAndRegisterIfNeccessary(string regionCodeOrId);
+    private static void RegisterAllRegions();
+    private static void RegisterRegionWithDefaultRealm(string regionId);
+    private static void RegisterRegionFromDeveloperToolConfigFile();
+    private static void RegisterRegionFromRegionConfigFile();
+    private static void RegisterRegionFromRegionEnvironmentVariable();
+    public static RegionSchema GetRegionSchemaFromInstanceMetaDataService();
+    public static Region RegisterRegionFromInstanceMetadataService();
+}
+public abstract class Oci.Common.RegionalClientBase : ClientBase {
+    protected static Logger logger;
+    private string regionId;
+    public RegionalClientBase(IBasicAuthenticationDetailsProvider authProvider);
+    public RegionalClientBase(IBasicAuthenticationDetailsProvider authProvider, RequestSigner requestSigner);
+    public RegionalClientBase(IBasicAuthenticationDetailsProvider authProvider, ClientConfiguration clientConfiguration);
+    public RegionalClientBase(IBasicAuthenticationDetailsProvider authProvider, ClientConfiguration clientConfiguration, RequestSigner requestSigner);
+    private static RegionalClientBase();
+    public void SetRegion(Region region);
+    public void SetRegion(string regionId);
+    public void UseRealmSpecificEndpointTemplate(bool IsRealmSpecificEndpointTemplateEnabled);
+    public static Uri PopulateServiceParametersInEndpointTemplate(RestClient client, Dictionary`2<string, object> requiredParametersDictionary);
+    public static String[] parseEndpointForParameters(string endpoint);
+    [CompilerGeneratedAttribute]
+private bool <SetRegion>b__6_0(Region regionSchema);
+}
+public class Oci.Common.Retry.GenericRetrier : object {
+    private RetryConfiguration retryConfiguration;
+    private static Logger logger;
+    public GenericRetrier(RetryConfiguration retryConfiguration);
+    private static GenericRetrier();
+    public RetryConfiguration GetRetryConfiguration();
+    public Task`1<HttpResponseMessage> MakeRetryingCall(Func`4<HttpRequestMessage, HttpCompletionOption, CancellationToken, Task`1<HttpResponseMessage>> asyncHttpCall, HttpRequestMessage requestMessage, HttpCompletionOption completionOption, CancellationToken cancellationToken);
+    private bool ShoulRetryOnHttpResponse(HttpResponseMessage response);
+}
+public class Oci.Common.Retry.Retrier : object {
+    public static GenericRetrier GetPreferredRetrier(RetryConfiguration requestLevelRetry, RetryConfiguration clientLevelRetry);
+}
+public class Oci.Common.Retry.RetryConfiguration : WaiterConfiguration {
+    private static int MAX_DURATION;
+    public static ReadOnlyCollection`1<int> RETRYABLE_STATUSCODE_FAMILY;
+    public static ReadOnlyCollection`1<Tuple`2<int, string>> RETRYABLE_ERRORS;
+    [CompilerGeneratedAttribute]
+private int <TotalElapsedTimeInSecs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<int> <RetryableStatusCodeFamilies>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Collection`1<Tuple`2<int, string>> <RetryableErrors>k__BackingField;
+    public static RetryConfiguration DefaultRetryConfiguration;
+    public static bool isDefaultRetryEnabled;
+    public int TotalElapsedTimeInSecs { get; public set; }
+    public List`1<int> RetryableStatusCodeFamilies { get; public set; }
+    public Collection`1<Tuple`2<int, string>> RetryableErrors { get; public set; }
+    private static RetryConfiguration();
+    [CompilerGeneratedAttribute]
+public int get_TotalElapsedTimeInSecs();
+    [CompilerGeneratedAttribute]
+public void set_TotalElapsedTimeInSecs(int value);
+    [CompilerGeneratedAttribute]
+public List`1<int> get_RetryableStatusCodeFamilies();
+    [CompilerGeneratedAttribute]
+public void set_RetryableStatusCodeFamilies(List`1<int> value);
+    [CompilerGeneratedAttribute]
+public Collection`1<Tuple`2<int, string>> get_RetryableErrors();
+    [CompilerGeneratedAttribute]
+public void set_RetryableErrors(Collection`1<Tuple`2<int, string>> value);
+}
+public class Oci.Common.Service : object {
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceEndpointPrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceEndpointTemplate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <EndpointServiceName>k__BackingField;
+    private Dictionary`2<string, string> REALM_SPECIFIC_ENDPOINT_TEMPLATE_DICTIONARY;
+    [RequiredAttribute]
+public string ServiceName { get; public set; }
+    [RequiredAttribute]
+public string ServiceEndpointPrefix { get; public set; }
+    public string ServiceEndpointTemplate { get; public set; }
+    public string EndpointServiceName { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceEndpointPrefix();
+    [CompilerGeneratedAttribute]
+public void set_ServiceEndpointPrefix(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceEndpointTemplate();
+    [CompilerGeneratedAttribute]
+public void set_ServiceEndpointTemplate(string value);
+    [CompilerGeneratedAttribute]
+public string get_EndpointServiceName();
+    [CompilerGeneratedAttribute]
+public void set_EndpointServiceName(string value);
+    public virtual string ToString();
+    public bool Equals(Service service);
+    public void AddServiceEndpointTemplateForRealm(string realmId, string endpoint);
+    public Dictionary`2<string, string> GetServiceEndpointTemplateForRealmDictionary();
+}
+public class Oci.Common.Services : object {
+    private static Logger logger;
+    private static Dictionary`2<string, Service> SERVICE_CACHE;
+    private static Services();
+    public static Service GetServiceByName(string serviceName);
+    public static Service Create(string serviceName, string serviceEndpointPrefix, string serviceEndpointTemplate);
+}
+public class Oci.Common.Utils.ConfigUtils : object {
+    public static string DELEGATION_TOKEN_FILE;
+    public static string TENANCY;
+    public static string USER;
+    public static string PASS_PHRASE;
+    public static string KEY_FILE;
+    public static string FINGERPRINT;
+    public static string AUTH_TYPE_IDENTIFIER;
+    public static string AUTH_TYPE_INSTANCE_PRINCIPAL;
+    public static string REGION_ENV_VAR_NAME;
+    public static string SESSION_TOKEN_FILE;
+    protected static Logger logger;
+    private static ConfigUtils();
+    public static void SetRegion(ConfigFile configFile, Region& region);
+}
+public class Oci.Common.Utils.CustomResolver : DefaultContractResolver {
+    protected virtual JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization);
+}
+public class Oci.Common.Utils.DateTimeJsonConverter : JsonConverter {
+    public virtual bool CanConvert(Type objectType);
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+}
+public class Oci.Common.Utils.FileUtils : object {
+    public static string ExpandUserHome(string path);
+    public static string CorrectPath(PlatformID platformID, string path);
+    public static SecureString GetSecurePassphraseFromFile(string passphrasePath);
+}
+public class Oci.Common.Utils.HttpDateUtils : object {
+    private static string RFC3339_FORMAT;
+    private static HttpDateUtils();
+    public static string ToRfc3339Format(DateTime dateTime);
+    public static DateTime ToDateTime(string dateTime);
+}
+public class Oci.Common.Utils.HttpUtils : object {
+    protected static Logger logger;
+    private static HttpUtils();
+    public static string EncodeQueryParam(string queryKey, object queryParam, CollectionFormatType collectionFormat);
+    public static string EncodeQueryParamSingleValue(object queryParam);
+    public static string GetEnumString(object enumObject);
+    public static string BuildQueryString(List`1<string> queries);
+    public static string BuildUserAgent(string clientUserAgent);
+    [AsyncStateMachineAttribute("Oci.Common.Utils.HttpUtils/<CloneHttpRequestMessage>d__6")]
+public static Task`1<HttpRequestMessage> CloneHttpRequestMessage(HttpRequestMessage request);
+    public static string GenerateRequestID();
+}
+public class Oci.Common.Utils.OciJsonSerializerSettings : object {
+    private static int DEFAULT_MAX_DEPTH;
+    private static string OCI_DOTNET_SDK_DEFAULT_SERIALIZER_MAX_DEPTH;
+    [CompilerGeneratedAttribute]
+private int <MaxDepth>k__BackingField;
+    public int MaxDepth { get; public set; }
+    private static OciJsonSerializerSettings();
+    [CompilerGeneratedAttribute]
+public int get_MaxDepth();
+    [CompilerGeneratedAttribute]
+public void set_MaxDepth(int value);
+    public JsonSerializerSettings GetJsonSerializerSettings();
+    public static int GetDefaultJsonSerializerMaxDepth();
+    public static JsonSerializerSettings GetDefaultJsonSerializerSettings();
+}
+public class Oci.Common.Utils.RealmSpecificEndpointTemplateUtils : object {
+    private static string OCI_REALM_SPECIFIC_SERVICE_ENDPOINT_TEMPLATE_ENABLED_ENV_VAR;
+    protected static Logger logger;
+    private static RealmSpecificEndpointTemplateUtils();
+    public static bool IsRealmSpecificEndpointTemplateEnabledByDefault();
+    public static string GetRealmSpecificEndpointTemplate(bool IsRealmSpecificEndpointTemplateEnabled, string regionId, Service service);
+}
+public class Oci.Common.Utils.ResponseEnumConverter : StringEnumConverter {
+    protected static Logger logger;
+    private static ResponseEnumConverter();
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    private bool IsNullableType(Type t);
+}
+public class Oci.Common.Utils.ResponseEnumerable`2 : object {
+    private Func`2<Response, string> getNextPageTokenFunction;
+    private Func`2<string, Request> getListRequestFunction;
+    private Func`2<Request, Task`1<Response>> listRequestFunction;
+    public ResponseEnumerable`2(Func`2<Response, string> getNextPageTokenFunction, Func`2<string, Request> getListRequestFunction, Func`2<Request, Task`1<Response>> listRequestFunction);
+    [IteratorStateMachineAttribute("Oci.Common.Utils.ResponseEnumerable`2/<GetEnumerator>d__4")]
+public sealed virtual IEnumerator`1<Response> GetEnumerator();
+    [AsyncStateMachineAttribute("Oci.Common.Utils.ResponseEnumerable`2/<GetNextPageResponseAsync>d__5")]
+private Task`1<Response> GetNextPageResponseAsync(string nextPageToken);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Oci.Common.Utils.ResponseRecordEnumerable`3 : object {
+    private Func`2<Response, string> getNextPageTokenFunction;
+    private Func`2<string, Request> getListRequestFunction;
+    private Func`2<Request, Task`1<Response>> listRequestFunction;
+    private Func`2<Response, List`1<ItemType>> retrieveItemsFromResponseFunc;
+    public ResponseRecordEnumerable`3(Func`2<Response, string> getNextPageTokenFunction, Func`2<string, Request> getListRequestFunction, Func`2<Request, Task`1<Response>> listRequestFunction, Func`2<Response, List`1<ItemType>> retrieveItemsFromResponseFunc);
+    [IteratorStateMachineAttribute("Oci.Common.Utils.ResponseRecordEnumerable`3/<GetEnumerator>d__5")]
+public sealed virtual IEnumerator`1<ItemType> GetEnumerator();
+    [AsyncStateMachineAttribute("Oci.Common.Utils.ResponseRecordEnumerable`3/<GetNextPageResponseAsync>d__6")]
+private Task`1<Response> GetNextPageResponseAsync(string nextPageToken);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Oci.Common.Utils.RetryUtils : object {
+    private static string OCI_SDK_DEFAULT_RETRY_ENABLED;
+    private static Logger logger;
+    private static RetryUtils();
+    public static bool IsDefaultRetryConfigurationEnabled();
+}
+public class Oci.Common.Utils.StreamJsonConverter : JsonConverter {
+    public virtual bool CanConvert(Type objectType);
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+}
+public class Oci.Common.Utils.StringUtils : object {
+    public static SecureString StringToSecureString(string str);
+}
+public class Oci.Common.Version : object {
+    public static string MAJOR;
+    public static string MINOR;
+    public static string PATCH;
+    public static string TAG;
+    private static Version();
+    public static string GetVersion();
+}
+public class Oci.Common.Waiters.DelayStrategy : object {
+    private static int DEFAULT_DELAY_SECONDS;
+    private static double MAX_DELAY_BETWEEN_CALLS;
+    private static Random random;
+    private static DelayStrategy();
+    public static double GetFixedDelayInSeconds(int _);
+    public static double GetExponentialDelayInSeconds(int retryAttempt);
+    public static double GetExponentialDelayWithDecorrelatedJitter(int retryAttempt);
+}
+public class Oci.Common.Waiters.WaitConditionFailedException : Exception {
+    public WaitConditionFailedException(string message);
+}
+public class Oci.Common.Waiters.Waiter`2 : object {
+    private WaiterAgent`2<Request, Response> agent;
+    private WaiterConfiguration configuration;
+    private Func`1<Response> invokableWaiterAgent;
+    public Waiter`2(WaiterConfiguration configuration, WaiterAgent`2<Request, Response> agent);
+    public Waiter`2(Func`1<Response> invokableWaiterAgent);
+    public Response Execute();
+    private Response GetResponse();
+    public Task`1<Response> ExecuteAsync();
+    [CompilerGeneratedAttribute]
+private Response <Execute>b__5_0();
+    [CompilerGeneratedAttribute]
+private Response <ExecuteAsync>b__7_0();
+    [CompilerGeneratedAttribute]
+private Response <ExecuteAsync>b__7_1();
+}
+public class Oci.Common.Waiters.WaiterAgent`2 : object {
+    private Request request;
+    private Func`2<Request, Task`1<Response>> query;
+    private Predicate`1<Response> condition;
+    private bool allow404s;
+    private static Logger logger;
+    public WaiterAgent`2(Request request, Func`2<Request, Task`1<Response>> query, Predicate`1<Response> condition, bool allow404s);
+    private static WaiterAgent`2();
+    public Response Execute(WaiterConfiguration waiterConfig);
+}
+public class Oci.Common.Waiters.WaiterConfiguration : object {
+    [CompilerGeneratedAttribute]
+private int <MaxAttempts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`2<int, double> <GetNextDelayInSeconds>k__BackingField;
+    public static WaiterConfiguration DefaultWaiterConfiguration;
+    public int MaxAttempts { get; public set; }
+    public Func`2<int, double> GetNextDelayInSeconds { get; public set; }
+    private static WaiterConfiguration();
+    [CompilerGeneratedAttribute]
+public int get_MaxAttempts();
+    [CompilerGeneratedAttribute]
+public void set_MaxAttempts(int value);
+    [CompilerGeneratedAttribute]
+public Func`2<int, double> get_GetNextDelayInSeconds();
+    [CompilerGeneratedAttribute]
+public void set_GetNextDelayInSeconds(Func`2<int, double> value);
+}

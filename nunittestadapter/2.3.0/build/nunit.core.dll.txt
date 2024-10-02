@@ -1,0 +1,1446 @@
+public enum NUnit.Core.ActionPhase : Enum {
+    public int value__;
+    public static ActionPhase Before;
+    public static ActionPhase After;
+}
+internal class NUnit.Core.ActionsHelper : object {
+    private static Type _ActionInterfaceType;
+    private static ActionsHelper();
+    public static void ExecuteActions(ActionPhase phase, IEnumerable`1<TestAction> actions, ITest test);
+    public static TestAction[] GetActionsFromAttributeProvider(ICustomAttributeProvider attributeProvider);
+    public static TestAction[] GetActionsFromTypesAttributes(Type type);
+    private static Type[] GetDeclaredInterfaces(Type type);
+    private static TestAction[] GetFilteredAndSortedActions(IEnumerable`1<TestAction> actions, ActionPhase phase);
+    private static int SortByTargetDescending(TestAction x, TestAction y);
+}
+public class NUnit.Core.AssemblyHelper : object {
+    public static string GetAssemblyPath(Type type);
+    public static string GetAssemblyPath(Assembly assembly);
+    public static string GetAssemblyPathFromEscapedCodeBase(string escapedCodeBase);
+    public static string GetDirectoryName(Assembly assembly);
+    private static bool IsFileUri(string uri);
+}
+public class NUnit.Core.AssemblyReader : object {
+    private string assemblyPath;
+    private BinaryReader rdr;
+    private FileStream fs;
+    private ushort dos_magic;
+    private UInt32 pe_signature;
+    private ushort numberOfSections;
+    private ushort optionalHeaderSize;
+    private ushort peType;
+    private UInt32 numDataDirectoryEntries;
+    private UInt32 peHeader;
+    private UInt32 fileHeader;
+    private UInt32 optionalHeader;
+    private UInt32 dataDirectory;
+    private UInt32 dataSections;
+    private DataSection[] sections;
+    public string AssemblyPath { get; }
+    public bool IsValidPeFile { get; }
+    public bool IsDotNetFile { get; }
+    public bool Is64BitImage { get; }
+    public string ImageRuntimeVersion { get; }
+    public AssemblyReader(string assemblyPath);
+    public AssemblyReader(Assembly assembly);
+    private void CalcHeaderOffsets();
+    private UInt32 DataDirectoryRva(int n);
+    private UInt32 RvaToLfa(UInt32 rva);
+    public string get_AssemblyPath();
+    public bool get_IsValidPeFile();
+    public bool get_IsDotNetFile();
+    public bool get_Is64BitImage();
+    public string get_ImageRuntimeVersion();
+    public sealed virtual void Dispose();
+}
+public class NUnit.Core.AssemblyResolver : MarshalByRefObject {
+    private static Logger log;
+    private AssemblyCache _cache;
+    private ArrayList _dirs;
+    private static AssemblyResolver();
+    public sealed virtual void Dispose();
+    public void AddFile(string file);
+    public void AddFiles(string directory, string pattern);
+    public void AddDirectory(string directory);
+    private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args);
+}
+public class NUnit.Core.BufferedEventListenerTextWriter : TextWriter {
+    private EventListener eventListener;
+    private TestOutputType type;
+    private static int MAX_BUFFER;
+    private StringBuilder sb;
+    public Encoding Encoding { get; }
+    public BufferedEventListenerTextWriter(EventListener eventListener, TestOutputType type);
+    public virtual Encoding get_Encoding();
+    public virtual void Write(char ch);
+    public virtual void Write(string str);
+    public virtual void WriteLine(string str);
+    public virtual void Flush();
+    private void CheckBuffer();
+}
+public class NUnit.Core.BufferedStringTextWriter : StringTextWriter {
+    private static int MAX_BUFFER;
+    private StringBuilder sb;
+    public BufferedStringTextWriter(TextWriter aTextWriter);
+    private static BufferedStringTextWriter();
+    public virtual void Write(char aChar);
+    public virtual void Write(string aString);
+    public virtual void WriteLine(string aString);
+    public virtual void Flush();
+    private void CheckBuffer();
+}
+public class NUnit.Core.Builders.CombinatorialStrategy : CombiningStrategy {
+    public CombinatorialStrategy(IEnumerable[] sources);
+    public virtual IEnumerable GetTestCases();
+}
+public class NUnit.Core.Builders.CombinatorialTestCaseProvider : object {
+    private static IDataPointProvider2 dataPointProvider;
+    private static string PairwiseAttribute;
+    private static string SequentialAttribute;
+    private static CombinatorialTestCaseProvider();
+    public sealed virtual bool HasTestCasesFor(MethodInfo method);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method);
+    public sealed virtual bool HasTestCasesFor(MethodInfo method, Test suite);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method, Test suite);
+    private CombiningStrategy GetStrategy(MethodInfo method, Test suite);
+}
+public abstract class NUnit.Core.Builders.CombiningStrategy : object {
+    protected IDataPointProvider dataPointProvider;
+    private IEnumerable[] sources;
+    private IEnumerator[] enumerators;
+    public IEnumerable[] Sources { get; }
+    public IEnumerator[] Enumerators { get; }
+    public CombiningStrategy(IEnumerable[] sources);
+    public IEnumerable[] get_Sources();
+    public IEnumerator[] get_Enumerators();
+    public abstract virtual IEnumerable GetTestCases();
+}
+public class NUnit.Core.Builders.DatapointProvider : object {
+    private static string DatapointAttribute;
+    private static string DatapointsAttribute;
+    private static DatapointProvider();
+    public sealed virtual bool HasDataFor(ParameterInfo parameter);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter);
+    private Type GetTypeFromMemberInfo(MemberInfo member);
+    private Type GetElementTypeFromMemberInfo(MemberInfo member);
+}
+public class NUnit.Core.Builders.InlineDataPointProvider : object {
+    private static string ParameterDataAttribute;
+    private static string NUnitLiteDataAttribute;
+    private static string GetDataMethod;
+    private static InlineDataPointProvider();
+    public sealed virtual bool HasDataFor(ParameterInfo parameter);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter);
+}
+public class NUnit.Core.Builders.LegacySuiteBuilder : object {
+    public sealed virtual bool CanBuildFrom(Type type);
+    public sealed virtual Test BuildFrom(Type type);
+    private bool IsValidFixtureType(Type type, String& reason);
+    public static PropertyInfo GetSuiteProperty(Type testClass);
+}
+public class NUnit.Core.Builders.NUnitTestCaseBuilder : object {
+    public sealed virtual bool CanBuildFrom(MethodInfo method);
+    public sealed virtual Test BuildFrom(MethodInfo method);
+    public sealed virtual bool CanBuildFrom(MethodInfo method, Test parentSuite);
+    public sealed virtual Test BuildFrom(MethodInfo method, Test parentSuite);
+    public static Test BuildParameterizedMethodSuite(MethodInfo method, Test parentSuite);
+    public static NUnitTestMethod BuildSingleTestMethod(MethodInfo method, Test parentSuite, ParameterSet parms);
+    private static bool CheckTestMethodSignature(TestMethod testMethod, ParameterSet parms);
+    private static bool MarkAsNotRunnable(TestMethod testMethod, string reason);
+    private static Type[] GetTypeArgumentsForMethod(MethodInfo method, Object[] arglist);
+}
+public class NUnit.Core.Builders.NUnitTestFixtureBuilder : object {
+    private NUnitTestFixture fixture;
+    private ITestCaseBuilder2 testBuilders;
+    private ITestDecorator testDecorators;
+    public sealed virtual bool CanBuildFrom(Type type);
+    public sealed virtual Test BuildFrom(Type type);
+    private Test BuildMultipleFixtures(Type type, Attribute[] attrs);
+    private Test BuildSingleFixture(Type type, Attribute attr);
+    protected virtual void AddTestCases(Type fixtureType);
+    private Test BuildTestCase(MethodInfo method, TestSuite suite);
+    private void CheckTestFixtureIsValid(TestFixture fixture);
+    private static bool IsStaticClass(Type type);
+    private bool IsValidFixtureType(Type fixtureType, String& reason);
+    private static Attribute[] GetTestFixtureAttributes(Type type);
+    private static Object[] GetArgsFromAttribute(Attribute attr);
+    private static Type[] GetTypeArgsFromAttribute(Attribute attr);
+}
+public class NUnit.Core.Builders.PairwiseStrategy : CombiningStrategy {
+    public PairwiseStrategy(IEnumerable[] sources);
+    public virtual IEnumerable GetTestCases();
+    private ArrayList[] CreateValueSet();
+    private Int32[] CreateDimensions(ArrayList[] valueSet);
+}
+internal class NUnit.Core.Builders.ProviderCache : object {
+    private static IDictionary instances;
+    private static ProviderCache();
+    public static object GetInstanceOf(Type providerType);
+    public static void Clear();
+}
+internal class NUnit.Core.Builders.ProviderReference : object {
+    [CompilerGeneratedAttribute]
+private Type <ProviderType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Object[] <ProviderArgs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProviderLocation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProviderCategory>k__BackingField;
+    public Type ProviderType { get; private set; }
+    public string ProviderName { get; private set; }
+    public Object[] ProviderArgs { get; private set; }
+    public string ProviderLocation { get; private set; }
+    public string ProviderCategory { get; private set; }
+    public ProviderReference(Type providerType, string providerName, string category);
+    public ProviderReference(Type providerType, Object[] args, string providerName, string category);
+    [CompilerGeneratedAttribute]
+public Type get_ProviderType();
+    [CompilerGeneratedAttribute]
+private void set_ProviderType(Type value);
+    [CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+private void set_ProviderName(string value);
+    [CompilerGeneratedAttribute]
+public Object[] get_ProviderArgs();
+    [CompilerGeneratedAttribute]
+private void set_ProviderArgs(Object[] value);
+    [CompilerGeneratedAttribute]
+public string get_ProviderLocation();
+    [CompilerGeneratedAttribute]
+private void set_ProviderLocation(string value);
+    [CompilerGeneratedAttribute]
+public string get_ProviderCategory();
+    [CompilerGeneratedAttribute]
+private void set_ProviderCategory(string value);
+    public IEnumerable GetInstance();
+    private object GetProviderObjectFromMember(MemberInfo member);
+}
+public class NUnit.Core.Builders.SequentialStrategy : CombiningStrategy {
+    public SequentialStrategy(IEnumerable[] sources);
+    public virtual IEnumerable GetTestCases();
+}
+public class NUnit.Core.Builders.SetUpFixtureBuilder : object {
+    public sealed virtual Test BuildFrom(Type type);
+    public sealed virtual bool CanBuildFrom(Type type);
+    private bool IsValidFixtureType(Type type, String& reason);
+}
+public class NUnit.Core.Builders.TestAssemblyBuilder : object {
+    private static Logger log;
+    private Assembly assembly;
+    private ISuiteBuilder legacySuiteBuilder;
+    private TestAssemblyInfo assemblyInfo;
+    public Assembly Assembly { get; }
+    public TestAssemblyInfo AssemblyInfo { get; }
+    private static TestAssemblyBuilder();
+    public Assembly get_Assembly();
+    public TestAssemblyInfo get_AssemblyInfo();
+    public Test Build(string assemblyName, string testName, bool autoSuites, bool checkCompatibility);
+    public TestSuite Build(string assemblyName, bool autoSuites, bool checkCompatibility);
+    private Test Build(Assembly assembly, string assemblyName, Type testType, bool autoSuites);
+    private TestSuite BuildTestAssembly(Assembly assembly, string assemblyName, IList fixtures, bool autoSuites);
+    private Assembly Load(string path);
+    private IList GetFixtures(Assembly assembly, string ns);
+    private IList GetCandidateFixtureTypes(Assembly assembly, string ns);
+}
+public class NUnit.Core.Builders.TestCaseParameterProvider : object {
+    public sealed virtual bool HasTestCasesFor(MethodInfo method);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method);
+    private static void PerformSpecialConversions(Object[] arglist, ParameterInfo[] parameters);
+}
+public class NUnit.Core.Builders.TestCaseSourceProvider : object {
+    public static string SourceTypeProperty;
+    public static string SourceNameProperty;
+    public sealed virtual bool HasTestCasesFor(MethodInfo method);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method);
+    public sealed virtual bool HasTestCasesFor(MethodInfo method, Test suite);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method, Test parentSuite);
+    private static IList GetSourcesFor(MethodInfo method, Test parent);
+}
+public class NUnit.Core.Builders.ValueSourceProvider : object {
+    public static string SourcesAttribute;
+    public static string SourceTypeProperty;
+    public static string SourceNameProperty;
+    public sealed virtual bool HasDataFor(ParameterInfo parameter);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter);
+    public sealed virtual bool HasDataFor(ParameterInfo parameter, Test parentSuite);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter, Test parentSuite);
+    private static IList GetSourcesFor(ParameterInfo parameter, Test parent);
+}
+public static class NUnit.Core.Compatibility : object {
+    private static string WORK_FILE;
+    private static string REPORT_FORMAT;
+    private static BindingFlags ALL_MEMBERS;
+    private static string _workFilePath;
+    private static StreamWriter _writer;
+    public static TextWriter Writer { get; }
+    public static IEnumerable`1<Issue> Issues { get; }
+    public static void Initialize(string workDirectory);
+    internal static void BeginCollection(string workDirectory);
+    internal static void EndCollection();
+    public static TextWriter get_Writer();
+    public static void Error(string location, string message);
+    public static void Warning(string location, string message);
+    public static void Note(string location, string message);
+    public static IEnumerable`1<Issue> get_Issues();
+    internal static void CheckAttributes(Assembly assembly);
+    public static void CheckAttributes(MemberInfo member);
+    public static void CheckAttributes(ICustomAttributeProvider provider, string location);
+    private static bool IsStaticMember(MemberInfo member);
+    private static void Report(string level, string location, string message);
+    private static string LocationOf(MemberInfo member);
+}
+[DefaultMemberAttribute("Item")]
+public class NUnit.Core.ContextDictionary : MarshalByRefObject {
+    internal TestExecutionContext _context;
+    private Hashtable _storage;
+    public object Item { get; public set; }
+    private ICollection System.Collections.IDictionary.Keys { get; }
+    private ICollection System.Collections.IDictionary.Values { get; }
+    private bool System.Collections.IDictionary.IsReadOnly { get; }
+    private bool System.Collections.IDictionary.IsFixedSize { get; }
+    private int System.Collections.ICollection.Count { get; }
+    private object System.Collections.ICollection.SyncRoot { get; }
+    private bool System.Collections.ICollection.IsSynchronized { get; }
+    public ContextDictionary(TestExecutionContext context);
+    public sealed virtual object get_Item(object key);
+    public sealed virtual void set_Item(object key, object value);
+    private sealed virtual override void System.Collections.IDictionary.Remove(object key);
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Keys();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Values();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsReadOnly();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsFixedSize();
+    private sealed virtual override bool System.Collections.IDictionary.Contains(object key);
+    private sealed virtual override void System.Collections.IDictionary.Add(object key, object value);
+    private sealed virtual override void System.Collections.IDictionary.Clear();
+    private sealed virtual override IDictionaryEnumerator System.Collections.IDictionary.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    private sealed virtual override void System.Collections.ICollection.CopyTo(Array array, int index);
+    private sealed virtual override int System.Collections.ICollection.get_Count();
+    private sealed virtual override object System.Collections.ICollection.get_SyncRoot();
+    private sealed virtual override bool System.Collections.ICollection.get_IsSynchronized();
+}
+public class NUnit.Core.CoreExtensions : ExtensionHost {
+    private static Logger log;
+    private IAddinRegistry addinRegistry;
+    private bool initialized;
+    private SuiteBuilderCollection suiteBuilders;
+    private TestCaseBuilderCollection testBuilders;
+    private TestDecoratorCollection testDecorators;
+    private EventListenerCollection listeners;
+    private FrameworkRegistry frameworks;
+    private TestCaseProviders testcaseProviders;
+    private DataPointProviders dataPointProviders;
+    private static CoreExtensions host;
+    [CompilerGeneratedAttribute]
+private ArrayList <AdhocExtensions>k__BackingField;
+    public static CoreExtensions Host { get; }
+    public bool Initialized { get; }
+    public IAddinRegistry AddinRegistry { get; public set; }
+    internal ISuiteBuilder SuiteBuilders { get; }
+    internal ITestCaseBuilder2 TestBuilders { get; }
+    internal ITestDecorator TestDecorators { get; }
+    internal EventListener Listeners { get; }
+    internal FrameworkRegistry TestFrameworks { get; }
+    internal TestCaseProviders TestCaseProviders { get; }
+    internal ArrayList AdhocExtensions { get; private set; }
+    private static CoreExtensions();
+    public static CoreExtensions get_Host();
+    public bool get_Initialized();
+    public IAddinRegistry get_AddinRegistry();
+    public void set_AddinRegistry(IAddinRegistry value);
+    internal ISuiteBuilder get_SuiteBuilders();
+    internal ITestCaseBuilder2 get_TestBuilders();
+    internal ITestDecorator get_TestDecorators();
+    internal EventListener get_Listeners();
+    internal FrameworkRegistry get_TestFrameworks();
+    internal TestCaseProviders get_TestCaseProviders();
+    public void InstallBuiltins();
+    public void InstallAddins();
+    [CompilerGeneratedAttribute]
+internal ArrayList get_AdhocExtensions();
+    [CompilerGeneratedAttribute]
+private void set_AdhocExtensions(ArrayList value);
+    public void InstallAdhocExtensions(Assembly assembly);
+    private bool InstallAddin(Type type);
+    public sealed virtual void UnloadService();
+    public sealed virtual void InitializeService();
+}
+public class NUnit.Core.CultureDetector : object {
+    private CultureInfo currentCulture;
+    private string reason;
+    public string Reason { get; }
+    public CultureDetector(string culture);
+    public bool IsCultureSupported(String[] cultures);
+    public bool IsCultureSupported(Attribute cultureAttribute);
+    public bool IsCultureSupported(string culture);
+    public string get_Reason();
+}
+public class NUnit.Core.DirectorySwapper : object {
+    private string savedDirectoryName;
+    public DirectorySwapper(string directoryName);
+    public sealed virtual void Dispose();
+}
+public class NUnit.Core.DomainAgent : TestAgent {
+    private static Logger log;
+    private bool isActive;
+    public AppDomain AppDomain { get; }
+    private static DomainAgent();
+    public static DomainAgent CreateInstance(AppDomain targetDomain);
+    public virtual TestRunner CreateRunner(int runnerID);
+    public virtual bool Start();
+    public virtual void Stop();
+    public AppDomain get_AppDomain();
+}
+public class NUnit.Core.DomainInitializer : MarshalByRefObject {
+    private static Logger log;
+    public static DomainInitializer CreateInstance(AppDomain targetDomain);
+    public void InitializeDomain(int level);
+    private void OnDomainUnload(object sender, EventArgs e);
+}
+public abstract class NUnit.Core.Event : object {
+    public bool IsSynchronous { get; }
+    public abstract virtual void Send(EventListener listener);
+    public virtual bool get_IsSynchronous();
+    protected static Exception WrapUnserializableException(Exception ex);
+}
+public class NUnit.Core.EventListenerTextWriter : TextWriter {
+    private EventListener eventListener;
+    private TestOutputType type;
+    public Encoding Encoding { get; }
+    public EventListenerTextWriter(EventListener eventListener, TestOutputType type);
+    public virtual void Write(char aChar);
+    public virtual void Write(string aString);
+    public virtual void WriteLine(string aString);
+    public virtual Encoding get_Encoding();
+}
+public class NUnit.Core.EventPump : object {
+    private static Logger log;
+    private AutoResetEvent synchronousEventSent;
+    private EventListener eventListener;
+    private EventQueue events;
+    private Thread pumpThread;
+    private EventPumpState modreq(System.Runtime.CompilerServices.IsVolatile) pumpState;
+    private bool autostop;
+    private string name;
+    public EventPumpState PumpState { get; public set; }
+    public string Name { get; public set; }
+    public EventPump(EventListener eventListener, EventQueue events, bool autostop);
+    private static EventPump();
+    public EventPumpState get_PumpState();
+    public void set_PumpState(EventPumpState value);
+    public string get_Name();
+    public void set_Name(string value);
+    public sealed virtual void Dispose();
+    public void Start();
+    public void Stop();
+    private void PumpThreadProc();
+}
+public enum NUnit.Core.EventPumpState : Enum {
+    public int value__;
+    public static EventPumpState Stopped;
+    public static EventPumpState Pumping;
+    public static EventPumpState Stopping;
+}
+public class NUnit.Core.EventQueue : object {
+    private Queue queue;
+    private object syncRoot;
+    private bool stopped;
+    private AutoResetEvent synchronousEventSent;
+    public int Count { get; }
+    public int get_Count();
+    public void SetWaitHandleForSynchronizedEvents(AutoResetEvent synchronousEventWaitHandle);
+    public void Enqueue(Event e);
+    public Event Dequeue(bool blockWhenEmpty);
+    public void Stop();
+}
+public class NUnit.Core.ExpectedExceptionProcessor : object {
+    internal TestMethod testMethod;
+    internal MethodInfo exceptionHandler;
+    internal Type expectedExceptionType;
+    internal string expectedExceptionName;
+    internal string expectedMessage;
+    internal string matchType;
+    internal string userMessage;
+    public ExpectedExceptionProcessor(TestMethod testMethod);
+    public ExpectedExceptionProcessor(TestMethod testMethod, object source);
+    public void ProcessNoException(TestResult testResult);
+    public void ProcessException(Exception exception, TestResult testResult);
+    private bool IsExpectedExceptionType(Exception exception);
+    private bool IsExpectedMessageMatch(Exception exception);
+    private string NoExceptionMessage();
+    private string WrongTypeMessage(Exception exception);
+    private string WrongTextMessage(Exception exception);
+    private string CombineWithUserMessage(string message);
+    private string GetStackTrace(Exception exception);
+    private static MethodInfo GetDefaultExceptionHandler(Type fixtureType);
+    private static MethodInfo GetExceptionHandler(Type fixtureType, string name);
+    private static string GetHandler(object source);
+    private static Type GetExceptionType(object source);
+    private static string GetExceptionName(object source);
+    private static string GetExpectedMessage(object source);
+    private static string GetMatchType(object source);
+    private static string GetUserMessage(object source);
+}
+internal class NUnit.Core.Extensibility.DataPointProviders : ExtensionPoint {
+    public DataPointProviders(ExtensionHost host);
+    public sealed virtual bool HasDataFor(ParameterInfo parameter);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter);
+    public sealed virtual bool HasDataFor(ParameterInfo parameter, Test suite);
+    public sealed virtual IEnumerable GetDataFor(ParameterInfo parameter, Test suite);
+    protected virtual bool IsValidExtension(object extension);
+}
+public class NUnit.Core.Extensibility.EventListenerCollection : ExtensionPoint {
+    public EventListenerCollection(IExtensionHost host);
+    public sealed virtual void RunStarted(string name, int testCount);
+    public sealed virtual void RunFinished(TestResult result);
+    public sealed virtual void RunFinished(Exception exception);
+    public sealed virtual void SuiteStarted(TestName testName);
+    public sealed virtual void SuiteFinished(TestResult result);
+    public sealed virtual void TestStarted(TestName testName);
+    public sealed virtual void TestFinished(TestResult result);
+    public sealed virtual void UnhandledException(Exception exception);
+    public sealed virtual void TestOutput(TestOutput testOutput);
+    protected virtual bool IsValidExtension(object extension);
+}
+public class NUnit.Core.Extensibility.FrameworkRegistry : ExtensionPoint {
+    private Hashtable testFrameworks;
+    public FrameworkRegistry(IExtensionHost host);
+    public sealed virtual void Register(string frameworkName, string assemblyName);
+    protected virtual bool IsValidExtension(object extension);
+    public IList GetReferencedFrameworks(Assembly assembly);
+}
+public class NUnit.Core.Extensibility.SuiteBuilderCollection : ExtensionPoint {
+    public SuiteBuilderCollection(IExtensionHost host);
+    public sealed virtual bool CanBuildFrom(Type type);
+    public sealed virtual Test BuildFrom(Type type);
+    protected virtual bool IsValidExtension(object extension);
+}
+public class NUnit.Core.Extensibility.TestCaseBuilderCollection : ExtensionPoint {
+    public TestCaseBuilderCollection(IExtensionHost host);
+    public sealed virtual bool CanBuildFrom(MethodInfo method);
+    public sealed virtual Test BuildFrom(MethodInfo method);
+    public sealed virtual bool CanBuildFrom(MethodInfo method, Test suite);
+    public sealed virtual Test BuildFrom(MethodInfo method, Test suite);
+    protected virtual bool IsValidExtension(object extension);
+}
+internal class NUnit.Core.Extensibility.TestCaseProviders : ExtensionPoint {
+    public TestCaseProviders(IExtensionHost host);
+    public sealed virtual bool HasTestCasesFor(MethodInfo method);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method);
+    public sealed virtual bool HasTestCasesFor(MethodInfo method, Test suite);
+    public sealed virtual IEnumerable GetTestCasesFor(MethodInfo method, Test suite);
+    protected virtual bool IsValidExtension(object extension);
+}
+public class NUnit.Core.Extensibility.TestDecoratorCollection : ExtensionPoint {
+    public TestDecoratorCollection(IExtensionHost host);
+    public sealed virtual Test Decorate(Test test, MemberInfo member);
+    protected virtual bool IsValidExtension(object extension);
+}
+public abstract class NUnit.Core.ExtensionHost : object {
+    protected ArrayList extensions;
+    protected ExtensionType supportedTypes;
+    public IExtensionPoint[] ExtensionPoints { get; }
+    public IFrameworkRegistry FrameworkRegistry { get; }
+    public ExtensionType ExtensionTypes { get; }
+    public sealed virtual IExtensionPoint[] get_ExtensionPoints();
+    public sealed virtual IFrameworkRegistry get_FrameworkRegistry();
+    public sealed virtual IExtensionPoint GetExtensionPoint(string name);
+    public sealed virtual ExtensionType get_ExtensionTypes();
+}
+public abstract class NUnit.Core.ExtensionPoint : object {
+    private string name;
+    private IExtensionHost host;
+    private ExtensionsCollection extensions;
+    protected IEnumerable Extensions { get; }
+    public string Name { get; }
+    public IExtensionHost Host { get; }
+    public ExtensionPoint(string name, IExtensionHost host);
+    public ExtensionPoint(string name, IExtensionHost host, int priorityLevels);
+    protected IEnumerable get_Extensions();
+    public sealed virtual string get_Name();
+    public sealed virtual IExtensionHost get_Host();
+    public sealed virtual void Install(object extension);
+    public sealed virtual void Install(object extension, int priority);
+    public sealed virtual void Remove(object extension);
+    protected abstract virtual bool IsValidExtension(object extension);
+}
+public class NUnit.Core.ExtensionsCollection : object {
+    private static int DEFAULT_LEVEL;
+    private static int MAX_LEVELS;
+    private ArrayList[] lists;
+    public int Levels { get; }
+    public ExtensionsCollection(int levels);
+    private static ExtensionsCollection();
+    public int get_Levels();
+    public void Add(object extension);
+    public void Add(object extension, int level);
+    public void Remove(object extension);
+    public sealed virtual IEnumerator GetEnumerator();
+}
+public class NUnit.Core.IgnoreDecorator : object {
+    public IgnoreDecorator(string ignoreAttributeType);
+    public sealed virtual Test Decorate(Test test, MemberInfo member);
+}
+public class NUnit.Core.InternalTrace : object {
+    private static string TIME_FMT;
+    private static bool initialized;
+    private static InternalTraceLevel level;
+    private static string logName;
+    private static InternalTraceWriter writer;
+    public static InternalTraceWriter Writer { get; }
+    private static string LogName { get; private set; }
+    public static InternalTraceLevel Level { get; public set; }
+    private static InternalTrace();
+    public static InternalTraceWriter get_Writer();
+    private static string get_LogName();
+    private static void set_LogName(string value);
+    public static InternalTraceLevel get_Level();
+    public static void set_Level(InternalTraceLevel value);
+    public static void Initialize(string logName, InternalTraceLevel level);
+    public static void Flush();
+    public static void Close();
+    public static Logger GetLogger(string name);
+    public static Logger GetLogger(Type type);
+    public static void Log(InternalTraceLevel level, string message, string category);
+    public static void Log(InternalTraceLevel level, string message, string category, Exception ex);
+}
+public enum NUnit.Core.InternalTraceLevel : Enum {
+    public int value__;
+    public static InternalTraceLevel Default;
+    public static InternalTraceLevel Off;
+    public static InternalTraceLevel Error;
+    public static InternalTraceLevel Warning;
+    public static InternalTraceLevel Info;
+    public static InternalTraceLevel Verbose;
+}
+public class NUnit.Core.InternalTraceWriter : TextWriter {
+    private StreamWriter writer;
+    public Encoding Encoding { get; }
+    public InternalTraceWriter(string logName);
+    public virtual Encoding get_Encoding();
+    public virtual void Write(char value);
+    public virtual void Write(string value);
+    public virtual void WriteLine(string value);
+    public virtual void Close();
+    public virtual void Flush();
+}
+public class NUnit.Core.InvalidSuiteException : ApplicationException {
+    public InvalidSuiteException(string message);
+    public InvalidSuiteException(string message, Exception inner);
+    protected InvalidSuiteException(SerializationInfo info, StreamingContext context);
+}
+public class NUnit.Core.InvalidTestFixtureException : ApplicationException {
+    public InvalidTestFixtureException(string message);
+    public InvalidTestFixtureException(string message, Exception inner);
+    protected InvalidTestFixtureException(SerializationInfo info, StreamingContext context);
+}
+public class NUnit.Core.LegacySuite : TestSuite {
+    public LegacySuite(Type fixtureType);
+}
+public class NUnit.Core.Log4NetCapture : TextCapture {
+    private TextWriter writer;
+    private LoggingThreshold threshold;
+    private Assembly log4netAssembly;
+    private Type appenderType;
+    private Type basicConfiguratorType;
+    private object appender;
+    private bool isInitialized;
+    private static string logFormat;
+    public TextWriter Writer { get; public set; }
+    public LoggingThreshold Threshold { get; public set; }
+    private bool IsLog4netAvailable { get; }
+    private static Log4NetCapture();
+    public virtual TextWriter get_Writer();
+    public virtual void set_Writer(TextWriter value);
+    public virtual LoggingThreshold get_Threshold();
+    public virtual void set_Threshold(LoggingThreshold value);
+    private void StartCapture();
+    private void ResumeCapture();
+    private void StopCapture();
+    private bool get_IsLog4netAvailable();
+    private void InitializeTypes();
+    private object TryCreateAppender();
+    private void SetAppenderLogFormat(string logFormat);
+    private bool SetLoggingThreshold(string threshold);
+    private void SetAppenderTextWriter(TextWriter writer);
+    private void ConfigureAppender();
+}
+public class NUnit.Core.Logger : object {
+    private string name;
+    private string fullname;
+    public Logger(string name);
+    public void Error(string message);
+    public void Error(string message, Object[] args);
+    public void Error(string message, Exception ex);
+    public void Warning(string message);
+    public void Warning(string message, Object[] args);
+    public void Info(string message);
+    public void Info(string message, Object[] args);
+    public void Debug(string message);
+    public void Debug(string message, Object[] args);
+    public void Log(InternalTraceLevel level, string message);
+    private void Log(InternalTraceLevel level, string format, Object[] args);
+}
+public class NUnit.Core.MethodHelper : object {
+    public static string GetDisplayName(MethodInfo method, Object[] arglist);
+    private static string GetDisplayString(object arg);
+    private static string EscapeControlChar(char c);
+}
+public class NUnit.Core.NamespaceSuite : TestSuite {
+    public string TestType { get; }
+    public NamespaceSuite(string path);
+    public NamespaceSuite(string parentNamespace, string suiteName);
+    public virtual string get_TestType();
+}
+public class NUnit.Core.NamespaceTreeBuilder : object {
+    private Hashtable namespaceSuites;
+    private TestSuite rootSuite;
+    public TestSuite RootSuite { get; }
+    public NamespaceTreeBuilder(TestSuite rootSuite);
+    public TestSuite get_RootSuite();
+    public void Add(IList fixtures);
+    public void Add(TestSuite fixture);
+    private TestSuite BuildFromNameSpace(string nameSpace);
+}
+public class NUnit.Core.NoTestFixturesException : ApplicationException {
+    public NoTestFixturesException(string message);
+    public NoTestFixturesException(string message, Exception inner);
+    protected NoTestFixturesException(SerializationInfo info, StreamingContext context);
+}
+public class NUnit.Core.NullListener : object {
+    public static EventListener NULL { get; }
+    public sealed virtual void RunStarted(string name, int testCount);
+    public sealed virtual void RunFinished(TestResult result);
+    public sealed virtual void RunFinished(Exception exception);
+    public sealed virtual void TestStarted(TestName testName);
+    public sealed virtual void TestFinished(TestResult result);
+    public sealed virtual void SuiteStarted(TestName testName);
+    public sealed virtual void SuiteFinished(TestResult result);
+    public sealed virtual void UnhandledException(Exception exception);
+    public sealed virtual void TestOutput(TestOutput testOutput);
+    public static EventListener get_NULL();
+}
+public class NUnit.Core.NUnitAsyncTestMethod : NUnitTestMethod {
+    public NUnitAsyncTestMethod(MethodInfo method);
+    protected virtual object RunTestMethod();
+}
+public class NUnit.Core.NUnitConfiguration : object {
+    private static string nunitLibDirectory;
+    private static string nunitBinDirectory;
+    private static string nunitDocDirectory;
+    private static string addinDirectory;
+    private static string monoExePath;
+    private static string applicationDirectory;
+    private static string logDirectory;
+    public static string BuildConfiguration { get; }
+    public static string NUnitLibDirectory { get; }
+    public static string NUnitBinDirectory { get; }
+    private static string NUnitDocDirectory { get; }
+    public static string AddinDirectory { get; }
+    public static string MonoExePath { get; }
+    public static string ApplicationDirectory { get; }
+    public static string LogDirectory { get; }
+    public static string HelpUrl { get; }
+    public static string get_BuildConfiguration();
+    public static string get_NUnitLibDirectory();
+    public static string get_NUnitBinDirectory();
+    private static string get_NUnitDocDirectory();
+    public static string get_AddinDirectory();
+    public static string get_MonoExePath();
+    private static string FindOneOnPath(String[] names);
+    private static bool IsWindows();
+    public static string get_ApplicationDirectory();
+    public static string get_LogDirectory();
+    public static string get_HelpUrl();
+}
+public class NUnit.Core.NUnitException : ApplicationException {
+    public NUnitException(string message);
+    public NUnitException(string message, Exception inner);
+    protected NUnitException(SerializationInfo info, StreamingContext context);
+}
+public class NUnit.Core.NUnitFramework : object {
+    public static string IgnoreAttribute;
+    public static string PlatformAttribute;
+    public static string CultureAttribute;
+    public static string ExplicitAttribute;
+    public static string CategoryAttribute;
+    public static string PropertyAttribute;
+    public static string DescriptionAttribute;
+    public static string RequiredAddinAttribute;
+    public static string RequiresSTAAttribute;
+    public static string RequiresMTAAttribute;
+    public static string TestFixtureAttribute;
+    public static string SetUpFixtureAttribute;
+    public static string TestAttribute;
+    public static string TestCaseAttribute;
+    public static string TestCaseSourceAttribute;
+    public static string TheoryAttribute;
+    public static string SetUpAttribute;
+    public static string TearDownAttribute;
+    public static string TestFixtureSetUpAttribute;
+    public static string TestFixtureTearDownAttribute;
+    public static string OneTimeSetUpAttribute;
+    public static string OneTimeTearDownAttribute;
+    public static string ExpectedExceptionAttribute;
+    public static string SuiteAttribute;
+    public static string ValueSourceAttribute;
+    public static string STAThreadAttribute;
+    public static string MTAThreadAttribute;
+    public static string TestActionInterface;
+    public static string TestDetailsClass;
+    public static string AssertException;
+    public static string IgnoreException;
+    public static string InconclusiveException;
+    public static string SuccessException;
+    public static string AssertType;
+    public static string ExpectExceptionInterface;
+    public static string SuiteBuilderAttribute;
+    public static string SuiteBuilderInterface;
+    public static string TestCaseBuilderAttributeName;
+    public static string TestCaseBuilderInterfaceName;
+    public static string TestDecoratorAttributeName;
+    public static string TestDecoratorInterfaceName;
+    private static Assembly frameworkAssembly;
+    private static bool frameworkAssemblyInitialized;
+    internal static Assembly FrameworkAssembly { get; }
+    private static NUnitFramework();
+    internal static Assembly get_FrameworkAssembly();
+    public static bool CheckSetUpTearDownMethods(Type fixtureType, string attributeName, String& reason);
+    public static string GetIgnoreReason(Attribute attribute);
+    public static string GetDescription(Attribute attribute);
+    public static void ApplyCommonAttributes(MemberInfo member, Test test);
+    public static void ApplyCommonAttributes(Assembly assembly, Test test);
+    public static void ApplyCommonAttributes(Attribute[] attributes, Test test);
+    public static void ApplyExpectedExceptionAttribute(MethodInfo method, TestMethod testMethod);
+    public static bool IsSuiteBuilder(Type type);
+    public static bool IsTestCaseBuilder(Type type);
+    public static bool IsTestDecorator(Type type);
+    public static bool IsAddinAvailable(string name);
+    public static ResultState GetResultState(Exception ex);
+    public static bool IsValidCategoryName(string name);
+}
+public class NUnit.Core.NUnitTestFixture : TestFixture {
+    public NUnitTestFixture(Type fixtureType);
+    public NUnitTestFixture(Type fixtureType, Object[] arguments);
+    protected virtual void DoOneTimeSetUp(TestResult suiteResult);
+    protected virtual void DoOneTimeTearDown(TestResult suiteResult);
+}
+public class NUnit.Core.NUnitTestMethod : TestMethod {
+    public NUnitTestMethod(MethodInfo method);
+    public virtual TestResult RunTest();
+}
+public class NUnit.Core.OutputEvent : Event {
+    private TestOutput output;
+    public OutputEvent(TestOutput output);
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.ParameterizedFixtureSuite : TestSuite {
+    private Type type;
+    public string TestType { get; }
+    public Type ParameterizedType { get; }
+    public ParameterizedFixtureSuite(Type type);
+    public virtual string get_TestType();
+    public Type get_ParameterizedType();
+}
+public class NUnit.Core.ParameterizedMethodSuite : TestSuite {
+    private bool isTheory;
+    private MethodInfo method;
+    public string TestType { get; }
+    public ParameterizedMethodSuite(MethodInfo method);
+    public virtual string get_TestType();
+    public virtual TestResult Run(EventListener listener, ITestFilter filter);
+    protected virtual void DoOneTimeSetUp(TestResult suiteResult);
+    protected virtual void DoOneTimeTearDown(TestResult suiteResult);
+    protected virtual void ExecuteActions(ActionPhase phase);
+}
+public class NUnit.Core.PlatformHelper : object {
+    private OSPlatform os;
+    private RuntimeFramework rt;
+    private string reason;
+    public static string OSPlatforms;
+    public static string RuntimePlatforms;
+    public string Reason { get; }
+    public PlatformHelper(OSPlatform os, RuntimeFramework rt);
+    private static PlatformHelper();
+    public bool IsPlatformSupported(String[] platforms);
+    public bool IsPlatformSupported(Attribute platformAttribute);
+    public bool IsPlatformSupported(string platform);
+    public string get_Reason();
+    private bool IsRuntimeSupported(string platformName);
+    private bool IsRuntimeSupported(RuntimeType runtime, string versionSpecification);
+}
+public class NUnit.Core.ProjectRootSuite : TestSuite {
+    public string TestType { get; }
+    public ProjectRootSuite(string path);
+    public virtual string get_TestType();
+}
+public abstract class NUnit.Core.ProxyTestRunner : MarshalByRefObject {
+    protected int runnerID;
+    private TestRunner testRunner;
+    protected EventListener listener;
+    public int ID { get; }
+    public bool Running { get; }
+    public IList AssemblyInfo { get; }
+    public ITest Test { get; }
+    public TestResult TestResult { get; }
+    protected TestRunner TestRunner { get; protected set; }
+    public ProxyTestRunner(TestRunner testRunner);
+    protected ProxyTestRunner(int runnerID);
+    public virtual int get_ID();
+    public virtual bool get_Running();
+    public virtual IList get_AssemblyInfo();
+    public virtual ITest get_Test();
+    public virtual TestResult get_TestResult();
+    protected virtual TestRunner get_TestRunner();
+    protected virtual void set_TestRunner(TestRunner value);
+    public virtual bool Load(TestPackage package);
+    public virtual void Unload();
+    public virtual int CountTestCases(ITestFilter filter);
+    public virtual TestResult Run(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual void BeginRun(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual TestResult EndRun();
+    public virtual void CancelRun();
+    public virtual void Wait();
+    public virtual object InitializeLifetimeService();
+    public virtual void Dispose();
+}
+public class NUnit.Core.QueuingEventListener : object {
+    private EventQueue events;
+    public EventQueue Events { get; }
+    public EventQueue get_Events();
+    public sealed virtual void RunStarted(string name, int testCount);
+    public sealed virtual void RunFinished(TestResult result);
+    public sealed virtual void RunFinished(Exception exception);
+    public sealed virtual void TestStarted(TestName testName);
+    public sealed virtual void TestFinished(TestResult result);
+    public sealed virtual void SuiteStarted(TestName testName);
+    public sealed virtual void SuiteFinished(TestResult result);
+    public sealed virtual void UnhandledException(Exception exception);
+    public sealed virtual void TestOutput(TestOutput output);
+}
+public class NUnit.Core.Reflect : object {
+    private static BindingFlags AllMembers;
+    private static Reflect();
+    public static bool HasAttribute(ICustomAttributeProvider member, string attrName, bool inherit);
+    public static Attribute GetAttribute(ICustomAttributeProvider member, string attrName, bool inherit);
+    public static Attribute[] GetAttributes(ICustomAttributeProvider member, string attrName, bool inherit);
+    public static Attribute[] GetAttributes(ICustomAttributeProvider member, bool inherit);
+    public static bool HasInterface(Type fixtureType, string interfaceName);
+    public static bool InheritsFrom(Type type, string typeName);
+    public static bool InheritsFrom(object obj, string typeName);
+    public static bool IsInstanceOfType(string typeName, Attribute attr);
+    public static ConstructorInfo GetConstructor(Type fixtureType);
+    public static MethodInfo[] GetMethodsWithAttribute(Type fixtureType, string attributeName, bool inherit);
+    private static MethodInfo[] GetMethods(Type fixtureType);
+    public static bool HasMethodWithAttribute(Type fixtureType, string attributeName, bool inherit);
+    public static MethodInfo GetNamedMethod(Type fixtureType, string methodName);
+    public static MethodInfo GetNamedMethod(Type fixtureType, string methodName, String[] argTypes);
+    public static PropertyInfo GetPropertyWithAttribute(Type fixtureType, string attributeName);
+    public static PropertyInfo GetNamedProperty(Type type, string name, BindingFlags bindingFlags);
+    public static object GetPropertyValue(object obj, string name);
+    public static object GetPropertyValue(object obj, string name, BindingFlags bindingFlags);
+    public static object Construct(Type type);
+    public static object Construct(Type type, Object[] arguments);
+    public static Type[] GetTypeArray(Object[] objects);
+    public static object InvokeMethod(MethodInfo method, object fixture);
+    public static object InvokeMethod(MethodInfo method, object fixture, Object[] args);
+    public static bool IsAsyncMethod(MethodInfo method);
+}
+public class NUnit.Core.RemoteTestRunner : ProxyTestRunner {
+    private static Logger log;
+    public RemoteTestRunner(int runnerID);
+    private static RemoteTestRunner();
+    public static RemoteTestRunner CreateInstance(AppDomain targetDomain, int ID);
+    public virtual bool Load(TestPackage package);
+    public virtual void Unload();
+    public virtual TestResult Run(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual void BeginRun(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    private void StartTextCapture(EventListener queue, bool tracing, LoggingThreshold logLevel);
+    private void CurrentDomain_DomainUnload(object sender, EventArgs e);
+}
+public class NUnit.Core.RunFinishedEvent : Event {
+    private TestResult result;
+    private Exception exception;
+    public RunFinishedEvent(TestResult result);
+    public RunFinishedEvent(Exception exception);
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.RunStartedEvent : Event {
+    private string name;
+    private int testCount;
+    public bool IsSynchronous { get; }
+    public RunStartedEvent(string name, int testCount);
+    public virtual bool get_IsSynchronous();
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.SetUpFixture : TestSuite {
+    public string TestType { get; }
+    public SetUpFixture(Type type);
+    public virtual string get_TestType();
+    public virtual TestResult Run(EventListener listener, ITestFilter filter);
+}
+public class NUnit.Core.SimpleTestRunner : MarshalByRefObject {
+    private static Logger log;
+    private int runnerID;
+    private Test test;
+    private TestSuiteBuilder builder;
+    private TestResult testResult;
+    private Thread runThread;
+    private bool _compatibility;
+    private string _workDirectory;
+    public int ID { get; }
+    public IList AssemblyInfo { get; }
+    public ITest Test { get; }
+    public TestResult TestResult { get; }
+    public bool Running { get; }
+    public SimpleTestRunner(int runnerID);
+    private static SimpleTestRunner();
+    public virtual int get_ID();
+    public sealed virtual IList get_AssemblyInfo();
+    public sealed virtual ITest get_Test();
+    public sealed virtual TestResult get_TestResult();
+    public virtual bool get_Running();
+    public sealed virtual bool Load(TestPackage package);
+    public sealed virtual void Unload();
+    public sealed virtual int CountTestCases(ITestFilter filter);
+    public virtual TestResult Run(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public sealed virtual void BeginRun(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual TestResult EndRun();
+    public virtual void Wait();
+    public virtual void CancelRun();
+    public virtual object InitializeLifetimeService();
+    public sealed virtual void Dispose();
+}
+public class NUnit.Core.StringTextWriter : TextWriter {
+    protected TextWriter theTextWriter;
+    public Encoding Encoding { get; }
+    public StringTextWriter(TextWriter aTextWriter);
+    public virtual void Write(char aChar);
+    public virtual void Write(string aString);
+    public virtual void WriteLine(string aString);
+    public virtual Encoding get_Encoding();
+    public virtual void Close();
+    public virtual void Flush();
+}
+[AttributeUsageAttribute("4")]
+public class NUnit.Core.SuiteBuilderAttribute : Attribute {
+}
+public class NUnit.Core.SuiteFinishedEvent : Event {
+    private TestResult result;
+    public SuiteFinishedEvent(TestResult result);
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.SuiteStartedEvent : Event {
+    private TestName suiteName;
+    public bool IsSynchronous { get; }
+    public SuiteStartedEvent(TestName suiteName);
+    public virtual bool get_IsSynchronous();
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.TestAction : object {
+    public static int TargetsDefault;
+    public static int TargetsTest;
+    public static int TargetsSuite;
+    private static Type _ActionInterfaceType;
+    private static Type _TestDetailsClassType;
+    private object _Action;
+    private int _Targets;
+    public int Targets { get; }
+    private static TestAction();
+    public TestAction(object action);
+    public void ExecuteBefore(ITest test);
+    public void ExecuteAfter(ITest test);
+    private void Execute(ITest test, string methodPrefix);
+    private static object CreateTestDetails(ITest test);
+    public bool DoesTarget(int target);
+    public int get_Targets();
+}
+public class NUnit.Core.TestAssembly : TestSuite {
+    public string TestType { get; }
+    public TestAssembly(Assembly assembly, string path);
+    public virtual string get_TestType();
+}
+[AttributeUsageAttribute("4")]
+public class NUnit.Core.TestBuilderAttribute : Attribute {
+    private Type builderType;
+    public Type BuilderType { get; }
+    public TestBuilderAttribute(Type builderType);
+    public Type get_BuilderType();
+}
+[AttributeUsageAttribute("4")]
+public class NUnit.Core.TestCaseBuilderAttribute : Attribute {
+}
+public abstract class NUnit.Core.TestDecorator : TestMethod {
+    protected TestMethod test;
+    public int TestCount { get; }
+    public TestDecorator(TestMethod test);
+    public virtual int get_TestCount();
+}
+[AttributeUsageAttribute("4")]
+public class NUnit.Core.TestDecoratorAttribute : Attribute {
+}
+public class NUnit.Core.TestExecutionContext : object {
+    private static TestExecutionContext current;
+    private bool tracing;
+    private TextWriter outWriter;
+    private TextWriter errorWriter;
+    private TextWriter traceWriter;
+    private int testCaseTimeout;
+    private Log4NetCapture logCapture;
+    private string currentDirectory;
+    private CultureInfo currentCulture;
+    private CultureInfo currentUICulture;
+    private IPrincipal currentPrincipal;
+    private Test currentTest;
+    private TestResult currentResult;
+    private TestPackage testPackage;
+    public TestExecutionContext prior;
+    private ContextDictionary contextDictionary;
+    [CompilerGeneratedAttribute]
+private TextWriter <CompatibilityWriter>k__BackingField;
+    public static TestExecutionContext CurrentContext { get; }
+    public bool Tracing { get; public set; }
+    public TextWriter Out { get; public set; }
+    public TextWriter Error { get; public set; }
+    public TextWriter TraceWriter { get; public set; }
+    public TextWriter LogWriter { get; public set; }
+    public TextWriter CompatibilityWriter { get; public set; }
+    public LoggingThreshold LogLevel { get; public set; }
+    public string CurrentDirectory { get; public set; }
+    public CultureInfo CurrentCulture { get; public set; }
+    public CultureInfo CurrentUICulture { get; public set; }
+    public IPrincipal CurrentPrincipal { get; public set; }
+    public int TestCaseTimeout { get; public set; }
+    public Test CurrentTest { get; public set; }
+    public TestResult CurrentResult { get; public set; }
+    public TestPackage TestPackage { get; public set; }
+    public TestExecutionContext(TestExecutionContext other);
+    private static TestExecutionContext();
+    public static TestExecutionContext get_CurrentContext();
+    public bool get_Tracing();
+    public void set_Tracing(bool value);
+    public TextWriter get_Out();
+    public void set_Out(TextWriter value);
+    public TextWriter get_Error();
+    public void set_Error(TextWriter value);
+    public TextWriter get_TraceWriter();
+    public void set_TraceWriter(TextWriter value);
+    public TextWriter get_LogWriter();
+    public void set_LogWriter(TextWriter value);
+    [CompilerGeneratedAttribute]
+public TextWriter get_CompatibilityWriter();
+    [CompilerGeneratedAttribute]
+public void set_CompatibilityWriter(TextWriter value);
+    public LoggingThreshold get_LogLevel();
+    public void set_LogLevel(LoggingThreshold value);
+    private void StopTracing();
+    private void StartTracing();
+    public string get_CurrentDirectory();
+    public void set_CurrentDirectory(string value);
+    public CultureInfo get_CurrentCulture();
+    public void set_CurrentCulture(CultureInfo value);
+    public CultureInfo get_CurrentUICulture();
+    public void set_CurrentUICulture(CultureInfo value);
+    public IPrincipal get_CurrentPrincipal();
+    public void set_CurrentPrincipal(IPrincipal value);
+    public int get_TestCaseTimeout();
+    public void set_TestCaseTimeout(int value);
+    public Test get_CurrentTest();
+    public void set_CurrentTest(Test value);
+    public TestResult get_CurrentResult();
+    public void set_CurrentResult(TestResult value);
+    public TestPackage get_TestPackage();
+    public void set_TestPackage(TestPackage value);
+    public static void Save();
+    public static void Restore();
+    private static void SaveInCallContext();
+    public void ReverseChanges();
+    public void Update();
+}
+public class NUnit.Core.TestFinishedEvent : Event {
+    private TestResult result;
+    public TestFinishedEvent(TestResult result);
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.TestFixture : TestSuite {
+    public string TestType { get; }
+    public TestFixture(Type fixtureType);
+    public TestFixture(Type fixtureType, Object[] arguments);
+    public virtual string get_TestType();
+    public virtual TestResult Run(EventListener listener, ITestFilter filter);
+}
+public class NUnit.Core.TestFixtureBuilder : object {
+    public static bool CanBuildFrom(Type type);
+    public static Test BuildFrom(Type type);
+    public static Test BuildFrom(object fixture);
+}
+public abstract class NUnit.Core.TestMethod : Test {
+    private static Logger log;
+    internal MethodInfo method;
+    protected IList`1<MethodInfo> setUpMethods;
+    protected IList`1<MethodInfo> tearDownMethods;
+    protected TestAction[] actions;
+    protected TestAction[] suiteActions;
+    internal ExpectedExceptionProcessor exceptionProcessor;
+    internal Object[] arguments;
+    internal object expectedResult;
+    internal bool hasExpectedResult;
+    private object fixture;
+    private Exception builderException;
+    public string TestType { get; }
+    public MethodInfo Method { get; }
+    public Type FixtureType { get; }
+    public string MethodName { get; }
+    public ExpectedExceptionProcessor ExceptionProcessor { get; public set; }
+    public bool ExceptionExpected { get; }
+    public object Fixture { get; public set; }
+    public int Timeout { get; }
+    protected bool ShouldRunOnOwnThread { get; }
+    public Exception BuilderException { get; public set; }
+    public TestMethod(MethodInfo method);
+    private static TestMethod();
+    public virtual string get_TestType();
+    public MethodInfo get_Method();
+    public virtual Type get_FixtureType();
+    public virtual string get_MethodName();
+    public ExpectedExceptionProcessor get_ExceptionProcessor();
+    public void set_ExceptionProcessor(ExpectedExceptionProcessor value);
+    public bool get_ExceptionExpected();
+    public virtual object get_Fixture();
+    public virtual void set_Fixture(object value);
+    public int get_Timeout();
+    protected virtual bool get_ShouldRunOnOwnThread();
+    public Exception get_BuilderException();
+    public void set_BuilderException(Exception value);
+    public virtual TestResult Run(EventListener listener, ITestFilter filter);
+    private TestResult SkipTest();
+    private TestResult RunTestInContext();
+    private TestResult RunRepeatedTest();
+    public virtual TestResult RunTest();
+    protected virtual void ExecuteActions(ActionPhase phase);
+    private void RunBeforeActions(TestResult testResult);
+    private void RunAfterActions(TestResult testResult);
+    private void RunSetUp();
+    private void RunTearDown(TestResult testResult);
+    private void RunTestCase(TestResult testResult);
+    protected virtual object RunTestMethod();
+    protected virtual void RecordException(Exception exception, TestResult testResult, FailureSite failureSite);
+}
+public class NUnit.Core.TestMethodThread : TestThread {
+    private TestMethod testMethod;
+    protected int Timeout { get; }
+    public TestMethodThread(TestMethod testMethod);
+    protected virtual int get_Timeout();
+    protected virtual void RunTest();
+}
+public class NUnit.Core.TestRunnerThread : object {
+    private TestRunner runner;
+    private Thread thread;
+    private EventListener listener;
+    private ITestFilter filter;
+    private bool tracing;
+    private LoggingThreshold logLevel;
+    private TestResult[] results;
+    public bool IsAlive { get; }
+    public TestResult[] Results { get; }
+    public TestRunnerThread(TestRunner runner, ApartmentState apartmentState, ThreadPriority priority);
+    public bool get_IsAlive();
+    public TestResult[] get_Results();
+    public void Wait();
+    public void Cancel();
+    public void StartRun(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    private void TestRunnerThreadProc();
+}
+public class NUnit.Core.TestStartedEvent : Event {
+    private TestName testName;
+    public bool IsSynchronous { get; }
+    public TestStartedEvent(TestName testName);
+    public virtual bool get_IsSynchronous();
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.TestSuite : Test {
+    private static Logger log;
+    private ArrayList tests;
+    protected TestAction[] actions;
+    protected bool maintainTestOrder;
+    internal Object[] arguments;
+    private Type fixtureType;
+    private object fixture;
+    [CompilerGeneratedAttribute]
+private IList`1<MethodInfo> <SetUpMethods>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<MethodInfo> <TearDownMethods>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<MethodInfo> <FixtureSetUpMethods>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<MethodInfo> <FixtureTearDownMethods>k__BackingField;
+    public IList Tests { get; }
+    public bool IsSuite { get; }
+    public int TestCount { get; }
+    public Type FixtureType { get; }
+    public object Fixture { get; public set; }
+    public IList`1<MethodInfo> SetUpMethods { get; protected set; }
+    public IList`1<MethodInfo> TearDownMethods { get; protected set; }
+    protected IList`1<MethodInfo> FixtureSetUpMethods { get; protected set; }
+    protected IList`1<MethodInfo> FixtureTearDownMethods { get; protected set; }
+    public string TestType { get; }
+    public TestSuite(string name);
+    public TestSuite(string parentSuiteName, string name);
+    public TestSuite(Type fixtureType);
+    public TestSuite(Type fixtureType, Object[] arguments);
+    private static TestSuite();
+    public void Sort();
+    public void Sort(IComparer comparer);
+    public void Add(Test test);
+    public void Add(object fixture);
+    public virtual IList get_Tests();
+    public virtual bool get_IsSuite();
+    public virtual int get_TestCount();
+    public virtual Type get_FixtureType();
+    public virtual object get_Fixture();
+    public virtual void set_Fixture(object value);
+    [CompilerGeneratedAttribute]
+public IList`1<MethodInfo> get_SetUpMethods();
+    [CompilerGeneratedAttribute]
+protected void set_SetUpMethods(IList`1<MethodInfo> value);
+    [CompilerGeneratedAttribute]
+public IList`1<MethodInfo> get_TearDownMethods();
+    [CompilerGeneratedAttribute]
+protected void set_TearDownMethods(IList`1<MethodInfo> value);
+    [CompilerGeneratedAttribute]
+protected IList`1<MethodInfo> get_FixtureSetUpMethods();
+    [CompilerGeneratedAttribute]
+protected void set_FixtureSetUpMethods(IList`1<MethodInfo> value);
+    [CompilerGeneratedAttribute]
+protected IList`1<MethodInfo> get_FixtureTearDownMethods();
+    [CompilerGeneratedAttribute]
+protected void set_FixtureTearDownMethods(IList`1<MethodInfo> value);
+    internal virtual TestAction[] GetTestActions();
+    public virtual string get_TestType();
+    public virtual int CountTestCases(ITestFilter filter);
+    public virtual TestResult Run(EventListener listener, ITestFilter filter);
+    private TestResult SkipSuite(EventListener listener, ITestFilter filter);
+    private TestResult RunSuiteInContext(EventListener listener, ITestFilter filter);
+    public TestResult RunSuite(EventListener listener, ITestFilter filter);
+    protected virtual void DoOneTimeSetUp(TestResult suiteResult);
+    protected virtual void ExecuteActions(ActionPhase phase);
+    protected virtual void DoOneTimeBeforeTestSuiteActions(TestResult suiteResult);
+    protected virtual void CreateUserFixture();
+    protected virtual void DoOneTimeTearDown(TestResult suiteResult);
+    protected virtual void DoOneTimeAfterTestSuiteActions(TestResult suiteResult);
+    protected virtual bool IsAssertException(Exception ex);
+    protected virtual bool IsIgnoreException(Exception ex);
+    private bool IsStaticClass(Type type);
+    private void RunAllTests(TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void SkipAllTests(TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void IgnoreAllTests(TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void MarkAllTestsInvalid(TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void MarkTestsNotRun(IList tests, ResultState resultState, string ignoreReason, TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void MarkTestNotRun(Test test, ResultState resultState, string ignoreReason, TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void MarkTestsFailed(IList tests, TestResult suiteResult, EventListener listener, ITestFilter filter);
+    private void MarkTestFailed(Test test, TestResult suiteResult, EventListener listener, ITestFilter filter);
+}
+public class NUnit.Core.TestSuiteBuilder : object {
+    private ArrayList builders;
+    public IList Assemblies { get; }
+    public IList AssemblyInfo { get; }
+    public IList get_Assemblies();
+    public IList get_AssemblyInfo();
+    public TestSuite Build(TestPackage package);
+    private TestSuite BuildSingleAssembly(TestPackage package);
+}
+public class NUnit.Core.TestSuiteThread : TestThread {
+    private TestSuite suite;
+    protected int Timeout { get; }
+    public TestSuiteThread(TestSuite suite);
+    protected virtual int get_Timeout();
+    protected virtual void RunTest();
+}
+public abstract class NUnit.Core.TestThread : object {
+    private static Logger log;
+    private Test test;
+    protected Thread thread;
+    protected TestResult threadResult;
+    protected EventListener listener;
+    protected ITestFilter filter;
+    protected ContextDictionary contextDictionary;
+    protected Exception thrownException;
+    public ApartmentState ApartmentState { get; public set; }
+    protected int Timeout { get; }
+    protected TestThread(Test test);
+    private static TestThread();
+    public ApartmentState get_ApartmentState();
+    public void set_ApartmentState(ApartmentState value);
+    public TestResult Run(EventListener listener, ITestFilter filter);
+    private void RunTestProc();
+    protected abstract virtual int get_Timeout();
+    protected abstract virtual void RunTest();
+}
+public abstract class NUnit.Core.TextCapture : object {
+    public TextWriter Writer { get; public set; }
+    public LoggingThreshold Threshold { get; public set; }
+    public abstract virtual TextWriter get_Writer();
+    public abstract virtual void set_Writer(TextWriter value);
+    public abstract virtual LoggingThreshold get_Threshold();
+    public abstract virtual void set_Threshold(LoggingThreshold value);
+}
+public class NUnit.Core.ThreadedTestRunner : ProxyTestRunner {
+    private static Logger log;
+    private TestRunnerThread testRunnerThread;
+    private ApartmentState apartmentState;
+    private ThreadPriority priority;
+    public ThreadedTestRunner(TestRunner testRunner);
+    public ThreadedTestRunner(TestRunner testRunner, ApartmentState apartmentState, ThreadPriority priority);
+    private static ThreadedTestRunner();
+    public virtual TestResult Run(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual void BeginRun(EventListener listener, ITestFilter filter, bool tracing, LoggingThreshold logLevel);
+    public virtual TestResult EndRun();
+    public virtual void Wait();
+    public virtual void CancelRun();
+}
+public class NUnit.Core.ThreadUtility : object {
+    public static void Kill(Thread thread);
+    public static void Kill(Thread thread, object stateInfo);
+}
+public class NUnit.Core.TypeHelper : object {
+    public static string GetDisplayName(Type type);
+    public static string GetDisplayName(Type type, Object[] arglist);
+    public static Type BestCommonType(Type type1, Type type2);
+    public static bool IsNumeric(Type type);
+    public static Type MakeGenericType(Type type, Type[] typeArgs);
+    public static bool CanDeduceTypeArgsFromArgs(Type type, Object[] arglist, Type[]& typeArgsOut);
+}
+public class NUnit.Core.UnhandledExceptionEvent : Event {
+    private Exception exception;
+    public UnhandledExceptionEvent(Exception exception);
+    public virtual void Send(EventListener listener);
+}
+public class NUnit.Core.UnsupportedFrameworkException : ApplicationException {
+    public UnsupportedFrameworkException(string message);
+    protected UnsupportedFrameworkException(SerializationInfo info, StreamingContext context);
+}
+internal abstract class NUnit.Framework.AsyncInvocationRegion : object {
+    private static MethodInfo PreserveStackTraceMethod;
+    private static Action`1<Exception> preserveStackTraceDelegate;
+    private static AsyncInvocationRegion();
+    private static void PreserveStackTrace(Exception ex);
+    public static AsyncInvocationRegion Create(Delegate delegate);
+    public static AsyncInvocationRegion Create(MethodInfo method);
+    public static bool IsAsyncOperation(MethodInfo method);
+    public static bool IsAsyncOperation(Delegate delegate);
+    public abstract virtual object WaitForPendingOperationsToComplete(object invocationResult);
+    public virtual void Dispose();
+}
+internal class NUnit.Framework.AsyncSynchronizationContext : SynchronizationContext {
+    private int _operationCount;
+    private AsyncOperationQueue _operations;
+    public virtual void Send(SendOrPostCallback d, object state);
+    public virtual void Post(SendOrPostCallback d, object state);
+    public virtual void OperationStarted();
+    public virtual void OperationCompleted();
+    public void WaitForPendingOperationsToComplete();
+}
