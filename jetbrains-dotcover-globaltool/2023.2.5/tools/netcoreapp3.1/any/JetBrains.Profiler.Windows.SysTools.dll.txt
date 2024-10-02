@@ -1,0 +1,2028 @@
+public class JetBrains.Profiler.Windows.SysTools.AttachEnvironmentTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static string UpidPrefix;
+    private static FileSystemPath ourUpidParentDirectory;
+    public AttachEnvironmentTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static AttachEnvironmentTools();
+    [RemotableCallAttribute]
+public virtual void CleanAllProcessesEnvironment(CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void CleanProcessEnvironment(int processId, CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void UpdateProcessEnvironment(int processId, UpdateEnvironmentProperty[] updateProperties);
+    public bool AcquireProfilingEvent(Lifetime lifetime, int processId, int timeout);
+    [NotNullAttribute]
+private string MakeUpidSubName(int processId, string prefix);
+    private static bool UpidPrefixFilter(string name);
+    private static void CleanAll(RegistryHiveAccess key);
+    [CanBeNullAttribute]
+private static string FilterProduct(EnvironmentPropertyType type, string key);
+    private static void Clean(RegistryHiveAccess key, string name);
+    private static void Update(RegistryHiveAccess key, string name, IEnumerable`1<UpdateEnvironmentProperty> updateProperties);
+    private static void Update(FileSystemPath file, IEnumerable`1<UpdateEnvironmentProperty> updateProperties);
+}
+public class JetBrains.Profiler.Windows.SysTools.AttachTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private Dictionary`2<JetArchitecture, FileSystemPath> myExecutables;
+    public AttachTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static AttachTools();
+    [RemotableCallAttribute]
+public virtual bool HasExecutable(JetArchitecture architecture);
+    [RemotableCallAttribute]
+public virtual void SetExecutable(JetArchitecture architecture, string fileName);
+    [RemotableLongCallAttribute]
+public virtual void AttachProfiling(JetArchitecture architecture, int processId, RuntimeInfo runtime, Guid profileGuid, string profilerDll);
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<ProcessInfo> GetProcessesToAttach(bool includeNative);
+    [NotRemotableAttribute]
+public void UpdateDisplay(AttachArgument argument);
+    [NotNullAttribute]
+private static FileSystemPath CheckExecutable(FileSystemPath executable);
+    [NotNullAttribute]
+private FileSystemPath GetExecutable(JetArchitecture architecture);
+    private void RunAttachHelper(JetArchitecture architecture, Func`3<FileSystemPath, Func`1<FileSystemPath>, String[]> getArguments, Func`2<FileSystemPath, Tuple`2<HResults, string>> parseResult);
+    private T RunAttachHelper(JetArchitecture architecture, Func`3<FileSystemPath, Func`1<FileSystemPath>, String[]> getArguments, Func`2<FileSystemPath, Tuple`3<HResults, string, T>> parseResult);
+    private static bool IsClrSupportAttach(Version version);
+}
+public class JetBrains.Profiler.Windows.SysTools.CleanEnvironmentProperty : object {
+    [NotNullAttribute]
+public string Key;
+    [CanBeNullAttribute]
+private object myValue;
+    public EnvironmentPropertyType Type;
+    public Actions Action { get; }
+    [NotNullAttribute]
+public String[] StringListValue { get; }
+    private CleanEnvironmentProperty(EnvironmentPropertyType type, string key, object value);
+    public Actions get_Action();
+    public String[] get_StringListValue();
+    public bool IsMatch(string key);
+    [NotNullAttribute]
+public static CleanEnvironmentProperty Create(EnvironmentPropertyType type, string key);
+    [NotNullAttribute]
+public static CleanEnvironmentProperty CreatePrefix(EnvironmentPropertyType type, string key);
+    [CanBeNullAttribute]
+public static CleanEnvironmentProperty CreateRemoveFromPathListByWildcard(EnvironmentPropertyType type, string key, String[] value);
+    public virtual string ToString();
+}
+public class JetBrains.Profiler.Windows.SysTools.CommunicationTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<IListener> myListeners;
+    private WatchedDictionary`1<ICommunicationToolsStream> myStreams;
+    public CommunicationTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static CommunicationTools();
+    [NotNullAttribute]
+private List`1<Guid> AcceptSocket(Guid listenerId, int timeout);
+    protected virtual void OnDispose();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public virtual IListenerProxy CreateSocketListener(Lifetime lifetime, IPEndPoint endPoint);
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public virtual IListenerProxy CreateNamedPipeListener(Lifetime lifetime);
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public virtual IChannelProxy CreateCoreControl(Lifetime lifetime, Guid streamId);
+    [RemotableCallAttribute]
+public virtual ushort GetFreeTcpListenPort(IPEndPoint endPoint);
+    [RemotableCallAttribute]
+public virtual bool CheckForTcpListenPort(IPEndPoint endPoint);
+    [RemotableCallAttribute]
+public virtual int GetProcessForTcpListenPort(IPEndPoint endPoint);
+    [RemotableCallAttribute]
+public virtual Guid SocketListener_Create(IPEndPoint endPoint);
+    [RemotableCallAttribute]
+public virtual Guid NamedPipeListener_Create();
+    [RemotableCallAttribute]
+public virtual string Listener_GetEndPoint(Guid listenerId);
+    [RemotableLongCallAttribute]
+public virtual Guid[] Listener_GetNewStreamIds(Guid listenerId, TimeSpan timeout);
+    [RemotableLongCallAttribute]
+public virtual Guid[] Listener_GetNewStreamIds(Guid listenerId, int timeout);
+    [RemotableCallAttribute]
+public virtual void Listener_Touch(Guid listenerId);
+    [RemotableCallAttribute]
+public virtual void Listener_Close(Guid listenerId);
+    [RemotableCallAttribute]
+public virtual void Listener_InjectProxyStreamFactory(Guid listenerId, Type type, Object[] args);
+    [RemotableLongCallAttribute]
+public virtual bool Channel_HasDataToRead(Guid streamId, int timeout);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual Tuple`2<byte, Byte[]> Channel_ReceiveCommand(Guid streamId);
+    [RemotableCallAttribute]
+public virtual void Channel_SendCommand(Guid streamId, byte command, Byte[] data);
+    [RemotableCallAttribute]
+public virtual void Channel_Touch(Guid streamId);
+    [RemotableCallAttribute]
+public virtual void Channel_Close(Guid streamId);
+}
+public class JetBrains.Profiler.Windows.SysTools.CommunicationToolsBaseStreamProxy : object {
+    private ICommunicationToolsStream myBaseStream;
+    public CommunicationToolsBaseStreamProxy(ICommunicationToolsStream baseStream);
+    public virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public virtual bool HasDataToRead(int timeout);
+    public virtual void SendCommand(byte command, Byte[] data);
+    public virtual void Shutdown();
+    public virtual void Close();
+}
+public class JetBrains.Profiler.Windows.SysTools.CommunicationToolsNamedPipeStream : object {
+    private NamedPipeServerStream myPipe;
+    [CanBeNullAttribute]
+private IAsyncResult myWaitForCommandAsyncResult;
+    private Byte[] myWaitForCommandAsyncResultBuffer;
+    public CommunicationToolsNamedPipeStream(NamedPipeServerStream pipe);
+    public sealed virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public sealed virtual bool HasDataToRead(int timeout);
+    public sealed virtual void SendCommand(byte command, Byte[] data);
+    public sealed virtual void Shutdown();
+    public sealed virtual void Close();
+}
+public class JetBrains.Profiler.Windows.SysTools.CommunicationToolsSocketStream : object {
+    private Socket mySocket;
+    public CommunicationToolsSocketStream(Socket socket);
+    public sealed virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public sealed virtual bool HasDataToRead(int timeout);
+    public sealed virtual void SendCommand(byte command, Byte[] data);
+    public sealed virtual void Shutdown();
+    public sealed virtual void Close();
+}
+public class JetBrains.Profiler.Windows.SysTools.CoreClrTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static MessageResult ourMessageResult_NoDotNetDetected;
+    private static MessageResult ourMessageResult_Communication;
+    public CoreClrTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static CoreClrTools();
+    [CanBeNullAttribute]
+[RemotableCallAttribute]
+public virtual string TryGetDotNetExecutable();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public virtual string GetDotNetExecutable();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public MessageResult IsSupported(HostCompatibilityOptions options);
+    [NotNullAttribute]
+private static FileSystemPath TryGetDotNetRoot();
+    [CompilerGeneratedAttribute]
+private MessageResult <IsSupported>b__6_0();
+}
+public class JetBrains.Profiler.Windows.SysTools.CoreFiles.HandleConverterProxy : CommunicationToolsBaseStreamProxy {
+    private static ILogger ourLogger;
+    [NotNullAttribute]
+private Process mySrcProcess;
+    [CanBeNullAttribute]
+private Process myCoreProcess;
+    private UInt32 myCoreProcessId;
+    private Answer myCurrentCommand;
+    public HandleConverterProxy(SysTools sysTools, ICommunicationToolsStream baseStream, UInt32 srcProcessId, ILifetimeIdentity lifetimeIdentity);
+    private static HandleConverterProxy();
+    public virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public virtual void SendCommand(byte command, Byte[] data);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__5_0();
+}
+public class JetBrains.Profiler.Windows.SysTools.CoreFiles.RemoteAgentFilesProxy : CommunicationToolsBaseStreamProxy {
+    private static ILogger ourLogger;
+    private static Process ourAgentProcess;
+    private static Tuple`2<byte, Byte[]> ourIdleCommand;
+    [NotNullAttribute]
+private ILifetimeIdentity mySessionLifetimeIdentity;
+    [NotNullAttribute]
+private SysTools mySysTools;
+    [NotNullAttribute]
+private FileSystemPath myTempDir;
+    [CanBeNullAttribute]
+private Process myCoreProcess;
+    public RemoteAgentFilesProxy(SysTools sysTools, ICommunicationToolsStream baseStream, ILifetimeIdentity connectionLifetimeIdentity, ILifetimeIdentity sessionLifetimeIdentity);
+    private static RemoteAgentFilesProxy();
+    public virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    private void SendAnonymousFileHandle(UInt32 correlationId, IntPtr handle, Answer answer);
+    private void SendIdentifiedFile(UInt32 correlationId, Guid id, IntPtr handle, Answer answer);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_0();
+}
+public class JetBrains.Profiler.Windows.SysTools.CoreInfo : object {
+    public Guid Core;
+    [NotNullAttribute]
+public string Name;
+    public CoreInfo(string name, Guid core);
+}
+public class JetBrains.Profiler.Windows.SysTools.DirectoryTools : BaseServiceRemotable`1<SysTools> {
+    public DirectoryTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    [RemotableCallAttribute]
+public virtual string GetGlobalTemp();
+    [RemotableCallAttribute]
+public virtual string GetTemp();
+    [RemotableCallAttribute]
+public virtual string CreateGlobalTempDirectory(string prefix);
+    [RemotableCallAttribute]
+public virtual string CreateUserTempDirectory(string prefix);
+    [RemotableCallAttribute]
+public virtual DirectoryInfo GetInfo(string remotePath);
+    [RemotableCallAttribute]
+public virtual bool ExistsDirectory(string remotePath);
+    [RemotableCallAttribute]
+public virtual void CreateDirectory(string remotePath);
+    [RemotableCallAttribute]
+public virtual void DeleteDirectory(string remotePath);
+    [RemotableCallAttribute]
+public virtual String[] GetChildDirectories(string remotePath, string searchPattern);
+    [RemotableCallAttribute]
+public virtual String[] GetChildFiles(string remotePath, string searchPattern);
+    [RemotableCallAttribute]
+public virtual void CreateSymbolicLink(string remotePath, string remoteTarget);
+}
+public enum JetBrains.Profiler.Windows.SysTools.EnvironmentPropertyType : Enum {
+    public byte value__;
+    public static EnvironmentPropertyType Clr;
+    public static EnvironmentPropertyType CoreClr;
+    public static EnvironmentPropertyType Mono;
+    public static EnvironmentPropertyType Profiler;
+    public static EnvironmentPropertyType Normal;
+}
+public class JetBrains.Profiler.Windows.SysTools.EventPipeTools : BaseServiceRemotable`1<SysTools> {
+    private string myBridgeEndpoint;
+    [CanBeNullAttribute]
+private FileSystemPath myDiagnosticPortsPath;
+    private bool myEnableTpl;
+    private bool myUseTestProfiler;
+    public EventPipeTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    [RemotableLongCallAttribute]
+public virtual void PrepareToStart(string bridgeEndpoint, FileSystemPath diagnosticPortsPath, bool enableTpl, bool useTestProfiler);
+    [RemotableLongCallAttribute]
+public virtual bool IsAllowed();
+    [RemotableLongCallAttribute]
+public virtual void StartCollector(Lifetime lifetime, int processId, string processName, string args);
+}
+public class JetBrains.Profiler.Windows.SysTools.EventTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<IEventWaitHandle> myEvents;
+    public EventTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static EventTools();
+    protected virtual void OnDispose();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public string GenerateUniqueEventName();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public IEventProxy CreateEvent(Lifetime lifetime, bool manualReset, bool initialState, string name);
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public IEventProxy CreateEvent(Lifetime lifetime, bool manualReset, bool initialState, string name, Boolean& createdNew);
+    [NotRemotableAttribute]
+[CanBeNullAttribute]
+public IEventProxy TryOpenEvent(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public IEventProxy OpenEvent(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+public bool HasEvent(string name);
+    [RemotableCallAttribute]
+public virtual Guid Event_Create(bool manualReset, bool initialState, string name, Boolean& createdNew);
+    [RemotableCallAttribute]
+public virtual Guid Event_Open(string name);
+    [RemotableCallAttribute]
+public virtual bool Event_Has(string name);
+    [RemotableLongCallAttribute]
+public virtual bool Event_WaitOne(Guid id, TimeSpan timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Event_WaitOne(Guid id, int timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Event_WaitOne(Guid id);
+    [RemotableCallAttribute]
+public virtual void Event_Set(Guid id);
+    [RemotableCallAttribute]
+public virtual void Event_Reset(Guid id);
+    [RemotableCallAttribute]
+public virtual void Event_Touch(Guid id);
+    [RemotableCallAttribute]
+public virtual void Event_Close(Guid id);
+}
+public class JetBrains.Profiler.Windows.SysTools.EverythingEnvironmentTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static String[] ourHiveSeNames;
+    public EverythingEnvironmentTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static EverythingEnvironmentTools();
+    [RemotableCallAttribute]
+public virtual void CleanAllEverythingEnvironment(CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void CleanEverythingEnvironment(CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void UpdateEverythingEnvironment(UpdateEnvironmentProperty[] updateProperties);
+    private static void CleanEnvironmentForCurrentUser(CleanEnvironmentProperty[] cleanProperties);
+    private static void SetEnvironmentForCurrentUser(IEnumerable`1<UpdateEnvironmentProperty> properties);
+    private void CleanEnvironmentForHiveUsers(CleanEnvironmentProperty[] cleanProperties);
+    [CanBeNullAttribute]
+private static string FilterProduct(EnvironmentPropertyType type, string key);
+    private void CleanEnvironmentForProduct(CleanEnvironmentProperty[] cleanProperties);
+    private void UpdateEnvironmentForProduct(UpdateEnvironmentProperty[] updateProperties);
+    [CanBeNullAttribute]
+private static string FilterMicrosoftRegistry(EnvironmentPropertyType type, string key);
+    private void CleanEnvironmentForClr(CleanEnvironmentProperty[] cleanProperties);
+    private void UpdateEnvironmentForClr(UpdateEnvironmentProperty[] updateProperties);
+    [CanBeNullAttribute]
+private static string FilterAllUsersEnvironment(EnvironmentPropertyType type, string key);
+    private static void CleanEnvironmentForAllUsers(CleanEnvironmentProperty[] cleanProperties);
+    private static void UpdateEnvironmentForAllUsers(IEnumerable`1<UpdateEnvironmentProperty> updateProperties);
+}
+public class JetBrains.Profiler.Windows.SysTools.EverythingTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static MessageResult ourMessageResult_InvalidOs;
+    private static MessageResult ourMessageResult_AdministrativeRightRequired;
+    private static MessageResult ourMessageResult_Communication;
+    public EverythingTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static EverythingTools();
+    [NotRemotableAttribute]
+public MessageResult IsSupported(HostCompatibilityOptions options);
+}
+public class JetBrains.Profiler.Windows.SysTools.FileCacheTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static FileSystemPath ourSysToolsDir;
+    public FileCacheTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static FileCacheTools();
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public string CacheFiles(string localDir, IReadOnlyCollection`1<string> relativeFiles);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual FileDescriptorSet CheckCachedFiles(FileDescriptor[] expected);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual string CreateCacheFile(string relativeFile, DateTime creationUtcTime);
+    [RemotableCallAttribute]
+public virtual void GrantFile_BuiltinUsers_ReadAndExecute(string file);
+    [RemotableCallAttribute]
+public virtual void GrantFile_AllAppPackages_ReadAndExecute(string file);
+    [RemotableCallAttribute]
+public virtual void GrantDirectory_BuiltinUsers_ReadAndExecute(string directory, bool inherit);
+    [RemotableCallAttribute]
+public virtual void GrantDirectory_AllAppPackages_ReadAndExecute(string directory, bool inherit);
+    [RemotableCallAttribute]
+public virtual void GrantDirectory_BuiltinUsers_Modify(string directory, bool inherit);
+}
+public class JetBrains.Profiler.Windows.SysTools.FileDescriptorSet : object {
+    public string CacheDir;
+    public FileDescriptor[] Corrupted;
+}
+public class JetBrains.Profiler.Windows.SysTools.FileStorageTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<FileSystemPath> myFiles;
+    public FileStorageTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static FileStorageTools();
+    [RemotableCallAttribute]
+public virtual Guid AddFile(string file, ILifetimeIdentity lifetimeIdentity);
+    [RemotableCallAttribute]
+public virtual string GetFileName(Guid id);
+    [RemotableCallAttribute]
+public virtual void DeleteFile(Guid id);
+}
+public class JetBrains.Profiler.Windows.SysTools.FileTools : BaseServiceRemotable`1<SysTools> {
+    public FileTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    [RemotableCallAttribute]
+public virtual string CreateGlobalTempFile(string prefix);
+    [RemotableCallAttribute]
+public virtual string CreateUserTempFile(string prefix);
+    [RemotableCallAttribute]
+public virtual FileInfo GetFileInfo(string remoteFile);
+    [RemotableCallAttribute]
+public virtual bool ExistsFile(string remoteFile);
+    [NotRemotableAttribute]
+public Stream Put(string remoteFile);
+    [NotRemotableAttribute]
+public Stream Get(string remoteFile);
+    [RemotableCallAttribute]
+public virtual void DeleteFile(string remoteFile);
+    [RemotableCallAttribute]
+public virtual void CopyFile(string remoteSourceFile, string remoteDestinationFile, CopyFileMode mode);
+    [RemotableCallAttribute]
+public virtual void MoveFile(string remoteSourceFile, string remoteDestinationFile, MoveFileMode mode);
+}
+public class JetBrains.Profiler.Windows.SysTools.FrameworkTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    public FrameworkTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static FrameworkTools();
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string GetRuntimeDirectory(JetArchitecture architecture, Version frameworkVersion);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual IReadOnlyCollection`1<Version> GetInstalledRuntimeVersions(JetArchitecture architecture);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual IReadOnlyCollection`1<Version> GetInstalledFrameworkVersions(JetArchitecture architecture, Version runtimeVersion);
+    [CompilerGeneratedAttribute]
+internal static bool <GetInstalledFrameworkVersions>g__AddIfNeed|4_0(BackSlashSeparatedRelativePath x, string y, <>c__DisplayClass4_0& );
+}
+public interface JetBrains.Profiler.Windows.SysTools.IChannelProxy {
+    public abstract virtual bool WaitForDataToRead(TimeSpan timeout);
+    public abstract virtual bool WaitForDataToRead(int timeout);
+    [NotNullAttribute]
+public abstract virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public abstract virtual void SendCommand(byte command, Byte[] data);
+    public abstract virtual void Close();
+}
+public interface JetBrains.Profiler.Windows.SysTools.ICommunicationToolsStream {
+    [NotNullAttribute]
+public abstract virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public abstract virtual bool HasDataToRead(int timeout);
+    public abstract virtual void SendCommand(byte command, Byte[] data);
+    public abstract virtual void Shutdown();
+    public abstract virtual void Close();
+}
+public interface JetBrains.Profiler.Windows.SysTools.IEventProxy {
+    public abstract virtual void Set();
+    public abstract virtual void Reset();
+}
+public interface JetBrains.Profiler.Windows.SysTools.IEventWaitHandle {
+    public abstract virtual bool Reset();
+    public abstract virtual bool Set();
+    public abstract virtual void Close();
+    public abstract virtual bool WaitOne();
+    public abstract virtual bool WaitOne(int millisecondsTimeout);
+    public abstract virtual bool WaitOne(TimeSpan timeout);
+}
+public class JetBrains.Profiler.Windows.SysTools.IISExpressTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    public IISExpressTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static IISExpressTools();
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<IISSiteInfo> GetIISExpressSites(string configurationFile);
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<IISExpressInfo> GetIISExpresses();
+    [NotRemotableAttribute]
+public void UpdateDisplay(IISExpressArgument argument);
+}
+public class JetBrains.Profiler.Windows.SysTools.IISTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static MessageResult ourMessageResult_InvalidOs;
+    private static MessageResult ourMessageResult_AdministrativeRightRequired;
+    private static MessageResult ourMessageResult_NoIISDetected;
+    private static MessageResult ourMessageResult_Communication;
+    public IISTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static IISTools();
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string GetIISServiceName();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public MessageResult IsSupported(HostCompatibilityOptions options);
+    [NotRemotableAttribute]
+public void UpdateDisplay(IISArgument argument);
+}
+public interface JetBrains.Profiler.Windows.SysTools.ILifetimeIdentity {
+}
+internal interface JetBrains.Profiler.Windows.SysTools.IListener {
+    public string LocalEndPoint { get; }
+    public abstract virtual List`1<Guid> Accept(int timeout, Func`2<ICommunicationToolsStream, Guid> streamRegistrator);
+    public abstract virtual string get_LocalEndPoint();
+    public abstract virtual void InjectProxyStreamFactory(Type type, SysTools sysTools, Object[] args);
+    public abstract virtual void Close();
+}
+public interface JetBrains.Profiler.Windows.SysTools.IListenerProxy {
+    [NotNullAttribute]
+public string EndPoint { get; }
+    public abstract virtual string get_EndPoint();
+    [NotNullAttribute]
+public abstract virtual Guid[] GetNewStreamIds(TimeSpan timeout);
+    [NotNullAttribute]
+public abstract virtual Guid[] GetNewStreamIds(int timeout);
+    public abstract virtual void Close();
+    public abstract virtual void InjectProxyStreamFactory(Type type, Object[] args);
+}
+[ExtensionAttribute]
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.ArgumentsUtil : object {
+    [NotNullAttribute]
+private static String[] ToArgumentsFile(Func`1<FileSystemPath> getArgumentsFile, IEnumerable`1<string> arguments);
+    [NotNullAttribute]
+public static String[] BuildCoreHelper_List(FileSystemPath resultFile, Func`1<FileSystemPath> getArgumentsFile, bool includeNative);
+    [ExtensionAttribute]
+private static string GetRuntimeTypeStr(RuntimeType type);
+    [NotNullAttribute]
+public static String[] BuildCoreHelper_Attach(FileSystemPath resultFile, Func`1<FileSystemPath> getArgumentsFile, int processId, RuntimeInfo runtime, Guid coreGuid, string profilerDll);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_GetPackages(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_GetPackagesForCurrentUser(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_PrepareStartProfiling(FileSystemPath resultFile, Func`1<FileSystemPath> getArgumentsFile, string packageFullName, IEnumerable`1<UpdateEnvironmentProperty> environment);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_CleanStartProfiling(FileSystemPath resultFile, string packageFullName);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_PrepareAttachProfiling(FileSystemPath resultFile, UInt32 sessionId, string packageFullName);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_CleanAttachProfiling(FileSystemPath resultFile, UInt32 sessionId, string packageFullName);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_PrepareEverythingProfiling(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_CleanEverythingProfiling(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_RunProfiling(FileSystemPath resultFile, Func`1<FileSystemPath> getArgumentsFile, string appUserModelId, string arguments);
+    [NotNullAttribute]
+public static String[] BuildWinRTHelper_CleanProfiling(FileSystemPath resultFile, string packageFullName);
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.ChannelProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private CommunicationTools myCommunicationTools;
+    private Guid myStreamId;
+    private int myWasDisposed;
+    public ChannelProxy(Lifetime lifetime, CommunicationTools communicationTools, bool withTouch, Guid streamId);
+    private static ChannelProxy();
+    public sealed virtual bool WaitForDataToRead(TimeSpan timeout);
+    public sealed virtual bool WaitForDataToRead(int timeout);
+    public sealed virtual Tuple`2<byte, Byte[]> ReceiveCommand();
+    public sealed virtual void SendCommand(byte command, Byte[] data);
+    public sealed virtual void Close();
+    private void AssertAlive();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_2();
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.DecoratorUtil : object {
+    [NotNullAttribute]
+public static Process GetProcessById(int processId);
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.EventProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private EventTools myEventTools;
+    private Guid myId;
+    private int myWasDisposed;
+    internal EventProxy(Lifetime lifetime, EventTools eventTools, bool withTouch, Guid id);
+    private static EventProxy();
+    public sealed virtual bool WaitOne(TimeSpan timeout);
+    public sealed virtual bool WaitOne(int timeout);
+    public sealed virtual bool WaitOne();
+    public sealed virtual void Set();
+    public sealed virtual void Reset();
+    public sealed virtual void Close();
+    private void AssertAlive();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_2();
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.EventWaitHandleFactory : object {
+    [NotNullAttribute]
+public static IEventWaitHandle Create(bool initialState, EventResetMode mode, string name, Boolean& createdNew);
+    [NotNullAttribute]
+public static IEventWaitHandle OpenExisting(string name);
+}
+public class JetBrains.Profiler.Windows.SysTools.Impl.LifetimeIdentity : object {
+    private Guid myId;
+    public Guid Id { get; }
+    public LifetimeIdentity(Guid id);
+    public Guid get_Id();
+    public virtual string ToString();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.ListenerProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private Guid myListenerId;
+    private CommunicationTools myCommunicationTools;
+    private int myWasDisposed;
+    public string EndPoint { get; }
+    public ListenerProxy(Lifetime lifetime, CommunicationTools communicationTools, bool withTouch, Guid listenerId);
+    private static ListenerProxy();
+    public sealed virtual string get_EndPoint();
+    public sealed virtual Guid[] GetNewStreamIds(TimeSpan timeout);
+    public sealed virtual Guid[] GetNewStreamIds(int timeout);
+    public sealed virtual void Close();
+    public sealed virtual void InjectProxyStreamFactory(Type type, Object[] args);
+    private void AssertAlive();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_2();
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.MessageUtil : object {
+    public static void NotifyAllWindowsAboutEnvironmentChanging();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.NamedPipeListener : object {
+    [NotNullAttribute]
+private NamedPipeServerStream myPipe;
+    [NotNullAttribute]
+private string myPipeName;
+    [NotNullAttribute]
+private Func`2<NamedPipeServerStream, ICommunicationToolsStream> myStreamFactory;
+    public string LocalEndPoint { get; }
+    private NamedPipeListener(NamedPipeServerStream pipe, string pipeName);
+    public static KeyValuePair`2<Guid, NamedPipeListener> Create(Func`2<IListener, Guid> listenerRegistrator);
+    public sealed virtual List`1<Guid> Accept(int timeout, Func`2<ICommunicationToolsStream, Guid> streamRegistrator);
+    public sealed virtual string get_LocalEndPoint();
+    public sealed virtual void InjectProxyStreamFactory(Type type, SysTools sysTools, Object[] args);
+    public sealed virtual void Close();
+    private static string GeneratePipeName();
+    private static ACL* CreateDiamondDacl(Lifetime lifetime);
+    private static ACL* CreateDiamondSacl(Lifetime lifetime);
+    private static SECURITY_DESCRIPTOR* CreateSecurityDescriptor(Lifetime lifetime, ACL* dacl, ACL* sacl);
+    private static NamedPipeServerStream CreatePipeServer(string name, bool firstInstance);
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.NativeInterop : object {
+    public static int ENOENT;
+    public static int EAGAIN;
+    public static int EEXIST;
+    public static int ETIMEDOUT;
+    public static int O_CREAT;
+    public static int O_EXCL;
+    public static IntPtr SEM_FAILED;
+    private static NativeInterop();
+    public static IntPtr sem_open(string name, int oflag, UInt32 mode, UInt32 value);
+    public static int sem_close(IntPtr sem);
+    public static int sem_unlink(string name);
+    public static int sem_wait(IntPtr sem);
+    public static int sem_timedwait(IntPtr sem, TimeSpec& abs_timeout);
+    public static int sem_trywait(IntPtr sem);
+    public static int sem_post(IntPtr sem);
+    public static int sem_getvalue(IntPtr sem, Int32& sval);
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.ParseUtil : object {
+    private static ILogger ourLogger;
+    private static ParseUtil();
+    [NotNullAttribute]
+private static XmlElement LoadXml(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static IISSiteInfo[] ParseIISConfiguration(FileSystemPath configurationFile);
+    [NotNullAttribute]
+private static Tuple`2<HResults, string> GetResult(XmlElement xmlRoot);
+    [CanBeNullAttribute]
+private static UserInfo GetUserInfo(XmlElement xmlRoot);
+    private static ProcessInfo[] GetProcessList(XmlElement xmlRoot, JetArchitecture architecture);
+    [NotNullAttribute]
+private static PackageInfo[] GetPackageList(XmlElement xmlRoot);
+    [NotNullAttribute]
+public static Tuple`2<HResults, string> ParseHelperResult(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static Tuple`3<HResults, string, ProcessInfo[]> ParseAttachHelperResult_List(JetArchitecture architecture, FileSystemPath resultFile);
+    [NotNullAttribute]
+public static Tuple`3<HResults, string, UserInfo> ParseWinRTHelperResult_User(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static Tuple`3<HResults, string, PackageInfo[]> ParseWinRTHelperResult_List(FileSystemPath resultFile);
+    [NotNullAttribute]
+public static Tuple`3<HResults, string, Tuple`2<UserInfo, PackageInfo[]>> ParseWinRTHelperResult_CurrentUserList(FileSystemPath resultFile);
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.ProcessProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private ProcessTools myProcessTools;
+    private RemotableProcessStartInfo myStartInfo;
+    private RemotableProcessInfo myProcessInfo;
+    private int myWasDisposed;
+    public int ProcessId { get; }
+    public int SessionId { get; }
+    public long AuthenticationId { get; }
+    public long StartTimestamp { get; }
+    public JetArchitecture Architecture { get; }
+    public string ProcessName { get; }
+    public int ExitCode { get; }
+    public bool HasExited { get; }
+    public string PathToExecutable { get; }
+    public bool IsStarted { get; }
+    private ProcessProxy(Lifetime lifetime, ProcessTools processTools, bool withTouch);
+    internal ProcessProxy(Lifetime lifetime, ProcessTools processTools, bool withTouch, RemotableProcessStartInfo startInfo);
+    internal ProcessProxy(Lifetime lifetime, ProcessTools processTools, bool withTouch, RemotableProcessInfo processInfo);
+    private static ProcessProxy();
+    public sealed virtual int get_ProcessId();
+    public sealed virtual int get_SessionId();
+    public sealed virtual long get_AuthenticationId();
+    public sealed virtual long get_StartTimestamp();
+    public sealed virtual JetArchitecture get_Architecture();
+    public sealed virtual string get_ProcessName();
+    public sealed virtual int get_ExitCode();
+    public sealed virtual bool get_HasExited();
+    public sealed virtual string get_PathToExecutable();
+    public sealed virtual bool get_IsStarted();
+    public sealed virtual bool Start();
+    public sealed virtual bool StartSuspended(Action beforeResume);
+    public sealed virtual void Kill();
+    public sealed virtual void KillTree();
+    public sealed virtual bool CloseMainWindow();
+    public sealed virtual bool WaitForExit(TimeSpan timeout);
+    public sealed virtual bool WaitForExit(int timeout);
+    public sealed virtual bool WaitForExit();
+    public sealed virtual void Close();
+    private void AssertAlive();
+    private bool StartImpl(Action beforeResume);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_2();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.SemaphoreProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private Guid myId;
+    private SemaphoreTools mySemaphoreTools;
+    private int myWasDisposed;
+    internal SemaphoreProxy(Lifetime lifetime, SemaphoreTools semaphoreTools, bool withTouch, Guid id);
+    private static SemaphoreProxy();
+    public sealed virtual bool WaitOne(TimeSpan timeout);
+    public sealed virtual bool WaitOne(int timeout);
+    public sealed virtual bool WaitOne();
+    public sealed virtual int Release();
+    public sealed virtual int Release(int times);
+    public sealed virtual void Close();
+    private void AssertAlive();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_2();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.ServiceProxy : object {
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private LifetimeDefinition myDestroy;
+    private Guid myId;
+    private WindowsServiceTools myWindowsServiceTools;
+    private int myWasDisposed;
+    public string Name { get; }
+    public string DisplayName { get; }
+    public ServiceStartMode StartType { get; }
+    public ServiceType ServiceType { get; }
+    public ServiceControllerStatus Status { get; }
+    public bool CanStop { get; }
+    public bool CanPauseAndContinue { get; }
+    public bool CanShutdown { get; }
+    public String[] ServicesDependedOn { get; }
+    public String[] DependentServices { get; }
+    public String[] SameProcessServices { get; }
+    public String[] SameImagePathServices { get; }
+    public string SvcHostGroup { get; }
+    public String[] SvcHostServices { get; }
+    internal ServiceProxy(Lifetime lifetime, WindowsServiceTools windowsServiceTools, bool withTouch, Guid id);
+    private static ServiceProxy();
+    public sealed virtual string get_Name();
+    public sealed virtual string get_DisplayName();
+    public sealed virtual ServiceStartMode get_StartType();
+    public sealed virtual ServiceType get_ServiceType();
+    public sealed virtual ServiceControllerStatus get_Status();
+    public sealed virtual bool get_CanStop();
+    public sealed virtual bool get_CanPauseAndContinue();
+    public sealed virtual bool get_CanShutdown();
+    public sealed virtual String[] get_ServicesDependedOn();
+    public sealed virtual String[] get_DependentServices();
+    public sealed virtual String[] get_SameProcessServices();
+    public sealed virtual String[] get_SameImagePathServices();
+    public sealed virtual string get_SvcHostGroup();
+    public sealed virtual String[] get_SvcHostServices();
+    public sealed virtual IProcessProxy GetProcess(Lifetime lifetime);
+    public sealed virtual void Start(String[] args);
+    public sealed virtual void Stop();
+    public sealed virtual void Pause();
+    public sealed virtual void Continue();
+    public sealed virtual void Close();
+    private void AssertAlive();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_1(object _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__6_2();
+}
+internal static class JetBrains.Profiler.Windows.SysTools.Impl.SysToolsRootRegistryPaths : object {
+    public static BackSlashSeparatedRelativePath Profiler;
+    public static BackSlashSeparatedRelativePath ProfilerGlobal;
+    public static BackSlashSeparatedRelativePath ProfilerTransparentIntegration;
+    private static SysToolsRootRegistryPaths();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.UnixEventWaitHandle : object {
+    private SafeSemHandle mySem;
+    private string mySemName;
+    private bool myShouldUnlink;
+    private UnixEventWaitHandle(SafeSemHandle sem, string name, bool shouldUnlink);
+    [NotNullAttribute]
+public static string GenerateUniqueName();
+    [NotNullAttribute]
+public static UnixEventWaitHandle Create(bool initialState, EventResetMode mode, string name, Boolean& createdNew);
+    [NotNullAttribute]
+public static UnixEventWaitHandle OpenExisting(string name);
+    public sealed virtual bool Reset();
+    public sealed virtual bool Set();
+    public sealed virtual void Close();
+    public sealed virtual bool WaitOne();
+    public sealed virtual bool WaitOne(int millisecondsTimeout);
+    public sealed virtual bool WaitOne(TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+private bool <WaitOne>b__11_0();
+}
+internal class JetBrains.Profiler.Windows.SysTools.Impl.Win32EventWaitHandle : object {
+    private EventWaitHandle myEventWaitHandle;
+    internal Win32EventWaitHandle(EventWaitHandle ewh);
+    public sealed virtual bool Reset();
+    public sealed virtual bool Set();
+    public sealed virtual void Close();
+    public sealed virtual bool WaitOne();
+    public sealed virtual bool WaitOne(int millisecondsTimeout);
+    public sealed virtual bool WaitOne(TimeSpan timeout);
+}
+public interface JetBrains.Profiler.Windows.SysTools.IProcessProxy {
+    public int ProcessId { get; }
+    public int SessionId { get; }
+    public long AuthenticationId { get; }
+    public long StartTimestamp { get; }
+    [CanBeNullAttribute]
+public string ProcessName { get; }
+    [CanBeNullAttribute]
+public string PathToExecutable { get; }
+    public int ExitCode { get; }
+    public bool HasExited { get; }
+    public JetArchitecture Architecture { get; }
+    public bool IsStarted { get; }
+    public abstract virtual int get_ProcessId();
+    public abstract virtual int get_SessionId();
+    public abstract virtual long get_AuthenticationId();
+    public abstract virtual long get_StartTimestamp();
+    public abstract virtual string get_ProcessName();
+    public abstract virtual string get_PathToExecutable();
+    public abstract virtual int get_ExitCode();
+    public abstract virtual bool get_HasExited();
+    public abstract virtual JetArchitecture get_Architecture();
+    public abstract virtual bool get_IsStarted();
+    public abstract virtual bool Start();
+    public abstract virtual bool StartSuspended(Action beforeResume);
+    public abstract virtual void Kill();
+    public abstract virtual void KillTree();
+    public abstract virtual bool CloseMainWindow();
+    public abstract virtual bool WaitForExit(TimeSpan timeout);
+    public abstract virtual bool WaitForExit(int timeout);
+    public abstract virtual bool WaitForExit();
+    public abstract virtual void Close();
+}
+public interface JetBrains.Profiler.Windows.SysTools.ISemaphoreProxy {
+    public abstract virtual int Release();
+    public abstract virtual int Release(int times);
+}
+public interface JetBrains.Profiler.Windows.SysTools.IServiceProxy {
+    [NotNullAttribute]
+public string Name { get; }
+    [NotNullAttribute]
+public string DisplayName { get; }
+    public ServiceStartMode StartType { get; }
+    public ServiceType ServiceType { get; }
+    public ServiceControllerStatus Status { get; }
+    public bool CanStop { get; }
+    public bool CanPauseAndContinue { get; }
+    public bool CanShutdown { get; }
+    [NotNullAttribute]
+public String[] ServicesDependedOn { get; }
+    [NotNullAttribute]
+public String[] DependentServices { get; }
+    [NotNullAttribute]
+public String[] SameProcessServices { get; }
+    [NotNullAttribute]
+public String[] SameImagePathServices { get; }
+    [CanBeNullAttribute]
+public string SvcHostGroup { get; }
+    [NotNullAttribute]
+public String[] SvcHostServices { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual string get_DisplayName();
+    public abstract virtual ServiceStartMode get_StartType();
+    public abstract virtual ServiceType get_ServiceType();
+    public abstract virtual ServiceControllerStatus get_Status();
+    public abstract virtual bool get_CanStop();
+    public abstract virtual bool get_CanPauseAndContinue();
+    public abstract virtual bool get_CanShutdown();
+    public abstract virtual String[] get_ServicesDependedOn();
+    public abstract virtual String[] get_DependentServices();
+    public abstract virtual String[] get_SameProcessServices();
+    public abstract virtual String[] get_SameImagePathServices();
+    public abstract virtual string get_SvcHostGroup();
+    public abstract virtual String[] get_SvcHostServices();
+    [CanBeNullAttribute]
+public abstract virtual IProcessProxy GetProcess(Lifetime lifetime);
+    public abstract virtual void Start(String[] args);
+    public abstract virtual void Stop();
+    public abstract virtual void Pause();
+    public abstract virtual void Continue();
+    public abstract virtual void Close();
+}
+public interface JetBrains.Profiler.Windows.SysTools.IWaitHandleProxy {
+    public abstract virtual bool WaitOne(TimeSpan timeout);
+    public abstract virtual bool WaitOne(int timeout);
+    public abstract virtual bool WaitOne();
+    public abstract virtual void Close();
+}
+public class JetBrains.Profiler.Windows.SysTools.LeafTestTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    public LeafTestTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static LeafTestTools();
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckCall(string str, String& res);
+    [RemotableLongCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckLongCall(string str);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string RootSelfCheck(string str, String& res);
+}
+public class JetBrains.Profiler.Windows.SysTools.LifetimeTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static int TimeoutTouch;
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<LifetimeDefinition> myLifetimeDefinitions;
+    public LifetimeTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static LifetimeTools();
+    [NotNullAttribute]
+public ILifetimeIdentity CreateLifetime(Lifetime lifetime);
+    [NotNullAttribute]
+public Lifetime GetLifetime(ILifetimeIdentity lifetimeIdentity);
+    [RemotableCallAttribute]
+public virtual LifetimeIdentity LifetimeDefinition_Create();
+    [RemotableCallAttribute]
+public virtual void LifetimeDefinition_TerminateAndClose(LifetimeIdentity lifetimeIdentity);
+    [RemotableCallAttribute]
+public virtual void LifetimeDefinition_Touch(LifetimeIdentity lifetimeIdentity);
+}
+public class JetBrains.Profiler.Windows.SysTools.MetroTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static MessageResult ourMessageResult_InvalidOs;
+    private static MessageResult ourMessageResult_InvalidOsVersion;
+    private static MessageResult ourMessageResult_UACNotActive;
+    private static MessageResult ourMessageResult_Communication;
+    private FileSystemPath modreq(System.Runtime.CompilerServices.IsVolatile) myExecutable;
+    public MetroTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static MetroTools();
+    [RemotableCallAttribute]
+public virtual bool HasExecutable();
+    [RemotableCallAttribute]
+public virtual void SetExecutable(string fileName);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual MessageResult IsSupported();
+    [CanBeNullAttribute]
+[RemotableCallAttribute]
+public virtual string GetPackageFullName(int pid);
+    [NotRemotableAttribute]
+public void UpdateDisplay(MetroArgument argument);
+    [RemotableLongCallAttribute]
+public virtual void PrepareAttachProfiling(UInt32 sessionId, string packageFullName);
+    [RemotableLongCallAttribute]
+public virtual void CleanAttachProfiling(UInt32 sessionId, string packageFullName);
+    [RemotableLongCallAttribute]
+public virtual void PrepareStartProfiling(string packageFullName, IEnumerable`1<UpdateEnvironmentProperty> environmentVariables);
+    [RemotableLongCallAttribute]
+public virtual void CleanStartProfiling(string packageFullName);
+    [RemotableLongCallAttribute]
+public virtual void RunProfiling(string appUserModelId, string arguments);
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<PackageInfo> GetMetroPackagesForCurrentUser();
+    [RemotableLongCallAttribute]
+public virtual void PrepareEverythingProfiling();
+    [RemotableLongCallAttribute]
+public virtual void CleanEverythingProfiling();
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<PackageInfo> GetMetroPackages();
+    [NotNullAttribute]
+private static FileSystemPath CheckExecutable(FileSystemPath executable);
+    [NotNullAttribute]
+private FileSystemPath GetExecutable();
+    private void RunWinRtHelper(bool runAsReducedUser, Func`3<FileSystemPath, Func`1<FileSystemPath>, String[]> getArguments, Func`2<FileSystemPath, Tuple`2<HResults, string>> parseResult);
+    private T RunWinRtHelper(bool runAsReducedUser, Func`3<FileSystemPath, Func`1<FileSystemPath>, String[]> getArguments, Func`2<FileSystemPath, Tuple`3<HResults, string, T>> parseResult);
+    [CompilerGeneratedAttribute]
+private MessageResult <IsSupported>b__9_0();
+}
+public class JetBrains.Profiler.Windows.SysTools.MonoTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static Regex ourMonoVersionRegex;
+    public MonoTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static MonoTools();
+    private static Version GetMonoVersion(FileSystemPath executable);
+    [NotNullAttribute]
+private IEnumerable`1<MonoInfo> GetMonoRuntimes_Windows();
+    [NotNullAttribute]
+private IEnumerable`1<MonoInfo> GetMonoRuntimes_Linux();
+    [NotNullAttribute]
+private IEnumerable`1<MonoInfo> GetMonoRuntimes_MacOs();
+    [NotNullAttribute]
+private IEnumerable`1<MonoInfo> GetMonoRuntimes_Unix(JetArchitecture architecture, IEnumerable`1<FileSystemPath> executablePaths);
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<MonoInfo> GetMonoRuntimes();
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual string GetFirstSuitableMonoRuntime();
+}
+public class JetBrains.Profiler.Windows.SysTools.ProcessTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<Tuple`2<Process, UInt32>> myProcesses;
+    private static int ourUid;
+    public ProcessTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static ProcessTools();
+    protected virtual void OnDispose();
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public IProcessProxy CreateProcess(Lifetime lifetime, RemotableProcessStartInfo startInfo);
+    [CanBeNullAttribute]
+[NotRemotableAttribute]
+public IProcessProxy GetProcessById(Lifetime lifetime, int processId);
+    [RemotableLongCallAttribute]
+public virtual void ExecuteBrowser(Tuple`2<ProcessInfo, MetroInfo> startInfo);
+    [RemotableCallAttribute]
+public virtual bool HasByProcessName(string processName);
+    [RemotableCallAttribute]
+public virtual bool HasByProcessName(string processNamePattern, RegexOptions regexOptions);
+    [RemotableLongCallAttribute]
+public virtual void KillByProcessName(string processName);
+    [RemotableLongCallAttribute]
+public virtual void KillByProcessName(string processNamePattern, RegexOptions regexOptions);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual RemotableProcessInfo Process_GetById(int processId);
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual RemotableProcessInfo Process_Start(RemotableProcessStartInfo processStartInfo, bool suspended);
+    private static void FixEnvPathUnix(StringDictionary envVars);
+    private RemotableProcessInfo Run(ProcessStartInfo startInfo, int uid, bool createNewProcessGroup, bool suspended, bool createNewConsole);
+    [RemotableLongCallAttribute]
+public virtual void Process_Resume(Guid id);
+    [RemotableLongCallAttribute]
+public virtual bool Process_WaitForExit(Guid id, TimeSpan timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Process_WaitForExit(Guid id, int timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Process_WaitForExit(Guid id);
+    [RemotableCallAttribute]
+public virtual void Process_Kill(Guid id);
+    [RemotableLongCallAttribute]
+public virtual void Process_KillTree(Guid id);
+    [RemotableLongCallAttribute]
+public virtual bool Process_CloseMainWindow(Guid id);
+    [RemotableCallAttribute]
+public virtual bool Process_HasExited(Guid id);
+    [RemotableCallAttribute]
+public virtual int Process_ExitCode(Guid id);
+    [RemotableCallAttribute]
+public virtual string Process_PathToExecutable(Guid id);
+    [RemotableCallAttribute]
+public virtual void Process_Touch(Guid id);
+    [RemotableCallAttribute]
+public virtual void Process_Close(Guid id);
+}
+public class JetBrains.Profiler.Windows.SysTools.RemotableProcessInfo : object {
+    public long AuthenticationId;
+    public Guid Id;
+    public JetArchitecture Architecture;
+    [CanBeNullAttribute]
+public string Name;
+    public int ProcessId;
+    public UInt32 ThreadId;
+    public int SessionId;
+    public long StartTimestamp;
+    public RemotableProcessInfo(Guid id, int processId, int sessionId, long authenticationId, long startTimestamp, JetArchitecture architecture, string name);
+    public RemotableProcessInfo(Guid id, int processId, UInt32 threadId, int sessionId, long authenticationId, long startTimestamp, JetArchitecture architecture, string name);
+}
+public class JetBrains.Profiler.Windows.SysTools.RemotableProcessStartInfo : object {
+    [CanBeNullAttribute]
+public string Arguments;
+    public bool CreateNewProcessGroup;
+    public bool CreateNoWindow;
+    public bool CreateNewConsole;
+    public bool DisableFsRedirection;
+    [CanBeNullAttribute]
+public UpdateEnvironmentProperty[] EnvironmentProperties;
+    [CanBeNullAttribute]
+public string FileName;
+    [CanBeNullAttribute]
+public string WorkingDirectory;
+}
+public class JetBrains.Profiler.Windows.SysTools.RunTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutRun;
+    private static ILogger ourLogger;
+    private static string ScExecutable;
+    public RunTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static RunTools();
+    [RemotableCallAttribute]
+public virtual String[] RunListServices();
+    [RemotableCallAttribute]
+public virtual void RunUninstallService(string serviceName);
+    [RemotableCallAttribute]
+public virtual void RunInstallService(string serviceName, string remoteServiceFile, WindowsServiceMode mode, IReadOnlyCollection`1<string> dependentOn, string displayName);
+    [RemotableLongCallAttribute]
+public virtual int RunConsoleExecutable(string executable, String[] arguments, IEnumerable`1<UpdateEnvironmentProperty> environmentProperties);
+}
+public class JetBrains.Profiler.Windows.SysTools.SemaphoreTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static ILogger ourLogger;
+    private WatchedDictionary`1<Semaphore> mySemaphores;
+    public SemaphoreTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static SemaphoreTools();
+    protected virtual void OnDispose();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public ISemaphoreProxy CreateSemaphore(Lifetime lifetime, int initValue, int maxValue, string name);
+    [NotRemotableAttribute]
+[CanBeNullAttribute]
+public ISemaphoreProxy TryOpenSemaphore(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+[CanBeNullAttribute]
+public ISemaphoreProxy OpenSemaphore(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+public bool HasSemaphore(string name);
+    [RemotableCallAttribute]
+public virtual Guid Semaphore_Create(int initValue, int maxValue, string name);
+    [RemotableCallAttribute]
+public virtual Guid Semaphore_Open(string name);
+    [RemotableCallAttribute]
+public virtual bool Semaphore_Has(string name);
+    [RemotableLongCallAttribute]
+public virtual bool Semaphore_WaitOne(Guid id, TimeSpan timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Semaphore_WaitOne(Guid id, int timeout);
+    [RemotableLongCallAttribute]
+public virtual bool Semaphore_WaitOne(Guid id);
+    [RemotableCallAttribute]
+public virtual int Semaphore_Release(Guid id);
+    [RemotableCallAttribute]
+public virtual int Semaphore_Release(Guid id, int times);
+    [RemotableCallAttribute]
+public virtual void Semaphore_Touch(Guid id);
+    [RemotableCallAttribute]
+public virtual void Semaphore_Close(Guid id);
+}
+internal class JetBrains.Profiler.Windows.SysTools.SocketListener : object {
+    [NotNullAttribute]
+private Socket mySocket;
+    [NotNullAttribute]
+private Func`2<Socket, ICommunicationToolsStream> myStreamFactory;
+    public string LocalEndPoint { get; }
+    private SocketListener(Socket socket);
+    public static KeyValuePair`2<Guid, SocketListener> Create(IPEndPoint endPoint, Func`2<IListener, Guid> listenerRegistrator);
+    public sealed virtual List`1<Guid> Accept(int timeout, Func`2<ICommunicationToolsStream, Guid> streamRegistrator);
+    public sealed virtual string get_LocalEndPoint();
+    public sealed virtual void InjectProxyStreamFactory(Type type, SysTools sysTools, Object[] args);
+    public sealed virtual void Close();
+}
+public class JetBrains.Profiler.Windows.SysTools.SysTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public AttachEnvironmentTools AttachEnvironmentTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public AttachTools AttachTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public BrowserTools BrowserTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public CleanupTools CleanupTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public CoreClrTools CoreClrTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public DirectoryTools DirectoryTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EverythingEnvironmentTools EverythingEnvironmentTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EnvironmentTools EnvironmentTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EtwTools EtwTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EventPipeTools EventPipeTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EventTools EventTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public EverythingTools EverythingTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public FileCacheTools FileCacheTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public FileTools FileTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public FileStorageTools FileStorageTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public FrameworkTools FrameworkTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public IISExpressTools IISExpressTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public IISTools IISTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public ArchitectureTools ArchitectureTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public MetroTools MetroTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public CommunicationTools CommunicationTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public ProcessTools ProcessTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public RegistryHiveTools RegistryHiveTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public RunTools RunTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public SemaphoreTools SemaphoreTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public TestTools TestTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public TransparentIntegrationTools TransparentIntegrationTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public WcfHostTools WcfHostTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public MonoTools MonoTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public WindowsServiceEnvironmentTools WindowsServiceEnvironmentTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public WindowsServiceTools WindowsServiceTools;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public LifetimeTools LifetimeTools;
+    private Nullable`1<JetPlatform> myRuntimePlatform;
+    private OperatingSystem myOSVersion;
+    private Nullable`1<bool> myIsElevatedProcess;
+    private Nullable`1<bool> myIsUserInteractive;
+    [NotRemotableAttribute]
+public bool IsRunningUnderWindows { get; }
+    [NotRemotableAttribute]
+public JetPlatform RuntimePlatform { get; }
+    [NotRemotableAttribute]
+public OperatingSystem OSVersion { get; }
+    [NotRemotableAttribute]
+public bool IsElevatedProcess { get; }
+    [NotRemotableAttribute]
+public bool IsUserInteractive { get; }
+    public SysTools(ServiceLocation location, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static SysTools();
+    [CanBeNullAttribute]
+private static object CreateLocal(SysTools root, String[] ids, Type type);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckCall(string str, String& res);
+    [RemotableLongCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckLongCall(string str);
+    [NotRemotableAttribute]
+internal KeyAccessRights CheckRights(KeyAccessRights rights);
+    [RemotableCallAttribute]
+public virtual void AdjustPrivilege(String[] seName, bool isEnabled);
+    [NotRemotableTargetOnlyAttribute]
+internal void UnderPrivileges(String[] seNames, Action action);
+    protected internal virtual Stream OpenReadFile(string fileName);
+    protected internal virtual Stream CreateAppendFile(string fileName);
+    [NotRemotableAttribute]
+public void AssertIsRunningUnderWindows();
+    public bool get_IsRunningUnderWindows();
+    public JetPlatform get_RuntimePlatform();
+    [RemotableCallAttribute]
+public virtual JetPlatform GetPlatform();
+    public OperatingSystem get_OSVersion();
+    [RemotableCallAttribute]
+public virtual OperatingSystem GetOSVersion();
+    [NotRemotableAttribute]
+public void AssertIsElevatedProcess();
+    public bool get_IsElevatedProcess();
+    [RemotableCallAttribute]
+public virtual bool GetIsElevatedProcess();
+    public bool get_IsUserInteractive();
+    [RemotableCallAttribute]
+public virtual bool GetIsUserInteractive();
+}
+public class JetBrains.Profiler.Windows.SysTools.TestTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    [RemotableComponentAttribute]
+[NotNullAttribute]
+[UsedImplicitlyAttribute]
+public LeafTestTools LeafTestTools;
+    public TestTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static TestTools();
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckCall(string str, String& res);
+    [RemotableLongCallAttribute]
+[NotNullAttribute]
+public virtual string SelfCheckLongCall(string str);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string RootSelfCheck(string str, String& res);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.ArchitectureTools : BaseServiceRemotable`1<SysTools> {
+    private static Dictionary`2<string, CSIDL> ourCsidls;
+    private Nullable`1<JetArchitecture> myToolsetArchitecture;
+    private IReadOnlyCollection`1<JetArchitecture> myArchitectures;
+    [NotRemotableAttribute]
+public JetArchitecture ToolsetArchitecture { get; }
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public IReadOnlyCollection`1<JetArchitecture> Architectures { get; }
+    public ArchitectureTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static ArchitectureTools();
+    [NotNullAttribute]
+internal static string FixCSIDL(JetArchitecture osArchitecture, JetArchitecture currentProcessArchitecture, JetArchitecture targetProcessArchitecture, CSIDL csidl, Func`2<CSIDL, string> func);
+    [NotNullAttribute]
+private static string GetFolderPathWindows(Nullable`1<JetArchitecture> architecture, CSIDL csidl);
+    [NotRemotableTargetOnlyAttribute]
+internal void ForEachKeyAccessRights(Action`2<JetArchitecture, KeyAccessRights> action);
+    [NotRemotableAttribute]
+public KeyAccessRights GetRegistryRights(JetArchitecture architecture);
+    [NotRemotableTargetOnlyAttribute]
+internal static JetArchitecture GetArchitecture(Process process);
+    [NotRemotableAttribute]
+public bool IsRdtscSupported(JetArchitecture architecture);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual string GetFolderPath(Nullable`1<JetArchitecture> architecture, SpecialFolder folder);
+    [ContractAnnotationAttribute("str:null => null")]
+[RemotableCallAttribute]
+public virtual string ExpandForCurrentUser(Nullable`1<JetArchitecture> architecture, string str);
+    private static bool IsSpecialCases();
+    public JetArchitecture get_ToolsetArchitecture();
+    [RemotableCallAttribute]
+public virtual JetArchitecture GetToolsetArchitecture();
+    public IReadOnlyCollection`1<JetArchitecture> get_Architectures();
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual IReadOnlyCollection`1<JetArchitecture> GetArchitectures();
+}
+public abstract class JetBrains.Profiler.Windows.SysTools.Tools.Browser.BrowserInfoProviderBase : object {
+    [CompilerGeneratedAttribute]
+private SysTools <Root>k__BackingField;
+    protected SysTools Root { get; }
+    public BrowserInfoProviderBase(SysTools root);
+    [CompilerGeneratedAttribute]
+protected SysTools get_Root();
+    [NotNullAttribute]
+public abstract virtual IReadOnlyList`1<InternetBrowserInfo> GetInternetBrowserInfos();
+    [CanBeNullAttribute]
+public abstract virtual InternetBrowserInfo GetDefaultInternetBrowserInfo();
+    [NotNullAttribute]
+public abstract virtual Tuple`2<ProcessInfo, MetroInfo> GetBrowserInfos(string browser, string url);
+    [NotNullAttribute]
+public abstract virtual IProcessProxy GetBrowserProcess(Lifetime lifetime, string browser, Uri url, UpdateEnvironmentProperty[] environmentProperties, String& browserProcessName);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.Browser.BrowserInfoProviderLinux : BrowserInfoProviderBase {
+    public BrowserInfoProviderLinux(SysTools root);
+    public virtual IReadOnlyList`1<InternetBrowserInfo> GetInternetBrowserInfos();
+    public virtual InternetBrowserInfo GetDefaultInternetBrowserInfo();
+    public virtual Tuple`2<ProcessInfo, MetroInfo> GetBrowserInfos(string browser, string url);
+    public virtual IProcessProxy GetBrowserProcess(Lifetime lifetime, string browser, Uri url, UpdateEnvironmentProperty[] environmentProperties, String& browserProcessName);
+    private static IReadOnlyList`1<BrowserInfo> GetBrowsers();
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.Browser.BrowserInfoProviderMacOs : BrowserInfoProviderBase {
+    public BrowserInfoProviderMacOs(SysTools root);
+    public virtual IReadOnlyList`1<InternetBrowserInfo> GetInternetBrowserInfos();
+    public virtual InternetBrowserInfo GetDefaultInternetBrowserInfo();
+    public virtual Tuple`2<ProcessInfo, MetroInfo> GetBrowserInfos(string browser, string url);
+    public virtual IProcessProxy GetBrowserProcess(Lifetime lifetime, string browser, Uri url, UpdateEnvironmentProperty[] environmentProperties, String& browserProcessName);
+    private static IReadOnlyList`1<BrowserInfo> GetBrowsers();
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.Browser.BrowserInfoProviderWindows : BrowserInfoProviderBase {
+    private static ILogger ourLogger;
+    private static RegistryKey[] ourLookupSequence;
+    public BrowserInfoProviderWindows(SysTools root);
+    private static BrowserInfoProviderWindows();
+    public virtual IReadOnlyList`1<InternetBrowserInfo> GetInternetBrowserInfos();
+    public virtual InternetBrowserInfo GetDefaultInternetBrowserInfo();
+    public virtual IProcessProxy GetBrowserProcess(Lifetime lifetime, string browser, Uri url, UpdateEnvironmentProperty[] environmentProperties, String& browserProcessName);
+    public virtual Tuple`2<ProcessInfo, MetroInfo> GetBrowserInfos(string browser, string url);
+    [CanBeNullAttribute]
+private string GetCommandLine(RegistryHiveAccess access, string progId);
+    [CanBeNullAttribute]
+private string GetHttpDefaultProgId(KeyAccessRights rights);
+    [NotNullAttribute]
+private IEnumerable`1<CapabilityBrowserInfo> GetBrowserInfos(KeyAccessRights rights);
+    private static InternetBrowserFlags GetFlags(CapabilityBrowserInfo info);
+    [NotNullAttribute]
+private CapabilityBrowserInfo GetCapabilityBrowserInfo(KeyAccessRights rights, string browser);
+    [NotNullAttribute]
+private static string GetProgId(KeyAccessRights rights, CapabilityBrowserInfo info, Uri uri);
+    [NotNullAttribute]
+private static string GetBrowserProcessName(string browser, string processName);
+    [CanBeNullAttribute]
+private ProcessInfo GetProcessInfo(KeyAccessRights rights, CapabilityBrowserInfo info, string progId, Uri uri);
+    [CanBeNullAttribute]
+private MetroInfo GetMetroInfo(KeyAccessRights rights, CapabilityBrowserInfo info, string progId, Uri uri);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.BrowserTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private BrowserInfoProviderBase myBrowserInfoProvider;
+    public BrowserTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static BrowserTools();
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual IEnumerable`1<InternetBrowserInfo> GetInternetBrowserInfos();
+    [CanBeNullAttribute]
+[RemotableCallAttribute]
+public virtual InternetBrowserInfo GetDefaultInternetBrowserInfo();
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public IProcessProxy GetBrowserProcess(Lifetime lifetime, string browser, Uri url, UpdateEnvironmentProperty[] environmentProperties, String& browserProcessName);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual Tuple`2<ProcessInfo, MetroInfo> GetBrowserInfos(string browser, string url);
+    [NotRemotableAttribute]
+public void UpdateDisplay(RunBrowserArgument runBrowser);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.CleanupTools : BaseServiceRemotable`1<SysTools> {
+    private static string CleanTempFoldersTask;
+    private static string CleanRegistryTask;
+    private static string CleanTransparentIntegrationTask;
+    private static ILogger ourLogger;
+    private Dictionary`2<Guid, Queue`1<ProgressData>> myProgressEvents;
+    public CleanupTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static CleanupTools();
+    [NotRemotableAttribute]
+private static bool HasTempException(string path);
+    [NotRemotableAttribute]
+private void CleanupTemp(string path);
+    [RemotableCallAttribute]
+public virtual Guid BeginCleanup(HostCleanUpFlags hostCleanUpFlags, int timeout);
+    [RemotableCallAttribute]
+public virtual ProgressData PullCleanupEvent(Guid id);
+    [RemotableCallAttribute]
+public virtual void EndCleanup(Guid id);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.ClrActivation : object {
+    public Guid Core;
+    [NotNullAttribute]
+public IDictionary`2<JetArchitecture, string> Paths;
+    public Nullable`1<JetArchitecture> DefaultArchitecture;
+    public ClrActivation(Guid core, Nullable`1<JetArchitecture> defaultArchitecture, IDictionary`2<JetArchitecture, string> paths);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.Common.GlobalNamedAgentLock : WaitHandle {
+    public static string GlobalAgentLockPrefix;
+    public static string GlobalAgentLockName;
+    private Mutex myLock;
+    private bool myOwned;
+    public GlobalNamedAgentLock(bool acquire, string name);
+    protected virtual void Dispose(bool explicitDisposing);
+    public virtual void Close();
+    public virtual bool WaitOne(TimeSpan timeout);
+    public virtual bool WaitOne(int millisecondsTimeout);
+    public virtual bool WaitOne();
+    public virtual bool WaitOne(TimeSpan timeout, bool exitContext);
+    public virtual bool WaitOne(int millisecondsTimeout, bool exitContext);
+}
+public static class JetBrains.Profiler.Windows.SysTools.Tools.CoreEnvironmentConstants : object {
+    public static string PrefixProfilerCore;
+    public static string PrefixProfilerCoreChain;
+    public static string PrefixProfilerCoreType;
+    public static string ProfilerCoreLogMask;
+    public static string ProfilerCoreLogFile;
+    public static string ProfilerCoreTempPath;
+    public static string ProfilerCoreDebug;
+    public static string ProfilerCoreFirst;
+    public static string ProfilerCoreHost;
+    public static string ProfilerCoreHostPipe;
+    public static string ProfilerCoreRemote;
+    public static string ProfilerCoreGuid;
+    public static string ProfilerCorePath32;
+    public static string ProfilerCorePath64;
+    public static string ProfilerCorePathArm32;
+    public static string ProfilerCorePathArm64;
+    public static string ProfilerCoreChainGuid;
+    public static string ProfilerCoreChainPath32;
+    public static string ProfilerCoreChainPath64;
+    public static string ProfilerCoreChainPathArm32;
+    public static string ProfilerCoreChainPathArm64;
+    public static string ProfilerCoreNativeProfParams;
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Windows.SysTools.Tools.EnvironmentPropertiesExtensions : object {
+    private static string ourPathListSeparator;
+    private static EnvironmentPropertiesExtensions();
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static CleanEnvironmentProperty[] ResolveStartWith(IEnumerable`1<CleanEnvironmentProperty> cleanProperties, Func`1<IEnumerable`1<string>> getterNames);
+    [ExtensionAttribute]
+public static void ApplyTo(CleanEnvironmentProperty cleanProperties, Func`1<string> getterStr, Action`1<string> setterStr, Func`2<string, string> expander);
+    [ExtensionAttribute]
+public static void ApplyTo(CleanEnvironmentProperty cleanProperties, Func`1<string> getterStr, Action`1<string> setterStr, Action`1<string> setterExpandStr, Func`2<string, string> expander);
+    private static void UpdateAppendToPathList(UpdateEnvironmentProperty updateProperties, Func`1<string> getterExpandStr, Action`1<string> setterExpandStr);
+    [ExtensionAttribute]
+public static void ApplyTo(UpdateEnvironmentProperty updateProperty, RegistryModes modes, Func`1<string> getterStr, Action`1<string> setterStr, Action`1<string> setterExpandStr, Action`1<UInt32> setterU4, Action`1<ulong> setterU8, Action`1<Byte[]> setterBinary);
+    [ExtensionAttribute]
+public static void ApplyTo(UpdateEnvironmentProperty updateProperty, Func`1<string> getterStr, Action`1<string> setterStr);
+    [ExtensionAttribute]
+public static void ApplyToEnvironment(StringDictionary dictionary, IEnumerable`1<UpdateEnvironmentProperty> updateProperties);
+    [ExtensionAttribute]
+public static void ApplyToEnvironment(IDictionary`2<string, string> dictionary, IEnumerable`1<UpdateEnvironmentProperty> updateProperties);
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static CleanEnvironmentProperty[] ToCleanEnvironmentProperties(IEnumerable`1<UpdateEnvironmentProperty> updateProperties, JetPlatform platform);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.EnvironmentTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static String[] ourHiveSeNames;
+    public EnvironmentTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static EnvironmentTools();
+    [RemotableCallAttribute]
+public virtual void RegisterCore(JetArchitecture architecture, Guid coreGuid, string coreFile);
+    [RemotableCallAttribute]
+public virtual void UnregisterCore(JetArchitecture architecture, Guid coreGuid);
+    private void CheckRegisterCore(JetArchitecture architecture);
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual IEnumerable`1<string> GetUserTempDirs();
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual IDictionary`2<string, string> GetEnvironmentVariables();
+    [NotNullAttribute]
+[RemotableCallAttribute]
+public virtual string GetSymbolPaths();
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.EtwTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private LifetimeDefinition myElevatorLifetimeDefinition;
+    private Exception myException;
+    private string myBridgeEndpoint;
+    private ProcessElevatorApi myCollectorElevator;
+    private List`1<ICollectorParam> myCollectorParams;
+    private bool myStarted;
+    [CompilerGeneratedAttribute]
+private FileSystemPath <CollectorPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CollectorProductName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CollectorProductDescription>k__BackingField;
+    public FileSystemPath CollectorPath { get; private set; }
+    public string CollectorParams { get; }
+    public string CollectorProductName { get; private set; }
+    public string CollectorProductDescription { get; private set; }
+    public EtwTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static EtwTools();
+    [CompilerGeneratedAttribute]
+public FileSystemPath get_CollectorPath();
+    [CompilerGeneratedAttribute]
+private void set_CollectorPath(FileSystemPath value);
+    public string get_CollectorParams();
+    [CompilerGeneratedAttribute]
+public string get_CollectorProductName();
+    [CompilerGeneratedAttribute]
+private void set_CollectorProductName(string value);
+    [CompilerGeneratedAttribute]
+public string get_CollectorProductDescription();
+    [CompilerGeneratedAttribute]
+private void set_CollectorProductDescription(string value);
+    [RemotableLongCallAttribute]
+public virtual string GetConnection();
+    [RemotableLongCallAttribute]
+public virtual bool IsSupported();
+    [RemotableLongCallAttribute]
+public virtual bool IsStarted();
+    [RemotableLongCallAttribute]
+public virtual void PrepareToStart(string bridgeEndpoint, IList`1<EvProvider> disabledProviders, bool runHostAllowed, HostLaunchMode collectorHostMode, HostDeleteOptions hostDeleteOptions, FileSystemPath collectorHostPath, FileSystemPath collectorPath, bool loadPdb, string symbolPaths, string productName, string productDescription, Nullable`1<EtwCollectorLogMask> logMask, Dictionary`2<EvProvider, UInt32> buffers, FileSystemPath hostLogDir, FileSystemPath collectorLogDir, bool isJavaProcessExpected);
+    [RemotableLongCallAttribute]
+public virtual void StartNativeSlave();
+    [RemotableLongCallAttribute]
+public virtual void StartNative();
+    [RemotableLongCallAttribute]
+public virtual void StartNative(int pid, string processName, string cmd, bool profileChildProcesses);
+    [RemotableLongCallAttribute]
+public virtual Dictionary`2<DiagnosticFileSource, FileSystemPath> Term(Dictionary`2<DiagnosticFileSource, FileSystemPath> logDirs);
+    private void StartImpl(ICollectorParam[] additionalParams);
+    [CompilerGeneratedAttribute]
+private void <PrepareToStart>b__26_0(string m, UInt32 c);
+}
+[ExtensionAttribute]
+internal static class JetBrains.Profiler.Windows.SysTools.Tools.Impl.PropertiesUtil : object {
+    [ExtensionAttribute]
+public static bool Clean(IEnumerable`1<CleanEnvironmentProperty> cleanProperties, IDictionary`2<string, string> dictionary, Func`3<EnvironmentPropertyType, string, string> filter);
+    [ExtensionAttribute]
+public static bool Update(IEnumerable`1<UpdateEnvironmentProperty> updateProperties, IDictionary`2<string, string> dictionary, Func`3<EnvironmentPropertyType, string, string> filter);
+    [ExtensionAttribute]
+public static void Clean(IEnumerable`1<CleanEnvironmentProperty> cleanProperties, RegistryHiveAccess key, BackSlashSeparatedRelativePath subKey, Func`3<EnvironmentPropertyType, string, string> filter);
+    [ExtensionAttribute]
+public static void Update(IEnumerable`1<UpdateEnvironmentProperty> updateProperties, RegistryHiveAccess key, BackSlashSeparatedRelativePath subKey, RegistryModes modes, Func`3<EnvironmentPropertyType, string, string> filter);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.IntegrationCoreInfo : object {
+    public Guid Core;
+    [NotNullAttribute]
+public IDictionary`2<JetArchitecture, string> Paths;
+    public IntegrationCoreInfo(Guid core, IDictionary`2<JetArchitecture, string> paths);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.InvalidCallSequenceException : Exception {
+    public InvalidCallSequenceException(string message);
+    public InvalidCallSequenceException(string message, Exception innerException);
+    protected InvalidCallSequenceException(SerializationInfo info, StreamingContext context);
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.MonoActivation : object {
+    [NotNullAttribute]
+public IDictionary`2<JetArchitecture, string> Paths;
+    public MonoActivation(IDictionary`2<JetArchitecture, string> paths);
+}
+public enum JetBrains.Profiler.Windows.SysTools.Tools.Protect.CoreProtectionType : Enum {
+    public byte value__;
+    public static CoreProtectionType Shared;
+    public static CoreProtectionType Exclusive;
+}
+internal class JetBrains.Profiler.Windows.SysTools.Tools.Protect.CoreProtector : object {
+    private static int SharedType;
+    private static int ExclusiveType;
+    private CoreProtectionType myCoreProtectionType;
+    private ISemaphoreProxy myDataSemaphore;
+    private ISemaphoreProxy myLockSemaphore;
+    private ISemaphoreProxy myTypeSemaphore;
+    private int myOwnValue;
+    public CoreProtector(CoreProtectionType coreProtectionType, Func`4<int, int, string, ISemaphoreProxy> createSemaphore);
+    public sealed virtual void Dispose();
+    public sealed virtual void Enter(Action`1<bool> action);
+    public sealed virtual void Leave(Action`1<bool> action);
+    public sealed virtual void Touch();
+    private void Lock(Action action);
+    private bool IsSingle();
+    private static int GetDataMaxValue(CoreProtectionType coreProtectionType);
+    private static int GetTypeValue(CoreProtectionType coreProtectionType);
+    private CoreProtectionType GetCurrentCoreProtectorType();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_0();
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.Protect.GlobalProtection : object {
+    private static int TimeoutAbort;
+    private static int TimeoutSleep;
+    private object myCoreProtectorLock;
+    private Func`4<int, int, string, ISemaphoreProxy> myCreateSemaphore;
+    private string myPrefix;
+    private Thread myThread;
+    private ICoreProtector myCoreProtector;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) myStopRequest;
+    public GlobalProtection(string prefix, Func`4<int, int, string, ISemaphoreProxy> createSemaphore);
+    public sealed virtual void Dispose();
+    public void Enter(Action action);
+    public void Leave(Action action);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__8_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__8_1();
+}
+internal interface JetBrains.Profiler.Windows.SysTools.Tools.Protect.ICoreProtector {
+    public abstract virtual void Enter(Action`1<bool> action);
+    public abstract virtual void Leave(Action`1<bool> action);
+    public abstract virtual void Touch();
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.RegistryHiveTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private Random myRandom;
+    public RegistryHiveTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static RegistryHiveTools();
+    [NotRemotableTargetOnlyAttribute]
+internal void EnumUserHives(Action`2<string, FileSystemPath> action);
+    [NotRemotableTargetOnlyAttribute]
+internal void UnderUserHive(string sid, FileSystemPath hiveFile, Action`3<RegistryHiveAccess, BackSlashSeparatedRelativePath, bool> action);
+}
+[FlagsAttribute]
+public enum JetBrains.Profiler.Windows.SysTools.Tools.RegistryModes : Enum {
+    public byte value__;
+    public static RegistryModes None;
+    public static RegistryModes DwordToString;
+    public static RegistryModes QwordToString;
+    public static RegistryModes BinaryToString;
+    public static RegistryModes AllToString;
+}
+public class JetBrains.Profiler.Windows.SysTools.Tools.TransparentIntegrationTools : BaseServiceRemotable`1<SysTools> {
+    private static string RegistryPathInProcServer32;
+    private static ILogger ourLogger;
+    private static string RegistryKeyAttachCoverageProfiler;
+    private static string RegistryKeyAttachSamplingPerformanceProfiler;
+    private static string RegistryKeyAttachMemoryProfiler;
+    private static string RegistryKeyAttachTimelineProfiler;
+    private static string RegistryKeyStartCoverageProfiler;
+    private static string RegistryKeyStartSamplingPerformanceProfiler;
+    private static string RegistryKeyStartTracingPerformanceProfiler;
+    private static string RegistryKeyStartTracingInjectPerformanceProfiler;
+    private static string RegistryKeyStartMemoryProfiler;
+    private static string RegistryKeyStartTimelineProfiler;
+    private static string PostfixRegistryFreeActivation;
+    private static string PostfixPath32;
+    private static string PostfixPath64;
+    private static string PostfixPathArm64;
+    public TransparentIntegrationTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static TransparentIntegrationTools();
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public static string GetTransparentIntegrationName(IArgumentFactory argumentFactory, IInfo info);
+    [NotNullAttribute]
+[NotRemotableAttribute]
+public static IEnumerable`1<string> GetTransparentIntegrationKeys();
+    [CanBeNullAttribute]
+[RemotableCallAttribute]
+public virtual IntegrationCoreInfo MakeIntegrationCoreInfo(string integrationName);
+    [NotNullAttribute]
+private static string GetPostfixPath(JetArchitecture architecture);
+    private static void CleanIntegration(RegistryHiveAccess key);
+    [RemotableCallAttribute]
+public virtual void CleanUserIntegration();
+    [RemotableCallAttribute]
+public virtual void CleanGlobalIntegration();
+    private static void SetIntegration(string transparentIntegrationName, Guid integrationGuid, bool registryFreeActivation, IDictionary`2<JetArchitecture, string> integrationPaths, RegistryHiveAccess key);
+    [RemotableCallAttribute]
+public virtual void SetUserIntegration(string transparentIntegrationName, Guid integrationGuid, bool registryFreeActivation, IDictionary`2<JetArchitecture, string> integrationPaths);
+    [RemotableCallAttribute]
+public virtual void SetGlobalIntegration(string transparentIntegrationName, Guid integrationGuid, bool registryFreeActivation, IDictionary`2<JetArchitecture, string> integrationPaths);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Windows.SysTools.Tools.VariableUtil : object {
+    private static RelativePath ourLinuxGlibcArm64NativeDir;
+    private static RelativePath ourLinuxGlibcX64NativeDir;
+    private static RelativePath ourLinuxMuslArm64NativeDir;
+    private static RelativePath ourLinuxMuslX64NativeDir;
+    private static RelativePath ourMacOsArm64NativeDir;
+    private static RelativePath ourMacOsX64NativeDir;
+    private static RelativePath ourWindowsX64NativeDir;
+    private static RelativePath ourWindowsX86NativeDir;
+    private static string EnvPostfixEnableProfiling;
+    private static string EnvPostfixProfiler;
+    private static string EnvPostfixProfilerPath;
+    private static string EnvBitness32;
+    private static string EnvBitness64;
+    private static string EnvArm32;
+    private static string EnvArm64;
+    private static string EnvCor;
+    private static string EnvCorEnableProfiling;
+    private static string EnvCorProfiler;
+    private static string EnvCorProfilerPath;
+    private static string EnvCorProfilerPath32;
+    private static string EnvCorProfilerPath64;
+    private static string EnvCoreClr;
+    private static string EnvDotnet;
+    private static string EnvCoreClrEnableProfiling;
+    private static string EnvCoreClrProfiler;
+    private static string EnvCoreClrProfilerPath;
+    private static string EnvCoreClrProfilerPath32;
+    private static string EnvCoreClrProfilerPath64;
+    private static string EnvCoreClrProfilerPathArm32;
+    private static string EnvCoreClrProfilerPathArm64;
+    private static string EnvDiagnosticPorts;
+    private static string EnvMono;
+    private static string EnvMonoEnvOptions;
+    private static string EnvJetBrainsMonoEnvOptions;
+    private static string EnvMonoConfig;
+    private static string EnvMonoCfgDir;
+    private static string EnvMonoDebug;
+    private static string EnvMonoGacPrefix;
+    private static string EnvMonoGcParams;
+    private static string EnvMonoLocalMachineCerts;
+    private static string EnvMonoPath;
+    private static string EnvJetBrainsDpaAgentEnable;
+    private static VariableUtil();
+    [ExtensionAttribute]
+[NotNullAttribute]
+private static IEnumerable`1<FileSystemPath> ToNotEmptyPaths(IDictionary`2<JetArchitecture, string> dictionary);
+    [ExtensionAttribute]
+[NotNullAttribute]
+private static IEnumerable`1<FileSystemPath> ToNotEmptyDirs(IDictionary`2<JetArchitecture, string> dictionary);
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+private static string GetPath(ClrActivation clrActivation, Nullable`1<JetArchitecture> architecture, bool useDefaultArchitecture);
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+private static Nullable`1<Guid> GetCore(ClrActivation clrActivation);
+    [NotNullAttribute]
+public static CleanEnvironmentProperty[] CleanProfileEnvironment(JetPlatform platform);
+    [NotNullAttribute]
+public static CleanEnvironmentProperty[] CleanProfileEnvironmentChildProcess();
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty[] MakeProfileEnvironment(JetPlatform platform, IReadOnlyCollection`1<JetArchitecture> architectures, string profilerName, ClrEngine clrEngine, bool disableEnvironmentActivation, ClrActivation clrActivation, ClrActivation integrationClrActivation, MonoActivation monoActivation, IDictionary`2<string, string> additionalEnvironmentVariables, string diagnosticPortPath, bool isUnityMono, bool isMonoCoverage, bool isDpaAgentEnable, CollectorMode etwCollectorMode, string etwCollectorParams, string hostEndPoint, string hostEndPointForNamedPipe, string remoteEndPoint, Nullable`1<CoreLogMask> logMask, string tempPath, CoreDebug coreDebug, ChainCoreInfo chainProfiler);
+    [NotNullAttribute]
+private static ClrEnvironmentVariables BindPaths(JetPlatform platform, IEnumerable`1<JetArchitecture> architectures);
+    private static void ValidateEnvironmentVariableName(string name);
+    [NotNullAttribute]
+private static string GetLibPath(JetPlatform platform);
+    [NotNullAttribute]
+private static String[] GetDefaultWildcardableInstallationPathList(JetPlatform platform);
+    [CompilerGeneratedAttribute]
+internal static void <BindPaths>g__Assign|8_0(Nullable`1& architecture, JetArchitecture value);
+}
+public class JetBrains.Profiler.Windows.SysTools.UpdateEnvironmentProperty : object {
+    [NotNullAttribute]
+public string Key;
+    [CanBeNullAttribute]
+private object myValue;
+    public EnvironmentPropertyType Type;
+    public Actions Action { get; }
+    public RegValueType RegValueType { get; }
+    [NotNullAttribute]
+public string StringValue { get; }
+    [NotNullAttribute]
+public String[] StringListValue { get; }
+    public UInt32 DWordValue { get; }
+    public ulong QWordValue { get; }
+    public Byte[] BinaryValue { get; }
+    private UpdateEnvironmentProperty(EnvironmentPropertyType type, string key, object value);
+    public Actions get_Action();
+    public RegValueType get_RegValueType();
+    public string get_StringValue();
+    public String[] get_StringListValue();
+    public UInt32 get_DWordValue();
+    public ulong get_QWordValue();
+    public Byte[] get_BinaryValue();
+    public bool IsMatch(string key);
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty CreateStr(EnvironmentPropertyType type, string key, string value);
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty CreateAppendToPathList(EnvironmentPropertyType type, string key, String[] value);
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty CreateU4(EnvironmentPropertyType type, string key, Nullable`1<UInt32> value);
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty CreateU8(EnvironmentPropertyType type, string key, Nullable`1<ulong> value);
+    [NotNullAttribute]
+public static UpdateEnvironmentProperty CreateGuid(EnvironmentPropertyType type, string key, Nullable`1<Guid> value);
+    public virtual string ToString();
+}
+public class JetBrains.Profiler.Windows.SysTools.WcfHostTools : BaseServiceRemotable`1<SysTools> {
+    private static string WcfSvcHostPrefix;
+    private static Version2 ourRuntimeVersion2;
+    private static Version2 ourRuntimeVersion4;
+    private static Version2 ourVsVersion10;
+    public WcfHostTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static WcfHostTools();
+    [NotNullAttribute]
+[RemotableLongCallAttribute]
+public virtual IEnumerable`1<WcfHostInfo> GetWcfHosts();
+    [NotNullAttribute]
+private static Version2 GetRuntimeVersion(InstalledVs installedVs);
+}
+public class JetBrains.Profiler.Windows.SysTools.WindowsServiceEnvironmentTools : BaseServiceRemotable`1<SysTools> {
+    private static ILogger ourLogger;
+    private static string RegistryKeyEnvironment;
+    public WindowsServiceEnvironmentTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static WindowsServiceEnvironmentTools();
+    [RemotableCallAttribute]
+public virtual void CleanAllWindowsServicesEnvironment(CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void CleanWindowsServiceEnvironment(string serviceName, CleanEnvironmentProperty[] cleanProperties);
+    [RemotableCallAttribute]
+public virtual void UpdateWindowsServiceEnvironment(string serviceName, UpdateEnvironmentProperty[] updateProperties);
+    private static void ProcessMultilineEnvironment(RegistryHiveAccess key, BackSlashSeparatedRelativePath subKey, string name, Func`2<IDictionary`2<string, string>, bool> updateDictionary);
+    private static void CleanAll(CleanEnvironmentProperty[] cleanProperties);
+    private static void Clean(string serviceName, CleanEnvironmentProperty[] cleanProperties);
+    private static void Update(string serviceName, UpdateEnvironmentProperty[] updateProperties);
+}
+public class JetBrains.Profiler.Windows.SysTools.WindowsServiceTools : BaseServiceRemotable`1<SysTools> {
+    private static int TimeoutExpired;
+    private static ILogger ourLogger;
+    private static MessageResult ourMessageResult_InvalidOs;
+    private static MessageResult ourMessageResult_AdministrativeRightRequired;
+    private static MessageResult ourMessageResult_Communication;
+    private WatchedDictionary`1<ServiceController> myServices;
+    public WindowsServiceTools(SysTools root, String[] ids, ServiceCreatorDelegate<SysTools> serviceCreator);
+    private static WindowsServiceTools();
+    protected virtual void OnDispose();
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public MessageResult IsSupported(HostCompatibilityOptions options);
+    [NotRemotableAttribute]
+public void UpdateDisplay(WindowsServiceArgument argument);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual WindowsServiceInfo[] GetServices();
+    [NotRemotableAttribute]
+[CanBeNullAttribute]
+internal IProcessProxy GetServiceProcess(Lifetime lifetime, Guid id);
+    private static bool CheckServiceExist(ServiceController sc);
+    [NotRemotableAttribute]
+[CanBeNullAttribute]
+public IServiceProxy TryOpenService(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+[NotNullAttribute]
+public IServiceProxy OpenService(Lifetime lifetime, string name);
+    [NotRemotableAttribute]
+public bool HasService(string name);
+    [RemotableCallAttribute]
+public virtual Guid Service_Open(string name);
+    [RemotableCallAttribute]
+public virtual bool Service_Has(string name);
+    [RemotableCallAttribute]
+public virtual ServiceControllerStatus Service_GetStatus(Guid id);
+    [RemotableCallAttribute]
+public virtual ServiceStartMode Service_GetStartType(Guid id);
+    [RemotableCallAttribute]
+public virtual ServiceType Service_GetServiceType(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string Service_GetServiceName(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual string Service_GetDisplayName(Guid id);
+    [RemotableCallAttribute]
+public virtual bool Service_CanStop(Guid id);
+    [RemotableCallAttribute]
+public virtual bool Service_CanPauseAndContinue(Guid id);
+    [RemotableCallAttribute]
+public virtual bool Service_CanShutdown(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual String[] Service_GetServicesDependentOn(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual String[] Service_GetDependentServices(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual String[] Service_GetSameProcessServices(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual String[] Service_GetSameImagePathServices(Guid id);
+    [RemotableCallAttribute]
+[CanBeNullAttribute]
+public virtual string Service_GetSvcHostGroup(Guid id);
+    [RemotableCallAttribute]
+[NotNullAttribute]
+public virtual String[] Service_GetSvcHostServices(Guid id);
+    [RemotableCallAttribute]
+[CanBeNullAttribute]
+public virtual RemotableProcessInfo Service_GetProcessInfo(Guid id);
+    [RemotableCallAttribute]
+public virtual void Service_Start(Guid id, String[] args);
+    [RemotableCallAttribute]
+public virtual void Service_Stop(Guid id);
+    [RemotableCallAttribute]
+public virtual void Service_Pause(Guid id);
+    [RemotableCallAttribute]
+public virtual void Service_Continue(Guid id);
+    [RemotableCallAttribute]
+public virtual void Service_Touch(Guid id);
+    [RemotableCallAttribute]
+public virtual void Service_Close(Guid id);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

@@ -1,0 +1,1121 @@
+public enum JetBrains.Common.Util.Snapshot.TimelineSnapshotType : Enum {
+    public int value__;
+    public static TimelineSnapshotType Invalid;
+    public static TimelineSnapshotType Raw;
+    public static TimelineSnapshotType Converted;
+}
+public static class JetBrains.Profiler.Snapshot.CommonSectionIO : object {
+    private static IDictionary`2<UInt32, Type> ReadResultTypes;
+    private static IDictionary`2<UInt32, IEnumerable`1<ISectionReader>> Readers;
+    private static IDictionary`2<UInt32, Type> WriteResultTypes;
+    private static IDictionary`2<UInt32, ISectionWriter> Writers;
+    public static IEnumerable`1<SectionReaderBase`1<EnvironmentSection>> EnvironmentSectionReaders;
+    public static SectionWriterBase`1<EnvironmentSection> EnvironmentSectionWriter;
+    public static IEnumerable`1<SectionReaderBase`1<MetadataSection>> MetadataSectionReaders;
+    public static SectionWriterBase`1<MetadataSection> MetadataSectionWriter;
+    public static IEnumerable`1<SectionReaderBase`1<ModuleStatSection>> ModuleStatSectionReaders;
+    public static SectionWriterBase`1<IModuleStatSection> ModuleStatSectionWriter;
+    public static IEnumerable`1<SectionReaderBase`1<PostEnvironmentSection>> PostEnvironmentSectionReaders;
+    public static SectionWriterBase`1<PostEnvironmentSection> PostEnvironmentSectionWriter;
+    private static CommonSectionIO();
+    private static void RegisterSection(UInt32 sectionType, IEnumerable`1<SectionReaderBase`1<TReadResult>> readers, SectionWriterBase`1<TWriteResult> writer);
+    public static TReadResult ReadSectionSafe(Lifetime lifetime, SnapshotStorageSection storageSection);
+    public static TReadResult ReadSectionSafe(SnapshotStorageSection storageSection);
+    public static TReadResult ReadSection(Lifetime lifetime, SnapshotStorageSection storageSection);
+    public static TReadResult ReadSection(SnapshotStorageSection storageSection);
+    public static void WriteSection(UInt32 sectionType, TWriteResult section, IStorageSectionWriter storageSectionWriter);
+}
+public static class JetBrains.Profiler.Snapshot.CommonSectionTypes : object {
+    public static ushort Environment;
+    public static ushort PostEnvironment;
+    public static ushort Metadata;
+    public static ushort ModulePath;
+    public static ushort ModuleStat;
+    public static ushort FuidToMetadataId;
+    public static ushort Class;
+    public static ushort ClassIndex;
+    public static ushort Etw_Min;
+    public static ushort Etw_Max;
+    public static ushort External;
+}
+public class JetBrains.Profiler.Snapshot.Converters.FuidToMetadataIdConverter : object {
+    [CanBeNullAttribute]
+private IFunctionUniqueIdMetadataCollection myFuidMetadataCollection;
+    internal static UInt32 SelectBitMask;
+    internal static byte MdiBitCount;
+    internal static UInt32 MdiBitMask;
+    internal static byte IndexBitCount;
+    internal static UInt32 IndexBitMask;
+    unknown IFunctionUniqueIdMetadataCollection MetadataCollection {public set; }
+    public FuidToMetadataIdConverter(IFunctionUniqueIdMetadataCollection fuidMetadataCollection);
+    public void set_MetadataCollection(IFunctionUniqueIdMetadataCollection value);
+    public sealed virtual MetadataId Convert(FunctionId fuid);
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Profiler.Snapshot.Converters.FuidToMetadataIdSection : object {
+    private static int NodeSize;
+    private SnapshotStorageSection mySection;
+    private int mySectionStartPos;
+    [CompilerGeneratedAttribute]
+private int <Count>k__BackingField;
+    public int Count { get; }
+    public MetadataId Item { get; }
+    public FuidToMetadataIdSection(SnapshotStorageSection section);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Count();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Converters.FuidToMetadataIdSection/<GetEnumerator>d__8")]
+public sealed virtual IEnumerator`1<MetadataId> GetEnumerator();
+    public sealed virtual MetadataId get_Item(int index);
+}
+public class JetBrains.Profiler.Snapshot.Converters.MetadataIdToFuidEncoder : object {
+    public sealed virtual FunctionId Convert(MetadataId metadataId);
+}
+public class JetBrains.Profiler.Snapshot.IndexedStorageSectionWriter : object {
+    private List`1<SnapshotStorageSection> mySectionHeaders;
+    private BinaryWriter myWriter;
+    private bool myHasVersion;
+    protected BinaryWriter Writer { get; }
+    protected IndexedStorageSectionWriter(FileSystemPath fileName, ushort indexType, UInt32 snapshotType, ushort sectionSequenceVersion);
+    public IndexedStorageSectionWriter(FileSystemPath fileName, UInt32 snapshotType, ushort sectionSequenceVersion);
+    protected BinaryWriter get_Writer();
+    public sealed virtual void Dispose();
+    public sealed virtual void WriteSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+    protected virtual void WriteSection(T arg, Action`2<T, BinaryWriter> write);
+}
+public class JetBrains.Profiler.Snapshot.IndexedZippedStorageSectionWriter : IndexedStorageSectionWriter {
+    public IndexedZippedStorageSectionWriter(FileSystemPath fileName, UInt32 magic, ushort sectionSequenceVersion);
+    protected virtual void WriteSection(T arg, Action`2<T, BinaryWriter> write);
+}
+public interface JetBrains.Profiler.Snapshot.IStorageSectionWriter {
+    public abstract virtual void WriteSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+}
+public abstract class JetBrains.Profiler.Snapshot.Legacy.Section.BaseSection`1 : object {
+    [CompilerGeneratedAttribute]
+private long <Size>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`1<BinaryReader> <myGetReader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private T <mySectionReader>k__BackingField;
+    public long Size { get; protected set; }
+    protected Func`1<BinaryReader> myGetReader { get; private set; }
+    protected T mySectionReader { get; private set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Size();
+    [CompilerGeneratedAttribute]
+protected void set_Size(long value);
+    [CompilerGeneratedAttribute]
+protected Func`1<BinaryReader> get_myGetReader();
+    [CompilerGeneratedAttribute]
+private void set_myGetReader(Func`1<BinaryReader> value);
+    [CompilerGeneratedAttribute]
+protected T get_mySectionReader();
+    [CompilerGeneratedAttribute]
+private void set_mySectionReader(T value);
+    protected void ReadSection(SnapshotStorageSection section, ushort type, T[] sectionReaders);
+    private void DoReadSection(SnapshotStorageSection section, T[] sectionReaders);
+    protected void CheckNoUnreadDataLeft(BinaryReader reader);
+}
+public class JetBrains.Profiler.Snapshot.Legacy.Section.ClassIndexSection : BaseSection`1<IBaseSectionReader> {
+    [CompilerGeneratedAttribute]
+private UInt32 <Count>k__BackingField;
+    public IEnumerable`1<SectionOffset`1<IClassSection>> Entries { get; }
+    public UInt32 Count { get; private set; }
+    public ClassIndexSection(SnapshotStorageSection section);
+    public sealed virtual IEnumerable`1<SectionOffset`1<IClassSection>> get_Entries();
+    [CompilerGeneratedAttribute]
+public sealed virtual UInt32 get_Count();
+    [CompilerGeneratedAttribute]
+private void set_Count(UInt32 value);
+    public sealed virtual void Dispose();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Legacy.Section.ClassIndexSection/<GetEnumerator>d__8")]
+public sealed virtual IEnumerator`1<SectionOffset`1<IClassSection>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Profiler.Snapshot.Legacy.Section.ClassSection : BaseSection`1<ISectionReader> {
+    private StrongToWeakDictionary`2<SectionOffset`1<IClassSection>, ClassSectionNode> myCache;
+    [NotNullAttribute]
+public ClassSectionNode Item { get; }
+    public ClassSection(SnapshotStorageSection section);
+    public sealed virtual ClassSectionNode get_Item(SectionOffset`1<IClassSection> offset);
+    public sealed virtual void Dispose();
+}
+public interface JetBrains.Profiler.Snapshot.Legacy.Section.IBaseSectionReader {
+    public ushort Version { get; }
+    public abstract virtual ushort get_Version();
+    public abstract virtual void ReadHeader(BinaryReader reader);
+}
+[ExtensionAttribute]
+internal static class JetBrains.Profiler.Snapshot.Legacy.Section.Impl.ReaderUtil : object {
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static SectionOffset`1[] ReadOffsets(BinaryReader reader);
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Profiler.Snapshot.Legacy.Section.ModulePathSection : BaseSection`1<IBaseSectionReader> {
+    private Dictionary`2<SectionIndex`1<IMetadataSection>, String[]> myCache;
+    public int ModulesNumber { get; }
+    public String[] Item { get; }
+    public IEnumerable`1<string> ModulesEnumerablePlain { get; }
+    public IEnumerable`1<KeyValuePair`2<SectionIndex`1<IMetadataSection>, String[]>> All { get; }
+    public IEnumerable`1<SectionIndex`1<IMetadataSection>> Modules { get; }
+    public ModulePathSection(SnapshotStorageSection section);
+    public sealed virtual int get_ModulesNumber();
+    public sealed virtual String[] get_Item(SectionIndex`1<IMetadataSection> metaDataIndex);
+    public sealed virtual IEnumerable`1<string> get_ModulesEnumerablePlain();
+    public sealed virtual bool TryGetValue(SectionIndex`1<IMetadataSection> metaDataIndex, String[]& pathes);
+    public sealed virtual IEnumerable`1<KeyValuePair`2<SectionIndex`1<IMetadataSection>, String[]>> get_All();
+    public sealed virtual void Dispose();
+    public IEnumerable`1<SectionIndex`1<IMetadataSection>> get_Modules();
+}
+public abstract class JetBrains.Profiler.Snapshot.Legacy.SnapshotReader : object {
+    protected LifetimeDefinition LifetimeDefinition;
+    protected Lifetime Lifetime;
+    [CompilerGeneratedAttribute]
+private IEnvironmentSection <EnvironmentSection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EnvironmentSection <EnvironmentSectionNative>k__BackingField;
+    [NotNullAttribute]
+public IEnvironmentSection EnvironmentSection { get; private set; }
+    public EnvironmentSection EnvironmentSectionNative { get; private set; }
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public IEnvironmentSection get_EnvironmentSection();
+    [CompilerGeneratedAttribute]
+private void set_EnvironmentSection(IEnvironmentSection value);
+    [CompilerGeneratedAttribute]
+public EnvironmentSection get_EnvironmentSectionNative();
+    [CompilerGeneratedAttribute]
+private void set_EnvironmentSectionNative(EnvironmentSection value);
+    protected void ReadSnapshot(ISnapshotStorage storage, UInt32 expectedMagic, IProgressIndicator progress, Func`2<SnapshotStorageSection, bool> readSection);
+    protected void ReadSnapshot(ISnapshotStorage storage, Func`2<UInt32, bool> snapshotHasValidMagic, IProgressIndicator progress, Func`2<SnapshotStorageSection, bool> readSection);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Snapshot.Legacy.Writer.SectionOffsetBinayWriter : object {
+    [ExtensionAttribute]
+public static UInt32 Write(BinaryWriter writer, SectionOffset`1<T> sectionOffset);
+}
+public class JetBrains.Profiler.Snapshot.MockStorageSectionWriter : object {
+    private IList`1<SnapshotStorageSection> mySections;
+    public sealed virtual void WriteSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+    public SnapshotStorageSection GetLastWrittenSection();
+    public IList`1<SnapshotStorageSection> GetSections();
+    public void Clear();
+}
+public class JetBrains.Profiler.Snapshot.MultiFileSnapshotWriter : SnapshotWriter {
+    private object myIndexWriterAccess;
+    private ObjectPool`1<ushort> myFileIndexPool;
+    public MultiFileSnapshotWriter(FileSystemPath existingIndexFilePath, Lifetime lifetime);
+    public MultiFileSnapshotWriter(FileSystemPath indexFilePath, UInt32 snapshotType, ushort version, Lifetime lifetime);
+    protected virtual void AddSection(ushort sectionId, ushort version, T arg, Action`2<T, BinaryWriter> writeSection);
+}
+public enum JetBrains.Profiler.Snapshot.Section.Environment.ActiveSystemMetrics : Enum {
+    public byte value__;
+    public static ActiveSystemMetrics None;
+    public static ActiveSystemMetrics TabletPC;
+    public static ActiveSystemMetrics MediaCenter;
+    public static ActiveSystemMetrics Starter;
+    public static ActiveSystemMetrics ServerR2;
+}
+public class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSection : object {
+    private string myOsName;
+    [ObsoleteAttribute("Use OsName")]
+internal OsIdentity OsIdentity;
+    [CompilerGeneratedAttribute]
+private DateTime <BuildDateTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Version <BuildVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UserName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Executable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CommandLine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SnapshotIdentity <SnapshotIdentity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <DateTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <StopDateTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <NumberOfProcessors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private byte <PointerSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JetArchitecture <ProcessArchitecture>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JetArchitecture <OSArchitecture>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ComputerName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RuntimeType <RuntimeType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RuntimeVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConfigurationXml>k__BackingField;
+    [ObsoleteAttribute("Use RuntimeType, RuntimeVersion, and RuntimeName")]
+unknown RuntimeInfo RuntimeInfo {internal set; }
+    public DateTime BuildDateTime { get; public set; }
+    public Version BuildVersion { get; public set; }
+    public string UserName { get; public set; }
+    public string Executable { get; public set; }
+    public string CommandLine { get; public set; }
+    public SnapshotIdentity SnapshotIdentity { get; public set; }
+    public DateTime DateTime { get; public set; }
+    public Nullable`1<DateTime> StopDateTime { get; public set; }
+    public UInt32 NumberOfProcessors { get; public set; }
+    [ObsoleteAttribute("Use ProcessArchitecture")]
+public byte PointerSize { get; public set; }
+    public JetArchitecture ProcessArchitecture { get; public set; }
+    public JetArchitecture OSArchitecture { get; public set; }
+    public string OsName { get; public set; }
+    public string ComputerName { get; public set; }
+    public RuntimeType RuntimeType { get; public set; }
+    public string RuntimeVersion { get; public set; }
+    public string RuntimeName { get; }
+    public string ConfigurationXml { get; public set; }
+    internal void set_RuntimeInfo(RuntimeInfo value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DateTime get_BuildDateTime();
+    [CompilerGeneratedAttribute]
+public void set_BuildDateTime(DateTime value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Version get_BuildVersion();
+    [CompilerGeneratedAttribute]
+public void set_BuildVersion(Version value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_UserName();
+    [CompilerGeneratedAttribute]
+public void set_UserName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Executable();
+    [CompilerGeneratedAttribute]
+public void set_Executable(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_CommandLine();
+    [CompilerGeneratedAttribute]
+public void set_CommandLine(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual SnapshotIdentity get_SnapshotIdentity();
+    [CompilerGeneratedAttribute]
+public void set_SnapshotIdentity(SnapshotIdentity value);
+    [CompilerGeneratedAttribute]
+public sealed virtual DateTime get_DateTime();
+    [CompilerGeneratedAttribute]
+public void set_DateTime(DateTime value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_StopDateTime();
+    [CompilerGeneratedAttribute]
+public void set_StopDateTime(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual UInt32 get_NumberOfProcessors();
+    [CompilerGeneratedAttribute]
+public void set_NumberOfProcessors(UInt32 value);
+    [CompilerGeneratedAttribute]
+public sealed virtual byte get_PointerSize();
+    [CompilerGeneratedAttribute]
+public void set_PointerSize(byte value);
+    [CompilerGeneratedAttribute]
+public sealed virtual JetArchitecture get_ProcessArchitecture();
+    [CompilerGeneratedAttribute]
+public void set_ProcessArchitecture(JetArchitecture value);
+    [CompilerGeneratedAttribute]
+public sealed virtual JetArchitecture get_OSArchitecture();
+    [CompilerGeneratedAttribute]
+public void set_OSArchitecture(JetArchitecture value);
+    public sealed virtual string get_OsName();
+    public void set_OsName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ComputerName();
+    [CompilerGeneratedAttribute]
+public void set_ComputerName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual RuntimeType get_RuntimeType();
+    [CompilerGeneratedAttribute]
+public void set_RuntimeType(RuntimeType value);
+    [CompilerGeneratedAttribute]
+public string get_RuntimeVersion();
+    [CompilerGeneratedAttribute]
+public void set_RuntimeVersion(string value);
+    public sealed virtual string get_RuntimeName();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConfigurationXml();
+    [CompilerGeneratedAttribute]
+public void set_ConfigurationXml(string value);
+    public sealed virtual void Dispose();
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0002 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0003 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0004 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0005 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0006 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0007 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReader0008 : SectionReaderBase`1<EnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual EnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionReaders : object {
+    public static EnvironmentSection ReadSectionV08(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV07(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV06(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV05(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV04(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV03(SnapshotStorageSection storageSection);
+    public static EnvironmentSection ReadSectionV02(SnapshotStorageSection storageSection);
+    [ExtensionAttribute]
+[NotNullAttribute]
+private static OsIdentity ReadOsIdentity(BinaryReader reader);
+}
+internal static class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionUtil : object {
+    [NotNullAttribute]
+internal static string Convert(RuntimeType runtimeType);
+    [LocalizableAttribute("False")]
+[NotNullAttribute]
+public static string GetRuntimeName(RuntimeInfo runtimeInfo);
+    [NotNullAttribute]
+private static OperatingSystem GetOsVersion(OsIdentity osIdentity);
+    [LocalizableAttribute("False")]
+[NotNullAttribute]
+public static string GetOsName(JetArchitecture osArchitecture, OsIdentity section);
+    [LocalizableAttribute("False")]
+private static string GetOSName_Win32NT(JetArchitecture osArchitecture, int majorVersion, int minorVersion, int buildNumber, string csdVersion, SuiteMask suiteMask, ProductType productType, Product vistaProductType, ActiveSystemMetrics activeSystemMetrics);
+    [LocalizableAttribute("False")]
+private static void AppendProduct(StringBuilder builder, Product vistaProductType, JetArchitecture osArchitecture);
+}
+public class JetBrains.Profiler.Snapshot.Section.Environment.EnvironmentSectionWriter : SectionWriterBase`1<EnvironmentSection> {
+    public static ushort Version;
+    protected virtual void WriteSection(EnvironmentSection section, IStorageSectionWriter storageSectionWriter);
+    public static void WriteSection(EnvironmentSection section, BinaryWriter writer);
+    private static void WriteRuntimeVersion(BinaryWriter writer, RuntimeInfo runtimeInfo);
+    private static void WriteOsIdentity(BinaryWriter writer, OsIdentity osIdentity);
+    private static void WriteVersion(BinaryWriter writer, Version version);
+}
+public class JetBrains.Profiler.Snapshot.Section.Environment.OsIdentity : object {
+    public int MajorVersion;
+    public int MinorVersion;
+    public int BuildNumber;
+    public PlatformID PlatformId;
+    public string CsdVersion;
+    public ushort ServicePackMajor;
+    public ushort ServicePackMinor;
+    public SuiteMask SuiteMask;
+    public ProductType ProductType;
+    public Product VistaProductType;
+    public ActiveSystemMetrics ActiveSystemMetrics;
+}
+public class JetBrains.Profiler.Snapshot.Section.ExternalData.ExternalDataSection : BaseSection`1<IBaseSectionReader> {
+    [CompilerGeneratedAttribute]
+private string <Content>k__BackingField;
+    private string Content { get; private set; }
+    public string GetDataAsString { get; }
+    public ExternalDataSection(SnapshotStorageSection section);
+    [CompilerGeneratedAttribute]
+private string get_Content();
+    [CompilerGeneratedAttribute]
+private void set_Content(string value);
+    public sealed virtual void Dispose();
+    public sealed virtual string get_GetDataAsString();
+}
+public interface JetBrains.Profiler.Snapshot.Section.ISectionReader {
+    public ushort Version { get; }
+    public abstract virtual ushort get_Version();
+    public abstract virtual object ReadSection(SnapshotStorageSection storageSection);
+}
+public interface JetBrains.Profiler.Snapshot.Section.ISectionWriter {
+    public abstract virtual void WriteSection(object section, IStorageSectionWriter storageSectionWriter);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.DataProvider : object {
+    private IDictionary`2<SectionIndex`1<IMetadataSection>, StreamInfo> myInfo;
+    private IMetadataProvider myMetadataProvider;
+    private IDictionary`2<SectionIndex`1<IMetadataSection>, IModuleInfo> myModuleInfo;
+    private IDictionary`2<SectionIndex`1<IMetadataSection>, IModuleInfo> myRoModuleInfo;
+    private SnapshotStorageSection myStorageSection;
+    public IDictionary`2<SectionIndex`1<IMetadataSection>, IModuleInfo> Modules { get; }
+    public IMetadataProvider MetadataProvider { get; }
+    public DataProvider(SnapshotStorageSection storageSection, IMetadataProvider metadataProvider);
+    public sealed virtual IDictionary`2<SectionIndex`1<IMetadataSection>, IModuleInfo> get_Modules();
+    public sealed virtual IModuleInfo TryGetAssemblyData(SectionIndex`1<IMetadataSection> metadataIndex);
+    public sealed virtual Stream TryGetStream(SectionIndex`1<IMetadataSection> metadataIndex);
+    public sealed virtual IMetadataProvider get_MetadataProvider();
+    public void AddInfo(SectionIndex`1<IMetadataSection> metadataIndex, long offset, int size, IModuleInfo moduleInfo);
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSection : object {
+    private IDataProvider myDataProvider;
+    private SnapshotMetadataResolver myResolver;
+    private IFuidToMetadataIdConverter myFuidConverter;
+    [CompilerGeneratedAttribute]
+private long <Size>k__BackingField;
+    public long Size { get; }
+    public IAssemblyResolver AssemblyResolver { get; }
+    public int AssembliesCount { get; }
+    public IModuleInfo Item { get; }
+    public IFuidToMetadataIdConverter FuidConverter { get; }
+    public MetadataSection(IDataProvider dataProvider, long sectionSize);
+    public sealed virtual bool TryGetAssemblyData(SectionIndex`1<IMetadataSection> metadataIndex, IModuleInfo& moduleInfo);
+    public sealed virtual Stream TryGetStream(SectionIndex`1<IMetadataSection> metadataIndex);
+    public Stream GetStream(SectionIndex`1<IMetadataSection> metadataIndex);
+    public void SetFuidConverter(IFuidToMetadataIdConverter fuidConvertor);
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Size();
+    public sealed virtual IAssemblyResolver get_AssemblyResolver();
+    public sealed virtual int get_AssembliesCount();
+    public sealed virtual IModuleInfo get_Item(SectionIndex`1<IMetadataSection> index);
+    public sealed virtual IFuidToMetadataIdConverter get_FuidConverter();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<SectionIndex`1<IMetadataSection>, IModuleInfo>> GetAssembliesData();
+    public sealed virtual TRes ExecuteWithMetadataAssemblyProvider(Func`3<TParam, IMetadataSectionAssemblyProvider, TRes> action, TParam param);
+    public sealed virtual IMetadataSectionAssemblyProvider GetMetadataAssemblyProvider(Lifetime lifetime, bool loadReferencedAssemblies, bool guardMultiThreading);
+    public sealed virtual void Dispose();
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSectionReader0000 : SectionReaderBase`1<MetadataSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual MetadataSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSectionReader0001 : SectionReaderBase`1<MetadataSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual MetadataSection ReadSection(SnapshotStorageSection storageSection);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSectionReader0002 : SectionReaderBase`1<MetadataSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual MetadataSection ReadSection(SnapshotStorageSection storageSection);
+}
+public static class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSectionReaders : object {
+    private static ILogger ourLogger;
+    public static ImageDebugDirectory OrdinaryPdbDebugDirectory;
+    private static MetadataSectionReaders();
+    public static MetadataSection ReadSectionV00(SnapshotStorageSection storageSection);
+    public static MetadataSection ReadSectionV01(SnapshotStorageSection storageSection);
+    public static MetadataSection ReadSectionV02(SnapshotStorageSection storageSection);
+    private static void LogModuleException(Exception ex, ModuleInfo moduleInfo);
+    public static FuidToMetadataIdConverter ReadFuidToMetadataSectionV00(SnapshotStorageSection storageSection);
+    public static Dictionary`2<SectionIndex`1<IMetadataSection>, String[]> ReadModulePathSectionV00(BinaryReader reader);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.MetadataSectionWriter : SectionWriterBase`1<MetadataSection> {
+    protected virtual void WriteSection(MetadataSection section, IStorageSectionWriter storageSectionWriter);
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.ModuleInfo : object {
+    private AssemblyNameInfo myAssemblyName;
+    private string myModuleName;
+    private Guid myMvid;
+    private List`1<DebugInfo> myDebugInfos;
+    private bool myDebugInfoWasntStored;
+    private ModuleDebugInfo myModuleDebugInfos;
+    public AssemblyNameInfo AssemblyName { get; }
+    public string ModuleName { get; }
+    public Guid Mvid { get; }
+    public ModuleDebugInfo DebugInfos { get; }
+    public ModuleInfo(AssemblyNameInfo assemblyName, string moduleName, Guid mvid);
+    public sealed virtual AssemblyNameInfo get_AssemblyName();
+    public sealed virtual string get_ModuleName();
+    public sealed virtual Guid get_Mvid();
+    public sealed virtual ModuleDebugInfo get_DebugInfos();
+    public void AddDebugInfo(DebugInfo debugDirectory);
+    public void DebugInfoWasntStored();
+}
+internal class JetBrains.Profiler.Snapshot.Section.Metadata.SnapshotMetadataResolver : object {
+    private IDataProvider myDataProvider;
+    public SnapshotMetadataResolver(IDataProvider dataProvider);
+    public sealed virtual IMetadataAccess ResolveAssembly(AssemblyNameInfo name, IAssemblyLocation& assemblyLocation, IModuleReferenceResolveContext moduleReferenceResolveContext);
+    private SectionIndex`1<IMetadataSection> ResolveSectionIndex(AssemblyNameInfo name);
+    public IMetadataAccess ResolveAssemblyByIndex(SectionIndex`1<IMetadataSection> sectionIndex);
+    public void ReleaseAssembly(IMetadataAccess metadataAccess);
+    public sealed virtual void DumpDebugInformation(IndentedTextWriter textWriter);
+}
+[FlagsAttribute]
+internal enum JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatFlags00To02 : Enum {
+    public byte value__;
+    public static ModuleStatFlags00To02 IsMatch;
+    public static ModuleStatFlags00To02 IsntMatch;
+    public static ModuleStatFlags00To02 HasPdb;
+    public static ModuleStatFlags00To02 HasntPdb;
+    public static ModuleStatFlags00To02 HasAssemblyVersion;
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSection : object {
+    private OneToListMap`2<SectionIndex`1<IMetadataSection>, ModuleLoadInfo> myMetadataIndicesMap;
+    public IEnumerable`1<KeyValuePair`2<SectionIndex`1<IMetadataSection>, IEnumerable`1<ModuleLoadInfo>>> Entries { get; }
+    public sealed virtual bool TryGetEntryByMetadataIndex(SectionIndex`1<IMetadataSection> metadataIndex, IEnumerable`1& entry);
+    public sealed virtual IEnumerable`1<KeyValuePair`2<SectionIndex`1<IMetadataSection>, IEnumerable`1<ModuleLoadInfo>>> get_Entries();
+    public void AddModuleLoadInfo(SectionIndex`1<IMetadataSection> metadataIndex, ModuleLoadInfo moduleLoadInfo);
+    public sealed virtual void Dispose();
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0000 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0001 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0002 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0003 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0004 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0005 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionReader0006 : SectionReaderBase`1<ModuleStatSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual ModuleStatSection ReadSection(SnapshotStorageSection storageSection);
+}
+public class JetBrains.Profiler.Snapshot.Section.ModuleStat.ModuleStatSectionWriter : SectionWriterBase`1<IModuleStatSection> {
+    protected virtual void WriteSection(IModuleStatSection section, IStorageSectionWriter storageSectionWriter);
+}
+public class JetBrains.Profiler.Snapshot.Section.PostEnvironment.PostEnvironmentSection : object {
+    [CompilerGeneratedAttribute]
+private DateTime <SnapshotEndTime>k__BackingField;
+    public DateTime SnapshotEndTime { get; public set; }
+    private Nullable`1<DateTime> JetBrains.Profiler.Snapshot.Interface.Section.PostEnvironment.IPostEnvironmentSection.SnapshotEndTime { get; }
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public DateTime get_SnapshotEndTime();
+    [CompilerGeneratedAttribute]
+public void set_SnapshotEndTime(DateTime value);
+    private sealed virtual override Nullable`1<DateTime> JetBrains.Profiler.Snapshot.Interface.Section.PostEnvironment.IPostEnvironmentSection.get_SnapshotEndTime();
+}
+public class JetBrains.Profiler.Snapshot.Section.PostEnvironment.PostEnvironmentSectionContainer : BaseSection`1<IBaseSectionReader> {
+    [CompilerGeneratedAttribute]
+private IPostEnvironmentSection <SectionData>k__BackingField;
+    public IPostEnvironmentSection SectionData { get; private set; }
+    public ushort Version { get; }
+    public PostEnvironmentSectionContainer(SnapshotStorageSection section);
+    public void Dispose();
+    [CompilerGeneratedAttribute]
+public IPostEnvironmentSection get_SectionData();
+    [CompilerGeneratedAttribute]
+private void set_SectionData(IPostEnvironmentSection value);
+    public ushort get_Version();
+}
+internal class JetBrains.Profiler.Snapshot.Section.PostEnvironment.PostEnvironmentSectionReader0000 : SectionReaderBase`1<PostEnvironmentSection> {
+    public ushort Version { get; }
+    public virtual ushort get_Version();
+    protected virtual PostEnvironmentSection ReadSection(SnapshotStorageSection storageSection);
+}
+public static class JetBrains.Profiler.Snapshot.Section.PostEnvironment.PostEnvironmentSectionReaders : object {
+    public static PostEnvironmentSection ReadSectionV00(SnapshotStorageSection storageSection);
+    public static PostEnvironmentSection ReadSectionV00(BinaryReader reader);
+}
+public class JetBrains.Profiler.Snapshot.Section.PostEnvironment.PostEnvironmentSectionWriter : SectionWriterBase`1<PostEnvironmentSection> {
+    public static ushort Version;
+    protected virtual void WriteSection(PostEnvironmentSection section, IStorageSectionWriter storageSectionWriter);
+    public static void WriteSection(PostEnvironmentSection section, BinaryWriter writer);
+}
+public abstract class JetBrains.Profiler.Snapshot.Section.SectionReaderBase`1 : object {
+    public ushort Version { get; }
+    public abstract virtual ushort get_Version();
+    private sealed virtual override object JetBrains.Profiler.Snapshot.Section.ISectionReader.ReadSection(SnapshotStorageSection storageSection);
+    protected abstract virtual TSection ReadSection(SnapshotStorageSection storageSection);
+}
+public abstract class JetBrains.Profiler.Snapshot.Section.SectionWriterBase`1 : object {
+    public sealed virtual void WriteSection(object section, IStorageSectionWriter storageSectionWriter);
+    protected abstract virtual void WriteSection(TSection section, IStorageSectionWriter storageSectionWriter);
+}
+public class JetBrains.Profiler.Snapshot.SingleFileStorageSectionWriter : object {
+    private bool mySectionSequenceVersion;
+    private BinaryWriter myWriter;
+    private UInt32 mySectionsNumber;
+    public SingleFileStorageSectionWriter(string fileName, UInt32 snapshotType, ushort sectionSequenceVersion);
+    public sealed virtual void Dispose();
+    public sealed virtual void WriteSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+}
+public static class JetBrains.Profiler.Snapshot.SnapshotTypes : object {
+    public static UInt32 Performance;
+    public static UInt32 Coverage;
+    public static UInt32 RawMemory;
+    public static UInt32 RawTimeline;
+    public static UInt32 ConvertedTimeline;
+}
+public abstract class JetBrains.Profiler.Snapshot.SnapshotWriter : object {
+    private FileSystemPath myIndexFilePath;
+    private BinaryWriter myIndexWriter;
+    private UInt32 mySectionsCount;
+    protected FileSystemPath IndexFilePath { get; }
+    protected BinaryWriter IndexWriter { get; }
+    protected SnapshotWriter(FileSystemPath existingIndexFilePath, ushort expectedStorageType, Lifetime lifetime);
+    protected SnapshotWriter(FileSystemPath indexFilePath, ushort storageType, UInt32 snapshotType, ushort version, Lifetime lifetime);
+    protected FileSystemPath get_IndexFilePath();
+    protected BinaryWriter get_IndexWriter();
+    public sealed virtual void WriteSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+    protected abstract virtual void AddSection(ushort type, ushort version, T arg, Action`2<T, BinaryWriter> write);
+    private void FinalizeIndex();
+}
+public interface JetBrains.Profiler.Snapshot.Storage.IClosedWriteableSection {
+    public bool IsCorrupted { get; }
+    public abstract virtual bool get_IsCorrupted();
+    public abstract virtual SnapshotStorageSection OpenForReading(Lifetime lifetime);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.IndexedSnapshotStorage : SingleFileSnapshotStorageBase {
+    public static ushort IndexType;
+    private long myIndexTableOffset;
+    protected IndexedSnapshotStorage(FileSystemPath fileName, ushort indexType, FileShare fileShare);
+    public IndexedSnapshotStorage(FileSystemPath fileName, FileShare fileShare);
+    protected virtual void ReadHeader(BinaryReader reader);
+    protected virtual SingleFileSnapshotStorageSection ReadNextSection(SingleFileSnapshotStorageSection previous, BinaryReader reader);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.IndexedZippedSnapshotStorage : IndexedSnapshotStorage {
+    private FileShare myFileShare;
+    public static ushort IndexType;
+    private static int UnzipReadBufferSize;
+    private Dictionary`2<long, SingleFileSnapshotStorageSection> myUnzippedSectionsMap;
+    private FileSystemPath myUnzippedFilename;
+    private ReaderHolder myUnzippedReaderHolder;
+    public IndexedZippedSnapshotStorage(FileSystemPath fileName, FileShare fileShare);
+    public virtual void Dispose();
+    private SingleFileSnapshotStorageSection Unzip(SingleFileSnapshotStorageSection section);
+    private BinaryReader GetReader(SingleFileSnapshotStorageSection zippedSection);
+    protected virtual SingleFileSnapshotStorageSection ReadNextSection(SingleFileSnapshotStorageSection previous, BinaryReader reader);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.LoggingSnapshotStorage : object {
+    private ISnapshotStorage myBaseStorage;
+    private LoggingSnapshotStorageSection[] myLoggingSections;
+    private Stopwatch myStopwatch;
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public LoggingSnapshotStorage(ISnapshotStorage baseStorage);
+    public sealed virtual void Dispose();
+    public sealed virtual FileSystemPath get_IndexFile();
+    public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+    [LocalizableAttribute("False")]
+private void WriteLog();
+    private static long StopwatchTicksToNanoseconds(long ticks);
+    [CompilerGeneratedAttribute]
+private LoggingSnapshotStorageSection <.ctor>b__3_0(SnapshotStorageSection section);
+}
+public class JetBrains.Profiler.Snapshot.Storage.Impl.MemoryMappedSnapshotStorage : object {
+    private LifetimeDefinition myLifetime;
+    private IMemoryMappedStorage myStorage;
+    public static ushort IndexType;
+    public static ushort IndexTypeV2;
+    [CompilerGeneratedAttribute]
+private FileSystemPath <IndexFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <Magic>k__BackingField;
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public MemoryMappedSnapshotStorage(FileSystemPath indexPath, FileShare fileShare, ushort indexType);
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public sealed virtual FileSystemPath get_IndexFile();
+    [CompilerGeneratedAttribute]
+public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Storage.Impl.MemoryMappedSnapshotStorage/<get_Sections>d__18")]
+public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.MultiFileSnapshotStorage : object {
+    public static ushort IndexType;
+    private FileShare myFileShare;
+    private SnapshotStorageHeader myHeader;
+    private FileSystemPath myIndexFile;
+    private Lifetime myLifetime;
+    private LifetimeDefinition myLifetimeDefinition;
+    private List`1<ReaderHolder> myReaders;
+    private SnapshotStorageSection[] mySections;
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public MultiFileSnapshotStorage(FileSystemPath indexFile, FileShare fileShare);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual IEnumerator`1<SnapshotStorageSection> GetEnumerator();
+    public sealed virtual FileSystemPath get_IndexFile();
+    public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+    public sealed virtual void Dispose();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Storage.Impl.MultiFileSnapshotStorage/<ReadSections>d__22")]
+private IEnumerable`1<SnapshotStorageSection> ReadSections(BinaryReader reader);
+    private void GetReaderExceptionHandler(Exception exception);
+    private void AllocateReader(ushort index);
+}
+public class JetBrains.Profiler.Snapshot.Storage.Impl.MultiFileSnapshotStorageException : Exception {
+    public MultiFileSnapshotStorageException(string message, Exception innerException);
+}
+internal static class JetBrains.Profiler.Snapshot.Storage.Impl.MultiFileSnapshotStorageUtil : object {
+    [NotNullAttribute]
+public static FileSystemPath[] GetFiles(FileSystemPath indexFile);
+    [NotNullAttribute]
+public static FileSystemPath[] GetFilesWithArtifacts(FileSystemPath indexFile);
+    private static void DoFiles(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile, Action`2<FileSystemPath, FileSystemPath> doAction, Func`2<FileSystemPath, FileSystemPath[]> getFilesFunc);
+    public static long GetLength(IProgressIndicator progress, FileSystemPath indexFile);
+    public static void Delete(IProgressIndicator progress, FileSystemPath indexFile);
+    public static void DeleteWithoutArtifacts(IProgressIndicator progress, FileSystemPath indexFile);
+    public static void Copy(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile, bool overwrite);
+    public static void Move(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile, bool overwrite);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.ReaderHolder : ReaderHolderBase {
+    private FileSystemPath myPath;
+    private FileShare myFileShare;
+    public ReaderHolder(FileSystemPath path, FileShare fileShare);
+    protected virtual Stream CreateStream();
+}
+public abstract class JetBrains.Profiler.Snapshot.Storage.Impl.ReaderHolderBase : object {
+    private LifetimeDefinition myLifetime;
+    private Queue`1<ReadOnlyRegionStream> myReaders;
+    private int myMaxStreamUsageCount;
+    public sealed virtual void Dispose();
+    protected abstract virtual Stream CreateStream();
+    private ReadOnlyRegionStream TakeStream();
+    private void ReleaseStream(ReadOnlyRegionStream reader);
+    [NotNullAttribute]
+public BinaryReader GetReader(long position);
+    [NotNullAttribute]
+public BinaryReader GetReader(long position, long size);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.SingleFileSnapshotStorage : SingleFileSnapshotStorageBase {
+    public static ushort IndexType;
+    public SingleFileSnapshotStorage(FileSystemPath fileName, FileShare fileShare);
+    protected virtual SingleFileSnapshotStorageSection ReadNextSection(SingleFileSnapshotStorageSection previous, BinaryReader reader);
+}
+internal abstract class JetBrains.Profiler.Snapshot.Storage.Impl.SingleFileSnapshotStorageBase : object {
+    private long myHeaderSize;
+    private FileSystemPath myIndexFile;
+    private ushort myIndexType;
+    private ReaderHolder myReader;
+    private SnapshotStorageHeader myHeader;
+    protected long HeaderSize { get; }
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    protected SingleFileSnapshotStorageBase(FileSystemPath fileName, ushort indexType, FileShare fileShare);
+    protected long get_HeaderSize();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Storage.Impl.SingleFileSnapshotStorageBase/<GetEnumerator>d__8")]
+public sealed virtual IEnumerator`1<SnapshotStorageSection> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual FileSystemPath get_IndexFile();
+    public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+    public virtual void Dispose();
+    protected virtual BinaryReader GetSectionReader(long position, long size);
+    protected abstract virtual SingleFileSnapshotStorageSection ReadNextSection(SingleFileSnapshotStorageSection previous, BinaryReader reader);
+    protected virtual void ReadHeader(BinaryReader reader);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.WriteableSection : object {
+    private IWriteableSnapshotStorage myStorage;
+    private FileSystemPath myPath;
+    private ushort myType;
+    private ushort myVersion;
+    private Stream myStream;
+    private bool myIsClosed;
+    [CompilerGeneratedAttribute]
+private bool <IsCorrupted>k__BackingField;
+    public Stream Stream { get; }
+    public bool IsCorrupted { get; private set; }
+    public WriteableSection(IWriteableSnapshotStorage storage, FileSystemPath path, ushort type, ushort version);
+    public sealed virtual Stream get_Stream();
+    public sealed virtual SnapshotStorageSection Close();
+    private bool DoClose(bool isCorrupted);
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsCorrupted();
+    [CompilerGeneratedAttribute]
+private void set_IsCorrupted(bool value);
+    public sealed virtual SnapshotStorageSection OpenForReading(Lifetime lifetime);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.WriteableSectionProvider : object {
+    private Lifetime myLifetime;
+    private IWriteableSnapshotStorage myWriteableStorage;
+    public WriteableSectionProvider(Lifetime lifetime, IWriteableSnapshotStorage writeableStorage);
+    public sealed virtual IWriteableSection CreateSection(ushort type, ushort version);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.WriteableSnapshotStorage : object {
+    private ISnapshotStorage myBaseStorage;
+    private int myBaseSectionCount;
+    private IList`1<SnapshotStorageSection> myAddedSections;
+    private HashSet`1<ushort> myRemovedTypes;
+    private object mySnapshotStructureAccess;
+    private LifetimeDefinition myLifetime;
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public WriteableSnapshotStorage(ISnapshotStorage snapshotStorage);
+    public sealed virtual void Dispose();
+    public sealed virtual FileSystemPath get_IndexFile();
+    public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    [IteratorStateMachineAttribute("JetBrains.Profiler.Snapshot.Storage.Impl.WriteableSnapshotStorage/<get_Sections>d__17")]
+public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+    public sealed virtual SnapshotStorageSection AddSection(IClosedWriteableSection section);
+    public sealed virtual void RemoveSections(ushort type);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.Impl.ZippedSingleFileSnapshotStorage : object {
+    public static ushort IndexType;
+    private static int UnzipReadBufferSize;
+    internal static string UnzippedFilePrefix;
+    private SingleFileSnapshotStorage mySnapshotStorage;
+    private FileSystemPath myUnzippedFileName;
+    private FileSystemPath myZippedFileName;
+    public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public ZippedSingleFileSnapshotStorage(FileSystemPath zipFileName, FileShare fileShare);
+    public sealed virtual IEnumerator`1<SnapshotStorageSection> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual FileSystemPath get_IndexFile();
+    public sealed virtual UInt32 get_Magic();
+    public sealed virtual ushort get_SectionSequenceVersion();
+    public sealed virtual int get_SectionCount();
+    public sealed virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+    public sealed virtual void Dispose();
+}
+public interface JetBrains.Profiler.Snapshot.Storage.ISnapshotStorage {
+    [NotNullAttribute]
+public FileSystemPath IndexFile { get; }
+    public UInt32 Magic { get; }
+    public ushort SectionSequenceVersion { get; }
+    public int SectionCount { get; }
+    [NotNullAttribute]
+public IEnumerable`1<SnapshotStorageSection> Sections { get; }
+    public abstract virtual FileSystemPath get_IndexFile();
+    public abstract virtual UInt32 get_Magic();
+    public abstract virtual ushort get_SectionSequenceVersion();
+    public abstract virtual int get_SectionCount();
+    public abstract virtual IEnumerable`1<SnapshotStorageSection> get_Sections();
+}
+public interface JetBrains.Profiler.Snapshot.Storage.IWriteableSection {
+    public Stream Stream { get; }
+    public abstract virtual Stream get_Stream();
+    public abstract virtual SnapshotStorageSection Close();
+}
+public interface JetBrains.Profiler.Snapshot.Storage.IWriteableSectionProvider {
+    public abstract virtual IWriteableSection CreateSection(ushort type, ushort version);
+}
+public interface JetBrains.Profiler.Snapshot.Storage.IWriteableSnapshotStorage {
+    public abstract virtual SnapshotStorageSection AddSection(IClosedWriteableSection section);
+    public abstract virtual void RemoveSections(ushort type);
+}
+public static class JetBrains.Profiler.Snapshot.Storage.MultiFileSnapshotStorage : object {
+    [NotNullAttribute]
+public static FileSystemPath GetSatteliteFileName(FileSystemPath indexFilePath, ushort fileIndex);
+}
+internal class JetBrains.Profiler.Snapshot.Storage.MultiFileSnapshotStorageSection : SnapshotStorageSection {
+    public ushort FileIndex;
+    public long Position;
+    public MultiFileSnapshotStorageSection(ushort type, ushort version, ushort fileIndex, long position, long size, Func`1<BinaryReader> getBinaryReader, Action`1<Exception> getReaderExceptionHandler);
+}
+public class JetBrains.Profiler.Snapshot.Storage.ReadOnlyRegionStream : Stream {
+    [NotNullAttribute]
+public BinaryReader Reader;
+    private Action`1<ReadOnlyRegionStream> myReleaseAction;
+    private Stream myStream;
+    private long myCurrentPostion;
+    private long myPosition;
+    private long mySize;
+    private bool myDisposed;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public ReadOnlyRegionStream(Stream stream, Action`1<ReadOnlyRegionStream> releaseAction);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    protected virtual void Dispose(bool disposing);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void Flush();
+    public virtual void SetLength(long value);
+    public void Initialize(long position);
+    public void Initialize(long position, long size);
+    public sealed virtual IntPtr GetBufferFromPosition(long startPosition, SeekOrigin origin, int needBytes, Int32& availableBytes);
+    public sealed virtual IntPtr GetBufferEndAtPosition(long endOffset, SeekOrigin origin, int needBytes, Int32& availableBytes);
+    private void ThrowIfDisposed();
+}
+public class JetBrains.Profiler.Snapshot.Storage.SingleFileSection : object {
+    private FileSystemPath myPath;
+    private ushort myType;
+    private ushort myVersion;
+    public bool IsCorrupted { get; }
+    public SingleFileSection(FileSystemPath path, ushort type, ushort version);
+    public sealed virtual bool get_IsCorrupted();
+    public sealed virtual SnapshotStorageSection OpenForReading(Lifetime lifetime);
+}
+public class JetBrains.Profiler.Snapshot.Storage.SingleFileSnapshotStorageSection : SnapshotStorageSection {
+    public long Position;
+    internal SingleFileSnapshotStorageSection(ushort type, ushort version, long position, long size, Func`1<BinaryReader> getBinaryReader);
+}
+public static class JetBrains.Profiler.Snapshot.Storage.SingleFileSnapshotStorageUtil : object {
+    public static long GetLength(IProgressIndicator progress, FileSystemPath indexFile);
+    public static void Delete(IProgressIndicator progress, FileSystemPath indexFile);
+    public static void Copy(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile, bool overwrite);
+    public static void Move(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile, bool overwrite);
+}
+public class JetBrains.Profiler.Snapshot.Storage.SnapshotStorageHeader : object {
+    public UInt32 Magic;
+    public UInt32 SectionCount;
+    public ushort Version;
+    private SnapshotStorageHeader(UInt32 magic, ushort version, UInt32 sectionCount);
+    public static SnapshotStorageHeader Read(ushort expectedStorageType, BinaryReader reader);
+}
+[DebuggerDisplayAttribute("Section (Type={Type})")]
+public class JetBrains.Profiler.Snapshot.Storage.SnapshotStorageSection : object {
+    public long Size;
+    public ushort Type;
+    public ushort Version;
+    private Func`1<BinaryReader> myGetBinaryReader;
+    private Action`1<Exception> myGetReaderExceptionHandler;
+    public SnapshotStorageSection(ushort type, ushort version, long size, Func`1<BinaryReader> getBinaryReader, Action`1<Exception> getReaderExceptionHandler);
+    [NotNullAttribute]
+public BinaryReader GetReader();
+}
+public static class JetBrains.Profiler.Snapshot.Storage.SnapshotUtil : object {
+    public static ushort TypeEndOfFile;
+    private static string SnapshotDirTemplate;
+    private static ILogger ourLogger;
+    private static SnapshotUtil();
+    [NotNullAttribute]
+public static IWriteableSnapshotStorage OpenAsWriteable(FileSystemPath indexFile, FileShare fileShare);
+    [NotNullAttribute]
+public static ISnapshotStorage Open(FileSystemPath indexFile, FileShare fileShare);
+    public static long GetLength(IProgressIndicator progress, FileSystemPath indexFile);
+    public static FileSystemPath[] GetFiles(FileSystemPath indexFile);
+    public static void Delete(IProgressIndicator progress, FileSystemPath indexFile, bool tryDeleteDirectoryIfEmpty, bool deleteArtifacts);
+    public static void Copy(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile);
+    public static void Move(IProgressIndicator progress, FileSystemPath srcIndexFile, FileSystemPath dstIndexFile);
+    public static bool CanConvertToSingleFile(FileSystemPath indexFile);
+    public static void SaveToSingleFile(ISnapshotStorage sourceSnapshot, FileSystemPath dstIndexFile, IProgressIndicator progress);
+    public static void ConvertToMemoryMapped(ISnapshotStorage srcStorage, FileSystemPath dstPath);
+    public static void SaveToZipFile(ISnapshotStorage sourceSnapshot, FileSystemPath dstZipFile, IProgressIndicator progress);
+    public static FileSystemPath RenameSnapshot(FileSystemPath snapshotIndexFile, DateTime snapshotCreationDate, string newIndexFileNameWithoutExt, bool needRenameDirectory, IProgressIndicator progress);
+    private static FileSystemPath GetUniqueSnapshotDirectory(FileSystemPath storageDir, string snapshotName, DateTime snapshotCreationDate);
+    public static void TryDeleteDirectoryIfEmpty(FileSystemPath directory);
+    [LocalizableAttribute("False")]
+public static void LogSnapshotFilesInfo(FileSystemPath snapshotIndexFile, string moniker);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Snapshot.Storage.WriteableSnapshotStorageExtensions : object {
+    [ExtensionAttribute]
+public static IWriteableSectionProvider GetWriteableSectionProvider(IWriteableSnapshotStorage storage, Lifetime lifetime);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Snapshot.StorageSectionWriterExtensions : object {
+    [ExtensionAttribute]
+public static void WriteSection(IStorageSectionWriter storageSectionWriter, ushort type, ushort version, Action`1<BinaryWriter> write);
+}
+public static class JetBrains.Profiler.Snapshot.TimelineSnapshotMagics : object {
+    public static TimelineSnapshotType GetSnapshotType(FileSystemPath snapshotPath);
+}
+public class JetBrains.Profiler.Snapshot.Tools.Int64Reader : object {
+    public byte SizeOf;
+    public Int64Reader(byte sizeOf, bool allowZeroSizeOf);
+    public long Read(BinaryReader reader);
+    public static long ReadValue(BinaryReader reader, byte sizeOf);
+    private static long ReadValueInternal(BinaryReader reader, byte sizeOf);
+}
+[ExtensionAttribute]
+public static class JetBrains.Profiler.Snapshot.Tools.SectionOffsetBinaryReader : object {
+    [ExtensionAttribute]
+public static SectionOffset`1<T> ReadOffset(BinaryReader reader);
+    [ExtensionAttribute]
+public static SectionIndex`1<T> ReadSectionIndex(BinaryReader reader);
+}
+public class JetBrains.Profiler.Snapshot.Tools.SectionOffsetReader`1 : object {
+    private Int64Reader myReader;
+    public byte SizeOf { get; }
+    public SectionOffsetReader`1(byte sizeOf);
+    public SectionOffsetReader`1(byte sizeOf, bool allowZeroSizeOf);
+    public byte get_SizeOf();
+    public SectionOffset`1<T> ReadOffset(BinaryReader reader);
+}
+public static class JetBrains.Profiler.Snapshot.Tools.ThreadSafeBuffer : object {
+    [ThreadStaticAttribute]
+private static Byte[] ourBuffer8;
+    public static Byte[] Buffer8 { get; }
+    public static Byte[] get_Buffer8();
+}
+public class JetBrains.Profiler.Snapshot.Tools.UInt32Reader : object {
+    public byte SizeOf;
+    public UInt32Reader(byte sizeOf, bool allowZeroSizeOf);
+    public UInt32 Read(BinaryReader reader);
+    public static UInt32 ReadValue(BinaryReader reader, byte sizeOf);
+    private static UInt32 ReadValueInternal(BinaryReader reader, byte sizeOf);
+}
+public class JetBrains.Profiler.Snapshot.Tools.UInt64Reader : object {
+    public byte SizeOf;
+    public UInt64Reader(byte sizeOf, bool allowZeroSizeOf);
+    public ulong Read(BinaryReader reader);
+    public static ulong ReadValue(BinaryReader reader, byte sizeOf);
+    private static ulong ReadValueInternal(BinaryReader reader, byte sizeOf);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
