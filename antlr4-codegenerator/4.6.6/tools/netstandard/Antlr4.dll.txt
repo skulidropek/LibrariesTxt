@@ -1,0 +1,4094 @@
+public class Antlr4.Analysis.AnalysisPipeline : object {
+    public Grammar g;
+    public AnalysisPipeline(Grammar g);
+    public virtual void Process();
+    protected virtual void ProcessLexer();
+    protected virtual void ProcessParser();
+    public static bool Disjoint(IntervalSet[] altLook);
+}
+public class Antlr4.Analysis.LeftFactoringRuleTransformer : object {
+    public static string LEFTFACTOR;
+    public static string SUPPRESS_ACCESSOR;
+    public GrammarRootAST _ast;
+    public IDictionary`2<string, Rule> _rules;
+    public Grammar _g;
+    public AntlrTool _tool;
+    private GrammarASTAdaptor adaptor;
+    public LeftFactoringRuleTransformer(GrammarRootAST ast, IDictionary`2<string, Rule> rules, Grammar g);
+    private static LeftFactoringRuleTransformer();
+    public virtual void TranslateLeftFactoredRules();
+    protected virtual bool ExpandOptionalQuantifiersForBlock(GrammarAST block, bool variant);
+    protected virtual GrammarAST ExpandOptionalQuantifiersForAlt(GrammarAST alt);
+    protected virtual bool TranslateLeftFactoredDecision(GrammarAST block, string factoredRule, bool variant, DecisionFactorMode mode, bool includeFactoredElement);
+    protected virtual GrammarAST TranslateLeftFactoredAlternative(GrammarAST alternative, string factoredRule, bool variant, DecisionFactorMode mode, bool includeFactoredElement);
+    protected virtual GrammarAST TranslateLeftFactoredElement(GrammarAST element, string factoredRule, bool variant, DecisionFactorMode mode, bool includeFactoredElement);
+    protected virtual RuleVariants CreateLeftFactoredRuleVariant(Rule rule, string factoredElement);
+}
+public class Antlr4.Analysis.LeftRecursionDetector : object {
+    internal Grammar g;
+    public ATN atn;
+    public IList`1<ISet`1<Rule>> listOfRecursiveCycles;
+    private ISet`1<RuleStartState> rulesVisitedPerRuleCheck;
+    public LeftRecursionDetector(Grammar g, ATN atn);
+    public virtual void Check();
+    public virtual bool Check(Rule enclosingRule, ATNState s, ISet`1<ATNState> visitedStates);
+    protected virtual void AddRulesToCycle(Rule enclosingRule, Rule targetRule);
+}
+public class Antlr4.Analysis.LeftRecursiveRuleAltInfo : object {
+    public int altNum;
+    public string leftRecursiveRuleRefLabel;
+    public string altLabel;
+    public bool isListLabel;
+    public string altText;
+    public AltAST altAST;
+    public AltAST originalAltAST;
+    public int nextPrec;
+    public LeftRecursiveRuleAltInfo(int altNum, string altText);
+    public LeftRecursiveRuleAltInfo(int altNum, string altText, string leftRecursiveRuleRefLabel, string altLabel, bool isListLabel, AltAST originalAltAST);
+}
+public class Antlr4.Analysis.LeftRecursiveRuleAnalyzer : LeftRecursiveRuleWalker {
+    public AntlrTool tool;
+    public string ruleName;
+    public LinkedHashMap`2<int, LeftRecursiveRuleAltInfo> binaryAlts;
+    public LinkedHashMap`2<int, LeftRecursiveRuleAltInfo> ternaryAlts;
+    public LinkedHashMap`2<int, LeftRecursiveRuleAltInfo> suffixAlts;
+    public IList`1<LeftRecursiveRuleAltInfo> prefixAndOtherAlts;
+    public IList`1<Tuple`2<GrammarAST, string>> leftRecursiveRuleRefLabels;
+    public ITokenStream tokenStream;
+    public GrammarAST retvals;
+    [NotNullAttribute]
+public TemplateGroup recRuleTemplates;
+    [NotNullAttribute]
+public TemplateGroup codegenTemplates;
+    public string language;
+    public IDictionary`2<int, ASSOC> altAssociativity;
+    public LeftRecursiveRuleAnalyzer(GrammarAST ruleAST, AntlrTool tool, string ruleName, string language);
+    public virtual void LoadPrecRuleTemplates();
+    public virtual void SetReturnValues(GrammarAST t);
+    public virtual void SetAltAssoc(AltAST t, int alt);
+    public virtual void BinaryAlt(AltAST originalAltTree, int alt);
+    public virtual void PrefixAlt(AltAST originalAltTree, int alt);
+    public virtual void SuffixAlt(AltAST originalAltTree, int alt);
+    public virtual void OtherAlt(AltAST originalAltTree, int alt);
+    public virtual string GetArtificialOpPrecRule();
+    public virtual AltAST AddPrecedenceArgToRules(AltAST t, int prec);
+    public static bool HasImmediateRecursiveRuleRefs(GrammarAST t, string ruleName);
+    public virtual GrammarAST StripLeftRecursion(GrammarAST altAST);
+    public virtual void StripAltLabel(GrammarAST altAST);
+    public virtual string Text(GrammarAST t);
+    public virtual int Precedence(int alt);
+    public virtual int NextPrecedence(int alt);
+    public virtual string ToString();
+}
+public class Antlr4.Analysis.LeftRecursiveRuleTransformer : object {
+    public static string PRECEDENCE_OPTION_NAME;
+    public static string TOKENINDEX_OPTION_NAME;
+    public GrammarRootAST ast;
+    public ICollection`1<Rule> rules;
+    public Grammar g;
+    public AntlrTool tool;
+    public LeftRecursiveRuleTransformer(GrammarRootAST ast, ICollection`1<Rule> rules, Grammar g);
+    private static LeftRecursiveRuleTransformer();
+    public virtual void TranslateLeftRecursiveRules();
+    public virtual bool TranslateLeftRecursiveRule(GrammarRootAST ast, LeftRecursiveRule r, string language);
+    public virtual RuleAST ParseArtificialRule(Grammar g, string ruleText);
+    public virtual void SetAltASTPointers(LeftRecursiveRule r, RuleAST t);
+}
+public class Antlr4.AntlrTool : object {
+    public static string VERSION;
+    public static string GRAMMAR_EXTENSION;
+    public static string LEGACY_GRAMMAR_EXTENSION;
+    public static IList`1<string> ALL_GRAMMAR_EXTENSIONS;
+    public string inputDirectory;
+    public string outputDirectory;
+    public string libDirectory;
+    public bool generate_ATN_dot;
+    public string grammarEncoding;
+    public string msgFormat;
+    public bool launch_ST_inspector;
+    public bool ST_inspector_wait_for_close;
+    public bool force_atn;
+    public bool log;
+    public bool gen_listener;
+    public bool gen_visitor;
+    public bool gen_dependencies;
+    public string genPackage;
+    public IDictionary`2<string, string> grammarOptions;
+    public bool warnings_are_errors;
+    public bool longMessages;
+    public static Option[] optionDefs;
+    protected bool haveOutputDir;
+    protected bool return_dont_exit;
+    public static bool internalOption_PrintGrammarTree;
+    public static bool internalOption_ShowATNConfigsInDFA;
+    public String[] args;
+    protected IList`1<string> grammarFiles;
+    public ErrorManager errMgr;
+    public LogManager logMgr;
+    private TextWriter _consoleOut;
+    private TextWriter _consoleError;
+    private IList`1<ANTLRToolListener> listeners;
+    private DefaultToolListener defaultListener;
+    private IDictionary`2<string, Grammar> importedGrammars;
+    public TextWriter ConsoleOut { get; public set; }
+    public TextWriter ConsoleError { get; public set; }
+    private static AntlrTool();
+    public AntlrTool(String[] args);
+    public static int Main(String[] args);
+    public TextWriter get_ConsoleOut();
+    public void set_ConsoleOut(TextWriter value);
+    public TextWriter get_ConsoleError();
+    public void set_ConsoleError(TextWriter value);
+    protected virtual void HandleArgs();
+    private static FieldInfo GetField(Type type, string name);
+    protected virtual void HandleOptionSetArg(string arg);
+    public virtual void ProcessGrammarsOnCommandLine();
+    public virtual void Process(Grammar g, bool gencode);
+    public virtual void ProcessNonCombinedGrammar(Grammar g, bool gencode);
+    public virtual bool CheckForRuleIssues(Grammar g);
+    public virtual IList`1<GrammarRootAST> SortGrammarByTokenVocab(IList`1<string> fileNames);
+    public static GrammarAST FindOptionValueAST(GrammarRootAST root, string option);
+    public virtual Grammar CreateGrammar(GrammarRootAST ast);
+    public virtual GrammarRootAST ParseGrammar(string fileName);
+    public virtual Grammar LoadGrammar(string fileName);
+    public virtual Grammar LoadImportedGrammar(Grammar g, GrammarAST nameNode);
+    public virtual GrammarRootAST ParseGrammarFromString(string grammar);
+    public virtual GrammarRootAST Parse(string fileName, ICharStream in);
+    public virtual void GenerateATNs(Grammar g);
+    public virtual TextWriter GetOutputFileWriter(Grammar g, string fileName);
+    public virtual string GetImportedGrammarFile(Grammar g, string fileName);
+    public virtual string GetOutputDirectory(string fileNameWithPath);
+    protected virtual void WriteDOTFile(Grammar g, Rule r, string dot);
+    protected virtual void WriteDOTFile(Grammar g, string name, string dot);
+    public virtual void Help();
+    public virtual void Log(string component, string msg);
+    public virtual void Log(string msg);
+    public virtual int GetNumErrors();
+    public virtual void AddListener(ANTLRToolListener tl);
+    public virtual void RemoveListener(ANTLRToolListener tl);
+    public virtual void RemoveListeners();
+    public virtual IList`1<ANTLRToolListener> GetListeners();
+    public virtual void Info(string msg);
+    public virtual void Error(ANTLRMessage msg);
+    public virtual void Warning(ANTLRMessage msg);
+    public virtual void Version();
+    public virtual void Panic();
+}
+public interface Antlr4.Automata.ATNFactory {
+    public abstract virtual ATN CreateATN();
+    public abstract virtual void SetCurrentRuleName(string name);
+    public abstract virtual void SetCurrentOuterAlt(int alt);
+    public abstract virtual Handle Rule(GrammarAST ruleAST, string name, Handle blk);
+    public abstract virtual ATNState NewState();
+    public abstract virtual Handle Label(Handle t);
+    public abstract virtual Handle ListLabel(Handle t);
+    public abstract virtual Handle TokenRef(TerminalAST node);
+    public abstract virtual Handle Set(GrammarAST associatedAST, IList`1<GrammarAST> alts, bool invert);
+    public abstract virtual Handle CharSetLiteral(GrammarAST charSetAST);
+    public abstract virtual Handle Range(GrammarAST a, GrammarAST b);
+    public abstract virtual Handle StringLiteral(TerminalAST stringLiteralAST);
+    public abstract virtual Handle RuleRef(GrammarAST node);
+    public abstract virtual Handle Epsilon(GrammarAST node);
+    public abstract virtual Handle Sempred(PredAST pred);
+    public abstract virtual Handle Action(ActionAST action);
+    public abstract virtual Handle Action(string action);
+    public abstract virtual Handle Alt(IList`1<Handle> els);
+    public abstract virtual Handle Block(BlockAST blockAST, GrammarAST ebnfRoot, IList`1<Handle> alternativeGrips);
+    public abstract virtual Handle Optional(GrammarAST optAST, Handle blk);
+    public abstract virtual Handle Plus(GrammarAST plusAST, Handle blk);
+    public abstract virtual Handle Star(GrammarAST starAST, Handle blk);
+    public abstract virtual Handle Wildcard(GrammarAST associatedAST);
+    public abstract virtual Handle LexerAltCommands(Handle alt, Handle cmds);
+    public abstract virtual Handle LexerCallCommand(GrammarAST ID, GrammarAST arg);
+    public abstract virtual Handle LexerCommand(GrammarAST ID);
+}
+public static class Antlr4.Automata.ATNOptimizer : object {
+    public static void Optimize(Grammar g, ATN atn);
+    private static void OptimizeSets(Grammar g, ATN atn);
+    private static void OptimizeStates(ATN atn);
+}
+public class Antlr4.Automata.ATNPrinter : object {
+    private IList`1<ATNState> work;
+    private ISet`1<ATNState> marked;
+    private Grammar g;
+    private ATNState start;
+    public ATNPrinter(Grammar g, ATNState start);
+    public virtual string AsString();
+    internal virtual string GetStateString(ATNState s);
+}
+public class Antlr4.Automata.ATNVisitor : object {
+    public virtual void Visit(ATNState s);
+    public virtual void Visit_(ATNState s, ISet`1<int> visited);
+    public virtual void VisitState(ATNState s);
+}
+public class Antlr4.Automata.Handle : object {
+    public ATNState left;
+    public ATNState right;
+    public Handle(ATNState left, ATNState right);
+    public virtual string ToString();
+}
+public class Antlr4.Automata.LexerATNFactory : ParserATNFactory {
+    [NullableAttribute]
+public TemplateGroup codegenTemplates;
+    public static IDictionary`2<string, int> COMMON_CONSTANTS;
+    private IList`1<string> ruleCommands;
+    protected IDictionary`2<int, ILexerAction> indexToActionMap;
+    protected IDictionary`2<ILexerAction, int> actionToIndexMap;
+    public LexerATNFactory(LexerGrammar g);
+    private static LexerATNFactory();
+    public static ICollection`1<string> GetCommonConstants();
+    public virtual ATN CreateATN();
+    public virtual Handle Rule(GrammarAST ruleAST, string name, Handle blk);
+    public virtual Handle Action(ActionAST action);
+    protected virtual int GetLexerActionIndex(ILexerAction lexerAction);
+    public virtual Handle Action(string action);
+    protected virtual Handle Action(GrammarAST node, ILexerAction lexerAction);
+    public virtual Handle LexerAltCommands(Handle alt, Handle cmds);
+    public virtual Handle LexerCallCommand(GrammarAST ID, GrammarAST arg);
+    public virtual Handle LexerCommand(GrammarAST ID);
+    public virtual Handle Range(GrammarAST a, GrammarAST b);
+    public virtual Handle Set(GrammarAST associatedAST, IList`1<GrammarAST> alts, bool invert);
+    protected virtual bool CheckRange(GrammarAST leftNode, GrammarAST rightNode, int leftValue, int rightValue);
+    public virtual Handle StringLiteral(TerminalAST stringLiteralAST);
+    public virtual Handle CharSetLiteral(GrammarAST charSetAST);
+    public virtual IntervalSet GetSetFromCharSetLiteral(GrammarAST charSetAST);
+    protected virtual void CheckSetCollision(GrammarAST ast, IntervalSet set, int el);
+    protected virtual void CheckSetCollision(GrammarAST ast, IntervalSet set, int a, int b);
+    public virtual Handle TokenRef(TerminalAST node);
+    private ILexerAction CreateLexerAction(GrammarAST ID, GrammarAST arg);
+    private void CheckCommands(string command, IToken commandToken);
+    private Nullable`1<int> GetModeConstantValue(string modeName, IToken token);
+    private Nullable`1<int> GetTokenConstantValue(string tokenName, IToken token);
+    private Nullable`1<int> GetChannelConstantValue(string channelName, IToken token);
+}
+public class Antlr4.Automata.ParserATNFactory : object {
+    [NotNullAttribute]
+public Grammar g;
+    [NotNullAttribute]
+public ATN atn;
+    public Rule currentRule;
+    public int currentOuterAlt;
+    [NotNullAttribute]
+protected IList`1<Tuple`3<Rule, ATNState, ATNState>> preventEpsilonClosureBlocks;
+    [NotNullAttribute]
+protected IList`1<Tuple`3<Rule, ATNState, ATNState>> preventEpsilonOptionalBlocks;
+    public ParserATNFactory(Grammar g);
+    public virtual ATN CreateATN();
+    protected virtual void _CreateATN(ICollection`1<Rule> rules);
+    public virtual void SetCurrentRuleName(string name);
+    public virtual void SetCurrentOuterAlt(int alt);
+    public virtual Handle Rule(GrammarAST ruleAST, string name, Handle blk);
+    public virtual Handle TokenRef(TerminalAST node);
+    public virtual Handle Set(GrammarAST associatedAST, IList`1<GrammarAST> terminals, bool invert);
+    public virtual Handle Range(GrammarAST a, GrammarAST b);
+    protected virtual int GetTokenType(GrammarAST atom);
+    public virtual Handle StringLiteral(TerminalAST stringLiteralAST);
+    public virtual Handle CharSetLiteral(GrammarAST charSetAST);
+    public virtual Handle RuleRef(GrammarAST node);
+    public virtual Handle _RuleRef(GrammarAST node);
+    public virtual void AddFollowLink(int ruleIndex, ATNState right);
+    public virtual Handle Epsilon(GrammarAST node);
+    public virtual Handle Sempred(PredAST pred);
+    public virtual Handle Action(ActionAST action);
+    public virtual Handle Action(string action);
+    public virtual Handle Block(BlockAST blkAST, GrammarAST ebnfRoot, IList`1<Handle> alts);
+    protected virtual Handle MakeBlock(BlockStartState start, BlockAST blkAST, IList`1<Handle> alts);
+    public virtual Handle Alt(IList`1<Handle> els);
+    public virtual Handle ElemList(IList`1<Handle> els);
+    public virtual Handle Optional(GrammarAST optAST, Handle blk);
+    public virtual Handle Plus(GrammarAST plusAST, Handle blk);
+    public virtual Handle Star(GrammarAST starAST, Handle elem);
+    public virtual Handle Wildcard(GrammarAST node);
+    protected virtual void Epsilon(ATNState a, ATNState b);
+    protected virtual void Epsilon(ATNState a, ATNState b, bool prepend);
+    internal virtual void CreateRuleStartAndStopATNStates();
+    public virtual void AddRuleFollowLinks();
+    public virtual int AddEOFTransitionToStartRules();
+    public virtual Handle Label(Handle t);
+    public virtual Handle ListLabel(Handle t);
+    public virtual T NewState(GrammarAST node);
+    public virtual ATNState NewState(GrammarAST node);
+    public virtual ATNState NewState();
+    public virtual bool ExpectNonGreedy(BlockAST blkAST);
+    public bool IsSLLDecision(BlockAST blkAST);
+    public static bool BlockHasWildcardAlt(GrammarAST block);
+    public virtual Handle LexerAltCommands(Handle alt, Handle cmds);
+    public virtual Handle LexerCallCommand(GrammarAST ID, GrammarAST arg);
+    public virtual Handle LexerCommand(GrammarAST ID);
+}
+public class Antlr4.Automata.TailEpsilonRemover : ATNVisitor {
+    [NotNullAttribute]
+private ATN _atn;
+    public TailEpsilonRemover(ATN atn);
+    public virtual void VisitState(ATNState p);
+}
+public abstract class Antlr4.Codegen.AbstractTarget : object {
+    protected String[] targetCharValueEscape;
+    protected CodeGenerator gen;
+    private string language;
+    private TemplateGroup templates;
+    protected AbstractTarget(CodeGenerator gen, string language);
+    public virtual CodeGenerator GetCodeGenerator();
+    public virtual string GetLanguage();
+    public virtual TemplateGroup GetTemplates();
+    protected internal virtual void GenFile(Grammar g, Template outputFileST, string fileName);
+    public virtual string GetTokenTypeAsTargetLabel(Grammar g, int ttype);
+    public virtual String[] GetTokenTypesAsTargetLabels(Grammar g, Int32[] ttypes);
+    public virtual string GetTargetStringLiteralFromString(string s, bool quoted);
+    public virtual string GetTargetStringLiteralFromString(string s);
+    public abstract virtual string GetTargetStringLiteralFromANTLRStringLiteral(CodeGenerator generator, string literal, bool addQuotes);
+    public abstract virtual string EncodeIntAsCharEscape(int v);
+    public virtual string GetLoopLabel(GrammarAST ast);
+    public virtual string GetLoopCounter(GrammarAST ast);
+    public virtual string GetListLabel(string label);
+    public virtual string GetRuleFunctionContextStructName(Rule r);
+    public virtual string GetAltLabelContextStructName(string label);
+    public virtual string GetRuleFunctionContextStructName(RuleFunction function);
+    public virtual string GetImplicitTokenLabel(string tokenName);
+    public virtual string GetImplicitSetLabel(string id);
+    public virtual string GetImplicitRuleLabel(string ruleName);
+    public virtual string GetElementListName(string name);
+    public virtual string GetElementName(string name);
+    public virtual string GetRecognizerFileName(bool header);
+    public virtual string GetListenerFileName(bool header);
+    public virtual string GetVisitorFileName(bool header);
+    public virtual string GetBaseListenerFileName(bool header);
+    public virtual string GetBaseVisitorFileName(bool header);
+    public virtual int GetSerializedATNSegmentLimit();
+    public virtual int GetInlineTestSetWordSize();
+    public virtual bool GrammarSymbolCausesIssueInGeneratedCode(GrammarAST idNode);
+    protected abstract virtual bool VisibleGrammarSymbolCausesIssueInGeneratedCode(GrammarAST idNode);
+    protected virtual TemplateGroup LoadTemplates();
+    public virtual bool WantsBaseListener();
+    public virtual bool WantsBaseVisitor();
+    public virtual bool SupportsOverloadedMethods();
+    public virtual bool NeedsHeader();
+}
+public class Antlr4.Codegen.ActionTranslator : object {
+    public static IDictionary`2<string, Func`3<StructDecl, string, RulePropertyRef>> thisRulePropToModelMap;
+    public static IDictionary`2<string, Func`3<StructDecl, string, RulePropertyRef>> rulePropToModelMap;
+    public static IDictionary`2<string, Func`3<StructDecl, string, TokenPropertyRef>> tokenPropToModelMap;
+    internal CodeGenerator gen;
+    internal ActionAST node;
+    internal RuleFunction rf;
+    internal IList`1<ActionChunk> chunks;
+    internal OutputModelFactory factory;
+    internal StructDecl nodeContext;
+    public ActionTranslator(OutputModelFactory factory, ActionAST node);
+    private static ActionTranslator();
+    public static string ToString(IList`1<ActionChunk> chunks);
+    public static IList`1<ActionChunk> TranslateAction(OutputModelFactory factory, RuleFunction rf, IToken tokenWithinAction, ActionAST node);
+    public static IList`1<ActionChunk> TranslateActionChunk(OutputModelFactory factory, RuleFunction rf, string action, ActionAST node);
+    public virtual void Attr(string expr, IToken x);
+    public virtual void QualifiedAttr(string expr, IToken x, IToken y);
+    public virtual void SetAttr(string expr, IToken x, IToken rhs);
+    public virtual void NonLocalAttr(string expr, IToken x, IToken y);
+    public virtual void SetNonLocalAttr(string expr, IToken x, IToken y, IToken rhs);
+    public virtual void Text(string text);
+    internal virtual TokenPropertyRef GetTokenPropertyRef(IToken x, IToken y);
+    internal virtual RulePropertyRef GetRulePropertyRef(IToken prop);
+    internal virtual RulePropertyRef GetRulePropertyRef(IToken x, IToken prop);
+    public virtual string GetTokenLabel(string x);
+    public virtual string GetRuleLabel(string x);
+}
+public abstract class Antlr4.Codegen.BlankOutputModelFactory : object {
+    public abstract virtual Grammar GetGrammar();
+    public abstract virtual CodeGenerator GetGenerator();
+    public abstract virtual AbstractTarget GetTarget();
+    public abstract virtual void SetController(OutputModelController controller);
+    public abstract virtual OutputModelController GetController();
+    public abstract virtual OutputModelObject GetRoot();
+    public abstract virtual RuleFunction GetCurrentRuleFunction();
+    public abstract virtual Alternative GetCurrentOuterMostAlt();
+    public abstract virtual CodeBlock GetCurrentBlock();
+    public abstract virtual CodeBlockForOuterMostAlt GetCurrentOuterMostAlternativeBlock();
+    public abstract virtual int GetCodeBlockLevel();
+    public abstract virtual int GetTreeLevel();
+    public virtual ParserFile ParserFile(string fileName);
+    public virtual Parser Parser(ParserFile file);
+    public virtual RuleFunction Rule(Rule r);
+    public virtual IList`1<SrcOp> RulePostamble(RuleFunction function, Rule r);
+    public virtual LexerFile LexerFile(string fileName);
+    public virtual Lexer Lexer(LexerFile file);
+    public virtual CodeBlockForAlt Alternative(Alternative alt, bool outerMost);
+    public virtual CodeBlockForAlt FinishAlternative(CodeBlockForAlt blk, IList`1<SrcOp> ops);
+    public virtual CodeBlockForAlt Epsilon(Alternative alt, bool outerMost);
+    public virtual IList`1<SrcOp> RuleRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public virtual IList`1<SrcOp> TokenRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public virtual IList`1<SrcOp> StringRef(GrammarAST ID, GrammarAST label);
+    public virtual IList`1<SrcOp> Set(GrammarAST setAST, GrammarAST label, bool invert);
+    public virtual IList`1<SrcOp> Wildcard(GrammarAST ast, GrammarAST labelAST);
+    public virtual IList`1<SrcOp> Action(ActionAST ast);
+    public virtual IList`1<SrcOp> Sempred(ActionAST ast);
+    public virtual Choice GetChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts, GrammarAST label);
+    public virtual Choice GetEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetLL1ChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetComplexChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetLL1EBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetComplexEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual IList`1<SrcOp> GetLL1Test(IntervalSet look, GrammarAST blkAST);
+    public virtual bool NeedsImplicitLabel(GrammarAST ID, LabeledOp op);
+}
+public class Antlr4.Codegen.CodeGenerator : object {
+    public static string TEMPLATE_ROOT;
+    public static string VOCAB_FILE_EXTENSION;
+    public static string DEFAULT_LANGUAGE;
+    public static string vocabFilePattern;
+    [NotNullAttribute]
+public Grammar g;
+    [NotNullAttribute]
+public AntlrTool tool;
+    [NotNullAttribute]
+public string language;
+    private AbstractTarget target;
+    public int lineWidth;
+    public CodeGenerator(Grammar g);
+    public CodeGenerator(AntlrTool tool, Grammar g, string language);
+    private static CodeGenerator();
+    public virtual AbstractTarget GetTarget();
+    public virtual TemplateGroup GetTemplates();
+    protected virtual void LoadLanguageTarget(string language);
+    private OutputModelController CreateController();
+    private Template Walk(OutputModelObject outputModel, bool header);
+    public virtual Template GenerateLexer();
+    public virtual Template GenerateLexer(bool header);
+    public virtual Template GenerateParser();
+    public virtual Template GenerateParser(bool header);
+    public virtual Template GenerateListener();
+    public virtual Template GenerateListener(bool header);
+    public virtual Template GenerateBaseListener();
+    public virtual Template GenerateBaseListener(bool header);
+    public virtual Template GenerateVisitor();
+    public virtual Template GenerateVisitor(bool header);
+    public virtual Template GenerateBaseVisitor();
+    public virtual Template GenerateBaseVisitor(bool header);
+    internal virtual Template GetTokenVocabOutput();
+    public virtual void WriteRecognizer(Template outputFileST, bool header);
+    public virtual void WriteListener(Template outputFileST, bool header);
+    public virtual void WriteBaseListener(Template outputFileST, bool header);
+    public virtual void WriteVisitor(Template outputFileST, bool header);
+    public virtual void WriteBaseVisitor(Template outputFileST, bool header);
+    public virtual void WriteVocabFile();
+    public virtual void Write(Template code, string fileName);
+    public virtual string GetRecognizerFileName();
+    public virtual string GetListenerFileName();
+    public virtual string GetVisitorFileName();
+    public virtual string GetBaseListenerFileName();
+    public virtual string GetBaseVisitorFileName();
+    public virtual string GetRecognizerFileName(bool header);
+    public virtual string GetListenerFileName(bool header);
+    public virtual string GetVisitorFileName(bool header);
+    public virtual string GetBaseListenerFileName(bool header);
+    public virtual string GetBaseVisitorFileName(bool header);
+    public virtual string GetVocabFileName();
+    public virtual string GetHeaderFileName();
+}
+public class Antlr4.Codegen.CodeGeneratorExtension : object {
+    public OutputModelFactory factory;
+    public CodeGeneratorExtension(OutputModelFactory factory);
+    public virtual ParserFile ParserFile(ParserFile f);
+    public virtual Parser Parser(Parser p);
+    public virtual LexerFile LexerFile(LexerFile f);
+    public virtual Lexer Lexer(Lexer l);
+    public virtual RuleFunction Rule(RuleFunction rf);
+    public virtual IList`1<SrcOp> RulePostamble(IList`1<SrcOp> ops);
+    public virtual CodeBlockForAlt Alternative(CodeBlockForAlt blk, bool outerMost);
+    public virtual CodeBlockForAlt FinishAlternative(CodeBlockForAlt blk, bool outerMost);
+    public virtual CodeBlockForAlt Epsilon(CodeBlockForAlt blk);
+    public virtual IList`1<SrcOp> RuleRef(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> TokenRef(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> Set(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> StringRef(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> Wildcard(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> Action(IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> Sempred(IList`1<SrcOp> ops);
+    public virtual Choice GetChoiceBlock(Choice c);
+    public virtual Choice GetEBNFBlock(Choice c);
+    public virtual bool NeedsImplicitLabel(GrammarAST ID, LabeledOp op);
+}
+public class Antlr4.Codegen.CodeGenPipeline : object {
+    internal Grammar g;
+    public CodeGenPipeline(Grammar g);
+    public virtual void Process();
+    protected virtual void WriteRecognizer(Template template, CodeGenerator gen, bool header);
+}
+public abstract class Antlr4.Codegen.DefaultOutputModelFactory : BlankOutputModelFactory {
+    [NotNullAttribute]
+public Grammar g;
+    [NotNullAttribute]
+public CodeGenerator gen;
+    public OutputModelController controller;
+    protected DefaultOutputModelFactory(CodeGenerator gen);
+    public virtual void SetController(OutputModelController controller);
+    public virtual OutputModelController GetController();
+    public virtual IList`1<SrcOp> RulePostamble(RuleFunction function, Rule r);
+    public virtual Grammar GetGrammar();
+    public virtual CodeGenerator GetGenerator();
+    public virtual AbstractTarget GetTarget();
+    public virtual OutputModelObject GetRoot();
+    public virtual RuleFunction GetCurrentRuleFunction();
+    public virtual Alternative GetCurrentOuterMostAlt();
+    public virtual CodeBlock GetCurrentBlock();
+    public virtual CodeBlockForOuterMostAlt GetCurrentOuterMostAlternativeBlock();
+    public virtual int GetCodeBlockLevel();
+    public virtual int GetTreeLevel();
+    public static IList`1<SrcOp> List(SrcOp[] values);
+    public static IList`1<SrcOp> List(IEnumerable`1<SrcOp> values);
+    public virtual Decl GetCurrentDeclForName(string name);
+}
+public class Antlr4.Codegen.LexerFactory : DefaultOutputModelFactory {
+    public LexerFactory(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Model.Action : RuleElement {
+    [ModelElementAttribute]
+public IList`1<ActionChunk> chunks;
+    public Action(OutputModelFactory factory, ActionAST ast);
+    public Action(OutputModelFactory factory, StructDecl ctx, string action);
+    public Action(OutputModelFactory factory, StructDecl ctx, Template actionST);
+}
+public class Antlr4.Codegen.Model.AddToLabelList : SrcOp {
+    public Decl label;
+    public string listName;
+    public AddToLabelList(OutputModelFactory factory, string listName, Decl label);
+}
+public class Antlr4.Codegen.Model.AltBlock : Choice {
+    public AltBlock(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.ArgAction : Action {
+    public string ctxType;
+    public ArgAction(OutputModelFactory factory, ActionAST ast, string ctxType);
+}
+public class Antlr4.Codegen.Model.BaseListenerFile : ListenerFile {
+    public BaseListenerFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.BaseVisitorFile : VisitorFile {
+    public BaseVisitorFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.CaptureNextToken : SrcOp {
+    public string varName;
+    public CaptureNextToken(OutputModelFactory factory, string varName);
+}
+public class Antlr4.Codegen.Model.CaptureNextTokenType : SrcOp {
+    public string varName;
+    public CaptureNextTokenType(OutputModelFactory factory, string varName);
+}
+public abstract class Antlr4.Codegen.Model.Choice : RuleElement {
+    public int decision;
+    public Decl label;
+    [ModelElementAttribute]
+public IList`1<CodeBlockForAlt> alts;
+    [ModelElementAttribute]
+public IList`1<SrcOp> preamble;
+    public Choice(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IList`1<CodeBlockForAlt> alts);
+    public virtual void AddPreambleOp(SrcOp op);
+    public virtual IList`1<String[]> GetAltLookaheadAsStringLists(IntervalSet[] altLookSets);
+    public virtual TestSetInline AddCodeForLookaheadTempVar(IntervalSet look);
+    public virtual ThrowNoViableAlt GetThrowNoViableAlt(OutputModelFactory factory, GrammarAST blkAST, IntervalSet expecting);
+}
+public class Antlr4.Codegen.Model.Chunk.ActionChunk : OutputModelObject {
+    public StructDecl ctx;
+    public ActionChunk(StructDecl ctx);
+}
+public class Antlr4.Codegen.Model.Chunk.ActionTemplate : ActionChunk {
+    public Template st;
+    public ActionTemplate(StructDecl ctx, Template st);
+}
+public class Antlr4.Codegen.Model.Chunk.ActionText : ActionChunk {
+    public string text;
+    public ActionText(StructDecl ctx, string text);
+}
+public class Antlr4.Codegen.Model.Chunk.ArgRef : LocalRef {
+    public ArgRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.LabelRef : ActionChunk {
+    public string name;
+    public LabelRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.ListLabelRef : LabelRef {
+    public ListLabelRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.LocalRef : ActionChunk {
+    public string name;
+    public LocalRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.NonLocalAttrRef : ActionChunk {
+    public string ruleName;
+    public string name;
+    public int ruleIndex;
+    public NonLocalAttrRef(StructDecl ctx, string ruleName, string name, int ruleIndex);
+}
+public class Antlr4.Codegen.Model.Chunk.QRetValueRef : RetValueRef {
+    public string dict;
+    public QRetValueRef(StructDecl ctx, string dict, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.RetValueRef : ActionChunk {
+    public string name;
+    public RetValueRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef : ActionChunk {
+    public string label;
+    public RulePropertyRef(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef_ctx : RulePropertyRef {
+    public RulePropertyRef_ctx(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef_parser : RulePropertyRef {
+    public RulePropertyRef_parser(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef_start : RulePropertyRef {
+    public RulePropertyRef_start(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef_stop : RulePropertyRef {
+    public RulePropertyRef_stop(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.RulePropertyRef_text : RulePropertyRef {
+    public RulePropertyRef_text(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.SetAttr : ActionChunk {
+    public string name;
+    [ModelElementAttribute]
+public IList`1<ActionChunk> rhsChunks;
+    public SetAttr(StructDecl ctx, string name, IList`1<ActionChunk> rhsChunks);
+}
+public class Antlr4.Codegen.Model.Chunk.SetNonLocalAttr : SetAttr {
+    public string ruleName;
+    public int ruleIndex;
+    public SetNonLocalAttr(StructDecl ctx, string ruleName, string name, int ruleIndex, IList`1<ActionChunk> rhsChunks);
+}
+public class Antlr4.Codegen.Model.Chunk.ThisRulePropertyRef_ctx : RulePropertyRef {
+    public ThisRulePropertyRef_ctx(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.ThisRulePropertyRef_parser : RulePropertyRef {
+    public ThisRulePropertyRef_parser(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.ThisRulePropertyRef_start : RulePropertyRef {
+    public ThisRulePropertyRef_start(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.ThisRulePropertyRef_stop : RulePropertyRef {
+    public ThisRulePropertyRef_stop(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.ThisRulePropertyRef_text : RulePropertyRef {
+    public ThisRulePropertyRef_text(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef : ActionChunk {
+    public string label;
+    public TokenPropertyRef(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_channel : TokenPropertyRef {
+    public TokenPropertyRef_channel(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_index : TokenPropertyRef {
+    public TokenPropertyRef_index(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_int : TokenPropertyRef {
+    public TokenPropertyRef_int(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_line : TokenPropertyRef {
+    public TokenPropertyRef_line(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_pos : TokenPropertyRef {
+    public TokenPropertyRef_pos(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_text : TokenPropertyRef {
+    public TokenPropertyRef_text(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenPropertyRef_type : TokenPropertyRef {
+    public TokenPropertyRef_type(StructDecl ctx, string label);
+}
+public class Antlr4.Codegen.Model.Chunk.TokenRef : ActionChunk {
+    public string name;
+    public TokenRef(StructDecl ctx, string name);
+}
+public class Antlr4.Codegen.Model.CodeBlockForAlt : CodeBlock {
+    public CodeBlockForAlt(OutputModelFactory factory);
+}
+public class Antlr4.Codegen.Model.CodeBlockForOuterMostAlt : CodeBlockForAlt {
+    public string altLabel;
+    public Alternative alt;
+    public CodeBlockForOuterMostAlt(OutputModelFactory factory, Alternative alt);
+}
+public class Antlr4.Codegen.Model.dbg : OutputModelObject {
+}
+public class Antlr4.Codegen.Model.Decl.AltLabelStructDecl : StructDecl {
+    public AltLabelStructDecl(OutputModelFactory factory, Rule r, string label);
+    public virtual void AddDispatchMethods(Rule r);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+}
+public class Antlr4.Codegen.Model.Decl.AttributeDecl : Decl {
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InitValue>k__BackingField;
+    public string Type { get; }
+    public string InitValue { get; }
+    public AttributeDecl(OutputModelFactory factory, Attribute a);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public string get_InitValue();
+}
+public class Antlr4.Codegen.Model.Decl.CodeBlock : SrcOp {
+    public int codeBlockLevel;
+    public int treeLevel;
+    [ModelElementAttribute]
+public OrderedHashSet`1<Decl> locals;
+    [ModelElementAttribute]
+public IList`1<SrcOp> preamble;
+    [ModelElementAttribute]
+public IList`1<SrcOp> ops;
+    public CodeBlock(OutputModelFactory factory);
+    public CodeBlock(OutputModelFactory factory, int treeLevel, int codeBlockLevel);
+    public virtual void AddLocalDecl(Decl d);
+    public virtual void AddPreambleOp(SrcOp op);
+    public virtual void AddOp(SrcOp op);
+    public virtual void InsertOp(int i, SrcOp op);
+    public virtual void AddOps(IList`1<SrcOp> ops);
+}
+public abstract class Antlr4.Codegen.Model.Decl.ContextGetterDecl : Decl {
+    protected ContextGetterDecl(OutputModelFactory factory, string name);
+    public virtual string GetArgType();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+}
+public class Antlr4.Codegen.Model.Decl.ContextRuleGetterDecl : ContextGetterDecl {
+    public string ctxName;
+    public bool optional;
+    public ContextRuleGetterDecl(OutputModelFactory factory, string name, string ctxName, bool optional);
+}
+public class Antlr4.Codegen.Model.Decl.ContextRuleListGetterDecl : ContextGetterDecl {
+    public string ctxName;
+    public ContextRuleListGetterDecl(OutputModelFactory factory, string name, string ctxName);
+}
+public class Antlr4.Codegen.Model.Decl.ContextRuleListIndexedGetterDecl : ContextRuleListGetterDecl {
+    public ContextRuleListIndexedGetterDecl(OutputModelFactory factory, string name, string ctxName);
+    public virtual string GetArgType();
+}
+public class Antlr4.Codegen.Model.Decl.ContextTokenGetterDecl : ContextGetterDecl {
+    public bool optional;
+    public ContextTokenGetterDecl(OutputModelFactory factory, string name, bool optional);
+}
+public class Antlr4.Codegen.Model.Decl.ContextTokenListGetterDecl : ContextGetterDecl {
+    public ContextTokenListGetterDecl(OutputModelFactory factory, string name);
+}
+public class Antlr4.Codegen.Model.Decl.ContextTokenListIndexedGetterDecl : ContextTokenListGetterDecl {
+    public ContextTokenListIndexedGetterDecl(OutputModelFactory factory, string name);
+    public virtual string GetArgType();
+}
+public class Antlr4.Codegen.Model.Decl.Decl : SrcOp {
+    public string name;
+    public string decl;
+    public bool isLocal;
+    public StructDecl ctx;
+    public Decl(OutputModelFactory factory, string name, string decl);
+    public Decl(OutputModelFactory factory, string name);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+}
+public class Antlr4.Codegen.Model.Decl.ElementListDecl : Decl {
+    public ElementListDecl(OutputModelFactory factory, string name);
+}
+public class Antlr4.Codegen.Model.Decl.RuleContextDecl : Decl {
+    public string ctxName;
+    public bool isImplicit;
+    public RuleContextDecl(OutputModelFactory factory, string name, string ctxName);
+}
+public class Antlr4.Codegen.Model.Decl.RuleContextListDecl : RuleContextDecl {
+    public RuleContextListDecl(OutputModelFactory factory, string name, string ctxName);
+}
+public class Antlr4.Codegen.Model.Decl.StructDecl : Decl {
+    public string derivedFromName;
+    public bool provideCopyFrom;
+    [ModelElementAttribute]
+public OrderedHashSet`1<Decl> attrs;
+    [ModelElementAttribute]
+public OrderedHashSet`1<Decl> getters;
+    [ModelElementAttribute]
+public ICollection`1<AttributeDecl> ctorAttrs;
+    [ModelElementAttribute]
+public IList`1<DispatchMethod> dispatchMethods;
+    [ModelElementAttribute]
+public IList`1<OutputModelObject> interfaces;
+    [ModelElementAttribute]
+public IList`1<OutputModelObject> extensionMembers;
+    public OrderedHashSet`1<Decl> tokenDecls;
+    public OrderedHashSet`1<Decl> tokenTypeDecls;
+    public OrderedHashSet`1<Decl> tokenListDecls;
+    public OrderedHashSet`1<Decl> ruleContextDecls;
+    public OrderedHashSet`1<Decl> ruleContextListDecls;
+    public OrderedHashSet`1<Decl> attributeDecls;
+    public StructDecl(OutputModelFactory factory, Rule r);
+    public virtual void AddDispatchMethods(Rule r);
+    public virtual void AddDecl(Decl d);
+    public virtual void AddDecl(Attribute a);
+    public virtual void AddDecls(ICollection`1<Attribute> attrList);
+    public virtual void ImplementInterface(OutputModelObject value);
+    public virtual void AddExtensionMember(OutputModelObject member);
+    public virtual bool IsEmpty();
+}
+public class Antlr4.Codegen.Model.Decl.TokenDecl : Decl {
+    public bool isImplicit;
+    public TokenDecl(OutputModelFactory factory, string varName);
+}
+public class Antlr4.Codegen.Model.Decl.TokenListDecl : TokenDecl {
+    public TokenListDecl(OutputModelFactory factory, string varName);
+}
+public class Antlr4.Codegen.Model.Decl.TokenTypeDecl : Decl {
+    public TokenTypeDecl(OutputModelFactory factory, string name);
+}
+public class Antlr4.Codegen.Model.DispatchMethod : OutputModelObject {
+    public DispatchMethod(OutputModelFactory factory);
+}
+public class Antlr4.Codegen.Model.ElementFrequenciesVisitor : GrammarTreeVisitor {
+    private static FrequencySet`1<string> SENTINEL;
+    internal Grammar grammar;
+    internal Stack`1<FrequencySet`1<string>> frequencies;
+    private Stack`1<FrequencySet`1<string>> minFrequencies;
+    public ElementFrequenciesVisitor(Grammar grammar, ITreeNodeStream input);
+    private static ElementFrequenciesVisitor();
+    internal FrequencySet`1<string> GetMinFrequencies();
+    protected static FrequencySet`1<string> CombineMax(FrequencySet`1<string> a, FrequencySet`1<string> b);
+    protected static FrequencySet`1<string> combineMin(FrequencySet`1<string> a, FrequencySet`1<string> b);
+    protected static FrequencySet`1<string> CombineAndClip(FrequencySet`1<string> a, FrequencySet`1<string> b, int clip);
+    public virtual void TokenRef(TerminalAST ref);
+    public virtual void RuleRef(GrammarAST ref, ActionAST arg);
+    protected virtual void EnterAlternative(AltAST tree);
+    protected virtual void ExitAlternative(AltAST tree);
+    protected virtual void EnterElement(GrammarAST tree);
+    protected virtual void ExitElement(GrammarAST tree);
+    protected virtual void ExitSubrule(GrammarAST tree);
+    protected virtual void EnterLexerAlternative(GrammarAST tree);
+    protected virtual void ExitLexerAlternative(GrammarAST tree);
+    protected virtual void EnterLexerElement(GrammarAST tree);
+    protected virtual void ExitLexerElement(GrammarAST tree);
+    protected virtual void ExitLexerSubrule(GrammarAST tree);
+}
+public class Antlr4.Codegen.Model.ExceptionClause : SrcOp {
+    [ModelElementAttribute]
+public Action catchArg;
+    [ModelElementAttribute]
+public Action catchAction;
+    public ExceptionClause(OutputModelFactory factory, ActionAST catchArg, ActionAST catchAction);
+}
+public class Antlr4.Codegen.Model.InvokeRule : RuleElement {
+    public string name;
+    public OrderedHashSet`1<Decl> labels;
+    public string ctxName;
+    [ModelElementAttribute]
+public IList`1<ActionChunk> argExprsChunks;
+    public InvokeRule(ParserFactory factory, GrammarAST ast, GrammarAST labelAST);
+    public virtual IList`1<Decl> GetLabels();
+}
+public interface Antlr4.Codegen.Model.LabeledOp {
+    public abstract virtual IList`1<Decl> GetLabels();
+}
+public class Antlr4.Codegen.Model.LeftFactoredRuleFunction : RuleFunction {
+    public LeftFactoredRuleFunction(OutputModelFactory factory, Rule r);
+}
+public class Antlr4.Codegen.Model.LeftRecursiveRuleFunction : RuleFunction {
+    public LeftRecursiveRuleFunction(OutputModelFactory factory, LeftRecursiveRule r);
+}
+public class Antlr4.Codegen.Model.LeftUnfactoredRuleFunction : RuleFunction {
+    public LeftUnfactoredRuleFunction(OutputModelFactory factory, Rule r);
+}
+public class Antlr4.Codegen.Model.Lexer : Recognizer {
+    public IDictionary`2<string, int> channels;
+    public LexerFile file;
+    public ICollection`1<string> modes;
+    [ModelElementAttribute]
+public LinkedHashMap`2<Rule, RuleActionFunction> actionFuncs;
+    public Lexer(OutputModelFactory factory, LexerFile file);
+}
+public class Antlr4.Codegen.Model.LexerFile : OutputFile {
+    public string genPackage;
+    public string exportMacro;
+    public bool genListener;
+    public bool genVisitor;
+    [ModelElementAttribute]
+public Lexer lexer;
+    [ModelElementAttribute]
+public IDictionary`2<string, Action> namedActions;
+    public LexerFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.ListenerDispatchMethod : DispatchMethod {
+    public bool isEnter;
+    public ListenerDispatchMethod(OutputModelFactory factory, bool isEnter);
+}
+public class Antlr4.Codegen.Model.ListenerFile : OutputFile {
+    public string genPackage;
+    public string exportMacro;
+    public string grammarName;
+    public string parserName;
+    public ISet`1<string> listenerNames;
+    public IDictionary`2<string, string> listenerLabelRuleNames;
+    [ModelElementAttribute]
+public Action header;
+    [ModelElementAttribute]
+public IDictionary`2<string, Action> namedActions;
+    public ListenerFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.LL1AltBlock : LL1Choice {
+    public LL1AltBlock(OutputModelFactory factory, GrammarAST blkAST, IList`1<CodeBlockForAlt> alts);
+}
+public abstract class Antlr4.Codegen.Model.LL1Choice : Choice {
+    public IList`1<String[]> altLook;
+    [ModelElementAttribute]
+public ThrowNoViableAlt error;
+    public LL1Choice(OutputModelFactory factory, GrammarAST blkAST, IList`1<CodeBlockForAlt> alts);
+}
+public abstract class Antlr4.Codegen.Model.LL1Loop : Choice {
+    public int blockStartStateNumber;
+    public int loopBackStateNumber;
+    [ModelElementAttribute]
+public OutputModelObject loopExpr;
+    [ModelElementAttribute]
+public IList`1<SrcOp> iteration;
+    public LL1Loop(OutputModelFactory factory, GrammarAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public virtual void AddIterationOp(SrcOp op);
+    public virtual SrcOp AddCodeForLoopLookaheadTempVar(IntervalSet look);
+}
+public class Antlr4.Codegen.Model.LL1OptionalBlock : LL1AltBlock {
+    public LL1OptionalBlock(OutputModelFactory factory, GrammarAST blkAST, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.LL1OptionalBlockSingleAlt : LL1Choice {
+    [ModelElementAttribute]
+public SrcOp expr;
+    [ModelElementAttribute]
+public IList`1<SrcOp> followExpr;
+    public LL1OptionalBlockSingleAlt(OutputModelFactory factory, GrammarAST blkAST, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.LL1PlusBlockSingleAlt : LL1Loop {
+    public LL1PlusBlockSingleAlt(OutputModelFactory factory, GrammarAST plusRoot, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.LL1StarBlockSingleAlt : LL1Loop {
+    public LL1StarBlockSingleAlt(OutputModelFactory factory, GrammarAST starRoot, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.Loop : Choice {
+    public int blockStartStateNumber;
+    public int loopBackStateNumber;
+    public int exitAlt;
+    [ModelElementAttribute]
+public IList`1<SrcOp> iteration;
+    public Loop(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IList`1<CodeBlockForAlt> alts);
+    public virtual void AddIterationOp(SrcOp op);
+}
+public class Antlr4.Codegen.Model.MatchNotSet : MatchSet {
+    public string varName;
+    public MatchNotSet(OutputModelFactory factory, GrammarAST ast);
+}
+public class Antlr4.Codegen.Model.MatchSet : MatchToken {
+    [ModelElementAttribute]
+public TestSetInline expr;
+    [ModelElementAttribute]
+public CaptureNextTokenType capture;
+    public MatchSet(OutputModelFactory factory, GrammarAST ast);
+}
+public class Antlr4.Codegen.Model.MatchToken : RuleElement {
+    public string name;
+    public int ttype;
+    public IList`1<Decl> labels;
+    public MatchToken(OutputModelFactory factory, TerminalAST ast);
+    public MatchToken(OutputModelFactory factory, GrammarAST ast);
+    public virtual IList`1<Decl> GetLabels();
+}
+[AttributeUsageAttribute("32767")]
+public class Antlr4.Codegen.Model.ModelElementAttribute : Attribute {
+}
+public class Antlr4.Codegen.Model.OptionalBlock : AltBlock {
+    public OptionalBlock(OutputModelFactory factory, GrammarAST questionAST, IList`1<CodeBlockForAlt> alts);
+}
+public abstract class Antlr4.Codegen.Model.OutputFile : OutputModelObject {
+    public string fileName;
+    public string grammarFileName;
+    public string ANTLRVersion;
+    public string TokenLabelType;
+    public string InputSymbolType;
+    protected OutputFile(OutputModelFactory factory, string fileName);
+    public virtual IDictionary`2<string, Action> BuildNamedActions(Grammar g);
+}
+public abstract class Antlr4.Codegen.Model.OutputModelObject : object {
+    public OutputModelFactory factory;
+    public GrammarAST ast;
+    protected OutputModelObject(OutputModelFactory factory);
+    protected OutputModelObject(OutputModelFactory factory, GrammarAST ast);
+}
+public class Antlr4.Codegen.Model.Parser : Recognizer {
+    public ParserFile file;
+    [ModelElementAttribute]
+public IList`1<RuleFunction> funcs;
+    public Parser(OutputModelFactory factory, ParserFile file);
+}
+public class Antlr4.Codegen.Model.ParserFile : OutputFile {
+    public string genPackage;
+    public string exportMacro;
+    public bool genListener;
+    public bool genVisitor;
+    [ModelElementAttribute]
+public Parser parser;
+    [ModelElementAttribute]
+public IDictionary`2<string, Action> namedActions;
+    [ModelElementAttribute]
+public ActionChunk contextSuperClass;
+    public string grammarName;
+    public ParserFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.PlusBlock : Loop {
+    [ModelElementAttribute]
+public ThrowNoViableAlt error;
+    public PlusBlock(OutputModelFactory factory, GrammarAST plusRoot, IList`1<CodeBlockForAlt> alts);
+}
+public abstract class Antlr4.Codegen.Model.Recognizer : OutputModelObject {
+    public string name;
+    public string grammarName;
+    public string grammarFileName;
+    public IDictionary`2<string, int> tokens;
+    [ObsoleteAttribute]
+public IList`1<string> tokenNames;
+    public IList`1<string> literalNames;
+    public IList`1<string> symbolicNames;
+    public ICollection`1<string> ruleNames;
+    public ICollection`1<Rule> rules;
+    [ModelElementAttribute]
+public ActionChunk superClass;
+    public bool abstractRecognizer;
+    [ModelElementAttribute]
+public SerializedATN atn;
+    [ModelElementAttribute]
+public LinkedHashMap`2<Rule, RuleSempredFunction> sempredFuncs;
+    protected Recognizer(OutputModelFactory factory);
+    protected static IList`1<string> TranslateTokenStringsToTarget(String[] tokenStrings, OutputModelFactory factory);
+    protected static string TranslateTokenStringToTarget(string tokenName, OutputModelFactory factory);
+}
+public class Antlr4.Codegen.Model.RuleActionFunction : OutputModelObject {
+    public string name;
+    public string ctxType;
+    public int ruleIndex;
+    [ModelElementAttribute]
+public LinkedHashMap`2<int, Action> actions;
+    public RuleActionFunction(OutputModelFactory factory, Rule r, string ctxType);
+}
+public class Antlr4.Codegen.Model.RuleElement : SrcOp {
+    public int stateNumber;
+    public RuleElement(OutputModelFactory factory, GrammarAST ast);
+}
+public class Antlr4.Codegen.Model.RuleFunction : OutputModelObject {
+    public string name;
+    public IList`1<string> modifiers;
+    public string ctxType;
+    public ICollection`1<string> ruleLabels;
+    public ICollection`1<string> tokenLabels;
+    public ATNState startState;
+    public int index;
+    public Rule rule;
+    public bool hasLookaheadBlock;
+    public string variantOf;
+    [ModelElementAttribute]
+public IList`1<SrcOp> code;
+    [ModelElementAttribute]
+public OrderedHashSet`1<Decl> locals;
+    [ModelElementAttribute]
+public ICollection`1<AttributeDecl> args;
+    [ModelElementAttribute]
+public StructDecl ruleCtx;
+    [ModelElementAttribute]
+public IDictionary`2<string, AltLabelStructDecl> altLabelCtxs;
+    [ModelElementAttribute]
+public IDictionary`2<string, Action> namedActions;
+    [ModelElementAttribute]
+public Action finallyAction;
+    [ModelElementAttribute]
+public IList`1<ExceptionClause> exceptions;
+    [ModelElementAttribute]
+public IList`1<SrcOp> postamble;
+    public RuleFunction(OutputModelFactory factory, Rule r);
+    public virtual void AddContextGetters(OutputModelFactory factory, ICollection`1<RuleAST> contextASTs);
+    public virtual void FillNamedActions(OutputModelFactory factory, Rule r);
+    public virtual ISet`1<Decl> GetDeclsForAllElements(IList`1<AltAST> altASTs);
+    public static string GetLabelName(Grammar g, GrammarAST t);
+    protected virtual Tuple`2<FrequencySet`1<string>, FrequencySet`1<string>> GetElementFrequenciesForAlt(AltAST ast);
+    public virtual IList`1<Decl> GetDeclForAltElement(GrammarAST t, string refLabelName, bool needList, bool optional);
+    public virtual void AddLocalDecl(Decl d);
+    public virtual void AddContextDecl(string altLabel, Decl d);
+}
+public class Antlr4.Codegen.Model.RuleSempredFunction : RuleActionFunction {
+    public RuleSempredFunction(OutputModelFactory factory, Rule r, string ctxType);
+}
+public class Antlr4.Codegen.Model.SemPred : Action {
+    public string msg;
+    public string predicate;
+    [ModelElementAttribute]
+public IList`1<ActionChunk> failChunks;
+    public SemPred(OutputModelFactory factory, ActionAST ast);
+}
+public class Antlr4.Codegen.Model.SerializedATN : OutputModelObject {
+    public IList`1<string> serialized;
+    public SerializedATN(OutputModelFactory factory, ATN atn, IList`1<string> ruleNames);
+    public virtual String[][] GetSegments();
+}
+public abstract class Antlr4.Codegen.Model.SrcOp : OutputModelObject {
+    public int uniqueID;
+    public CodeBlock enclosingBlock;
+    public RuleFunction enclosingRuleRunction;
+    protected SrcOp(OutputModelFactory factory);
+    protected SrcOp(OutputModelFactory factory, GrammarAST ast);
+    public virtual CodeBlockForOuterMostAlt GetOuterMostAltCodeBlock();
+    public virtual string GetContextName();
+}
+public class Antlr4.Codegen.Model.StarBlock : Loop {
+    public string loopLabel;
+    public StarBlock(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IList`1<CodeBlockForAlt> alts);
+}
+public class Antlr4.Codegen.Model.Sync : SrcOp {
+    public int decision;
+    public Sync(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IntervalSet expecting, int decision, string position);
+}
+public class Antlr4.Codegen.Model.TestSetInline : SrcOp {
+    public int bitsetWordSize;
+    public string varName;
+    public Bitset[] bitsets;
+    public TestSetInline(OutputModelFactory factory, GrammarAST ast, IntervalSet set, int wordSize);
+    private static Bitset[] CreateBitsets(OutputModelFactory factory, IntervalSet set, int wordSize, bool useZeroOffset);
+}
+public class Antlr4.Codegen.Model.ThrowEarlyExitException : ThrowRecognitionException {
+    public ThrowEarlyExitException(OutputModelFactory factory, GrammarAST ast, IntervalSet expecting);
+}
+public class Antlr4.Codegen.Model.ThrowNoViableAlt : ThrowRecognitionException {
+    public ThrowNoViableAlt(OutputModelFactory factory, GrammarAST blkOrEbnfRootAST, IntervalSet expecting);
+}
+public class Antlr4.Codegen.Model.ThrowRecognitionException : SrcOp {
+    public int decision;
+    public string grammarFile;
+    public int grammarLine;
+    public int grammarCharPosInLine;
+    public ThrowRecognitionException(OutputModelFactory factory, GrammarAST ast, IntervalSet expecting);
+}
+public class Antlr4.Codegen.Model.VisitorDispatchMethod : DispatchMethod {
+    public VisitorDispatchMethod(OutputModelFactory factory);
+}
+public class Antlr4.Codegen.Model.VisitorFile : OutputFile {
+    public string genPackage;
+    public string exportMacro;
+    public string grammarName;
+    public string parserName;
+    public ISet`1<string> visitorNames;
+    public IDictionary`2<string, string> visitorLabelRuleNames;
+    [ModelElementAttribute]
+public Action header;
+    [ModelElementAttribute]
+public IDictionary`2<string, Action> namedActions;
+    public VisitorFile(OutputModelFactory factory, string fileName);
+}
+public class Antlr4.Codegen.Model.Wildcard : MatchToken {
+    public Wildcard(OutputModelFactory factory, GrammarAST ast);
+}
+public class Antlr4.Codegen.OutputModelController : object {
+    public OutputModelFactory delegate;
+    public IList`1<CodeGeneratorExtension> extensions;
+    public SourceGenTriggers walker;
+    public int codeBlockLevel;
+    public int treeLevel;
+    public OutputModelObject root;
+    public Stack`1<RuleFunction> currentRule;
+    public Alternative currentOuterMostAlt;
+    public CodeBlock currentBlock;
+    public CodeBlockForOuterMostAlt currentOuterMostAlternativeBlock;
+    public OutputModelController(OutputModelFactory factory);
+    public virtual void AddExtension(CodeGeneratorExtension ext);
+    public virtual OutputModelObject BuildParserOutputModel(bool header);
+    public virtual OutputModelObject BuildLexerOutputModel(bool header);
+    public virtual OutputModelObject BuildListenerOutputModel(bool header);
+    public virtual OutputModelObject BuildBaseListenerOutputModel(bool header);
+    public virtual OutputModelObject BuildVisitorOutputModel(bool header);
+    public virtual OutputModelObject BuildBaseVisitorOutputModel(bool header);
+    public virtual ParserFile ParserFile(string fileName);
+    public virtual Parser Parser(ParserFile file);
+    public virtual LexerFile LexerFile(string fileName);
+    public virtual Lexer Lexer(LexerFile file);
+    public virtual void BuildRuleFunction(Parser parser, Rule r);
+    public virtual void BuildLeftRecursiveRuleFunction(LeftRecursiveRule r, LeftRecursiveRuleFunction function);
+    public virtual void BuildNormalRuleFunction(Rule r, RuleFunction function);
+    public virtual void BuildLexerRuleActions(Lexer lexer, Rule r);
+    public virtual RuleFunction Rule(Rule r);
+    public virtual IList`1<SrcOp> RulePostamble(RuleFunction function, Rule r);
+    public virtual Grammar GetGrammar();
+    public virtual CodeGenerator GetGenerator();
+    public virtual CodeBlockForAlt Alternative(Alternative alt, bool outerMost);
+    public virtual CodeBlockForAlt FinishAlternative(CodeBlockForAlt blk, IList`1<SrcOp> ops, bool outerMost);
+    public virtual IList`1<SrcOp> RuleRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public virtual IList`1<SrcOp> TokenRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public virtual IList`1<SrcOp> StringRef(GrammarAST ID, GrammarAST label);
+    public IList`1<SrcOp> Set(GrammarAST setAST, GrammarAST labelAST, bool invert);
+    public virtual CodeBlockForAlt Epsilon(Alternative alt, bool outerMost);
+    public virtual IList`1<SrcOp> Wildcard(GrammarAST ast, GrammarAST labelAST);
+    public virtual IList`1<SrcOp> Action(ActionAST ast);
+    public virtual IList`1<SrcOp> Sempred(ActionAST ast);
+    public virtual Choice GetChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts, GrammarAST label);
+    public virtual Choice GetEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual bool NeedsImplicitLabel(GrammarAST ID, LabeledOp op);
+    public virtual OutputModelObject GetRoot();
+    public virtual void SetRoot(OutputModelObject root);
+    public virtual RuleFunction GetCurrentRuleFunction();
+    public virtual void PushCurrentRule(RuleFunction r);
+    public virtual RuleFunction PopCurrentRule();
+    public virtual Alternative GetCurrentOuterMostAlt();
+    public virtual void SetCurrentOuterMostAlt(Alternative currentOuterMostAlt);
+    public virtual void SetCurrentBlock(CodeBlock blk);
+    public virtual CodeBlock GetCurrentBlock();
+    public virtual void SetCurrentOuterMostAlternativeBlock(CodeBlockForOuterMostAlt currentOuterMostAlternativeBlock);
+    public virtual CodeBlockForOuterMostAlt GetCurrentOuterMostAlternativeBlock();
+    public virtual int GetCodeBlockLevel();
+}
+public interface Antlr4.Codegen.OutputModelFactory {
+    public abstract virtual Grammar GetGrammar();
+    public abstract virtual CodeGenerator GetGenerator();
+    public abstract virtual AbstractTarget GetTarget();
+    public abstract virtual void SetController(OutputModelController controller);
+    public abstract virtual OutputModelController GetController();
+    public abstract virtual ParserFile ParserFile(string fileName);
+    public abstract virtual Parser Parser(ParserFile file);
+    public abstract virtual LexerFile LexerFile(string fileName);
+    public abstract virtual Lexer Lexer(LexerFile file);
+    public abstract virtual RuleFunction Rule(Rule r);
+    public abstract virtual IList`1<SrcOp> RulePostamble(RuleFunction function, Rule r);
+    public abstract virtual CodeBlockForAlt Alternative(Alternative alt, bool outerMost);
+    public abstract virtual CodeBlockForAlt FinishAlternative(CodeBlockForAlt blk, IList`1<SrcOp> ops);
+    public abstract virtual CodeBlockForAlt Epsilon(Alternative alt, bool outerMost);
+    public abstract virtual IList`1<SrcOp> RuleRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public abstract virtual IList`1<SrcOp> TokenRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public abstract virtual IList`1<SrcOp> StringRef(GrammarAST ID, GrammarAST label);
+    public abstract virtual IList`1<SrcOp> Set(GrammarAST setAST, GrammarAST label, bool invert);
+    public abstract virtual IList`1<SrcOp> Wildcard(GrammarAST ast, GrammarAST labelAST);
+    public abstract virtual IList`1<SrcOp> Action(ActionAST ast);
+    public abstract virtual IList`1<SrcOp> Sempred(ActionAST ast);
+    public abstract virtual Choice GetChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts, GrammarAST label);
+    public abstract virtual Choice GetEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public abstract virtual Choice GetLL1ChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public abstract virtual Choice GetComplexChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public abstract virtual Choice GetLL1EBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public abstract virtual Choice GetComplexEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public abstract virtual IList`1<SrcOp> GetLL1Test(IntervalSet look, GrammarAST blkAST);
+    public abstract virtual bool NeedsImplicitLabel(GrammarAST ID, LabeledOp op);
+    public abstract virtual OutputModelObject GetRoot();
+    public abstract virtual RuleFunction GetCurrentRuleFunction();
+    public abstract virtual Alternative GetCurrentOuterMostAlt();
+    public abstract virtual CodeBlock GetCurrentBlock();
+    public abstract virtual CodeBlockForOuterMostAlt GetCurrentOuterMostAlternativeBlock();
+    public abstract virtual int GetCodeBlockLevel();
+    public abstract virtual int GetTreeLevel();
+}
+public class Antlr4.Codegen.OutputModelWalker : object {
+    internal AntlrTool tool;
+    internal TemplateGroup templates;
+    public OutputModelWalker(AntlrTool tool, TemplateGroup templates);
+    public virtual Template Walk(OutputModelObject omo, bool header);
+    private static IEnumerable`1<FieldInfo> GetFields(Type type);
+}
+public class Antlr4.Codegen.ParserFactory : DefaultOutputModelFactory {
+    public ParserFactory(CodeGenerator gen);
+    public virtual ParserFile ParserFile(string fileName);
+    public virtual Parser Parser(ParserFile file);
+    public virtual RuleFunction Rule(Rule r);
+    public virtual CodeBlockForAlt Epsilon(Alternative alt, bool outerMost);
+    public virtual CodeBlockForAlt Alternative(Alternative alt, bool outerMost);
+    public virtual CodeBlockForAlt FinishAlternative(CodeBlockForAlt blk, IList`1<SrcOp> ops);
+    public virtual IList`1<SrcOp> Action(ActionAST ast);
+    public virtual IList`1<SrcOp> Sempred(ActionAST ast);
+    public virtual IList`1<SrcOp> RuleRef(GrammarAST ID, GrammarAST label, GrammarAST args);
+    public virtual IList`1<SrcOp> TokenRef(GrammarAST ID, GrammarAST labelAST, GrammarAST args);
+    public virtual Decl GetTokenLabelDecl(string label);
+    public virtual TokenListDecl GetTokenListLabelDecl(string label);
+    public virtual IList`1<SrcOp> Set(GrammarAST setAST, GrammarAST labelAST, bool invert);
+    public virtual IList`1<SrcOp> Wildcard(GrammarAST ast, GrammarAST labelAST);
+    public virtual Choice GetChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts, GrammarAST labelAST);
+    public virtual Choice GetEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetLL1ChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetComplexChoiceBlock(BlockAST blkAST, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetLL1EBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual Choice GetComplexEBNFBlock(GrammarAST ebnfRoot, IList`1<CodeBlockForAlt> alts);
+    public virtual IList`1<SrcOp> GetLL1Test(IntervalSet look, GrammarAST blkAST);
+    public virtual bool NeedsImplicitLabel(GrammarAST ID, LabeledOp op);
+    public virtual void DefineImplicitLabel(GrammarAST ast, LabeledOp op);
+    public virtual AddToLabelList GetAddToListOpIfListLabelPresent(LabeledOp op, GrammarAST label);
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Codegen.SourceGenTriggers : TreeParser {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    public OutputModelController controller;
+    public bool hasLookaheadBlock;
+    private DFA7 dfa7;
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public SourceGenTriggers(ITreeNodeStream input);
+    public SourceGenTriggers(ITreeNodeStream input, RecognizerSharedState state);
+    public SourceGenTriggers(ITreeNodeStream input, OutputModelController controller);
+    private static SourceGenTriggers();
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    [GrammarRuleAttribute("dummy")]
+private void dummy();
+    [GrammarRuleAttribute("block")]
+public IList`1<SrcOp> block(GrammarAST label, GrammarAST ebnfRoot);
+    [GrammarRuleAttribute("alternative")]
+private alternative_return alternative();
+    [GrammarRuleAttribute("alt")]
+private alt_return alt(bool outerMost);
+    [GrammarRuleAttribute("element")]
+private IList`1<SrcOp> element();
+    [GrammarRuleAttribute("labeledElement")]
+private IList`1<SrcOp> labeledElement();
+    [GrammarRuleAttribute("subrule")]
+private IList`1<SrcOp> subrule();
+    [GrammarRuleAttribute("blockSet")]
+private IList`1<SrcOp> blockSet(GrammarAST label, bool invert);
+    [GrammarRuleAttribute("atom")]
+private IList`1<SrcOp> atom(GrammarAST label, bool invert);
+    [GrammarRuleAttribute("ruleref")]
+private IList`1<SrcOp> ruleref(GrammarAST label);
+    [GrammarRuleAttribute("range")]
+private IList`1<SrcOp> range(GrammarAST label);
+    [GrammarRuleAttribute("terminal")]
+private IList`1<SrcOp> terminal(GrammarAST label);
+    [GrammarRuleAttribute("elementOptions")]
+private void elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private void elementOption();
+    protected virtual void InitDFAs();
+}
+public class Antlr4.Codegen.Target.CSharp_v2_0Target : CSharpTarget {
+    public CSharp_v2_0Target(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Target.CSharp_v3_0Target : CSharpTarget {
+    public CSharp_v3_0Target(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Target.CSharp_v3_5Target : CSharpTarget {
+    public CSharp_v3_5Target(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Target.CSharp_v4_0Target : CSharpTarget {
+    public CSharp_v4_0Target(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Target.CSharp_v4_5Target : CSharpTarget {
+    public CSharp_v4_5Target(CodeGenerator gen);
+}
+public class Antlr4.Codegen.Target.CSharpTarget : AbstractTarget {
+    public CSharpTarget(CodeGenerator gen);
+    protected CSharpTarget(CodeGenerator gen, string language);
+    public virtual string EncodeIntAsCharEscape(int v);
+    public virtual string GetTargetStringLiteralFromANTLRStringLiteral(CodeGenerator generator, string literal, bool addQuotes);
+    protected virtual bool VisibleGrammarSymbolCausesIssueInGeneratedCode(GrammarAST idNode);
+    protected virtual TemplateGroup LoadTemplates();
+}
+public class Antlr4.Codegen.Target.JavaTarget : AbstractTarget {
+    private static ThreadLocal`1<TemplateGroup> targetTemplates;
+    protected static String[] javaKeywords;
+    protected ISet`1<string> badWords;
+    public JavaTarget(CodeGenerator gen);
+    private static JavaTarget();
+    public virtual ISet`1<string> GetBadWords();
+    protected virtual void AddBadWords();
+    public virtual string GetTargetStringLiteralFromANTLRStringLiteral(CodeGenerator generator, string literal, bool addQuotes);
+    public virtual string EncodeIntAsCharEscape(int v);
+    public virtual int GetSerializedATNSegmentLimit();
+    protected virtual bool VisibleGrammarSymbolCausesIssueInGeneratedCode(GrammarAST idNode);
+    protected virtual TemplateGroup LoadTemplates();
+}
+public static class Antlr4.Misc.CharSupport : object {
+    public static Int32[] ANTLRLiteralEscapedCharValue;
+    public static String[] ANTLRLiteralCharValueEscape;
+    private static CharSupport();
+    public static string GetANTLRCharLiteralForChar(int c);
+    public static int GetCharValueFromGrammarCharLiteral(string literal);
+    public static string GetStringFromGrammarStringLiteral(string literal);
+    public static int GetCharValueFromCharInGrammarLiteral(string cstr);
+    public static string Capitalize(string s);
+}
+public class Antlr4.Misc.FrequencySet`1 : Dictionary`2<T, StrongBox`1<int>> {
+    public virtual int GetCount(T key);
+    public virtual void Add(T key);
+}
+public class Antlr4.Misc.Graph`1 : object {
+    protected IDictionary`2<T, Node<T>> nodes;
+    public virtual void AddEdge(T a, T b);
+    protected internal virtual Node<T> GetNode(T a);
+    public virtual IList`1<T> Sort();
+    public void DFS(Node<T> n, ISet`1<Node<T>> visited, List`1<T> sorted);
+}
+[DefaultMemberAttribute("Item")]
+public class Antlr4.Misc.LinkedHashMap`2 : object {
+    private Dictionary`2<TKey, LinkedListNode`1<KeyValuePair`2<TKey, TValue>>> _dictionary;
+    private LinkedList`1<KeyValuePair`2<TKey, TValue>> _list;
+    public TValue Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public ICollection`1<TKey> Keys { get; }
+    public ICollection`1<TValue> Values { get; }
+    private bool System.Collections.IDictionary.IsFixedSize { get; }
+    private ICollection System.Collections.IDictionary.Keys { get; }
+    private ICollection System.Collections.IDictionary.Values { get; }
+    private bool System.Collections.ICollection.IsSynchronized { get; }
+    private object System.Collections.ICollection.SyncRoot { get; }
+    public object Item { get; public set; }
+    public LinkedHashMap`2(IEnumerable`1<KeyValuePair`2<TKey, TValue>> items);
+    public virtual TValue get_Item(TKey key);
+    public virtual void set_Item(TKey key, TValue value);
+    public virtual int get_Count();
+    public virtual bool get_IsReadOnly();
+    public virtual ICollection`1<TKey> get_Keys();
+    public virtual ICollection`1<TValue> get_Values();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsFixedSize();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Keys();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Values();
+    private sealed virtual override bool System.Collections.ICollection.get_IsSynchronized();
+    private sealed virtual override object System.Collections.ICollection.get_SyncRoot();
+    public sealed virtual object get_Item(object key);
+    public sealed virtual void set_Item(object key, object value);
+    private sealed virtual override void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey,TValue>>.Add(KeyValuePair`2<TKey, TValue> item);
+    public virtual void Add(TKey key, TValue value);
+    public virtual void Clear();
+    public virtual bool Contains(KeyValuePair`2<TKey, TValue> item);
+    public virtual bool ContainsKey(TKey key);
+    public virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public virtual IEnumerator`1<KeyValuePair`2<TKey, TValue>> GetEnumerator();
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey,TValue>>.Remove(KeyValuePair`2<TKey, TValue> item);
+    public virtual bool Remove(TKey key);
+    public virtual bool TryGetValue(TKey key, TValue& value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    private sealed virtual override void System.Collections.IDictionary.Add(object key, object value);
+    private sealed virtual override bool System.Collections.IDictionary.Contains(object key);
+    private sealed virtual override IDictionaryEnumerator System.Collections.IDictionary.GetEnumerator();
+    private sealed virtual override void System.Collections.IDictionary.Remove(object key);
+    private sealed virtual override void System.Collections.ICollection.CopyTo(Array array, int index);
+}
+public class Antlr4.Misc.LinkedHashSet`1 : object {
+    private Dictionary`2<T, LinkedListNode`1<T>> _dictionary;
+    private LinkedList`1<T> _list;
+    public int Count { get; }
+    private bool System.Collections.Generic.ICollection<T>.IsReadOnly { get; }
+    public virtual int get_Count();
+    private sealed virtual override bool System.Collections.Generic.ICollection<T>.get_IsReadOnly();
+    public virtual bool Add(T item);
+    public virtual void Clear();
+    public virtual bool Contains(T item);
+    public virtual void CopyTo(T[] array, int arrayIndex);
+    public virtual void ExceptWith(IEnumerable`1<T> other);
+    public virtual IEnumerator`1<T> GetEnumerator();
+    public virtual void IntersectWith(IEnumerable`1<T> other);
+    public virtual bool IsProperSubsetOf(IEnumerable`1<T> other);
+    public virtual bool IsProperSupersetOf(IEnumerable`1<T> other);
+    public virtual bool IsSubsetOf(IEnumerable`1<T> other);
+    public virtual bool IsSupersetOf(IEnumerable`1<T> other);
+    public virtual bool Overlaps(IEnumerable`1<T> other);
+    public virtual bool Remove(T item);
+    public virtual bool SetEquals(IEnumerable`1<T> other);
+    public virtual void SymmetricExceptWith(IEnumerable`1<T> other);
+    public virtual void UnionWith(IEnumerable`1<T> other);
+    private sealed virtual override void System.Collections.Generic.ICollection<T>.Add(T item);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Antlr4.Misc.LogManager : object {
+    internal void Log(string component, string message);
+    public string Save();
+}
+[DefaultMemberAttribute("Item")]
+public class Antlr4.Misc.OrderedHashMap`2 : LinkedHashMap`2<K, V> {
+    protected IList`1<K> elements;
+    public V Item { get; public set; }
+    public virtual V get_Item(K key);
+    public virtual void set_Item(K key, V value);
+    public virtual K GetKey(int i);
+    public virtual V GetElement(int i);
+    public virtual void Add(K key, V value);
+    public virtual bool Remove(K key);
+    public virtual void Clear();
+}
+public class Antlr4.Misc.OrderedHashSet`1 : LinkedHashSet`1<T> {
+    protected internal List`1<T> elements;
+    public IList`1<T> Elements { get; }
+    public virtual T Get(int i);
+    public virtual T Set(int i, T value);
+    public virtual bool Remove(int i);
+    public virtual bool Add(T value);
+    public virtual bool Remove(T o);
+    public virtual void Clear();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object o);
+    public virtual IEnumerator`1<T> GetEnumerator();
+    public virtual IList`1<T> get_Elements();
+    public virtual string ToString();
+}
+[ExtensionAttribute]
+internal static class Antlr4.Misc.TreeParserExtensions : object {
+    private static string DotDot;
+    private static string DoubleEtc;
+    [ExtensionAttribute]
+public static bool InContext(TreeParser parser, string context);
+    private static bool InContext(ITreeAdaptor adaptor, String[] tokenNames, object t, string context);
+    private static object GetAncestor(ITreeAdaptor adaptor, String[] tokenNames, object t, string goal);
+}
+public static class Antlr4.Misc.Utils : object {
+    public static int INTEGER_POOL_MAX_VALUE;
+    private static Object[] ints;
+    private static Utils();
+    public static string StripFileExtension(string name);
+    public static string Join(Object[] a, string separator);
+    public static string SortLinesInString(string s);
+    public static IList`1<string> NodesToStrings(IList`1<T> nodes);
+    public static string Capitalize(string s);
+    public static string Decapitalize(string s);
+    public static IList`1<To> Select(IList`1<From> list, Func`2<From, To> selector);
+    public static T Find(IEnumerable ops);
+    public static int IndexOf(IList`1<T> elems, Predicate`1<T> match);
+    public static int LastIndexOf(IList`1<T> elems, Predicate`1<T> match);
+    public static void SetSize(IList`1<T> list, int size);
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.ActionSplitter : Lexer {
+    public static int EOF;
+    public static int ATTR;
+    public static int ATTR_VALUE_EXPR;
+    public static int COMMENT;
+    public static int ID;
+    public static int LINE_COMMENT;
+    public static int NONLOCAL_ATTR;
+    public static int QUALIFIED_ATTR;
+    public static int SET_ATTR;
+    public static int SET_NONLOCAL_ATTR;
+    public static int TEXT;
+    public static int WS;
+    private ActionSplitterListener delegate;
+    public string GrammarFileName { get; }
+    public ActionSplitter(ICharStream input, ActionSplitterListener delegate);
+    public ActionSplitter(ICharStream input);
+    public ActionSplitter(ICharStream input, RecognizerSharedState state);
+    public virtual IList`1<IToken> GetActionTokens();
+    private bool IsIDStartChar(int c);
+    public virtual string get_GrammarFileName();
+    public virtual IToken NextToken();
+    public virtual void Memoize(IIntStream input, int ruleIndex, int ruleStartIndex);
+    public virtual bool AlreadyParsedRule(IIntStream input, int ruleIndex);
+    [GrammarRuleAttribute("COMMENT")]
+private void mCOMMENT();
+    [GrammarRuleAttribute("LINE_COMMENT")]
+private void mLINE_COMMENT();
+    [GrammarRuleAttribute("SET_NONLOCAL_ATTR")]
+private void mSET_NONLOCAL_ATTR();
+    [GrammarRuleAttribute("NONLOCAL_ATTR")]
+private void mNONLOCAL_ATTR();
+    [GrammarRuleAttribute("QUALIFIED_ATTR")]
+private void mQUALIFIED_ATTR();
+    [GrammarRuleAttribute("SET_ATTR")]
+private void mSET_ATTR();
+    [GrammarRuleAttribute("ATTR")]
+private void mATTR();
+    [GrammarRuleAttribute("TEXT")]
+private void mTEXT();
+    [GrammarRuleAttribute("ID")]
+private void mID();
+    [GrammarRuleAttribute("ATTR_VALUE_EXPR")]
+private void mATTR_VALUE_EXPR();
+    [GrammarRuleAttribute("WS")]
+private void mWS();
+    public virtual void mTokens();
+    private void synpred1_ActionSplitter_fragment();
+    private void synpred2_ActionSplitter_fragment();
+    private void synpred3_ActionSplitter_fragment();
+    private void synpred4_ActionSplitter_fragment();
+    private void synpred5_ActionSplitter_fragment();
+    private void synpred6_ActionSplitter_fragment();
+    private void synpred7_ActionSplitter_fragment();
+    private bool EvaluatePredicate(Action fragment);
+    protected virtual void InitDFAs();
+}
+public interface Antlr4.Parse.ActionSplitterListener {
+    public abstract virtual void QualifiedAttr(string expr, IToken x, IToken y);
+    public abstract virtual void SetAttr(string expr, IToken x, IToken rhs);
+    public abstract virtual void Attr(string expr, IToken x);
+    public abstract virtual void SetNonLocalAttr(string expr, IToken x, IToken y, IToken rhs);
+    public abstract virtual void NonLocalAttr(string expr, IToken x, IToken y);
+    public abstract virtual void Text(string text);
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.ANTLRLexer : Lexer {
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int COMMENTS_CHANNEL;
+    public CommonTokenStream tokens;
+    public bool isLexerRule;
+    private DFA2 dfa2;
+    private DFA34 dfa34;
+    public string GrammarFileName { get; }
+    public ANTLRLexer(ICharStream input);
+    public ANTLRLexer(ICharStream input, RecognizerSharedState state);
+    private static ANTLRLexer();
+    public virtual void GrammarError(ErrorType etype, IToken token, Object[] args);
+    public virtual IToken GetRuleOrSubruleStartToken();
+    public virtual string get_GrammarFileName();
+    [GrammarRuleAttribute("DOC_COMMENT")]
+private void mDOC_COMMENT();
+    [GrammarRuleAttribute("COMMENT")]
+private void mCOMMENT();
+    [GrammarRuleAttribute("ARG_OR_CHARSET")]
+private void mARG_OR_CHARSET();
+    [GrammarRuleAttribute("LEXER_CHAR_SET")]
+private void mLEXER_CHAR_SET();
+    [GrammarRuleAttribute("ARG_ACTION")]
+private void mARG_ACTION();
+    [GrammarRuleAttribute("ACTION")]
+private void mACTION();
+    [GrammarRuleAttribute("NESTED_ACTION")]
+private void mNESTED_ACTION();
+    [GrammarRuleAttribute("OPTIONS")]
+private void mOPTIONS();
+    [GrammarRuleAttribute("TOKENS_SPEC")]
+private void mTOKENS_SPEC();
+    [GrammarRuleAttribute("CHANNELS")]
+private void mCHANNELS();
+    [GrammarRuleAttribute("IMPORT")]
+private void mIMPORT();
+    [GrammarRuleAttribute("FRAGMENT")]
+private void mFRAGMENT();
+    [GrammarRuleAttribute("LEXER")]
+private void mLEXER();
+    [GrammarRuleAttribute("PARSER")]
+private void mPARSER();
+    [GrammarRuleAttribute("GRAMMAR")]
+private void mGRAMMAR();
+    [GrammarRuleAttribute("TREE_GRAMMAR")]
+private void mTREE_GRAMMAR();
+    [GrammarRuleAttribute("PROTECTED")]
+private void mPROTECTED();
+    [GrammarRuleAttribute("PUBLIC")]
+private void mPUBLIC();
+    [GrammarRuleAttribute("PRIVATE")]
+private void mPRIVATE();
+    [GrammarRuleAttribute("RETURNS")]
+private void mRETURNS();
+    [GrammarRuleAttribute("LOCALS")]
+private void mLOCALS();
+    [GrammarRuleAttribute("THROWS")]
+private void mTHROWS();
+    [GrammarRuleAttribute("CATCH")]
+private void mCATCH();
+    [GrammarRuleAttribute("FINALLY")]
+private void mFINALLY();
+    [GrammarRuleAttribute("MODE")]
+private void mMODE();
+    [GrammarRuleAttribute("COLON")]
+private void mCOLON();
+    [GrammarRuleAttribute("COLONCOLON")]
+private void mCOLONCOLON();
+    [GrammarRuleAttribute("COMMA")]
+private void mCOMMA();
+    [GrammarRuleAttribute("SEMI")]
+private void mSEMI();
+    [GrammarRuleAttribute("LPAREN")]
+private void mLPAREN();
+    [GrammarRuleAttribute("RPAREN")]
+private void mRPAREN();
+    [GrammarRuleAttribute("RARROW")]
+private void mRARROW();
+    [GrammarRuleAttribute("LT")]
+private void mLT();
+    [GrammarRuleAttribute("GT")]
+private void mGT();
+    [GrammarRuleAttribute("ASSIGN")]
+private void mASSIGN();
+    [GrammarRuleAttribute("QUESTION")]
+private void mQUESTION();
+    [GrammarRuleAttribute("SYNPRED")]
+private void mSYNPRED();
+    [GrammarRuleAttribute("STAR")]
+private void mSTAR();
+    [GrammarRuleAttribute("PLUS")]
+private void mPLUS();
+    [GrammarRuleAttribute("PLUS_ASSIGN")]
+private void mPLUS_ASSIGN();
+    [GrammarRuleAttribute("OR")]
+private void mOR();
+    [GrammarRuleAttribute("DOLLAR")]
+private void mDOLLAR();
+    [GrammarRuleAttribute("DOT")]
+private void mDOT();
+    [GrammarRuleAttribute("RANGE")]
+private void mRANGE();
+    [GrammarRuleAttribute("AT")]
+private void mAT();
+    [GrammarRuleAttribute("POUND")]
+private void mPOUND();
+    [GrammarRuleAttribute("NOT")]
+private void mNOT();
+    [GrammarRuleAttribute("RBRACE")]
+private void mRBRACE();
+    [GrammarRuleAttribute("ID")]
+private void mID();
+    [GrammarRuleAttribute("NameChar")]
+private void mNameChar();
+    [GrammarRuleAttribute("NameStartChar")]
+private void mNameStartChar();
+    [GrammarRuleAttribute("ACTION_CHAR_LITERAL")]
+private void mACTION_CHAR_LITERAL();
+    [GrammarRuleAttribute("ACTION_STRING_LITERAL")]
+private void mACTION_STRING_LITERAL();
+    [GrammarRuleAttribute("ACTION_ESC")]
+private void mACTION_ESC();
+    [GrammarRuleAttribute("INT")]
+private void mINT();
+    [GrammarRuleAttribute("SRC")]
+private void mSRC();
+    [GrammarRuleAttribute("STRING_LITERAL")]
+private void mSTRING_LITERAL();
+    [GrammarRuleAttribute("HEX_DIGIT")]
+private void mHEX_DIGIT();
+    [GrammarRuleAttribute("ESC_SEQ")]
+private void mESC_SEQ();
+    [GrammarRuleAttribute("UNICODE_ESC")]
+private void mUNICODE_ESC();
+    [GrammarRuleAttribute("WS")]
+private void mWS();
+    [GrammarRuleAttribute("NLCHARS")]
+private void mNLCHARS();
+    [GrammarRuleAttribute("WSCHARS")]
+private void mWSCHARS();
+    [GrammarRuleAttribute("WSNLCHARS")]
+private void mWSNLCHARS();
+    [GrammarRuleAttribute("UnicodeBOM")]
+private void mUnicodeBOM();
+    [GrammarRuleAttribute("ERRCHAR")]
+private void mERRCHAR();
+    public virtual void mTokens();
+    private void synpred1_ANTLRLexer_fragment();
+    private void synpred2_ANTLRLexer_fragment();
+    private void synpred3_ANTLRLexer_fragment();
+    private void synpred4_ANTLRLexer_fragment();
+    private void synpred5_ANTLRLexer_fragment();
+    private void synpred6_ANTLRLexer_fragment();
+    private bool EvaluatePredicate(Action fragment);
+    protected virtual void InitDFAs();
+    private int SpecialStateTransition2(DFA dfa, int s, IIntStream _input);
+    private int SpecialStateTransition34(DFA dfa, int s, IIntStream _input);
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.ANTLRParser : Parser {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    private ITreeAdaptor adaptor;
+    internal Stack`1<string> paraphrases;
+    public ITreeAdaptor TreeAdaptor { get; public set; }
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public ANTLRParser(ITokenStream input);
+    public ANTLRParser(ITokenStream input, RecognizerSharedState state);
+    private static ANTLRParser();
+    public ITreeAdaptor get_TreeAdaptor();
+    public void set_TreeAdaptor(ITreeAdaptor value);
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    public virtual void GrammarError(ErrorType etype, IToken token, Object[] args);
+    [GrammarRuleAttribute("grammarSpec")]
+public AstParserRuleReturnScope`2<GrammarAST, IToken> grammarSpec();
+    [GrammarRuleAttribute("grammarType")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> grammarType();
+    [GrammarRuleAttribute("prequelConstruct")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> prequelConstruct();
+    [GrammarRuleAttribute("optionsSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> optionsSpec();
+    [GrammarRuleAttribute("option")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> option();
+    [GrammarRuleAttribute("optionValue")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> optionValue();
+    [GrammarRuleAttribute("delegateGrammars")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> delegateGrammars();
+    [GrammarRuleAttribute("delegateGrammar")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> delegateGrammar();
+    [GrammarRuleAttribute("tokensSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> tokensSpec();
+    [GrammarRuleAttribute("v3tokenSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> v3tokenSpec();
+    [GrammarRuleAttribute("channelsSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> channelsSpec();
+    [GrammarRuleAttribute("action")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> action();
+    [GrammarRuleAttribute("actionScopeName")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> actionScopeName();
+    [GrammarRuleAttribute("modeSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> modeSpec();
+    [GrammarRuleAttribute("rules")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> rules();
+    [GrammarRuleAttribute("sync")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> sync();
+    [GrammarRuleAttribute("rule")]
+public AstParserRuleReturnScope`2<GrammarAST, IToken> rule();
+    [GrammarRuleAttribute("parserRule")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> parserRule();
+    [GrammarRuleAttribute("exceptionGroup")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> exceptionGroup();
+    [GrammarRuleAttribute("exceptionHandler")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> exceptionHandler();
+    [GrammarRuleAttribute("finallyClause")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> finallyClause();
+    [GrammarRuleAttribute("rulePrequels")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> rulePrequels();
+    [GrammarRuleAttribute("rulePrequel")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> rulePrequel();
+    [GrammarRuleAttribute("ruleReturns")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleReturns();
+    [GrammarRuleAttribute("throwsSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> throwsSpec();
+    [GrammarRuleAttribute("localsSpec")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> localsSpec();
+    [GrammarRuleAttribute("ruleAction")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleAction();
+    [GrammarRuleAttribute("ruleBlock")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleBlock();
+    [GrammarRuleAttribute("ruleAltList")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleAltList();
+    [GrammarRuleAttribute("labeledAlt")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> labeledAlt();
+    [GrammarRuleAttribute("lexerRule")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerRule();
+    [GrammarRuleAttribute("lexerRuleBlock")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerRuleBlock();
+    [GrammarRuleAttribute("lexerAltList")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerAltList();
+    [GrammarRuleAttribute("lexerAlt")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerAlt();
+    [GrammarRuleAttribute("lexerElements")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerElements();
+    [GrammarRuleAttribute("lexerElement")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerElement();
+    [GrammarRuleAttribute("labeledLexerElement")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> labeledLexerElement();
+    [GrammarRuleAttribute("lexerBlock")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerBlock();
+    [GrammarRuleAttribute("lexerCommands")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerCommands();
+    [GrammarRuleAttribute("lexerCommand")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerCommand();
+    [GrammarRuleAttribute("lexerCommandExpr")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerCommandExpr();
+    [GrammarRuleAttribute("lexerCommandName")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerCommandName();
+    [GrammarRuleAttribute("altList")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> altList();
+    [GrammarRuleAttribute("alternative")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> alternative();
+    [GrammarRuleAttribute("element")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> element();
+    [GrammarRuleAttribute("actionElement")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> actionElement();
+    [GrammarRuleAttribute("labeledElement")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> labeledElement();
+    [GrammarRuleAttribute("ebnf")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ebnf();
+    [GrammarRuleAttribute("blockSuffix")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> blockSuffix();
+    [GrammarRuleAttribute("ebnfSuffix")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ebnfSuffix();
+    [GrammarRuleAttribute("lexerAtom")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> lexerAtom();
+    [GrammarRuleAttribute("atom")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> atom();
+    [GrammarRuleAttribute("wildcard")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> wildcard();
+    [GrammarRuleAttribute("notSet")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> notSet();
+    [GrammarRuleAttribute("blockSet")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> blockSet();
+    [GrammarRuleAttribute("setElement")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> setElement();
+    [GrammarRuleAttribute("block")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> block();
+    [GrammarRuleAttribute("ruleref")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleref();
+    [GrammarRuleAttribute("range")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> range();
+    [GrammarRuleAttribute("terminal")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> terminal();
+    [GrammarRuleAttribute("elementOptions")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> elementOption();
+    [GrammarRuleAttribute("id")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> id();
+    [GrammarRuleAttribute("qid")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> qid();
+    [GrammarRuleAttribute("alternativeEntry")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> alternativeEntry();
+    [GrammarRuleAttribute("elementEntry")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> elementEntry();
+    [GrammarRuleAttribute("ruleEntry")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> ruleEntry();
+    [GrammarRuleAttribute("blockEntry")]
+private AstParserRuleReturnScope`2<GrammarAST, IToken> blockEntry();
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.ATNBuilder : TreeParser {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    private ATNFactory factory;
+    private DFA10 dfa10;
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public ATNBuilder(ITreeNodeStream input);
+    public ATNBuilder(ITreeNodeStream input, RecognizerSharedState state);
+    public ATNBuilder(ITreeNodeStream input, ATNFactory factory);
+    private static ATNBuilder();
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    [GrammarRuleAttribute("dummy")]
+private void dummy();
+    [GrammarRuleAttribute("ruleBlock")]
+public Handle ruleBlock(GrammarAST ebnfRoot);
+    [GrammarRuleAttribute("block")]
+private Handle block(GrammarAST ebnfRoot);
+    [GrammarRuleAttribute("alternative")]
+private Handle alternative();
+    [GrammarRuleAttribute("lexerCommands")]
+private Handle lexerCommands();
+    [GrammarRuleAttribute("lexerCommand")]
+private Handle lexerCommand();
+    [GrammarRuleAttribute("lexerCommandExpr")]
+private TreeRuleReturnScope`1<GrammarAST> lexerCommandExpr();
+    [GrammarRuleAttribute("element")]
+private element_return element();
+    [GrammarRuleAttribute("astOperand")]
+private Handle astOperand();
+    [GrammarRuleAttribute("labeledElement")]
+private Handle labeledElement();
+    [GrammarRuleAttribute("subrule")]
+private subrule_return subrule();
+    [GrammarRuleAttribute("blockSet")]
+private blockSet_return blockSet(bool invert);
+    [GrammarRuleAttribute("setElement")]
+private TreeRuleReturnScope`1<GrammarAST> setElement();
+    [GrammarRuleAttribute("atom")]
+private atom_return atom();
+    [GrammarRuleAttribute("ruleref")]
+private Handle ruleref();
+    [GrammarRuleAttribute("range")]
+private Handle range();
+    [GrammarRuleAttribute("terminal")]
+private terminal_return terminal();
+    [GrammarRuleAttribute("elementOptions")]
+private void elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private void elementOption();
+    protected virtual void InitDFAs();
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.BlockSetTransformer : TreeRewriter {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    private ITreeAdaptor adaptor;
+    public string currentRuleName;
+    public GrammarAST currentAlt;
+    public Grammar g;
+    private DFA10 dfa10;
+    public ITreeAdaptor TreeAdaptor { get; public set; }
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public BlockSetTransformer(ITreeNodeStream input);
+    public BlockSetTransformer(ITreeNodeStream input, RecognizerSharedState state);
+    public BlockSetTransformer(ITreeNodeStream input, Grammar g);
+    private static BlockSetTransformer();
+    public ITreeAdaptor get_TreeAdaptor();
+    public void set_TreeAdaptor(ITreeAdaptor value);
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    protected virtual IAstRuleReturnScope Topdown();
+    [GrammarRuleAttribute("topdown")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> topdown();
+    [GrammarRuleAttribute("setAlt")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> setAlt();
+    [GrammarRuleAttribute("ebnfBlockSet")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> ebnfBlockSet();
+    [GrammarRuleAttribute("ebnfSuffix")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> ebnfSuffix();
+    [GrammarRuleAttribute("blockSet")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> blockSet();
+    [GrammarRuleAttribute("setElement")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> setElement(bool inLexer);
+    [GrammarRuleAttribute("elementOptions")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private AstTreeRuleReturnScope`2<GrammarAST, GrammarAST> elementOption();
+    protected virtual void InitDFAs();
+    private int SpecialStateTransition10(DFA dfa, int s, IIntStream _input);
+}
+public class Antlr4.Parse.GrammarASTAdaptor : CommonTreeAdaptor {
+    private ICharStream input;
+    public GrammarASTAdaptor(ICharStream input);
+    public virtual object Nil();
+    public virtual object Create(IToken token);
+    public virtual object Create(int tokenType, string text);
+    public virtual object Create(int tokenType, IToken fromToken, string text);
+    public virtual object Create(int tokenType, IToken fromToken);
+    public virtual object DupNode(object t);
+    public virtual object ErrorNode(ITokenStream input, IToken start, IToken stop, RecognitionException e);
+}
+public class Antlr4.Parse.GrammarToken : object {
+    public Grammar g;
+    public int originalTokenIndex;
+    private CommonToken _token;
+    public int CharPositionInLine { get; public set; }
+    public int Line { get; public set; }
+    public int TokenIndex { get; public set; }
+    public int StartIndex { get; public set; }
+    public int StopIndex { get; public set; }
+    public int Channel { get; public set; }
+    public ICharStream InputStream { get; public set; }
+    public string Text { get; public set; }
+    public int Type { get; public set; }
+    public GrammarToken(Grammar g, IToken oldToken);
+    public sealed virtual int get_CharPositionInLine();
+    public sealed virtual void set_CharPositionInLine(int value);
+    public sealed virtual int get_Line();
+    public sealed virtual void set_Line(int value);
+    public sealed virtual int get_TokenIndex();
+    public sealed virtual void set_TokenIndex(int value);
+    public sealed virtual int get_StartIndex();
+    public sealed virtual void set_StartIndex(int value);
+    public sealed virtual int get_StopIndex();
+    public sealed virtual void set_StopIndex(int value);
+    public sealed virtual int get_Channel();
+    public sealed virtual void set_Channel(int value);
+    public sealed virtual ICharStream get_InputStream();
+    public sealed virtual void set_InputStream(ICharStream value);
+    public sealed virtual string get_Text();
+    public sealed virtual void set_Text(string value);
+    public sealed virtual int get_Type();
+    public sealed virtual void set_Type(int value);
+    public virtual string ToString();
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.GrammarTreeVisitor : TreeParser {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    public string grammarName;
+    public GrammarAST currentRuleAST;
+    public string currentModeName;
+    public string currentRuleName;
+    public GrammarAST currentOuterAltRoot;
+    public int currentOuterAltNumber;
+    public int rewriteEBNFLevel;
+    private DFA38 dfa38;
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public GrammarTreeVisitor(ITreeNodeStream input);
+    public GrammarTreeVisitor(ITreeNodeStream input, RecognizerSharedState state);
+    private static GrammarTreeVisitor();
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    public virtual ErrorManager GetErrorManager();
+    public virtual void VisitGrammar(GrammarAST t);
+    public virtual void Visit(GrammarAST t, string ruleName);
+    public virtual void DiscoverGrammar(GrammarRootAST root, GrammarAST ID);
+    public virtual void FinishPrequels(GrammarAST firstPrequel);
+    public virtual void FinishGrammar(GrammarRootAST root, GrammarAST ID);
+    public virtual void GrammarOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void RuleOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void BlockOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void DefineToken(GrammarAST ID);
+    public virtual void DefineChannel(GrammarAST ID);
+    public virtual void GlobalNamedAction(GrammarAST scope, GrammarAST ID, ActionAST action);
+    public virtual void ImportGrammar(GrammarAST label, GrammarAST ID);
+    public virtual void ModeDef(GrammarAST m, GrammarAST ID);
+    public virtual void DiscoverRules(GrammarAST rules);
+    public virtual void FinishRules(GrammarAST rule);
+    public virtual void DiscoverRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, ActionAST arg, ActionAST returns, GrammarAST thrws, GrammarAST options, ActionAST locals, IList`1<GrammarAST> actions, GrammarAST block);
+    public virtual void FinishRule(RuleAST rule, GrammarAST ID, GrammarAST block);
+    public virtual void DiscoverLexerRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, GrammarAST block);
+    public virtual void FinishLexerRule(RuleAST rule, GrammarAST ID, GrammarAST block);
+    public virtual void RuleCatch(GrammarAST arg, ActionAST action);
+    public virtual void FinallyAction(ActionAST action);
+    public virtual void DiscoverOuterAlt(AltAST alt);
+    public virtual void FinishOuterAlt(AltAST alt);
+    public virtual void DiscoverAlt(AltAST alt);
+    public virtual void FinishAlt(AltAST alt);
+    public virtual void RuleRef(GrammarAST ref, ActionAST arg);
+    public virtual void TokenRef(TerminalAST ref);
+    public virtual void ElementOption(GrammarASTWithOptions t, GrammarAST ID, GrammarAST valueAST);
+    public virtual void StringRef(TerminalAST ref);
+    public virtual void WildcardRef(GrammarAST ref);
+    public virtual void ActionInAlt(ActionAST action);
+    public virtual void SempredInAlt(PredAST pred);
+    public virtual void Label(GrammarAST op, GrammarAST ID, GrammarAST element);
+    public virtual void LexerCallCommand(int outerAltNumber, GrammarAST ID, GrammarAST arg);
+    public virtual void LexerCommand(int outerAltNumber, GrammarAST ID);
+    protected virtual void EnterGrammarSpec(GrammarAST tree);
+    protected virtual void ExitGrammarSpec(GrammarAST tree);
+    protected virtual void EnterPrequelConstructs(GrammarAST tree);
+    protected virtual void ExitPrequelConstructs(GrammarAST tree);
+    protected virtual void EnterPrequelConstruct(GrammarAST tree);
+    protected virtual void ExitPrequelConstruct(GrammarAST tree);
+    protected virtual void EnterOptionsSpec(GrammarAST tree);
+    protected virtual void ExitOptionsSpec(GrammarAST tree);
+    protected virtual void EnterOption(GrammarAST tree);
+    protected virtual void ExitOption(GrammarAST tree);
+    protected virtual void EnterOptionValue(GrammarAST tree);
+    protected virtual void ExitOptionValue(GrammarAST tree);
+    protected virtual void EnterDelegateGrammars(GrammarAST tree);
+    protected virtual void ExitDelegateGrammars(GrammarAST tree);
+    protected virtual void EnterDelegateGrammar(GrammarAST tree);
+    protected virtual void ExitDelegateGrammar(GrammarAST tree);
+    protected virtual void EnterTokensSpec(GrammarAST tree);
+    protected virtual void ExitTokensSpec(GrammarAST tree);
+    protected virtual void EnterTokenSpec(GrammarAST tree);
+    protected virtual void ExitTokenSpec(GrammarAST tree);
+    protected virtual void EnterChannelsSpec(GrammarAST tree);
+    protected virtual void ExitChannelsSpec(GrammarAST tree);
+    protected virtual void EnterChannelSpec(GrammarAST tree);
+    protected virtual void ExitChannelSpec(GrammarAST tree);
+    protected virtual void EnterAction(GrammarAST tree);
+    protected virtual void ExitAction(GrammarAST tree);
+    protected virtual void EnterRules(GrammarAST tree);
+    protected virtual void ExitRules(GrammarAST tree);
+    protected virtual void EnterMode(GrammarAST tree);
+    protected virtual void ExitMode(GrammarAST tree);
+    protected virtual void EnterLexerRule(GrammarAST tree);
+    protected virtual void ExitLexerRule(GrammarAST tree);
+    protected virtual void EnterRule(GrammarAST tree);
+    protected virtual void ExitRule(GrammarAST tree);
+    protected virtual void EnterExceptionGroup(GrammarAST tree);
+    protected virtual void ExitExceptionGroup(GrammarAST tree);
+    protected virtual void EnterExceptionHandler(GrammarAST tree);
+    protected virtual void ExitExceptionHandler(GrammarAST tree);
+    protected virtual void EnterFinallyClause(GrammarAST tree);
+    protected virtual void ExitFinallyClause(GrammarAST tree);
+    protected virtual void EnterLocals(GrammarAST tree);
+    protected virtual void ExitLocals(GrammarAST tree);
+    protected virtual void EnterRuleReturns(GrammarAST tree);
+    protected virtual void ExitRuleReturns(GrammarAST tree);
+    protected virtual void EnterThrowsSpec(GrammarAST tree);
+    protected virtual void ExitThrowsSpec(GrammarAST tree);
+    protected virtual void EnterRuleAction(GrammarAST tree);
+    protected virtual void ExitRuleAction(GrammarAST tree);
+    protected virtual void EnterRuleModifier(GrammarAST tree);
+    protected virtual void ExitRuleModifier(GrammarAST tree);
+    protected virtual void EnterLexerRuleBlock(GrammarAST tree);
+    protected virtual void ExitLexerRuleBlock(GrammarAST tree);
+    protected virtual void EnterRuleBlock(GrammarAST tree);
+    protected virtual void ExitRuleBlock(GrammarAST tree);
+    protected virtual void EnterLexerOuterAlternative(AltAST tree);
+    protected virtual void ExitLexerOuterAlternative(AltAST tree);
+    protected virtual void EnterOuterAlternative(AltAST tree);
+    protected virtual void ExitOuterAlternative(AltAST tree);
+    protected virtual void EnterLexerAlternative(GrammarAST tree);
+    protected virtual void ExitLexerAlternative(GrammarAST tree);
+    protected virtual void EnterLexerElements(GrammarAST tree);
+    protected virtual void ExitLexerElements(GrammarAST tree);
+    protected virtual void EnterLexerElement(GrammarAST tree);
+    protected virtual void ExitLexerElement(GrammarAST tree);
+    protected virtual void EnterLabeledLexerElement(GrammarAST tree);
+    protected virtual void ExitLabeledLexerElement(GrammarAST tree);
+    protected virtual void EnterLexerBlock(GrammarAST tree);
+    protected virtual void ExitLexerBlock(GrammarAST tree);
+    protected virtual void EnterLexerAtom(GrammarAST tree);
+    protected virtual void ExitLexerAtom(GrammarAST tree);
+    protected virtual void EnterActionElement(GrammarAST tree);
+    protected virtual void ExitActionElement(GrammarAST tree);
+    protected virtual void EnterAlternative(AltAST tree);
+    protected virtual void ExitAlternative(AltAST tree);
+    protected virtual void EnterLexerCommand(GrammarAST tree);
+    protected virtual void ExitLexerCommand(GrammarAST tree);
+    protected virtual void EnterLexerCommandExpr(GrammarAST tree);
+    protected virtual void ExitLexerCommandExpr(GrammarAST tree);
+    protected virtual void EnterElement(GrammarAST tree);
+    protected virtual void ExitElement(GrammarAST tree);
+    protected virtual void EnterAstOperand(GrammarAST tree);
+    protected virtual void ExitAstOperand(GrammarAST tree);
+    protected virtual void EnterLabeledElement(GrammarAST tree);
+    protected virtual void ExitLabeledElement(GrammarAST tree);
+    protected virtual void EnterSubrule(GrammarAST tree);
+    protected virtual void ExitSubrule(GrammarAST tree);
+    protected virtual void EnterLexerSubrule(GrammarAST tree);
+    protected virtual void ExitLexerSubrule(GrammarAST tree);
+    protected virtual void EnterBlockSuffix(GrammarAST tree);
+    protected virtual void ExitBlockSuffix(GrammarAST tree);
+    protected virtual void EnterEbnfSuffix(GrammarAST tree);
+    protected virtual void ExitEbnfSuffix(GrammarAST tree);
+    protected virtual void EnterAtom(GrammarAST tree);
+    protected virtual void ExitAtom(GrammarAST tree);
+    protected virtual void EnterBlockSet(GrammarAST tree);
+    protected virtual void ExitBlockSet(GrammarAST tree);
+    protected virtual void EnterSetElement(GrammarAST tree);
+    protected virtual void ExitSetElement(GrammarAST tree);
+    protected virtual void EnterBlock(GrammarAST tree);
+    protected virtual void ExitBlock(GrammarAST tree);
+    protected virtual void EnterRuleref(GrammarAST tree);
+    protected virtual void ExitRuleref(GrammarAST tree);
+    protected virtual void EnterRange(GrammarAST tree);
+    protected virtual void ExitRange(GrammarAST tree);
+    protected virtual void EnterTerminal(GrammarAST tree);
+    protected virtual void ExitTerminal(GrammarAST tree);
+    protected virtual void EnterElementOptions(GrammarAST tree);
+    protected virtual void ExitElementOptions(GrammarAST tree);
+    protected virtual void EnterElementOption(GrammarAST tree);
+    protected virtual void ExitElementOption(GrammarAST tree);
+    public virtual void TraceIn(string ruleName, int ruleIndex);
+    public virtual void TraceOut(string ruleName, int ruleIndex);
+    [GrammarRuleAttribute("grammarSpec")]
+private TreeRuleReturnScope`1<GrammarAST> grammarSpec();
+    [GrammarRuleAttribute("prequelConstructs")]
+private prequelConstructs_return prequelConstructs();
+    [GrammarRuleAttribute("prequelConstruct")]
+private TreeRuleReturnScope`1<GrammarAST> prequelConstruct();
+    [GrammarRuleAttribute("optionsSpec")]
+private TreeRuleReturnScope`1<GrammarAST> optionsSpec();
+    [GrammarRuleAttribute("option")]
+private TreeRuleReturnScope`1<GrammarAST> option();
+    [GrammarRuleAttribute("optionValue")]
+private optionValue_return optionValue();
+    [GrammarRuleAttribute("delegateGrammars")]
+private TreeRuleReturnScope`1<GrammarAST> delegateGrammars();
+    [GrammarRuleAttribute("delegateGrammar")]
+private TreeRuleReturnScope`1<GrammarAST> delegateGrammar();
+    [GrammarRuleAttribute("tokensSpec")]
+private TreeRuleReturnScope`1<GrammarAST> tokensSpec();
+    [GrammarRuleAttribute("tokenSpec")]
+private TreeRuleReturnScope`1<GrammarAST> tokenSpec();
+    [GrammarRuleAttribute("channelsSpec")]
+private TreeRuleReturnScope`1<GrammarAST> channelsSpec();
+    [GrammarRuleAttribute("channelSpec")]
+private TreeRuleReturnScope`1<GrammarAST> channelSpec();
+    [GrammarRuleAttribute("action")]
+private TreeRuleReturnScope`1<GrammarAST> action();
+    [GrammarRuleAttribute("rules")]
+private TreeRuleReturnScope`1<GrammarAST> rules();
+    [GrammarRuleAttribute("mode")]
+private TreeRuleReturnScope`1<GrammarAST> mode();
+    [GrammarRuleAttribute("lexerRule")]
+private TreeRuleReturnScope`1<GrammarAST> lexerRule();
+    [GrammarRuleAttribute("rule")]
+public TreeRuleReturnScope`1<GrammarAST> rule();
+    [GrammarRuleAttribute("exceptionGroup")]
+private TreeRuleReturnScope`1<GrammarAST> exceptionGroup();
+    [GrammarRuleAttribute("exceptionHandler")]
+private TreeRuleReturnScope`1<GrammarAST> exceptionHandler();
+    [GrammarRuleAttribute("finallyClause")]
+private TreeRuleReturnScope`1<GrammarAST> finallyClause();
+    [GrammarRuleAttribute("locals")]
+private TreeRuleReturnScope`1<GrammarAST> locals();
+    [GrammarRuleAttribute("ruleReturns")]
+private TreeRuleReturnScope`1<GrammarAST> ruleReturns();
+    [GrammarRuleAttribute("throwsSpec")]
+private TreeRuleReturnScope`1<GrammarAST> throwsSpec();
+    [GrammarRuleAttribute("ruleAction")]
+private TreeRuleReturnScope`1<GrammarAST> ruleAction();
+    [GrammarRuleAttribute("ruleModifier")]
+private TreeRuleReturnScope`1<GrammarAST> ruleModifier();
+    [GrammarRuleAttribute("lexerRuleBlock")]
+private TreeRuleReturnScope`1<GrammarAST> lexerRuleBlock();
+    [GrammarRuleAttribute("ruleBlock")]
+private TreeRuleReturnScope`1<GrammarAST> ruleBlock();
+    [GrammarRuleAttribute("lexerOuterAlternative")]
+private TreeRuleReturnScope`1<GrammarAST> lexerOuterAlternative();
+    [GrammarRuleAttribute("outerAlternative")]
+public TreeRuleReturnScope`1<GrammarAST> outerAlternative();
+    [GrammarRuleAttribute("lexerAlternative")]
+private TreeRuleReturnScope`1<GrammarAST> lexerAlternative();
+    [GrammarRuleAttribute("lexerElements")]
+private TreeRuleReturnScope`1<GrammarAST> lexerElements();
+    [GrammarRuleAttribute("lexerElement")]
+private TreeRuleReturnScope`1<GrammarAST> lexerElement();
+    [GrammarRuleAttribute("labeledLexerElement")]
+private TreeRuleReturnScope`1<GrammarAST> labeledLexerElement();
+    [GrammarRuleAttribute("lexerBlock")]
+private TreeRuleReturnScope`1<GrammarAST> lexerBlock();
+    [GrammarRuleAttribute("lexerAtom")]
+private TreeRuleReturnScope`1<GrammarAST> lexerAtom();
+    [GrammarRuleAttribute("actionElement")]
+private TreeRuleReturnScope`1<GrammarAST> actionElement();
+    [GrammarRuleAttribute("alternative")]
+private TreeRuleReturnScope`1<GrammarAST> alternative();
+    [GrammarRuleAttribute("lexerCommand")]
+private TreeRuleReturnScope`1<GrammarAST> lexerCommand();
+    [GrammarRuleAttribute("lexerCommandExpr")]
+private TreeRuleReturnScope`1<GrammarAST> lexerCommandExpr();
+    [GrammarRuleAttribute("element")]
+private TreeRuleReturnScope`1<GrammarAST> element();
+    [GrammarRuleAttribute("astOperand")]
+private TreeRuleReturnScope`1<GrammarAST> astOperand();
+    [GrammarRuleAttribute("labeledElement")]
+private TreeRuleReturnScope`1<GrammarAST> labeledElement();
+    [GrammarRuleAttribute("subrule")]
+private TreeRuleReturnScope`1<GrammarAST> subrule();
+    [GrammarRuleAttribute("lexerSubrule")]
+private TreeRuleReturnScope`1<GrammarAST> lexerSubrule();
+    [GrammarRuleAttribute("blockSuffix")]
+private TreeRuleReturnScope`1<GrammarAST> blockSuffix();
+    [GrammarRuleAttribute("ebnfSuffix")]
+private TreeRuleReturnScope`1<GrammarAST> ebnfSuffix();
+    [GrammarRuleAttribute("atom")]
+private TreeRuleReturnScope`1<GrammarAST> atom();
+    [GrammarRuleAttribute("blockSet")]
+private TreeRuleReturnScope`1<GrammarAST> blockSet();
+    [GrammarRuleAttribute("setElement")]
+private TreeRuleReturnScope`1<GrammarAST> setElement();
+    [GrammarRuleAttribute("block")]
+private TreeRuleReturnScope`1<GrammarAST> block();
+    [GrammarRuleAttribute("ruleref")]
+private TreeRuleReturnScope`1<GrammarAST> ruleref();
+    [GrammarRuleAttribute("range")]
+private TreeRuleReturnScope`1<GrammarAST> range();
+    [GrammarRuleAttribute("terminal")]
+private TreeRuleReturnScope`1<GrammarAST> terminal();
+    [GrammarRuleAttribute("elementOptions")]
+private TreeRuleReturnScope`1<GrammarAST> elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private TreeRuleReturnScope`1<GrammarAST> elementOption(GrammarASTWithOptions t);
+    protected virtual void InitDFAs();
+}
+[GeneratedCodeAttribute("ANTLR", "3.5.2-beta1")]
+[CLSCompliantAttribute("False")]
+public class Antlr4.Parse.LeftRecursiveRuleWalker : TreeParser {
+    internal static String[] tokenNames;
+    public static int EOF;
+    public static int ACTION;
+    public static int ACTION_CHAR_LITERAL;
+    public static int ACTION_ESC;
+    public static int ACTION_STRING_LITERAL;
+    public static int ARG_ACTION;
+    public static int ARG_OR_CHARSET;
+    public static int ASSIGN;
+    public static int AT;
+    public static int CATCH;
+    public static int CHANNELS;
+    public static int COLON;
+    public static int COLONCOLON;
+    public static int COMMA;
+    public static int COMMENT;
+    public static int DOC_COMMENT;
+    public static int DOLLAR;
+    public static int DOT;
+    public static int ERRCHAR;
+    public static int ESC_SEQ;
+    public static int FINALLY;
+    public static int FRAGMENT;
+    public static int GRAMMAR;
+    public static int GT;
+    public static int HEX_DIGIT;
+    public static int ID;
+    public static int IMPORT;
+    public static int INT;
+    public static int LEXER;
+    public static int LEXER_CHAR_SET;
+    public static int LOCALS;
+    public static int LPAREN;
+    public static int LT;
+    public static int MODE;
+    public static int NESTED_ACTION;
+    public static int NLCHARS;
+    public static int NOT;
+    public static int NameChar;
+    public static int NameStartChar;
+    public static int OPTIONS;
+    public static int OR;
+    public static int PARSER;
+    public static int PLUS;
+    public static int PLUS_ASSIGN;
+    public static int POUND;
+    public static int PRIVATE;
+    public static int PROTECTED;
+    public static int PUBLIC;
+    public static int QUESTION;
+    public static int RANGE;
+    public static int RARROW;
+    public static int RBRACE;
+    public static int RETURNS;
+    public static int RPAREN;
+    public static int RULE_REF;
+    public static int SEMI;
+    public static int SEMPRED;
+    public static int SRC;
+    public static int STAR;
+    public static int STRING_LITERAL;
+    public static int SYNPRED;
+    public static int THROWS;
+    public static int TOKENS_SPEC;
+    public static int TOKEN_REF;
+    public static int TREE_GRAMMAR;
+    public static int UNICODE_ESC;
+    public static int UnicodeBOM;
+    public static int WS;
+    public static int WSCHARS;
+    public static int WSNLCHARS;
+    public static int ALT;
+    public static int ALTLIST;
+    public static int ARG;
+    public static int ARGLIST;
+    public static int BLOCK;
+    public static int CHAR_RANGE;
+    public static int CLOSURE;
+    public static int COMBINED;
+    public static int ELEMENT_OPTIONS;
+    public static int EPSILON;
+    public static int INITACTION;
+    public static int LABEL;
+    public static int LEXER_ACTION_CALL;
+    public static int LEXER_ALT_ACTION;
+    public static int LIST;
+    public static int OPTIONAL;
+    public static int POSITIVE_CLOSURE;
+    public static int PREC_RULE;
+    public static int RESULT;
+    public static int RET;
+    public static int RULE;
+    public static int RULEACTIONS;
+    public static int RULEMODIFIERS;
+    public static int RULES;
+    public static int SET;
+    public static int TEMPLATE;
+    public static int WILDCARD;
+    private string ruleName;
+    private int currentOuterAltNumber;
+    public int numAlts;
+    private DFA11 dfa11;
+    private DFA14 dfa14;
+    public String[] TokenNames { get; }
+    public string GrammarFileName { get; }
+    public LeftRecursiveRuleWalker(ITreeNodeStream input);
+    public LeftRecursiveRuleWalker(ITreeNodeStream input, RecognizerSharedState state);
+    private static LeftRecursiveRuleWalker();
+    public virtual String[] get_TokenNames();
+    public virtual string get_GrammarFileName();
+    public virtual void SetAltAssoc(AltAST altTree, int alt);
+    public virtual void BinaryAlt(AltAST altTree, int alt);
+    public virtual void PrefixAlt(AltAST altTree, int alt);
+    public virtual void SuffixAlt(AltAST altTree, int alt);
+    public virtual void OtherAlt(AltAST altTree, int alt);
+    public virtual void SetReturnValues(GrammarAST t);
+    [GrammarRuleAttribute("rec_rule")]
+public bool rec_rule();
+    [GrammarRuleAttribute("exceptionGroup")]
+private void exceptionGroup();
+    [GrammarRuleAttribute("exceptionHandler")]
+private void exceptionHandler();
+    [GrammarRuleAttribute("finallyClause")]
+private void finallyClause();
+    [GrammarRuleAttribute("ruleModifier")]
+private void ruleModifier();
+    [GrammarRuleAttribute("ruleBlock")]
+private ruleBlock_return ruleBlock();
+    [GrammarRuleAttribute("outerAlternative")]
+private outerAlternative_return outerAlternative();
+    [GrammarRuleAttribute("binary")]
+private void binary();
+    [GrammarRuleAttribute("prefix")]
+private void prefix();
+    [GrammarRuleAttribute("suffix")]
+private void suffix();
+    [GrammarRuleAttribute("nonLeftRecur")]
+private void nonLeftRecur();
+    [GrammarRuleAttribute("recurse")]
+private void recurse();
+    [GrammarRuleAttribute("recurseNoLabel")]
+private void recurseNoLabel();
+    [GrammarRuleAttribute("token")]
+private GrammarAST token();
+    [GrammarRuleAttribute("elementOptions")]
+private void elementOptions();
+    [GrammarRuleAttribute("elementOption")]
+private void elementOption();
+    [GrammarRuleAttribute("element")]
+private void element();
+    [GrammarRuleAttribute("epsilonElement")]
+private void epsilonElement();
+    [GrammarRuleAttribute("setElement")]
+private void setElement();
+    [GrammarRuleAttribute("ebnf")]
+private void ebnf();
+    [GrammarRuleAttribute("block")]
+private void block();
+    [GrammarRuleAttribute("alternative")]
+private void alternative();
+    [GrammarRuleAttribute("atom")]
+private void atom();
+    private void synpred1_LeftRecursiveRuleWalker_fragment();
+    private void synpred2_LeftRecursiveRuleWalker_fragment();
+    private void synpred3_LeftRecursiveRuleWalker_fragment();
+    private bool EvaluatePredicate(Action fragment);
+    protected virtual void InitDFAs();
+}
+public class Antlr4.Parse.ResyncToEndOfRuleBlock : Exception {
+    public ResyncToEndOfRuleBlock(string message);
+    public ResyncToEndOfRuleBlock(string message, Exception innerException);
+}
+public class Antlr4.Parse.ScopeParser : object {
+    public static AttributeDict ParseTypedArgList(ActionAST action, string s, Grammar g);
+    public static AttributeDict Parse(ActionAST action, string s, char separator, Grammar g);
+    public static Attribute ParseAttributeDef(ActionAST action, Tuple`2<string, int> decl, Grammar g);
+    public static Tuple`2<int, int> _ParsePrefixDecl(Attribute attr, string decl, ActionAST a, Grammar g);
+    public static Tuple`2<int, int> _ParsePostfixDecl(Attribute attr, string decl, ActionAST a, Grammar g);
+    public static IList`1<Tuple`2<string, int>> SplitDecls(string s, int separatorChar);
+    public static int _SplitArgumentList(string actionText, int start, int targetChar, int separatorChar, IList`1<Tuple`2<string, int>> args);
+}
+public class Antlr4.Parse.TokenVocabParser : object {
+    protected Grammar g;
+    public TokenVocabParser(Grammar g);
+    public virtual IDictionary`2<string, int> Load();
+    public virtual string GetImportedVocabFile();
+}
+public class Antlr4.Parse.ToolANTLRLexer : ANTLRLexer {
+    public AntlrTool tool;
+    public ToolANTLRLexer(ICharStream input, AntlrTool tool);
+    public virtual void DisplayRecognitionError(String[] tokenNames, RecognitionException e);
+    public virtual void GrammarError(ErrorType etype, IToken token, Object[] args);
+}
+public class Antlr4.Parse.ToolANTLRParser : ANTLRParser {
+    public AntlrTool tool;
+    public ToolANTLRParser(ITokenStream input, AntlrTool tool);
+    public virtual void DisplayRecognitionError(String[] tokenNames, RecognitionException e);
+    public virtual string GetParserErrorMessage(Parser parser, RecognitionException e);
+    public virtual void GrammarError(ErrorType etype, IToken token, Object[] args);
+}
+public class Antlr4.Parse.v3TreeGrammarException : ParseCanceledException {
+    public IToken location;
+    public v3TreeGrammarException(IToken location);
+}
+public class Antlr4.Parse.v4ParserException : RecognitionException {
+    public string msg;
+    public v4ParserException(string msg, IIntStream input);
+}
+public class Antlr4.Semantics.ActionSniffer : BlankActionSplitterListener {
+    public Grammar g;
+    public Rule r;
+    public Alternative alt;
+    public ActionAST node;
+    public IToken actionToken;
+    public ErrorManager errMgr;
+    public ActionSniffer(Grammar g, Rule r, Alternative alt, ActionAST node, IToken actionToken);
+    public virtual void ExamineAction();
+    public virtual void ProcessNested(IToken actionToken);
+    public virtual void Attr(string expr, IToken x);
+    public virtual void QualifiedAttr(string expr, IToken x, IToken y);
+    public virtual void SetAttr(string expr, IToken x, IToken rhs);
+    public virtual void SetNonLocalAttr(string expr, IToken x, IToken y, IToken rhs);
+    public virtual void TrackRef(IToken x);
+}
+public class Antlr4.Semantics.AttributeChecks : object {
+    public Grammar g;
+    public Rule r;
+    public Alternative alt;
+    public ActionAST node;
+    public IToken actionToken;
+    public ErrorManager errMgr;
+    public AttributeChecks(Grammar g, Rule r, Alternative alt, ActionAST node, IToken actionToken);
+    public static void CheckAllAttributeExpressions(Grammar g);
+    public virtual void ExamineAction();
+    public virtual void QualifiedAttr(string expr, IToken x, IToken y);
+    public virtual void SetAttr(string expr, IToken x, IToken rhs);
+    public virtual void Attr(string expr, IToken x);
+    public virtual void NonLocalAttr(string expr, IToken x, IToken y);
+    public virtual void SetNonLocalAttr(string expr, IToken x, IToken y, IToken rhs);
+    public virtual void Text(string text);
+    public virtual void TemplateInstance(string expr);
+    public virtual void IndirectTemplateInstance(string expr);
+    public virtual void SetExprAttribute(string expr);
+    public virtual void SetSTAttribute(string expr);
+    public virtual void TemplateExpr(string expr);
+    public virtual Rule IsolatedRuleRef(string x);
+}
+public class Antlr4.Semantics.BasicSemanticChecks : GrammarTreeVisitor {
+    public static MultiMap`2<int, int> validImportTypes;
+    public Grammar g;
+    public RuleCollector ruleCollector;
+    public ErrorManager errMgr;
+    public bool checkAssocElementOption;
+    protected int nonFragmentRuleCount;
+    private bool inFragmentRule;
+    private static BasicSemanticChecks();
+    public BasicSemanticChecks(Grammar g, RuleCollector ruleCollector);
+    public virtual ErrorManager GetErrorManager();
+    public virtual void Process();
+    public virtual void DiscoverGrammar(GrammarRootAST root, GrammarAST ID);
+    public virtual void FinishPrequels(GrammarAST firstPrequel);
+    public virtual void ImportGrammar(GrammarAST label, GrammarAST ID);
+    public virtual void DiscoverRules(GrammarAST rules);
+    protected virtual void EnterMode(GrammarAST tree);
+    protected virtual void ExitMode(GrammarAST tree);
+    public virtual void ModeDef(GrammarAST m, GrammarAST ID);
+    public virtual void DiscoverRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, ActionAST arg, ActionAST returns, GrammarAST thrws, GrammarAST options, ActionAST locals, IList`1<GrammarAST> actions, GrammarAST block);
+    public virtual void DiscoverLexerRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, GrammarAST block);
+    protected virtual void ExitLexerRule(GrammarAST tree);
+    public virtual void RuleRef(GrammarAST ref, ActionAST arg);
+    public virtual void RuleOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void BlockOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void GrammarOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void DefineToken(GrammarAST ID);
+    protected virtual void EnterChannelsSpec(GrammarAST tree);
+    public virtual void DefineChannel(GrammarAST ID);
+    public virtual void ElementOption(GrammarASTWithOptions elem, GrammarAST ID, GrammarAST valueAST);
+    public virtual void FinishGrammar(GrammarRootAST root, GrammarAST ID);
+    public virtual void FinishRule(RuleAST rule, GrammarAST ID, GrammarAST block);
+    internal virtual void CheckGrammarName(IToken nameToken);
+    internal virtual void CheckNumRules(GrammarAST rulesNode);
+    internal virtual void CheckNumPrequels(IList`1<GrammarAST> options, IList`1<GrammarAST> imports, IList`1<GrammarAST> tokens);
+    internal virtual void CheckInvalidRuleDef(IToken ruleID);
+    internal virtual void CheckInvalidRuleRef(IToken ruleID);
+    internal virtual void CheckTokenDefinition(IToken tokenID);
+    internal virtual void CheckChannelDefinition(IToken tokenID);
+    protected virtual void EnterLexerElement(GrammarAST tree);
+    protected virtual void EnterLexerCommand(GrammarAST tree);
+    public virtual void ActionInAlt(ActionAST action);
+    protected virtual void CheckElementIsOuterMostInSingleAlt(GrammarAST tree);
+    public virtual void Label(GrammarAST op, GrammarAST ID, GrammarAST element);
+    protected virtual void EnterLabeledLexerElement(GrammarAST tree);
+    protected virtual void EnterTerminal(GrammarAST tree);
+    internal virtual bool CheckOptions(GrammarAST parent, IToken optionID, GrammarAST valueAST);
+    internal virtual bool CheckElementOptions(GrammarASTWithOptions elem, GrammarAST ID, GrammarAST valueAST);
+    internal virtual bool CheckRuleRefOptions(RuleRefAST elem, GrammarAST ID, GrammarAST valueAST);
+    internal virtual bool CheckTokenOptions(TerminalAST elem, GrammarAST ID, GrammarAST valueAST);
+    internal virtual bool LegalGrammarOption(string key);
+    internal virtual void CheckImport(IToken importID);
+}
+public class Antlr4.Semantics.BlankActionSplitterListener : object {
+    public virtual void QualifiedAttr(string expr, IToken x, IToken y);
+    public virtual void SetAttr(string expr, IToken x, IToken rhs);
+    public virtual void Attr(string expr, IToken x);
+    public virtual void TemplateInstance(string expr);
+    public virtual void NonLocalAttr(string expr, IToken x, IToken y);
+    public virtual void SetNonLocalAttr(string expr, IToken x, IToken y, IToken rhs);
+    public virtual void IndirectTemplateInstance(string expr);
+    public virtual void SetExprAttribute(string expr);
+    public virtual void SetSTAttribute(string expr);
+    public virtual void TemplateExpr(string expr);
+    public virtual void Text(string text);
+}
+public class Antlr4.Semantics.RuleCollector : GrammarTreeVisitor {
+    public Grammar g;
+    public ErrorManager errMgr;
+    public OrderedHashMap`2<string, Rule> rules;
+    public MultiMap`2<string, GrammarAST> ruleToAltLabels;
+    public IDictionary`2<string, string> altLabelToRuleName;
+    public RuleCollector(Grammar g);
+    public virtual ErrorManager GetErrorManager();
+    public virtual void Process(GrammarAST ast);
+    public virtual void DiscoverRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, ActionAST arg, ActionAST returns, GrammarAST thrws, GrammarAST options, ActionAST locals, IList`1<GrammarAST> actions, GrammarAST block);
+    public virtual void DiscoverOuterAlt(AltAST alt);
+    public virtual void DiscoverLexerRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, GrammarAST block);
+}
+public class Antlr4.Semantics.SemanticPipeline : object {
+    public Grammar g;
+    public SemanticPipeline(Grammar g);
+    public virtual void Process();
+    internal virtual void IdentifyStartRules(SymbolCollector collector);
+    internal virtual void AssignLexerTokenTypes(Grammar g, IList`1<GrammarAST> tokensDefs);
+    internal virtual bool HasTypeOrMoreCommand(Rule r);
+    internal virtual void AssignTokenTypes(Grammar g, IList`1<GrammarAST> tokensDefs, IList`1<GrammarAST> tokenIDs, IList`1<GrammarAST> terminals);
+    internal virtual void AssignChannelTypes(Grammar g, IList`1<GrammarAST> channelDefs);
+}
+public class Antlr4.Semantics.SymbolChecks : object {
+    internal Grammar g;
+    internal SymbolCollector collector;
+    internal IDictionary`2<string, Rule> nameToRuleMap;
+    internal ISet`1<string> tokenIDs;
+    internal IDictionary`2<string, ISet`1<string>> actionScopeToActionNames;
+    public ErrorManager errMgr;
+    protected ISet`1<string> reservedNames;
+    public SymbolChecks(Grammar g, SymbolCollector collector);
+    public virtual void Process();
+    public virtual void CheckActionRedefinitions(IList`1<GrammarAST> actions);
+    public virtual void CheckForTokenConflicts(IList`1<GrammarAST> tokenIDRefs);
+    public virtual void CheckForLabelConflicts(ICollection`1<Rule> rules);
+    internal virtual void CheckForTypeMismatch(LabelElementPair prevLabelPair, LabelElementPair labelPair);
+    public virtual void CheckForLabelConflict(Rule r, GrammarAST labelID);
+    public virtual void CheckForAttributeConflicts(Rule r);
+    protected virtual void CheckDeclarationRuleConflicts(Rule r, AttributeDict attributes, ICollection`1<string> ruleNames, ErrorType errorType);
+    protected virtual void CheckLocalConflictingDeclarations(Rule r, AttributeDict attributes, AttributeDict referenceAttributes, ErrorType errorType);
+    protected virtual void CheckReservedNames(ICollection`1<Rule> rules);
+    public virtual void CheckForModeConflicts(Grammar g);
+    public virtual void CheckRuleArgs(Grammar g, IList`1<GrammarAST> rulerefs);
+    public virtual void CheckForQualifiedRuleIssues(Grammar g, IList`1<GrammarAST> qualifiedRuleRefs);
+}
+public class Antlr4.Semantics.SymbolCollector : GrammarTreeVisitor {
+    public Grammar g;
+    public IList`1<GrammarAST> rulerefs;
+    public IList`1<GrammarAST> qualifiedRulerefs;
+    public IList`1<GrammarAST> terminals;
+    public IList`1<GrammarAST> tokenIDRefs;
+    public ISet`1<string> strings;
+    public IList`1<GrammarAST> tokensDefs;
+    public IList`1<GrammarAST> channelDefs;
+    internal IList`1<GrammarAST> namedActions;
+    public ErrorManager errMgr;
+    public Rule currentRule;
+    public SymbolCollector(Grammar g);
+    public virtual ErrorManager GetErrorManager();
+    public virtual void Process(GrammarAST ast);
+    public virtual void GlobalNamedAction(GrammarAST scope, GrammarAST ID, ActionAST action);
+    public virtual void DefineToken(GrammarAST ID);
+    public virtual void DefineChannel(GrammarAST ID);
+    public virtual void DiscoverRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, ActionAST arg, ActionAST returns, GrammarAST thrws, GrammarAST options, ActionAST locals, IList`1<GrammarAST> actions, GrammarAST block);
+    public virtual void DiscoverLexerRule(RuleAST rule, GrammarAST ID, IList`1<GrammarAST> modifiers, GrammarAST block);
+    public virtual void DiscoverOuterAlt(AltAST alt);
+    public virtual void ActionInAlt(ActionAST action);
+    public virtual void SempredInAlt(PredAST pred);
+    public virtual void RuleCatch(GrammarAST arg, ActionAST action);
+    public virtual void FinallyAction(ActionAST action);
+    public virtual void Label(GrammarAST op, GrammarAST ID, GrammarAST element);
+    public virtual void StringRef(TerminalAST ref);
+    public virtual void TokenRef(TerminalAST ref);
+    public virtual void RuleRef(GrammarAST ref, ActionAST arg);
+    public virtual void GrammarOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void RuleOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void BlockOption(GrammarAST ID, GrammarAST valueAST);
+    public virtual void ElementOption(GrammarASTWithOptions t, GrammarAST ID, GrammarAST valueAST);
+    private void SetActionResolver(GrammarAST valueAST);
+}
+public class Antlr4.Semantics.UseDefAnalyzer : object {
+    public static void TrackTokenRuleRefsInActions(Grammar g);
+    public static bool ActionIsContextDependent(ActionAST actionAST);
+    public static IDictionary`2<Rule, ISet`1<Rule>> GetRuleDependencies(Grammar g);
+    public static IDictionary`2<Rule, ISet`1<Rule>> GetRuleDependencies(LexerGrammar g, string modeName);
+    public static IDictionary`2<Rule, ISet`1<Rule>> GetRuleDependencies(Grammar g, ICollection`1<Rule> rules);
+}
+public class Antlr4.Tool.Alternative : object {
+    public Rule rule;
+    public AltAST ast;
+    public int altNum;
+    public MultiMap`2<string, TerminalAST> tokenRefs;
+    public MultiMap`2<string, GrammarAST> tokenRefsInActions;
+    public MultiMap`2<string, GrammarAST> ruleRefs;
+    public MultiMap`2<string, GrammarAST> ruleRefsInActions;
+    public MultiMap`2<string, LabelElementPair> labelDefs;
+    public IList`1<ActionAST> actions;
+    public Alternative(Rule r, int altNum);
+    public virtual bool ResolvesToToken(string x, ActionAST node);
+    public virtual bool ResolvesToAttributeDict(string x, ActionAST node);
+    public virtual Attribute ResolveToAttribute(string x, ActionAST node);
+    public virtual Attribute ResolveToAttribute(string x, string y, ActionAST node);
+    public virtual bool ResolvesToLabel(string x, ActionAST node);
+    public virtual bool ResolvesToListLabel(string x, ActionAST node);
+    public virtual LabelElementPair GetAnyLabelDef(string x);
+    public virtual Rule ResolveToRule(string x);
+}
+public class Antlr4.Tool.ANTLRMessage : object {
+    private static Object[] EMPTY_ARGS;
+    [NotNullAttribute]
+private ErrorType errorType;
+    [NullableAttribute]
+private Object[] args;
+    [NullableAttribute]
+private Exception e;
+    public string fileName;
+    public int line;
+    public int charPosition;
+    public Grammar g;
+    public IToken offendingToken;
+    public ANTLRMessage(ErrorType errorType);
+    public ANTLRMessage(ErrorType errorType, IToken offendingToken, Object[] args);
+    public ANTLRMessage(ErrorType errorType, Exception e, IToken offendingToken, Object[] args);
+    private static ANTLRMessage();
+    public virtual ErrorType GetErrorType();
+    public virtual Object[] GetArgs();
+    public virtual Template GetMessageTemplate(bool verbose);
+    public virtual Exception GetCause();
+    public virtual string ToString();
+}
+public interface Antlr4.Tool.ANTLRToolListener {
+    public abstract virtual void Info(string msg);
+    public abstract virtual void Error(ANTLRMessage msg);
+    public abstract virtual void Warning(ANTLRMessage msg);
+}
+public class Antlr4.Tool.Ast.ActionAST : GrammarASTWithOptions {
+    public AttributeResolver resolver;
+    public IList`1<IToken> chunks;
+    public ActionAST(ActionAST node);
+    public ActionAST(IToken t);
+    public ActionAST(int type);
+    public ActionAST(int type, IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.AltAST : GrammarASTWithOptions {
+    public Alternative alt;
+    public LeftRecursiveRuleAltInfo leftRecursiveAltInfo;
+    public GrammarAST altLabel;
+    public AltAST(AltAST node);
+    public AltAST(IToken t);
+    public AltAST(int type);
+    public AltAST(int type, IToken t);
+    public AltAST(int type, IToken t, string text);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.BlockAST : GrammarASTWithOptions {
+    public static IDictionary`2<string, string> defaultBlockOptions;
+    public static IDictionary`2<string, string> defaultLexerBlockOptions;
+    public BlockAST(BlockAST node);
+    public BlockAST(IToken t);
+    public BlockAST(int type);
+    public BlockAST(int type, IToken t);
+    public BlockAST(int type, IToken t, string text);
+    private static BlockAST();
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.GrammarAST : CommonTree {
+    public Grammar g;
+    public ATNState atnState;
+    public string textOverride;
+    public GrammarAST(IToken t);
+    public GrammarAST(GrammarAST node);
+    public GrammarAST(int type);
+    public GrammarAST(int type, IToken t);
+    public GrammarAST(int type, IToken t, string text);
+    public virtual GrammarAST[] GetChildrenAsArray();
+    public virtual IList`1<GrammarAST> GetNodesWithType(int ttype);
+    public virtual ITree GetFirstChildWithType(int type);
+    public virtual IList`1<GrammarAST> GetAllChildrenWithType(int type);
+    public virtual IList`1<GrammarAST> GetNodesWithType(IntervalSet types);
+    public virtual IList`1<GrammarAST> GetNodesWithTypePreorderDFS(IntervalSet types);
+    public virtual void GetNodesWithTypePreorderDFS_(IList`1<GrammarAST> nodes, IntervalSet types);
+    public virtual GrammarAST GetNodeWithTokenIndex(int index);
+    public virtual AltAST GetOutermostAltNode();
+    public virtual string GetAltLabel();
+    public virtual bool DeleteChild(ITree t);
+    public virtual CommonTree GetFirstDescendantWithType(int type);
+    public virtual CommonTree GetFirstDescendantWithType(BitSet types);
+    public virtual void SetType(int type);
+    public virtual void SetText(string text);
+    public virtual ITree DupNode();
+    public virtual GrammarAST DupTree();
+    public virtual string ToTokenString();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.GrammarASTErrorNode : GrammarAST {
+    private CommonErrorNode delegate;
+    public bool IsNil { get; }
+    public int Type { get; public set; }
+    public string Text { get; public set; }
+    public GrammarASTErrorNode(ITokenStream input, IToken start, IToken stop, RecognitionException e);
+    public virtual bool get_IsNil();
+    public virtual int get_Type();
+    public virtual void set_Type(int value);
+    public virtual string get_Text();
+    public virtual void set_Text(string value);
+    public virtual string ToString();
+}
+public interface Antlr4.Tool.Ast.GrammarASTVisitor {
+    public abstract virtual object Visit(GrammarAST node);
+    public abstract virtual object Visit(GrammarRootAST node);
+    public abstract virtual object Visit(RuleAST node);
+    public abstract virtual object Visit(BlockAST node);
+    public abstract virtual object Visit(OptionalBlockAST node);
+    public abstract virtual object Visit(PlusBlockAST node);
+    public abstract virtual object Visit(StarBlockAST node);
+    public abstract virtual object Visit(AltAST node);
+    public abstract virtual object Visit(NotAST node);
+    public abstract virtual object Visit(PredAST node);
+    public abstract virtual object Visit(RangeAST node);
+    public abstract virtual object Visit(SetAST node);
+    public abstract virtual object Visit(RuleRefAST node);
+    public abstract virtual object Visit(TerminalAST node);
+}
+public abstract class Antlr4.Tool.Ast.GrammarASTWithOptions : GrammarAST {
+    protected IDictionary`2<string, GrammarAST> options;
+    public GrammarASTWithOptions(GrammarASTWithOptions node);
+    public GrammarASTWithOptions(IToken t);
+    public GrammarASTWithOptions(int type);
+    public GrammarASTWithOptions(int type, IToken t);
+    public GrammarASTWithOptions(int type, IToken t, string text);
+    public virtual void SetOption(string key, GrammarAST node);
+    public virtual string GetOptionString(string key);
+    public virtual GrammarAST GetOptionAST(string key);
+    public virtual int GetNumberOfOptions();
+    public abstract virtual ITree DupNode();
+    public virtual IDictionary`2<string, GrammarAST> GetOptions();
+}
+public class Antlr4.Tool.Ast.GrammarRootAST : GrammarASTWithOptions {
+    public static IDictionary`2<string, string> defaultOptions;
+    public int grammarType;
+    public bool hasErrors;
+    [NotNullAttribute]
+public ITokenStream tokenStream;
+    public IDictionary`2<string, string> cmdLineOptions;
+    public string fileName;
+    public GrammarRootAST(GrammarRootAST node);
+    public GrammarRootAST(IToken t, ITokenStream tokenStream);
+    public GrammarRootAST(int type, IToken t, ITokenStream tokenStream);
+    public GrammarRootAST(int type, IToken t, string text, ITokenStream tokenStream);
+    private static GrammarRootAST();
+    public virtual string GetGrammarName();
+    public virtual string GetOptionString(string key);
+    public virtual object Visit(GrammarASTVisitor v);
+    public virtual ITree DupNode();
+}
+public class Antlr4.Tool.Ast.NotAST : GrammarAST {
+    public NotAST(NotAST node);
+    public NotAST(int type, IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.OptionalBlockAST : GrammarAST {
+    private bool _greedy;
+    public OptionalBlockAST(OptionalBlockAST node);
+    public OptionalBlockAST(int type, IToken t, IToken nongreedy);
+    public virtual bool GetGreedy();
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.PlusBlockAST : GrammarAST {
+    private bool _greedy;
+    public PlusBlockAST(PlusBlockAST node);
+    public PlusBlockAST(int type, IToken t, IToken nongreedy);
+    public virtual bool GetGreedy();
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.PredAST : ActionAST {
+    public PredAST(PredAST node);
+    public PredAST(IToken t);
+    public PredAST(int type);
+    public PredAST(int type, IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public interface Antlr4.Tool.Ast.QuantifierAST {
+    public abstract virtual bool GetGreedy();
+}
+public class Antlr4.Tool.Ast.RangeAST : GrammarAST {
+    public RangeAST(RangeAST node);
+    public RangeAST(IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.RuleAST : GrammarASTWithOptions {
+    public RuleAST(RuleAST node);
+    public RuleAST(IToken t);
+    public RuleAST(int type);
+    public virtual bool IsLexerRule();
+    public virtual string GetRuleName();
+    public virtual ITree DupNode();
+    public virtual ActionAST GetLexerAction();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public interface Antlr4.Tool.Ast.RuleElementAST {
+}
+public class Antlr4.Tool.Ast.RuleRefAST : GrammarASTWithOptions {
+    public RuleRefAST(RuleRefAST node);
+    public RuleRefAST(IToken t);
+    public RuleRefAST(int type);
+    public RuleRefAST(int type, IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.SetAST : GrammarAST {
+    public SetAST(SetAST node);
+    public SetAST(int type, IToken t, string text);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.StarBlockAST : GrammarAST {
+    private bool _greedy;
+    public StarBlockAST(StarBlockAST node);
+    public StarBlockAST(int type, IToken t, IToken nongreedy);
+    public virtual bool GetGreedy();
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Ast.TerminalAST : GrammarASTWithOptions {
+    public TerminalAST(TerminalAST node);
+    public TerminalAST(IToken t);
+    public TerminalAST(int type);
+    public TerminalAST(int type, IToken t);
+    public virtual ITree DupNode();
+    public virtual object Visit(GrammarASTVisitor v);
+}
+public class Antlr4.Tool.Attribute : object {
+    public string decl;
+    public string type;
+    public string name;
+    public IToken token;
+    public string initValue;
+    public AttributeDict dict;
+    public Attribute(string name);
+    public Attribute(string name, string decl);
+    public virtual string ToString();
+}
+public class Antlr4.Tool.AttributeDict : object {
+    public string name;
+    public GrammarAST ast;
+    public DictType type;
+    public static AttributeDict predefinedTokenDict;
+    [NotNullAttribute]
+public LinkedHashMap`2<string, Attribute> attributes;
+    private static AttributeDict();
+    public AttributeDict(DictType type);
+    public virtual Attribute Add(Attribute a);
+    public virtual Attribute Get(string name);
+    public virtual string GetName();
+    public virtual int Size();
+    public ISet`1<string> Intersection(AttributeDict other);
+    public virtual string ToString();
+}
+public interface Antlr4.Tool.AttributeResolver {
+    public abstract virtual bool ResolvesToListLabel(string x, ActionAST node);
+    public abstract virtual bool ResolvesToLabel(string x, ActionAST node);
+    public abstract virtual bool ResolvesToAttributeDict(string x, ActionAST node);
+    public abstract virtual bool ResolvesToToken(string x, ActionAST node);
+    public abstract virtual Attribute ResolveToAttribute(string x, ActionAST node);
+    public abstract virtual Attribute ResolveToAttribute(string x, string y, ActionAST node);
+}
+public class Antlr4.Tool.BuildDependencyGenerator : object {
+    protected AntlrTool tool;
+    protected Grammar g;
+    protected CodeGenerator generator;
+    protected TemplateGroup templates;
+    public BuildDependencyGenerator(AntlrTool tool, Grammar g);
+    public virtual IList`1<string> GetGeneratedFileList();
+    public virtual string GetOutputFile(string fileName);
+    public virtual IList`1<string> GetDependenciesFileList();
+    public virtual IList`1<string> GetNonImportDependenciesFileList();
+    public virtual Template GetDependencies();
+    public virtual void LoadDependencyTemplates();
+    public virtual CodeGenerator GetGenerator();
+    public virtual string GroomQualifiedFileName(string outputDir, string fileName);
+}
+public class Antlr4.Tool.DefaultToolListener : object {
+    public AntlrTool tool;
+    public DefaultToolListener(AntlrTool tool);
+    public virtual void Info(string msg);
+    public virtual void Error(ANTLRMessage msg);
+    public virtual void Warning(ANTLRMessage msg);
+}
+public class Antlr4.Tool.DOTGenerator : object {
+    public static bool STRIP_NONREDUCED_STATES;
+    protected string arrowhead;
+    protected string rankdir;
+    public static TemplateGroup stlib;
+    protected Grammar grammar;
+    public DOTGenerator(Grammar grammar);
+    private static DOTGenerator();
+    public virtual string GetDOT(DFA dfa, bool isLexer);
+    protected virtual string GetStateLabel(DFAState s);
+    public virtual string GetDOT(ATNState startState);
+    public virtual string GetDOT(ATNState startState, bool isLexer);
+    public virtual string GetDOT(ATNState startState, String[] ruleNames, bool isLexer);
+    protected virtual string GetEdgeLabel(string label);
+    protected virtual string GetStateLabel(ATNState s);
+}
+public class Antlr4.Tool.ErrorManager : object {
+    public AntlrTool tool;
+    public int errors;
+    public int warnings;
+    public ISet`1<ErrorType> errorTypes;
+    private TemplateGroup format;
+    private string formatName;
+    private ErrorBuffer initSTListener;
+    public static string FormatsDir { get; }
+    public ErrorManager(AntlrTool tool);
+    public static string get_FormatsDir();
+    public virtual void ResetErrorState();
+    public virtual Template GetMessageTemplate(ANTLRMessage msg);
+    public virtual Template GetLocationFormat();
+    public virtual Template GetReportFormat(ErrorSeverity severity);
+    public virtual Template GetMessageFormat();
+    public virtual bool FormatWantsSingleLineMessage();
+    public virtual void Info(string msg);
+    public virtual void SyntaxError(ErrorType etype, string fileName, IToken token, RecognitionException antlrException, Object[] args);
+    public void FatalInternalError(string error, Exception e);
+    public void InternalError(string error, Exception e);
+    public void InternalError(string error);
+    public virtual void ToolError(ErrorType errorType, Object[] args);
+    public virtual void ToolError(ErrorType errorType, Exception e, Object[] args);
+    public virtual void GrammarError(ErrorType etype, string fileName, IToken token, Object[] args);
+    public virtual void LeftRecursionCycles(string fileName, IEnumerable`1<IEnumerable`1<Rule>> cycles);
+    public virtual int GetNumErrors();
+    private static string GetLastNonErrorManagerCodeLocation(Exception e);
+    public virtual void Emit(ErrorType etype, ANTLRMessage msg);
+    public virtual void SetFormat(string formatName);
+    protected virtual bool VerifyFormat();
+    internal void RawError(string msg);
+    internal void RawError(string msg, Exception e);
+    public virtual void Panic(ErrorType errorType, Object[] args);
+    public void Panic(string msg);
+    public static void Panic();
+}
+public class Antlr4.Tool.ErrorSeverity : object {
+    public static ErrorSeverity INFO;
+    public static ErrorSeverity WARNING;
+    public static ErrorSeverity WARNING_ONE_OFF;
+    public static ErrorSeverity ERROR;
+    public static ErrorSeverity ERROR_ONE_OFF;
+    public static ErrorSeverity FATAL;
+    private string text;
+    private ErrorSeverity(string text);
+    private static ErrorSeverity();
+    public string GetText();
+}
+public class Antlr4.Tool.ErrorType : object {
+    public static ErrorType CANNOT_WRITE_FILE;
+    public static ErrorType INVALID_CMDLINE_ARG;
+    public static ErrorType CANNOT_FIND_TOKENS_FILE_GIVEN_ON_CMDLINE;
+    public static ErrorType ERROR_READING_TOKENS_FILE;
+    public static ErrorType DIR_NOT_FOUND;
+    public static ErrorType OUTPUT_DIR_IS_FILE;
+    public static ErrorType CANNOT_OPEN_FILE;
+    public static ErrorType FILE_AND_GRAMMAR_NAME_DIFFER;
+    public static ErrorType BAD_OPTION_SET_SYNTAX;
+    public static ErrorType WARNING_TREATED_AS_ERROR;
+    public static ErrorType ERROR_READING_IMPORTED_GRAMMAR;
+    public static ErrorType INTERNAL_ERROR;
+    public static ErrorType TOKENS_FILE_SYNTAX_ERROR;
+    public static ErrorType STRING_TEMPLATE_WARNING;
+    public static ErrorType MISSING_CODE_GEN_TEMPLATES;
+    public static ErrorType CANNOT_CREATE_TARGET_GENERATOR;
+    public static ErrorType CODE_TEMPLATE_ARG_ISSUE;
+    public static ErrorType CODE_GEN_TEMPLATES_INCOMPLETE;
+    public static ErrorType NO_MODEL_TO_TEMPLATE_MAPPING;
+    public static ErrorType SYNTAX_ERROR;
+    public static ErrorType RULE_REDEFINITION;
+    public static ErrorType LEXER_RULES_NOT_ALLOWED;
+    public static ErrorType PARSER_RULES_NOT_ALLOWED;
+    public static ErrorType REPEATED_PREQUEL;
+    public static ErrorType UNDEFINED_RULE_REF;
+    public static ErrorType UNDEFINED_RULE_IN_NONLOCAL_REF;
+    public static ErrorType TOKEN_NAMES_MUST_START_UPPER;
+    public static ErrorType UNKNOWN_SIMPLE_ATTRIBUTE;
+    public static ErrorType INVALID_RULE_PARAMETER_REF;
+    public static ErrorType UNKNOWN_RULE_ATTRIBUTE;
+    public static ErrorType UNKNOWN_ATTRIBUTE_IN_SCOPE;
+    public static ErrorType ISOLATED_RULE_REF;
+    public static ErrorType LABEL_CONFLICTS_WITH_RULE;
+    public static ErrorType LABEL_CONFLICTS_WITH_TOKEN;
+    public static ErrorType LABEL_CONFLICTS_WITH_ARG;
+    public static ErrorType LABEL_CONFLICTS_WITH_RETVAL;
+    public static ErrorType LABEL_CONFLICTS_WITH_LOCAL;
+    public static ErrorType LABEL_TYPE_CONFLICT;
+    public static ErrorType RETVAL_CONFLICTS_WITH_ARG;
+    public static ErrorType MISSING_RULE_ARGS;
+    public static ErrorType RULE_HAS_NO_ARGS;
+    public static ErrorType ILLEGAL_OPTION;
+    public static ErrorType ILLEGAL_OPTION_VALUE;
+    public static ErrorType ACTION_REDEFINITION;
+    public static ErrorType NO_RULES;
+    public static ErrorType NO_SUCH_GRAMMAR_SCOPE;
+    public static ErrorType NO_SUCH_RULE_IN_SCOPE;
+    public static ErrorType TOKEN_NAME_REASSIGNMENT;
+    public static ErrorType OPTIONS_IN_DELEGATE;
+    public static ErrorType CANNOT_FIND_IMPORTED_GRAMMAR;
+    public static ErrorType INVALID_IMPORT;
+    public static ErrorType IMPORT_NAME_CLASH;
+    public static ErrorType CANNOT_FIND_TOKENS_FILE_REFD_IN_GRAMMAR;
+    [ObsoleteAttribute]
+public static ErrorType ALL_OPS_NEED_SAME_ASSOC;
+    public static ErrorType LEFT_RECURSION_CYCLES;
+    public static ErrorType MODE_NOT_IN_LEXER;
+    public static ErrorType CANNOT_FIND_ATTRIBUTE_NAME_IN_DECL;
+    public static ErrorType RULE_WITH_TOO_FEW_ALT_LABELS;
+    public static ErrorType ALT_LABEL_REDEF;
+    public static ErrorType ALT_LABEL_CONFLICTS_WITH_RULE;
+    public static ErrorType IMPLICIT_TOKEN_DEFINITION;
+    public static ErrorType IMPLICIT_STRING_DEFINITION;
+    public static ErrorType ATTRIBUTE_IN_LEXER_ACTION;
+    public static ErrorType LABEL_BLOCK_NOT_A_SET;
+    public static ErrorType EXPECTED_NON_GREEDY_WILDCARD_BLOCK;
+    [ObsoleteAttribute]
+public static ErrorType LEXER_ACTION_PLACEMENT_ISSUE;
+    public static ErrorType LEXER_COMMAND_PLACEMENT_ISSUE;
+    public static ErrorType USE_OF_BAD_WORD;
+    public static ErrorType UNSUPPORTED_REFERENCE_IN_LEXER_SET;
+    public static ErrorType ASSIGNMENT_TO_LIST_LABEL;
+    public static ErrorType RETVAL_CONFLICTS_WITH_RULE;
+    public static ErrorType RETVAL_CONFLICTS_WITH_TOKEN;
+    public static ErrorType ARG_CONFLICTS_WITH_RULE;
+    public static ErrorType ARG_CONFLICTS_WITH_TOKEN;
+    public static ErrorType LOCAL_CONFLICTS_WITH_RULE;
+    public static ErrorType LOCAL_CONFLICTS_WITH_TOKEN;
+    public static ErrorType LOCAL_CONFLICTS_WITH_ARG;
+    public static ErrorType LOCAL_CONFLICTS_WITH_RETVAL;
+    public static ErrorType INVALID_LITERAL_IN_LEXER_SET;
+    public static ErrorType MODE_WITHOUT_RULES;
+    public static ErrorType EPSILON_TOKEN;
+    public static ErrorType NO_NON_LR_ALTS;
+    public static ErrorType EPSILON_LR_FOLLOW;
+    public static ErrorType INVALID_LEXER_COMMAND;
+    public static ErrorType MISSING_LEXER_COMMAND_ARGUMENT;
+    public static ErrorType UNWANTED_LEXER_COMMAND_ARGUMENT;
+    public static ErrorType UNTERMINATED_STRING_LITERAL;
+    public static ErrorType EPSILON_CLOSURE;
+    public static ErrorType EPSILON_OPTIONAL;
+    public static ErrorType UNKNOWN_LEXER_CONSTANT;
+    public static ErrorType INVALID_ESCAPE_SEQUENCE;
+    public static ErrorType UNRECOGNIZED_ASSOC_OPTION;
+    public static ErrorType FRAGMENT_ACTION_IGNORED;
+    public static ErrorType RESERVED_RULE_NAME;
+    public static ErrorType PARSER_RULE_REF_IN_LEXER_RULE;
+    public static ErrorType CHANNEL_CONFLICTS_WITH_TOKEN;
+    public static ErrorType CHANNEL_CONFLICTS_WITH_MODE;
+    public static ErrorType CHANNELS_BLOCK_IN_PARSER_GRAMMAR;
+    public static ErrorType CHANNELS_BLOCK_IN_COMBINED_GRAMMAR;
+    public static ErrorType RULE_WITH_TOO_FEW_ALT_LABELS_GROUP;
+    public static ErrorType BASE_CONTEXT_MUST_BE_RULE_NAME;
+    public static ErrorType BASE_CONTEXT_CANNOT_BE_TRANSITIVE;
+    public static ErrorType LEXER_RULE_CANNOT_HAVE_BASE_CONTEXT;
+    public static ErrorType NONCONFORMING_LR_RULE;
+    public static ErrorType MODE_CONFLICTS_WITH_TOKEN;
+    public static ErrorType TOKEN_CONFLICTS_WITH_COMMON_CONSTANTS;
+    public static ErrorType CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS;
+    public static ErrorType MODE_CONFLICTS_WITH_COMMON_CONSTANTS;
+    public static ErrorType EMPTY_STRINGS_AND_SETS_NOT_ALLOWED;
+    public static ErrorType CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_TOKEN_NAME;
+    public static ErrorType CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_MODE_NAME;
+    public static ErrorType CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME;
+    public static ErrorType DUPLICATED_COMMAND;
+    public static ErrorType INCOMPATIBLE_COMMANDS;
+    public static ErrorType CHARACTERS_COLLISION_IN_SET;
+    public static ErrorType TOKEN_RANGE_IN_PARSER;
+    public static ErrorType V3_TREE_GRAMMAR;
+    public static ErrorType V3_LEXER_LABEL;
+    public static ErrorType V3_TOKENS_SYNTAX;
+    public static ErrorType V3_ASSIGN_IN_TOKENS;
+    public static ErrorType V3_GATED_SEMPRED;
+    public static ErrorType V3_SYNPRED;
+    private string name;
+    public string msg;
+    public int code;
+    public ErrorSeverity severity;
+    public string Name { get; }
+    private ErrorType(string name, int code, string msg, ErrorSeverity severity);
+    private static ErrorType();
+    public string get_Name();
+}
+public class Antlr4.Tool.Grammar : object {
+    public static string GRAMMAR_FROM_STRING_NAME;
+    public static string INVALID_TOKEN_NAME;
+    public static string INVALID_RULE_NAME;
+    public static ISet`1<string> parserOptions;
+    public static ISet`1<string> lexerOptions;
+    public static ISet`1<string> ruleOptions;
+    public static ISet`1<string> ParserBlockOptions;
+    public static ISet`1<string> LexerBlockOptions;
+    public static ISet`1<string> ruleRefOptions;
+    public static ISet`1<string> tokenOptions;
+    public static ISet`1<string> actionOptions;
+    public static ISet`1<string> semPredOptions;
+    public static ISet`1<string> doNotCopyOptionsToLexer;
+    public static IDictionary`2<string, AttributeDict> grammarAndLabelRefTypeToScope;
+    public string name;
+    public GrammarRootAST ast;
+    [NotNullAttribute]
+public ITokenStream tokenStream;
+    [NotNullAttribute]
+public ITokenStream originalTokenStream;
+    public string text;
+    public string fileName;
+    public LexerGrammar implicitLexer;
+    public Grammar originalGrammar;
+    public Grammar parent;
+    public IList`1<Grammar> importedGrammars;
+    public OrderedHashMap`2<string, Rule> rules;
+    public IList`1<Rule> indexToRule;
+    public IDictionary`2<string, IList`1<RuleAST>> contextASTs;
+    private int ruleNumber;
+    private int stringLiteralRuleNumber;
+    public ATN atn;
+    public IDictionary`2<int, Interval> stateToGrammarRegionMap;
+    public IDictionary`2<int, DFA> decisionDFAs;
+    public IList`1<IntervalSet[]> decisionLOOK;
+    [NotNullAttribute]
+public AntlrTool tool;
+    private int maxTokenType;
+    public IDictionary`2<string, int> tokenNameToTypeMap;
+    public IDictionary`2<string, int> stringLiteralToTypeMap;
+    public IList`1<string> typeToStringLiteralList;
+    public IList`1<string> typeToTokenList;
+    private int maxChannelType;
+    public IDictionary`2<string, int> channelNameToValueMap;
+    public IList`1<string> channelValueToNameList;
+    public IDictionary`2<string, ActionAST> namedActions;
+    public LinkedHashMap`2<ActionAST, int> lexerActions;
+    public LinkedHashMap`2<PredAST, int> sempreds;
+    public LinkedHashMap`2<int, PredAST> indexToPredMap;
+    public static string AUTO_GENERATED_TOKEN_NAME_PREFIX;
+    public int Type { get; }
+    public Grammar(AntlrTool tool, GrammarRootAST ast);
+    public Grammar(string grammarText);
+    public Grammar(string grammarText, LexerGrammar tokenVocabSource);
+    public Grammar(string grammarText, ANTLRToolListener listener);
+    public Grammar(string fileName, string grammarText);
+    public Grammar(string fileName, string grammarText, ANTLRToolListener listener);
+    public Grammar(string fileName, string grammarText, Grammar tokenVocabSource, ANTLRToolListener listener);
+    private static Grammar();
+    protected virtual void InitTokenSymbolTables();
+    public virtual void LoadImportedGrammars();
+    public virtual void DefineAction(GrammarAST atAST);
+    public virtual bool DefineRule(Rule r);
+    public virtual bool UndefineRule(Rule r);
+    public virtual Rule GetRule(string name);
+    public virtual ATN GetATN();
+    public virtual Rule GetRule(int index);
+    public virtual Rule GetRule(string grammarName, string ruleName);
+    protected virtual string GetBaseContextName(string ruleName);
+    public virtual IList`1<AltAST> GetUnlabeledAlternatives(RuleAST ast);
+    public virtual IDictionary`2<string, IList`1<Tuple`2<int, AltAST>>> GetLabeledAlternatives(RuleAST ast);
+    public virtual IList`1<Grammar> GetAllImportedGrammars();
+    public virtual IList`1<Grammar> GetImportedGrammars();
+    public virtual LexerGrammar GetImplicitLexer();
+    public static Grammar Load(string fileName);
+    public virtual IList`1<Grammar> GetGrammarAncestors();
+    public virtual Grammar GetOutermostGrammar();
+    public virtual bool IsAbstract();
+    public virtual string GetRecognizerName();
+    public virtual string GetStringLiteralLexerRuleName(string lit);
+    public virtual Grammar GetImportedGrammar(string name);
+    public virtual int GetTokenType(string token);
+    public virtual string GetTokenDisplayName(int ttype);
+    public virtual string GetTokenName(int ttype);
+    public virtual int GetChannelValue(string channel);
+    public virtual String[] GetRuleNames();
+    public virtual String[] GetTokenNames();
+    public virtual String[] GetTokenDisplayNames();
+    public virtual String[] GetTokenLiteralNames();
+    public virtual String[] GetTokenSymbolicNames();
+    public virtual IVocabulary GetVocabulary();
+    public virtual string GetSemanticContextDisplayString(SemanticContext semctx);
+    public virtual string JoinPredicateOperands(Operator op, string separator);
+    public virtual LinkedHashMap`2<int, PredAST> GetIndexToPredicateMap();
+    public virtual string GetPredicateDisplayString(Predicate pred);
+    public virtual int GetMaxCharValue();
+    public virtual IIntSet GetTokenTypes();
+    public virtual IIntSet GetAllCharValues();
+    public virtual int GetMaxTokenType();
+    public virtual int GetNewTokenType();
+    public virtual int GetNewChannelNumber();
+    public virtual void ImportTokensFromTokensFile();
+    public virtual void ImportVocab(Grammar importG);
+    public virtual int DefineTokenName(string name);
+    public virtual int DefineTokenName(string name, int ttype);
+    public virtual int DefineStringLiteral(string lit);
+    public virtual int DefineStringLiteral(string lit, int ttype);
+    public virtual int DefineTokenAlias(string name, string lit);
+    public virtual void SetTokenForType(int ttype, string text);
+    public virtual int DefineChannelName(string name);
+    public virtual int DefineChannelName(string name, int value);
+    public virtual void SetChannelNameForValue(int channelValue, string name);
+    public virtual Attribute ResolveToAttribute(string x, ActionAST node);
+    public virtual Attribute ResolveToAttribute(string x, string y, ActionAST node);
+    public virtual bool ResolvesToLabel(string x, ActionAST node);
+    public virtual bool ResolvesToListLabel(string x, ActionAST node);
+    public virtual bool ResolvesToToken(string x, ActionAST node);
+    public virtual bool ResolvesToAttributeDict(string x, ActionAST node);
+    public virtual string GetDefaultActionScope();
+    public virtual int get_Type();
+    public virtual ITokenStream GetTokenStream();
+    public virtual bool IsLexer();
+    public virtual bool IsParser();
+    public virtual bool IsCombined();
+    public static bool IsTokenName(string id);
+    public virtual string GetTypeString();
+    public static string GetGrammarTypeToFileNameSuffix(int type);
+    public virtual string GetOptionString(string key);
+    public static void SetNodeOptions(GrammarAST node, GrammarAST options);
+    public static IList`1<Tuple`2<GrammarAST, GrammarAST>> GetStringLiteralAliasesFromLexerRules(GrammarRootAST ast);
+    protected static bool DefAlias(GrammarAST r, string pattern, TreeWizard wiz, IList`1<Tuple`2<GrammarAST, GrammarAST>> lexerRuleToStringLiteral);
+    public virtual ISet`1<string> GetStringLiterals();
+    public virtual void SetLookaheadDFA(int decision, DFA lookaheadDFA);
+    public static IDictionary`2<int, Interval> GetStateToGrammarRegionMap(GrammarRootAST ast, IntervalSet grammarTokenTypes);
+    public virtual Interval GetStateToGrammarRegion(int atnStateNumber);
+    public virtual LexerInterpreter CreateLexerInterpreter(ICharStream input);
+    public virtual GrammarParserInterpreter CreateGrammarParserInterpreter(ITokenStream tokenStream);
+    public virtual ParserInterpreter CreateParserInterpreter(ITokenStream tokenStream);
+}
+public class Antlr4.Tool.GrammarInterpreterRuleContext : InterpreterRuleContext {
+    protected int outerAltNum;
+    public int OuterAlternative { get; public set; }
+    public GrammarInterpreterRuleContext(ParserRuleContext parent, int invokingStateNumber, int ruleIndex);
+    public virtual int get_OuterAlternative();
+    public virtual void set_OuterAlternative(int value);
+}
+public class Antlr4.Tool.GrammarParserInterpreter : ParserInterpreter {
+    protected Grammar g;
+    protected BitSet decisionStatesThatSetOuterAltNumInContext;
+    protected Int32[][] stateToAltsMap;
+    public GrammarParserInterpreter(Grammar g, string grammarFileName, IVocabulary vocabulary, ICollection`1<string> ruleNames, ATN atn, ITokenStream input);
+    public GrammarParserInterpreter(Grammar g, ATN atn, ITokenStream input);
+    protected virtual InterpreterRuleContext CreateInterpreterRuleContext(ParserRuleContext parent, int invokingStateNumber, int ruleIndex);
+    public virtual void Reset();
+    public virtual BitSet FindOuterMostDecisionStates();
+    protected virtual int VisitDecisionState(DecisionState p);
+    public static IList`1<ParserRuleContext> GetAllPossibleParseTrees(Grammar g, Parser originalParser, ITokenStream tokens, int decision, BitSet alts, int startIndex, int stopIndex, int startRuleIndex);
+    public static IList`1<ParserRuleContext> GetLookaheadParseTrees(Grammar g, ParserInterpreter originalParser, ITokenStream tokens, int startRuleIndex, int decision, int startIndex, int stopIndex);
+    public static ParserInterpreter DeriveTempParserInterpreter(Grammar g, Parser originalParser, ITokenStream tokens);
+}
+public class Antlr4.Tool.GrammarSemanticsMessage : ANTLRMessage {
+    public GrammarSemanticsMessage(ErrorType etype, string fileName, IToken offendingToken, Object[] args);
+}
+public class Antlr4.Tool.GrammarSyntaxMessage : ANTLRMessage {
+    public GrammarSyntaxMessage(ErrorType etype, string fileName, IToken offendingToken, RecognitionException antlrException, Object[] args);
+    public RecognitionException GetCause();
+}
+public class Antlr4.Tool.GrammarTransformPipeline : object {
+    public Grammar g;
+    public AntlrTool tool;
+    public GrammarTransformPipeline(Grammar g, AntlrTool tool);
+    public virtual void Process();
+    public virtual void ReduceBlocksToSets(GrammarAST root);
+    public virtual void ExpandParameterizedLoops(GrammarAST root);
+    public virtual GrammarAST ExpandParameterizedLoop(GrammarAST t);
+    public static void SetGrammarPtr(Grammar g, GrammarAST tree);
+    public static void AugmentTokensWithOriginalPosition(Grammar g, GrammarAST tree);
+    public virtual void IntegrateImportedGrammars(Grammar rootGrammar);
+    public virtual GrammarRootAST ExtractImplicitLexer(Grammar combinedGrammar);
+    [CompilerGeneratedAttribute]
+private object <ExpandParameterizedLoops>b__5_0(object t);
+}
+public class Antlr4.Tool.LabelElementPair : object {
+    public static BitSet tokenTypeForTokens;
+    public GrammarAST label;
+    public GrammarAST element;
+    public LabelType type;
+    private static LabelElementPair();
+    public LabelElementPair(Grammar g, GrammarAST label, GrammarAST element, int labelOp);
+    public virtual string ToString();
+}
+public enum Antlr4.Tool.LabelType : Enum {
+    public int value__;
+    public static LabelType RULE_LABEL;
+    public static LabelType TOKEN_LABEL;
+    public static LabelType RULE_LIST_LABEL;
+    public static LabelType TOKEN_LIST_LABEL;
+    public static LabelType LEXER_STRING_LABEL;
+}
+public class Antlr4.Tool.LeftRecursionCyclesMessage : ANTLRMessage {
+    public LeftRecursionCyclesMessage(string fileName, IEnumerable`1<IEnumerable`1<Rule>> cycles);
+    protected static IToken GetStartTokenOfFirstRule(IEnumerable`1<IEnumerable`1<Rule>> cycles);
+}
+public class Antlr4.Tool.LeftRecursiveRule : Rule {
+    public IList`1<LeftRecursiveRuleAltInfo> recPrimaryAlts;
+    public OrderedHashMap`2<int, LeftRecursiveRuleAltInfo> recOpAlts;
+    public RuleAST originalAST;
+    public IList`1<Tuple`2<GrammarAST, string>> leftRecursiveRuleRefLabels;
+    public LeftRecursiveRule(Grammar g, string name, RuleAST ast);
+    public virtual bool HasAltSpecificContexts();
+    public virtual int GetOriginalNumberOfAlts();
+    public RuleAST GetOriginalAST();
+    public virtual IList`1<AltAST> GetUnlabeledAltASTs();
+    public virtual Int32[] GetPrimaryAlts();
+    public virtual Int32[] GetRecursiveOpAlts();
+    public virtual IDictionary`2<string, IList`1<Tuple`2<int, AltAST>>> GetAltLabels();
+}
+public class Antlr4.Tool.LexerGrammar : Grammar {
+    public static string DEFAULT_MODE_NAME;
+    public Grammar implicitLexerOwner;
+    public MultiMap`2<string, Rule> modes;
+    public LexerGrammar(AntlrTool tool, GrammarRootAST ast);
+    public LexerGrammar(string grammarText);
+    public LexerGrammar(string grammarText, ANTLRToolListener listener);
+    public LexerGrammar(string fileName, string grammarText, ANTLRToolListener listener);
+    private static LexerGrammar();
+    public virtual bool DefineRule(Rule r);
+    public virtual bool UndefineRule(Rule r);
+}
+public class Antlr4.Tool.Rule : object {
+    public static AttributeDict predefinedRulePropertiesDict;
+    public static ISet`1<string> validLexerCommands;
+    public string name;
+    private string baseContext;
+    public IList`1<GrammarAST> modifiers;
+    public RuleAST ast;
+    public AttributeDict args;
+    public AttributeDict retvals;
+    public AttributeDict locals;
+    public Grammar g;
+    public string mode;
+    public IDictionary`2<string, ActionAST> namedActions;
+    public IList`1<GrammarAST> exceptions;
+    public IList`1<ActionAST> actions;
+    public ActionAST finallyAction;
+    public int numberOfAlts;
+    public bool isStartRule;
+    public Alternative[] alt;
+    public int index;
+    public int actionIndex;
+    private static Rule();
+    public Rule(Grammar g, string name, RuleAST ast, int numberOfAlts);
+    public virtual string GetBaseContext();
+    public virtual void SetBaseContext(string baseContext);
+    public virtual void DefineActionInAlt(int currentAlt, ActionAST actionAST);
+    public virtual void DefineLexerAction(ActionAST actionAST);
+    public virtual void DefinePredicateInAlt(int currentAlt, PredAST predAST);
+    public virtual Attribute ResolveRetvalOrProperty(string y);
+    public virtual ISet`1<string> GetTokenRefs();
+    public virtual ISet`1<string> GetElementLabelNames();
+    public virtual MultiMap`2<string, LabelElementPair> GetElementLabelDefs();
+    public virtual bool HasAltSpecificContexts();
+    public virtual int GetOriginalNumberOfAlts();
+    public virtual IDictionary`2<string, IList`1<Tuple`2<int, AltAST>>> GetAltLabels();
+    public virtual IList`1<AltAST> GetUnlabeledAltASTs();
+    public virtual Attribute ResolveToAttribute(string x, ActionAST node);
+    public virtual Attribute ResolveToAttribute(string x, string y, ActionAST node);
+    public virtual bool ResolvesToLabel(string x, ActionAST node);
+    public virtual bool ResolvesToListLabel(string x, ActionAST node);
+    public virtual bool ResolvesToToken(string x, ActionAST node);
+    public virtual bool ResolvesToAttributeDict(string x, ActionAST node);
+    public virtual Rule resolveToRule(string x);
+    public virtual LabelElementPair GetAnyLabelDef(string x);
+    public virtual AttributeDict GetPredefinedScope(LabelType ltype);
+    public virtual bool IsFragment();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public virtual string ToString();
+}
+public class Antlr4.Tool.ToolMessage : ANTLRMessage {
+    public ToolMessage(ErrorType errorType);
+    public ToolMessage(ErrorType errorType, Object[] args);
+    public ToolMessage(ErrorType errorType, Exception e, Object[] args);
+}

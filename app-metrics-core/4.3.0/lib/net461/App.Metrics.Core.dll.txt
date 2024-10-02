@@ -1,0 +1,2205 @@
+public class App.Metrics.Apdex.ApdexProvider : object {
+    private double _apdexTSeconds;
+    private IReservoir _reservoir;
+    public ApdexProvider(IReservoir reservoir, double apdexTSeconds);
+    public sealed virtual ApdexSnapshot GetSnapshot(bool resetReservoir);
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Apdex.ApdexValueSourceExtensions : object {
+    private static ApdexValue EmptyApdex;
+    private static ApdexValueSourceExtensions();
+    [ExtensionAttribute]
+public static ApdexValue GetApdexValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static ApdexValue GetApdexValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static ApdexValue GetValueOrDefault(IApdex metric);
+}
+public class App.Metrics.Apdex.DefaultApdexBuilder : object {
+    private DefaultSamplingReservoirProvider _defaultSamplingReservoirProvider;
+    public DefaultApdexBuilder(DefaultSamplingReservoirProvider defaultSamplingReservoirProvider);
+    public sealed virtual IApdexMetric Build(double apdexTSeconds, bool allowWarmup, IClock clock);
+    public sealed virtual IApdexMetric Build(Func`1<IReservoir> reservoir, double apdexTSeconds, bool allowWarmup, IClock clock);
+}
+internal class App.Metrics.Apdex.DefaultApdexManager : object {
+    private IBuildApdexMetrics _apdexBuilder;
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    public DefaultApdexManager(IBuildApdexMetrics apdexBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual void Track(ApdexOptions options, Action action);
+    public sealed virtual void Track(ApdexOptions options, MetricTags tags, Action action);
+    public sealed virtual ApdexContext Track(ApdexOptions options, MetricTags tags);
+    public sealed virtual ApdexContext Track(ApdexOptions options);
+}
+public class App.Metrics.Apdex.DefaultApdexMetric : object {
+    private bool _allowWarmup;
+    private IApdexProvider _apdexProvider;
+    private IClock _clock;
+    private bool _disposed;
+    public ApdexValue Value { get; }
+    public DefaultApdexMetric(IReservoir reservoir, double apdexTSeconds, IClock clock, bool allowWarmup);
+    public DefaultApdexMetric(IReservoir reservoir, IClock clock, bool allowWarmup);
+    public DefaultApdexMetric(IApdexProvider apdexProvider, IClock clock, bool allowWarmup);
+    public sealed virtual ApdexValue get_Value();
+    public sealed virtual long CurrentTime();
+    [ExcludeFromCodeCoverageAttribute]
+public sealed virtual void Dispose();
+    public sealed virtual long EndRecording();
+    public sealed virtual ApdexValue GetValue(bool resetMetric);
+    public sealed virtual ApdexContext NewContext();
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Track(long duration);
+    public sealed virtual void Track(Action action);
+    public sealed virtual T Track(Func`1<T> action);
+    [ExcludeFromCodeCoverageAttribute]
+private void Dispose(bool disposing);
+}
+public class App.Metrics.Apdex.DefaultApdexMetricProvider : object {
+    private IBuildApdexMetrics _apdexBuidler;
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    public DefaultApdexMetricProvider(IBuildApdexMetrics apdexBuidler, IMetricsRegistry registry, IClock clock);
+    public sealed virtual IApdex Instance(ApdexOptions options);
+    public sealed virtual IApdex Instance(ApdexOptions options, MetricTags tags);
+    public sealed virtual IApdex Instance(ApdexOptions options, Func`1<T> builder);
+    public sealed virtual IApdex Instance(ApdexOptions options, MetricTags tags, Func`1<T> builder);
+}
+[ExtensionAttribute]
+public static class App.Metrics.AppMetricsOptionExtensions : object {
+    private static EnvironmentInfo EnvInfo;
+    private static AppMetricsOptionExtensions();
+    [ExtensionAttribute]
+public static MetricsOptions WithGlobalTags(MetricsOptions options, Action`2<Dictionary`2<string, string>, EnvironmentInfo> setupAction);
+    [ExtensionAttribute]
+public static MetricsOptions AddAppTag(MetricsOptions options, string appName);
+    [ExtensionAttribute]
+public static MetricsOptions AddServerTag(MetricsOptions options, string serverName);
+    [ExtensionAttribute]
+public static MetricsOptions AddEnvTag(MetricsOptions options, string envName);
+}
+public class App.Metrics.BucketHistogram.DefaultBucketHistogramBuilder : object {
+    public sealed virtual IBucketHistogramMetric Build(IEnumerable`1<double> buckets);
+}
+internal class App.Metrics.BucketHistogram.DefaultBucketHistogramManager : object {
+    private IBuildBucketHistogramMetrics _histogramBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultBucketHistogramManager(IBuildBucketHistogramMetrics histogramBuilder, IMetricsRegistry registry);
+    public sealed virtual void Update(BucketHistogramOptions options, long value);
+    public sealed virtual void Update(BucketHistogramOptions options, MetricTags tags, long value);
+}
+public class App.Metrics.BucketHistogram.DefaultBucketHistogramMetric : object {
+    private bool _disposed;
+    private StripedLongAdder _counter;
+    private StripedLongAdder _sum;
+    private SortedDictionary`2<double, StripedLongAdder> _buckets;
+    public BucketHistogramValue Value { get; }
+    public DefaultBucketHistogramMetric(IEnumerable`1<double> buckets);
+    public sealed virtual BucketHistogramValue get_Value();
+    [ExcludeFromCodeCoverageAttribute]
+public sealed virtual void Dispose();
+    [ExcludeFromCodeCoverageAttribute]
+public void Dispose(bool disposing);
+    public sealed virtual BucketHistogramValue GetValue(bool resetMetric);
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+public class App.Metrics.BucketHistogram.DefaultBucketHistogramMetricProvider : object {
+    private IBuildBucketHistogramMetrics _histogramBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultBucketHistogramMetricProvider(IBuildBucketHistogramMetrics histogramBuilder, IMetricsRegistry registry);
+    public sealed virtual IBucketHistogram Instance(BucketHistogramOptions options);
+    public sealed virtual IBucketHistogram Instance(BucketHistogramOptions options, Func`1<T> builder);
+    public sealed virtual IBucketHistogram Instance(BucketHistogramOptions options, MetricTags tags);
+    public sealed virtual IBucketHistogram Instance(BucketHistogramOptions options, MetricTags tags, Func`1<T> builder);
+}
+public class App.Metrics.BucketTimer.DefaultBucketTimerBuilder : object {
+    public sealed virtual IBucketTimerMetric Build(IBucketHistogramMetric histogram, IClock clock, TimeUnit timeUnit);
+    public sealed virtual IBucketTimerMetric Build(IEnumerable`1<double> buckets, IClock clock, TimeUnit timeUnit);
+    public sealed virtual IBucketTimerMetric Build(IBucketHistogramMetric histogram, IMeterMetric meter, IClock clock, TimeUnit timeUnit);
+    public sealed virtual IBucketTimerMetric Build(IEnumerable`1<double> buckets, IMeterMetric meter, IClock clock, TimeUnit timeUnit);
+}
+internal class App.Metrics.BucketTimer.DefaultBucketTimerManager : object {
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    private IBuildBucketTimerMetrics _timerBuilder;
+    public DefaultBucketTimerManager(IBuildBucketTimerMetrics timerBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual void Time(BucketTimerOptions options, Action action);
+    public sealed virtual void Time(BucketTimerOptions options, MetricTags tags, Action action);
+    public sealed virtual void Time(BucketTimerOptions options, Action action, string userValue);
+    public sealed virtual void Time(BucketTimerOptions options, MetricTags tags, Action action, string userValue);
+    public sealed virtual TimerContext Time(BucketTimerOptions options, MetricTags tags, string userValue);
+    public sealed virtual TimerContext Time(BucketTimerOptions options, MetricTags tags);
+    public sealed virtual TimerContext Time(BucketTimerOptions options);
+    public sealed virtual TimerContext Time(BucketTimerOptions options, string userValue);
+}
+public class App.Metrics.BucketTimer.DefaultBucketTimerMetric : object {
+    private StripedLongAdder _activeSessionsCounter;
+    private IClock _clock;
+    private TimeUnit _timeUnit;
+    private IBucketHistogramMetric _histogram;
+    private IMeterMetric _meter;
+    private bool _disposed;
+    public BucketTimerValue Value { get; }
+    public DefaultBucketTimerMetric(IBucketHistogramMetric histogram, IClock clock, TimeUnit timeUnit);
+    public DefaultBucketTimerMetric(IBucketHistogramMetric histogram, IMeterMetric meter, IClock clock, TimeUnit timeUnit);
+    public sealed virtual BucketTimerValue get_Value();
+    public sealed virtual long CurrentTime();
+    public sealed virtual void Dispose();
+    public void Dispose(bool disposing);
+    public sealed virtual long EndRecording();
+    public sealed virtual BucketTimerValue GetValue(bool resetMetric);
+    public sealed virtual TimerContext NewContext(string userValue);
+    public sealed virtual TimerContext NewContext();
+    public sealed virtual void Record(long duration, TimeUnit unit, string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit);
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Time(Action action, string userValue);
+    public sealed virtual T Time(Func`1<T> action, string userValue);
+    public sealed virtual void Time(Action action);
+    public sealed virtual T Time(Func`1<T> action);
+}
+public class App.Metrics.BucketTimer.DefaultBucketTimerMetricProvider : object {
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    private IBuildBucketTimerMetrics _timerBuilder;
+    public DefaultBucketTimerMetricProvider(IBuildBucketTimerMetrics timerBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual ITimer Instance(BucketTimerOptions options);
+    public sealed virtual ITimer Instance(BucketTimerOptions options, MetricTags tags);
+    public sealed virtual ITimer Instance(BucketTimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer Instance(BucketTimerOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer WithHistogram(BucketTimerOptions options, Func`1<T> histogramMetricBuilder);
+    public sealed virtual ITimer WithHistogram(BucketTimerOptions options, MetricTags tags, Func`1<T> histogramMetricBuilder);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Counter.CounterExtensions : object {
+    private static CounterValue EmptyCounter;
+    private static CounterExtensions();
+    [ExtensionAttribute]
+public static CounterValue GetCounterValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static CounterValue GetCounterValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static CounterValue GetValueOrDefault(ICounter metric);
+}
+public class App.Metrics.Counter.DefaultCounterBuilder : object {
+    public sealed virtual ICounterMetric Build();
+    public sealed virtual ICounterMetric Build(Func`1<T> builder);
+}
+internal class App.Metrics.Counter.DefaultCounterManager : object {
+    private IBuildCounterMetrics _counterBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultCounterManager(IBuildCounterMetrics counterBuilder, IMetricsRegistry registry);
+    public sealed virtual void Decrement(CounterOptions options, MetricTags tags);
+    public sealed virtual void Decrement(CounterOptions options, long amount);
+    public sealed virtual void Decrement(CounterOptions options, MetricTags tags, long amount);
+    public sealed virtual void Decrement(CounterOptions options, string item);
+    public sealed virtual void Decrement(CounterOptions options, MetricTags tags, string item);
+    public sealed virtual void Decrement(CounterOptions options, long amount, string item);
+    public sealed virtual void Decrement(CounterOptions options, MetricTags tags, long amount, string item);
+    public sealed virtual void Decrement(CounterOptions options);
+    public sealed virtual void Decrement(CounterOptions options, MetricSetItem setItem);
+    public sealed virtual void Decrement(CounterOptions options, long amount, MetricSetItem setItem);
+    public sealed virtual void Increment(CounterOptions options);
+    public sealed virtual void Increment(CounterOptions options, MetricTags tags);
+    public sealed virtual void Increment(CounterOptions options, long amount);
+    public sealed virtual void Increment(CounterOptions options, MetricTags tags, long amount);
+    public sealed virtual void Increment(CounterOptions options, string item);
+    public sealed virtual void Increment(CounterOptions options, MetricTags tags, string item);
+    public sealed virtual void Increment(CounterOptions options, MetricTags tags, long amount, string item);
+    public sealed virtual void Increment(CounterOptions options, long amount, string setItem);
+    public sealed virtual void Increment(CounterOptions options, MetricSetItem setItem);
+    public sealed virtual void Increment(CounterOptions options, long amount, MetricSetItem setItem);
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__3_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__4_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__5_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__6_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__7_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__8_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__9_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__10_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__11_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Decrement>b__12_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__13_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__14_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__15_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__16_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__17_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__18_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__19_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__20_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__21_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Increment>b__22_0();
+}
+public class App.Metrics.Counter.DefaultCounterMetric : object {
+    private StripedLongAdder _counter;
+    private ConcurrentDictionary`2<string, StripedLongAdder> _setCounters;
+    public CounterValue Value { get; }
+    public sealed virtual CounterValue get_Value();
+    public sealed virtual void Decrement();
+    public sealed virtual void Decrement(long value);
+    public sealed virtual void Decrement(string setItem);
+    public sealed virtual void Decrement(string setItem, long amount);
+    public sealed virtual void Decrement(MetricSetItem setItem);
+    public sealed virtual void Decrement(MetricSetItem setItem, long amount);
+    public sealed virtual CounterValue GetValue(bool resetMetric);
+    public sealed virtual void Increment();
+    public sealed virtual void Increment(long value);
+    public sealed virtual void Increment(string setItem);
+    public sealed virtual void Increment(string setItem, long amount);
+    public sealed virtual void Increment(MetricSetItem setItem);
+    public sealed virtual void Increment(MetricSetItem setItem, long amount);
+    public sealed virtual void Reset();
+    private CounterValue GetValueWithSetItems();
+    private StripedLongAdder SetCounter(string item);
+}
+public class App.Metrics.Counter.DefaultCounterMetricProvider : object {
+    private IBuildCounterMetrics _counterBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultCounterMetricProvider(IBuildCounterMetrics counterBuilder, IMetricsRegistry registry);
+    public sealed virtual ICounter Instance(CounterOptions options, Func`1<T> builder);
+    public sealed virtual ICounter Instance(CounterOptions options, MetricTags tags);
+    public sealed virtual ICounter Instance(CounterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ICounter Instance(CounterOptions options);
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Instance>b__4_0();
+    [CompilerGeneratedAttribute]
+private ICounterMetric <Instance>b__6_0();
+}
+public class App.Metrics.EnvOutputFormattingBuilder : object {
+    private Action`1<IEnvOutputFormatter> _formatter;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal EnvOutputFormattingBuilder(IMetricsBuilder metricsBuilder, Action`1<IEnvOutputFormatter> formatter);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Using(IEnvOutputFormatter formatter);
+    public sealed virtual IMetricsBuilder Using();
+}
+public class App.Metrics.Filtering.MetricsFilter : object {
+    private Predicate`1<string> _context;
+    private Predicate`1<string> _name;
+    private HashSet`1<string> _tagKeys;
+    private Dictionary`2<string, string> _tags;
+    private HashSet`1<MetricType> _types;
+    public sealed virtual bool IsApdexMatch(ApdexValueSource apdex);
+    public sealed virtual bool IsCounterMatch(CounterValueSource counter);
+    public sealed virtual bool IsGaugeMatch(GaugeValueSource gauge);
+    public sealed virtual bool IsHistogramMatch(HistogramValueSource histogram);
+    public sealed virtual bool IsBucketHistogramMatch(BucketHistogramValueSource histogram);
+    public sealed virtual bool IsContextMatch(string context);
+    public sealed virtual bool IsMeterMatch(MeterValueSource meter);
+    public sealed virtual bool IsTimerMatch(TimerValueSource timer);
+    public sealed virtual bool IsBucketTimerMatch(BucketTimerValueSource timer);
+    public sealed virtual IFilterMetrics WhereContext(Predicate`1<string> condition);
+    public sealed virtual IFilterMetrics WhereContext(string context);
+    public sealed virtual IFilterMetrics WhereName(string name);
+    public sealed virtual IFilterMetrics WhereName(Predicate`1<string> condition);
+    public sealed virtual IFilterMetrics WhereNameStartsWith(string name);
+    public sealed virtual IFilterMetrics WhereTaggedWithKey(String[] tagKeys);
+    public sealed virtual IFilterMetrics WhereTaggedWithKeyValue(TagKeyValueFilter tags);
+    public sealed virtual IFilterMetrics WhereType(MetricType[] types);
+    private bool IsMetricNameMatch(string name);
+    private bool IsTagMatch(MetricTags sourceTags);
+}
+public class App.Metrics.Gauge.DefaultGaugeBuilder : object {
+    public sealed virtual IGaugeMetric Build(Func`1<double> valueProvider);
+    public sealed virtual IGaugeMetric Build(Func`1<IMetricValueProvider`1<double>> valueProvider);
+    public sealed virtual IGaugeMetric Build();
+    public sealed virtual IGaugeMetric Build(Func`1<T> builder);
+}
+internal class App.Metrics.Gauge.DefaultGaugeManager : object {
+    private IBuildGaugeMetrics _gaugeBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultGaugeManager(IBuildGaugeMetrics gaugeBuilder, IMetricsRegistry registry);
+    public sealed virtual void SetValue(GaugeOptions options, Func`1<double> valueProvider);
+    public sealed virtual void SetValue(GaugeOptions options, double value);
+    public sealed virtual void SetValue(GaugeOptions options, MetricTags tags, double value);
+    public sealed virtual void SetValue(GaugeOptions options, Func`1<IMetricValueProvider`1<double>> valueProvider);
+    public sealed virtual void SetValue(GaugeOptions options, MetricTags tags, Func`1<IMetricValueProvider`1<double>> valueProvider);
+    public sealed virtual void SetValue(GaugeOptions options, MetricTags tags, Func`1<double> valueProvider);
+    [CompilerGeneratedAttribute]
+private IGaugeMetric <SetValue>b__4_0();
+    [CompilerGeneratedAttribute]
+private IGaugeMetric <SetValue>b__5_0();
+}
+public class App.Metrics.Gauge.DefaultGaugeMetricProvider : object {
+    private IBuildGaugeMetrics _gaugeBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultGaugeMetricProvider(IBuildGaugeMetrics gaugeBuilder, IMetricsRegistry registry);
+    public sealed virtual IGauge Instance(GaugeOptions options);
+    public sealed virtual IGauge Instance(GaugeOptions options, MetricTags tags);
+    public sealed virtual IGauge Instance(GaugeOptions options, Func`1<T> builder);
+    public sealed virtual IGauge Instance(GaugeOptions options, MetricTags tags, Func`1<T> builder);
+    [CompilerGeneratedAttribute]
+private IGaugeMetric <Instance>b__3_0();
+    [CompilerGeneratedAttribute]
+private IGaugeMetric <Instance>b__4_0();
+}
+public class App.Metrics.Gauge.DerivedGauge : object {
+    private IMetricValueProvider`1<double> _gauge;
+    private Func`2<double, double> _transformation;
+    public double Value { get; }
+    public DerivedGauge(IMetricValueProvider`1<double> gauge, Func`2<double, double> transformation);
+    public sealed virtual double get_Value();
+    public sealed virtual double GetValue(bool resetMetric);
+    public sealed virtual void Reset();
+    public sealed virtual void SetValue(double value);
+}
+public class App.Metrics.Gauge.FunctionGauge : object {
+    private Func`1<double> _valueProvider;
+    public double Value { get; }
+    public FunctionGauge(Func`1<double> valueProvider);
+    public sealed virtual double get_Value();
+    public sealed virtual double GetValue(bool resetMetric);
+    public sealed virtual void Reset();
+    public sealed virtual void SetValue(double value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Gauge.GaugeExtensions : object {
+    [ExtensionAttribute]
+public static double GetGaugeValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static double GetGaugeValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+}
+public class App.Metrics.Gauge.HitPercentageGauge : PercentageGauge {
+    public HitPercentageGauge(IMeter hitMeter, IMeter totalMeter);
+    public HitPercentageGauge(IMeter hitMeter, IMeter totalMeter, Func`2<MeterValue, double> meterRateFunc);
+    public HitPercentageGauge(IMeter hitMeter, ITimer totalTimer);
+    public HitPercentageGauge(IMeter hitMeter, ITimer totalTimer, Func`2<MeterValue, double> meterRateFunc);
+}
+public class App.Metrics.Gauge.HitRatioGauge : RatioGauge {
+    public HitRatioGauge(IMeter hitMeter, IMeter totalMeter);
+    public HitRatioGauge(IMeter hitMeter, IMeter totalMeter, Func`2<MeterValue, double> meterRateFunc);
+    public HitRatioGauge(IMeter hitMeter, ITimer totalTimer);
+    public HitRatioGauge(IMeter hitMeter, ITimer totalTimer, Func`2<MeterValue, double> meterRateFunc);
+}
+public class App.Metrics.Gauge.PercentageGauge : FunctionGauge {
+    public PercentageGauge(Func`1<double> numerator, Func`1<double> denominator);
+}
+public class App.Metrics.Gauge.RatioGauge : FunctionGauge {
+    public RatioGauge(Func`1<double> numerator, Func`1<double> denominator);
+}
+public class App.Metrics.Gauge.ValueGauge : object {
+    private AtomicDouble _gauge;
+    public double Value { get; }
+    public sealed virtual double get_Value();
+    public sealed virtual double GetValue(bool resetMetric);
+    public sealed virtual void Reset();
+    public sealed virtual void SetValue(double value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Histogram.BucketHistogramExtensions : object {
+    private static BucketHistogramValue EmptyHistogram;
+    private static BucketHistogramExtensions();
+    [ExtensionAttribute]
+public static BucketHistogramValue GetBucketHistogramValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static BucketHistogramValue GetBucketHistogramValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static BucketHistogramValue GetValueOrDefault(IBucketHistogram metric);
+}
+public class App.Metrics.Histogram.DefaultHistogramBuilder : object {
+    private DefaultSamplingReservoirProvider _defaultSamplingReservoirProvider;
+    public DefaultHistogramBuilder(DefaultSamplingReservoirProvider defaultSamplingReservoirProvider);
+    public sealed virtual IHistogramMetric Build(Func`1<IReservoir> setupReservoir);
+}
+internal class App.Metrics.Histogram.DefaultHistogramManager : object {
+    private IBuildHistogramMetrics _histogramBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultHistogramManager(IBuildHistogramMetrics histogramBuilder, IMetricsRegistry registry);
+    public sealed virtual void Update(HistogramOptions options, long value);
+    public sealed virtual void Update(HistogramOptions options, MetricTags tags, long value);
+    public sealed virtual void Update(HistogramOptions options, long value, string userValue);
+    public sealed virtual void Update(HistogramOptions options, MetricTags tags, long value, string userValue);
+}
+public class App.Metrics.Histogram.DefaultHistogramMetric : object {
+    private IReservoir _reservoir;
+    private bool _disposed;
+    private UserValueWrapper _last;
+    public HistogramValue Value { get; }
+    public DefaultHistogramMetric(IReservoir reservoir);
+    public sealed virtual HistogramValue get_Value();
+    [ExcludeFromCodeCoverageAttribute]
+public sealed virtual void Dispose();
+    [ExcludeFromCodeCoverageAttribute]
+public void Dispose(bool disposing);
+    public sealed virtual HistogramValue GetValue(bool resetMetric);
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+public class App.Metrics.Histogram.DefaultHistogramMetricProvider : object {
+    private IBuildHistogramMetrics _histogramBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultHistogramMetricProvider(IBuildHistogramMetrics histogramBuilder, IMetricsRegistry registry);
+    public sealed virtual IHistogram Instance(HistogramOptions options);
+    public sealed virtual IHistogram Instance(HistogramOptions options, Func`1<T> builder);
+    public sealed virtual IHistogram Instance(HistogramOptions options, MetricTags tags);
+    public sealed virtual IHistogram Instance(HistogramOptions options, MetricTags tags, Func`1<T> builder);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Histogram.HistogramExtensions : object {
+    private static HistogramValue EmptyHistogram;
+    private static HistogramExtensions();
+    [ExtensionAttribute]
+public static HistogramValue GetHistogramValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static HistogramValue GetHistogramValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static HistogramValue GetValueOrDefault(IHistogram metric);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Infrastructure.EnvironmentInfoExtensions : object {
+    [ExtensionAttribute]
+public static IDictionary`2<string, string> ToEnvDictionary(EnvironmentInfo environmentInfo);
+}
+public class App.Metrics.Infrastructure.EnvironmentInfoProvider : object {
+    public EnvironmentInfo Build();
+}
+internal class App.Metrics.Infrastructure.EnvironmentInfoProviderCache : object {
+    [CompilerGeneratedAttribute]
+private static EnvironmentInfoProviderCache <Instance>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <EntryAssemblyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <EntryAssemblyVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FrameworkDescription>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MachineName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperatingSystemArchitecture>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperatingSystemPlatform>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperatingSystemVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProcessArchitecture>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProcessorCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RunningEnvironment>k__BackingField;
+    public static EnvironmentInfoProviderCache Instance { get; }
+    public string EntryAssemblyName { get; }
+    public string EntryAssemblyVersion { get; }
+    public string FrameworkDescription { get; }
+    public string MachineName { get; }
+    public string OperatingSystemArchitecture { get; }
+    public string OperatingSystemPlatform { get; }
+    public string OperatingSystemVersion { get; }
+    public string ProcessArchitecture { get; }
+    public string ProcessorCount { get; }
+    public string RunningEnvironment { get; }
+    private static EnvironmentInfoProviderCache();
+    [CompilerGeneratedAttribute]
+public static EnvironmentInfoProviderCache get_Instance();
+    [CompilerGeneratedAttribute]
+public string get_EntryAssemblyName();
+    [CompilerGeneratedAttribute]
+public string get_EntryAssemblyVersion();
+    [CompilerGeneratedAttribute]
+public string get_FrameworkDescription();
+    [CompilerGeneratedAttribute]
+public string get_MachineName();
+    [CompilerGeneratedAttribute]
+public string get_OperatingSystemArchitecture();
+    [CompilerGeneratedAttribute]
+public string get_OperatingSystemPlatform();
+    [CompilerGeneratedAttribute]
+public string get_OperatingSystemVersion();
+    [CompilerGeneratedAttribute]
+public string get_ProcessArchitecture();
+    [CompilerGeneratedAttribute]
+public string get_ProcessorCount();
+    [CompilerGeneratedAttribute]
+public string get_RunningEnvironment();
+    private static string GetOSPlatform();
+    private static string GetProcessArchitecture();
+    private static string GetOSArchitecture();
+    private static string GetOSVersion();
+    private static string GetFrameworkDescription();
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Infrastructure.StopwatchClock : object {
+    private static long Factor;
+    [CompilerGeneratedAttribute]
+private EventHandler Advanced;
+    public long Nanoseconds { get; }
+    public long Seconds { get; }
+    public DateTime UtcDateTime { get; }
+    private static StopwatchClock();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Advanced(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Advanced(EventHandler value);
+    public sealed virtual long get_Nanoseconds();
+    public sealed virtual long get_Seconds();
+    public sealed virtual DateTime get_UtcDateTime();
+    public sealed virtual void Advance(TimeUnit unit, long value);
+    public sealed virtual string FormatTimestamp(DateTime timestamp);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Infrastructure.SystemClock : object {
+    [CompilerGeneratedAttribute]
+private EventHandler Advanced;
+    public long Nanoseconds { get; }
+    public long Seconds { get; }
+    public DateTime UtcDateTime { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Advanced(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Advanced(EventHandler value);
+    public sealed virtual long get_Nanoseconds();
+    public sealed virtual long get_Seconds();
+    public sealed virtual DateTime get_UtcDateTime();
+    public sealed virtual void Advance(TimeUnit unit, long value);
+    public sealed virtual string FormatTimestamp(DateTime timestamp);
+}
+public class App.Metrics.Internal.DefaultMeasureMetricsProvider : object {
+    [CompilerGeneratedAttribute]
+private IMeasureApdexMetrics <Apdex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureCounterMetrics <Counter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureGaugeMetrics <Gauge>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureHistogramMetrics <Histogram>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureBucketHistogramMetrics <BucketHistogram>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureMeterMetrics <Meter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureTimerMetrics <Timer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureBucketTimerMetrics <BucketTimer>k__BackingField;
+    public IMeasureApdexMetrics Apdex { get; }
+    public IMeasureCounterMetrics Counter { get; }
+    public IMeasureGaugeMetrics Gauge { get; }
+    public IMeasureHistogramMetrics Histogram { get; }
+    public IMeasureBucketHistogramMetrics BucketHistogram { get; }
+    public IMeasureMeterMetrics Meter { get; }
+    public IMeasureTimerMetrics Timer { get; }
+    public IMeasureBucketTimerMetrics BucketTimer { get; }
+    public DefaultMeasureMetricsProvider(IMetricsRegistry registry, IBuildMetrics buideFactory, IClock clock);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureApdexMetrics get_Apdex();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureCounterMetrics get_Counter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureGaugeMetrics get_Gauge();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureHistogramMetrics get_Histogram();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureBucketHistogramMetrics get_BucketHistogram();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureMeterMetrics get_Meter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureTimerMetrics get_Timer();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureBucketTimerMetrics get_BucketTimer();
+}
+public class App.Metrics.Internal.DefaultMetricContextRegistry : object {
+    private static ILog Logger;
+    private MetricMetaCatalog`3<IApdex, ApdexValueSource, ApdexValue> _apdexScores;
+    private MetricMetaCatalog`3<ICounter, CounterValueSource, CounterValue> _counters;
+    private MetricMetaCatalog`3<IGauge, GaugeValueSource, double> _gauges;
+    private GlobalMetricTags _globalTags;
+    private ContextualMetricTagProviders _contextualTags;
+    private MetricMetaCatalog`3<IHistogram, HistogramValueSource, HistogramValue> _histograms;
+    private MetricMetaCatalog`3<IBucketHistogram, BucketHistogramValueSource, BucketHistogramValue> _bucketHistograms;
+    private MetricMetaCatalog`3<IMeter, MeterValueSource, MeterValue> _meters;
+    private MetricMetaCatalog`3<ITimer, TimerValueSource, TimerValue> _timers;
+    private MetricMetaCatalog`3<ITimer, BucketTimerValueSource, BucketTimerValue> _bucketTimers;
+    [CompilerGeneratedAttribute]
+private string <Context>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMetricRegistryManager <DataProvider>k__BackingField;
+    public string Context { get; }
+    public IMetricRegistryManager DataProvider { get; }
+    public DefaultMetricContextRegistry(string context);
+    public DefaultMetricContextRegistry(string context, GlobalMetricTags globalTags, ContextualMetricTagProviders contextualTags);
+    private static DefaultMetricContextRegistry();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Context();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricRegistryManager get_DataProvider();
+    public sealed virtual IApdex Apdex(ApdexOptions options, Func`1<T> builder);
+    public sealed virtual IApdex Apdex(ApdexOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void ClearAllMetrics();
+    public sealed virtual ICounter Counter(CounterOptions options, Func`1<T> builder);
+    public sealed virtual ICounter Counter(CounterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IGauge Gauge(GaugeOptions options, Func`1<T> builder);
+    public sealed virtual IGauge Gauge(GaugeOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, Func`1<T> builder);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer Timer(TimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer Timer(TimerOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, MetricTags tags, Func`1<T> builder);
+    private MetricTags AllTags(MetricTags metricTags);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<GaugeValueSource> <.ctor>b__12_0();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<CounterValueSource> <.ctor>b__12_1();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<MeterValueSource> <.ctor>b__12_2();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<HistogramValueSource> <.ctor>b__12_3();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<BucketHistogramValueSource> <.ctor>b__12_4();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<TimerValueSource> <.ctor>b__12_5();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<BucketTimerValueSource> <.ctor>b__12_6();
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<ApdexValueSource> <.ctor>b__12_7();
+}
+public class App.Metrics.Internal.DefaultMetricRegistryManager : object {
+    private Func`1<IEnumerable`1<ApdexValueSource>> _apdexScores;
+    private Func`1<IEnumerable`1<CounterValueSource>> _counters;
+    private Func`1<IEnumerable`1<GaugeValueSource>> _gauges;
+    private Func`1<IEnumerable`1<HistogramValueSource>> _histograms;
+    private Func`1<IEnumerable`1<BucketHistogramValueSource>> _bucketHistograms;
+    private Func`1<IEnumerable`1<MeterValueSource>> _meters;
+    private Func`1<IEnumerable`1<TimerValueSource>> _timers;
+    private Func`1<IEnumerable`1<BucketTimerValueSource>> _bucketTimers;
+    public IEnumerable`1<ApdexValueSource> ApdexScores { get; }
+    public IEnumerable`1<CounterValueSource> Counters { get; }
+    public IEnumerable`1<GaugeValueSource> Gauges { get; }
+    public IEnumerable`1<HistogramValueSource> Histograms { get; }
+    public IEnumerable`1<BucketHistogramValueSource> BucketHistograms { get; }
+    public IEnumerable`1<MeterValueSource> Meters { get; }
+    public IEnumerable`1<TimerValueSource> Timers { get; }
+    public IEnumerable`1<BucketTimerValueSource> BucketTimers { get; }
+    public DefaultMetricRegistryManager(Func`1<IEnumerable`1<GaugeValueSource>> gauges, Func`1<IEnumerable`1<CounterValueSource>> counters, Func`1<IEnumerable`1<MeterValueSource>> meters, Func`1<IEnumerable`1<HistogramValueSource>> histograms, Func`1<IEnumerable`1<BucketHistogramValueSource>> bucketHistograms, Func`1<IEnumerable`1<TimerValueSource>> timers, Func`1<IEnumerable`1<BucketTimerValueSource>> bucketTimers, Func`1<IEnumerable`1<ApdexValueSource>> apdexScores);
+    public sealed virtual IEnumerable`1<ApdexValueSource> get_ApdexScores();
+    public sealed virtual IEnumerable`1<CounterValueSource> get_Counters();
+    public sealed virtual IEnumerable`1<GaugeValueSource> get_Gauges();
+    public sealed virtual IEnumerable`1<HistogramValueSource> get_Histograms();
+    public sealed virtual IEnumerable`1<BucketHistogramValueSource> get_BucketHistograms();
+    public sealed virtual IEnumerable`1<MeterValueSource> get_Meters();
+    public sealed virtual IEnumerable`1<TimerValueSource> get_Timers();
+    public sealed virtual IEnumerable`1<BucketTimerValueSource> get_BucketTimers();
+}
+public class App.Metrics.Internal.DefaultMetrics : object {
+    [CompilerGeneratedAttribute]
+private IBuildMetrics <Build>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IClock <Clock>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IFilterMetrics <Filter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IManageMetrics <Manage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMeasureMetrics <Measure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideMetrics <Provider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideMetricValues <Snapshot>k__BackingField;
+    public IBuildMetrics Build { get; }
+    public IClock Clock { get; }
+    public IFilterMetrics Filter { get; }
+    public IManageMetrics Manage { get; }
+    public IMeasureMetrics Measure { get; }
+    public IProvideMetrics Provider { get; }
+    public IProvideMetricValues Snapshot { get; }
+    public DefaultMetrics(IClock clock, IFilterMetrics filter, IMeasureMetrics measureMetricsProvider, IBuildMetrics metricsBuilder, IProvideMetrics metricsProvider, IProvideMetricValues dataManager, IManageMetrics metricsManager);
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildMetrics get_Build();
+    [CompilerGeneratedAttribute]
+public sealed virtual IClock get_Clock();
+    [CompilerGeneratedAttribute]
+public sealed virtual IFilterMetrics get_Filter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IManageMetrics get_Manage();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMeasureMetrics get_Measure();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideMetrics get_Provider();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideMetricValues get_Snapshot();
+}
+public class App.Metrics.Internal.DefaultMetricsBuilderFactory : object {
+    internal DefaultSamplingReservoirProvider DefaultSamplingReservoir;
+    [CompilerGeneratedAttribute]
+private IBuildApdexMetrics <Apdex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildCounterMetrics <Counter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildGaugeMetrics <Gauge>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildHistogramMetrics <Histogram>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildBucketHistogramMetrics <BucketHistogram>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildMeterMetrics <Meter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildTimerMetrics <Timer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IBuildBucketTimerMetrics <BucketTimer>k__BackingField;
+    public IBuildApdexMetrics Apdex { get; }
+    public IBuildCounterMetrics Counter { get; }
+    public IBuildGaugeMetrics Gauge { get; }
+    public IBuildHistogramMetrics Histogram { get; }
+    public IBuildBucketHistogramMetrics BucketHistogram { get; }
+    public IBuildMeterMetrics Meter { get; }
+    public IBuildTimerMetrics Timer { get; }
+    public IBuildBucketTimerMetrics BucketTimer { get; }
+    public DefaultMetricsBuilderFactory(DefaultSamplingReservoirProvider defaultSamplingReservoir);
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildApdexMetrics get_Apdex();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildCounterMetrics get_Counter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildGaugeMetrics get_Gauge();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildHistogramMetrics get_Histogram();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildBucketHistogramMetrics get_BucketHistogram();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildMeterMetrics get_Meter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildTimerMetrics get_Timer();
+    [CompilerGeneratedAttribute]
+public sealed virtual IBuildBucketTimerMetrics get_BucketTimer();
+}
+public class App.Metrics.Internal.DefaultMetricsManager : object {
+    private static ILog Logger;
+    private IMetricsRegistry _registry;
+    public DefaultMetricsManager(IMetricsRegistry registry);
+    private static DefaultMetricsManager();
+    public sealed virtual void Disable();
+    public sealed virtual void Reset();
+    public sealed virtual void ShutdownContext(string context);
+}
+public class App.Metrics.Internal.DefaultMetricsProvider : object {
+    [CompilerGeneratedAttribute]
+private IProvideApdexMetrics <Apdex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideCounterMetrics <Counter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideGaugeMetrics <Gauge>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideHistogramMetrics <Histogram>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideMeterMetrics <Meter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideTimerMetrics <Timer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProvideBucketTimerMetrics <BucketTimer>k__BackingField;
+    public IProvideApdexMetrics Apdex { get; }
+    public IProvideCounterMetrics Counter { get; }
+    public IProvideGaugeMetrics Gauge { get; }
+    public IProvideHistogramMetrics Histogram { get; }
+    public IProvideMeterMetrics Meter { get; }
+    public IProvideTimerMetrics Timer { get; }
+    public IProvideBucketTimerMetrics BucketTimer { get; }
+    public DefaultMetricsProvider(IMetricsRegistry registry, IBuildMetrics builderFactory, IClock clock);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideApdexMetrics get_Apdex();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideCounterMetrics get_Counter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideGaugeMetrics get_Gauge();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideHistogramMetrics get_Histogram();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideMeterMetrics get_Meter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideTimerMetrics get_Timer();
+    [CompilerGeneratedAttribute]
+public sealed virtual IProvideBucketTimerMetrics get_BucketTimer();
+}
+public class App.Metrics.Internal.DefaultMetricsRegistry : object {
+    private static ILog Logger;
+    private IClock _clock;
+    private ConcurrentDictionary`2<string, IMetricContextRegistry> _contexts;
+    private string _defaultContextLabel;
+    private Func`2<string, IMetricContextRegistry> _newContextRegistry;
+    private Lazy`1<NullMetricsRegistry> _nullMetricsRegistry;
+    public DefaultMetricsRegistry(string defaultContextLabel, IClock clock, Func`2<string, IMetricContextRegistry> newContextRegistry);
+    private static DefaultMetricsRegistry();
+    public sealed virtual IApdex Apdex(ApdexOptions options, Func`1<T> builder);
+    public sealed virtual IApdex Apdex(ApdexOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void Clear();
+    public sealed virtual ICounter Counter(CounterOptions options, Func`1<T> builder);
+    public sealed virtual ICounter Counter(CounterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void Disable();
+    public MetricValueOptionsBase EnsureContextLabel(MetricValueOptionsBase options);
+    public sealed virtual IGauge Gauge(GaugeOptions options, Func`1<T> builder);
+    public sealed virtual IGauge Gauge(GaugeOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual MetricsDataValueSource GetData(IFilterMetrics filter);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, Func`1<T> builder);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void RemoveContext(string context);
+    public sealed virtual ITimer Timer(TimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer Timer(TimerOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, MetricTags tags, Func`1<T> builder);
+    private void ForAllContexts(Action`1<IMetricContextRegistry> action);
+    [CompilerGeneratedAttribute]
+private void <Clear>b__9_0(IMetricContextRegistry c);
+}
+public class App.Metrics.Internal.DefaultMetricsReportRunner : object {
+    private static ILog Logger;
+    private IMetrics _metrics;
+    private CounterOptions _failedCounter;
+    private MetricsReporterCollection _reporters;
+    private CounterOptions _successCounter;
+    public DefaultMetricsReportRunner(IMetrics metrics, MetricsReporterCollection reporters);
+    private static DefaultMetricsReportRunner();
+    public sealed virtual IEnumerable`1<Task> RunAllAsync(CancellationToken cancellationToken);
+    public sealed virtual Task RunAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("App.Metrics.Internal.DefaultMetricsReportRunner/<FlushMetrics>d__8")]
+private Task FlushMetrics(IMetrics metrics, CancellationToken cancellationToken, IReportMetrics reporter);
+}
+internal class App.Metrics.Internal.DefaultMetricsTaskSchedular : object {
+    private static ILog Logger;
+    private object _syncLock;
+    private CancellationTokenSource _cancellationTokenSource;
+    private Timer _timer;
+    private Func`2<CancellationToken, Task> _onTick;
+    private bool _running;
+    private bool _disposed;
+    public DefaultMetricsTaskSchedular(Func`2<CancellationToken, Task> onTick);
+    private static DefaultMetricsTaskSchedular();
+    public sealed virtual void SetTaskSource(Func`2<CancellationToken, Task> onTick);
+    public sealed virtual void Start(TimeSpan interval);
+    public sealed virtual void Dispose();
+    [AsyncStateMachineAttribute("App.Metrics.Internal.DefaultMetricsTaskSchedular/<OnTick>d__12")]
+private void OnTick();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__7_0(object _);
+}
+public class App.Metrics.Internal.DefaultMetricValuesProvider : object {
+    private static ILog Logger;
+    private IFilterMetrics _globalFilter;
+    private IMetricsRegistry _registry;
+    public DefaultMetricValuesProvider(IFilterMetrics globalFilter, IMetricsRegistry registry);
+    private static DefaultMetricValuesProvider();
+    public sealed virtual MetricsDataValueSource Get();
+    public sealed virtual MetricsDataValueSource Get(IFilterMetrics overrideGlobalFilter);
+    public sealed virtual MetricsContextValueSource GetForContext(string context);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Internal.Extensions.MetricsOptionsExtensions : object {
+    [ExtensionAttribute]
+public static IEnumerable`1<KeyValuePair`2<string, string>> ToKeyValue(MetricsOptions options);
+}
+public class App.Metrics.Internal.Infrastructure.AppMetricsMarkerService : object {
+}
+internal class App.Metrics.Internal.KeyValuePairMetricsOptions : object {
+    internal static string DefaultContextLabelDirective;
+    internal static string EnabledDirective;
+    internal static string ReportingEnabledDirective;
+    internal static string GlobalTagsDirective;
+    internal static string ContextualTagsDirective;
+    private MetricsOptions _options;
+    private Dictionary`2<string, string> _optionValues;
+    public KeyValuePairMetricsOptions(MetricsOptions options, IEnumerable`1<KeyValuePair`2<string, string>> optionValues);
+    public KeyValuePairMetricsOptions(IEnumerable`1<KeyValuePair`2<string, string>> optionValues);
+    private static KeyValuePairMetricsOptions();
+    public MetricsOptions AsOptions(bool mergeTags);
+}
+internal class App.Metrics.Internal.NoOp.NoOpMetrics : object {
+    private static IMetricsRegistry Registry;
+    public IBuildMetrics Build { get; }
+    public IClock Clock { get; }
+    public IFilterMetrics Filter { get; }
+    public IManageMetrics Manage { get; }
+    public IMeasureMetrics Measure { get; }
+    public IProvideMetrics Provider { get; }
+    public IProvideMetricValues Snapshot { get; }
+    private static NoOpMetrics();
+    public sealed virtual IBuildMetrics get_Build();
+    public sealed virtual IClock get_Clock();
+    public sealed virtual IFilterMetrics get_Filter();
+    public sealed virtual IManageMetrics get_Manage();
+    public sealed virtual IMeasureMetrics get_Measure();
+    public sealed virtual IProvideMetrics get_Provider();
+    public sealed virtual IProvideMetricValues get_Snapshot();
+}
+[ExcludeFromCodeCoverageAttribute]
+internal class App.Metrics.Internal.NoOp.NoOpMetricsReportRunner : object {
+    public sealed virtual IEnumerable`1<Task> RunAllAsync(CancellationToken cancellationToken);
+    public sealed virtual Task RunAsync(CancellationToken cancellationToken);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullApdex : ValueType {
+    public sealed virtual long CurrentTime();
+    public sealed virtual long EndRecording();
+    public sealed virtual ApdexContext NewContext();
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Track(long duration);
+    public sealed virtual void Track(Action action);
+    public sealed virtual T Track(Func`1<T> action);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullBucketHistogram : ValueType {
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullBucketTimer : ValueType {
+    public sealed virtual long CurrentTime();
+    public sealed virtual long EndRecording();
+    public sealed virtual TimerContext NewContext(string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit, string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit);
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Time(Action action, string userValue);
+    public sealed virtual T Time(Func`1<T> action, string userValue);
+    public sealed virtual void Time(Action action);
+    public sealed virtual T Time(Func`1<T> action);
+    private sealed virtual override TimerContext App.Metrics.Timer.ITimer.NewContext();
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullCounter : ValueType {
+    public sealed virtual void Decrement();
+    public sealed virtual void Decrement(long value);
+    public sealed virtual void Decrement(string setItem);
+    public sealed virtual void Decrement(string setItem, long value);
+    public sealed virtual void Decrement(MetricSetItem setItem);
+    public sealed virtual void Decrement(MetricSetItem setItem, long amount);
+    public sealed virtual void Increment();
+    public sealed virtual void Increment(long value);
+    public sealed virtual void Increment(string setItem);
+    public sealed virtual void Increment(string setItem, long value);
+    public sealed virtual void Increment(MetricSetItem setItem);
+    public sealed virtual void Increment(MetricSetItem setItem, long amount);
+    public sealed virtual void Reset();
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullGauge : ValueType {
+    public sealed virtual void Reset();
+    public sealed virtual void SetValue(double value);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullHistogram : ValueType {
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullMeter : ValueType {
+    public sealed virtual void Mark();
+    public sealed virtual void Mark(MetricSetItem setItem, long amount);
+    public sealed virtual void Mark(long amount);
+    public sealed virtual void Mark(string item);
+    public sealed virtual void Mark(MetricSetItem setItem);
+    public sealed virtual void Mark(string item, long amount);
+    public sealed virtual void Reset();
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullMetricsFilter : object {
+    public sealed virtual bool IsApdexMatch(ApdexValueSource apdex);
+    public sealed virtual bool IsCounterMatch(CounterValueSource counter);
+    public sealed virtual bool IsGaugeMatch(GaugeValueSource gauge);
+    public sealed virtual bool IsHistogramMatch(HistogramValueSource histogram);
+    public sealed virtual bool IsBucketHistogramMatch(BucketHistogramValueSource histogram);
+    public sealed virtual bool IsContextMatch(string context);
+    public sealed virtual bool IsMeterMatch(MeterValueSource meter);
+    public sealed virtual bool IsTimerMatch(TimerValueSource timer);
+    public sealed virtual bool IsBucketTimerMatch(BucketTimerValueSource timer);
+    public sealed virtual IFilterMetrics WhereContext(Predicate`1<string> condition);
+    public sealed virtual IFilterMetrics WhereContext(string context);
+    public sealed virtual IFilterMetrics WhereName(string name);
+    public sealed virtual IFilterMetrics WhereName(Predicate`1<string> condition);
+    public sealed virtual IFilterMetrics WhereNameStartsWith(string name);
+    public sealed virtual IFilterMetrics WhereTaggedWithKey(String[] tagKeys);
+    public sealed virtual IFilterMetrics WhereTaggedWithKeyValue(TagKeyValueFilter tags);
+    public sealed virtual IFilterMetrics WhereType(MetricType[] types);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullMetricsRegistry : object {
+    private IApdex _apdexInstance;
+    private ICounter _counterInstance;
+    private IGauge _gaugeInstance;
+    private IHistogram _histogramInstance;
+    private IBucketHistogram _bucketHistogramInstance;
+    private IMeter _meterInstance;
+    private ITimer _timerInstance;
+    private ITimer _bucketTimerInstance;
+    public static void Reset();
+    public sealed virtual IApdex Apdex(ApdexOptions options, Func`1<T> builder);
+    public sealed virtual IApdex Apdex(ApdexOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void Clear();
+    public sealed virtual ICounter Counter(CounterOptions options, Func`1<T> builder);
+    public sealed virtual ICounter Counter(CounterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void Disable();
+    public sealed virtual IGauge Gauge(GaugeOptions options, Func`1<T> builder);
+    public sealed virtual IGauge Gauge(GaugeOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual MetricsDataValueSource GetData(IFilterMetrics filter);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, Func`1<T> builder);
+    public sealed virtual IHistogram Histogram(HistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, Func`1<T> builder);
+    public sealed virtual IBucketHistogram BucketHistogram(BucketHistogramOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, Func`1<T> builder);
+    public sealed virtual IMeter Meter(MeterOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual void RemoveContext(string context);
+    public sealed virtual ITimer Timer(TimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer Timer(TimerOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer BucketTimer(BucketTimerOptions options, MetricTags tags, Func`1<T> builder);
+}
+[ExcludeFromCodeCoverageAttribute]
+public class App.Metrics.Internal.NoOp.NullTimer : ValueType {
+    public sealed virtual long CurrentTime();
+    public sealed virtual long EndRecording();
+    public sealed virtual TimerContext NewContext(string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit, string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit);
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Time(Action action, string userValue);
+    public sealed virtual T Time(Func`1<T> action, string userValue);
+    public sealed virtual void Time(Action action);
+    public sealed virtual T Time(Func`1<T> action);
+    private sealed virtual override TimerContext App.Metrics.Timer.ITimer.NewContext();
+}
+[ExtensionAttribute]
+[ExcludeFromCodeCoverageAttribute]
+internal static class App.Metrics.Logging.AppMetricsReportingLoggerExtensions : object {
+    private static double TimestampToTicks;
+    private static AppMetricsReportingLoggerExtensions();
+    [ExtensionAttribute]
+public static void ReportFailed(ILog logger, IReportMetrics reporter, Exception ex);
+    [ExtensionAttribute]
+public static void ReportFailed(ILog logger, IReportMetrics reporter);
+    [ExtensionAttribute]
+public static void ReportingCancelled(ILog logger, OperationCanceledException ex);
+    [ExtensionAttribute]
+public static void ReportingDisposedDuringExecution(ILog logger, ObjectDisposedException ex);
+    [ExtensionAttribute]
+public static void ReportingFailedDuringExecution(ILog logger, AggregateException ex);
+    [ExtensionAttribute]
+public static void ReportRan(ILog logger, IReportMetrics reportMetricsReporter, long startTimestamp);
+    [ExtensionAttribute]
+public static void ReportRunning(ILog logger, IReportMetrics reportMetrics);
+}
+public interface App.Metrics.Logging.ILog {
+    public abstract virtual bool Log(LogLevel logLevel, Func`1<string> messageFunc, Exception exception, Object[] formatParameters);
+}
+public interface App.Metrics.Logging.ILogProvider {
+    public abstract virtual Logger GetLogger(string name);
+    public abstract virtual IDisposable OpenNestedContext(string message);
+    public abstract virtual IDisposable OpenMappedContext(string key, string value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Logging.LogExtensions : object {
+    [ExtensionAttribute]
+public static bool IsDebugEnabled(ILog logger);
+    [ExtensionAttribute]
+public static bool IsErrorEnabled(ILog logger);
+    [ExtensionAttribute]
+public static bool IsFatalEnabled(ILog logger);
+    [ExtensionAttribute]
+public static bool IsInfoEnabled(ILog logger);
+    [ExtensionAttribute]
+public static bool IsTraceEnabled(ILog logger);
+    [ExtensionAttribute]
+public static bool IsWarnEnabled(ILog logger);
+    [ExtensionAttribute]
+public static void Debug(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Debug(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Debug(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Debug(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void DebugFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void DebugException(ILog logger, string message, Exception exception);
+    [ExtensionAttribute]
+public static void DebugException(ILog logger, string message, Exception exception, Object[] formatParams);
+    [ExtensionAttribute]
+public static void Error(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Error(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Error(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Error(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void ErrorFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void ErrorException(ILog logger, string message, Exception exception, Object[] formatParams);
+    [ExtensionAttribute]
+public static void Fatal(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Fatal(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Fatal(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Fatal(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void FatalFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void FatalException(ILog logger, string message, Exception exception, Object[] formatParams);
+    [ExtensionAttribute]
+public static void Info(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Info(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Info(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Info(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void InfoFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void InfoException(ILog logger, string message, Exception exception, Object[] formatParams);
+    [ExtensionAttribute]
+public static void Trace(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Trace(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Trace(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Trace(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void TraceFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void TraceException(ILog logger, string message, Exception exception, Object[] formatParams);
+    [ExtensionAttribute]
+public static void Warn(ILog logger, Func`1<string> messageFunc);
+    [ExtensionAttribute]
+public static void Warn(ILog logger, string message);
+    [ExtensionAttribute]
+public static void Warn(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Warn(ILog logger, Exception exception, string message, Object[] args);
+    [ExtensionAttribute]
+public static void WarnFormat(ILog logger, string message, Object[] args);
+    [ExtensionAttribute]
+public static void WarnException(ILog logger, string message, Exception exception, Object[] formatParams);
+    private static void GuardAgainstNullLogger(ILog logger);
+    [ExtensionAttribute]
+private static void LogFormat(ILog logger, LogLevel logLevel, string message, Object[] args);
+    [ExtensionAttribute]
+private static Func`1<T> AsFunc(T value);
+    [ExtensionAttribute]
+private static T Return(T value);
+    internal static Func`1<string> WrapLogSafeInternal(LoggerExecutionWrapper logger, Func`1<string> messageFunc);
+    private static Func`1<string> WrapLogInternal(Func`1<string> messageFunc);
+}
+public class App.Metrics.Logging.Logger : MulticastDelegate {
+    public Logger(object object, IntPtr method);
+    public virtual bool Invoke(LogLevel logLevel, Func`1<string> messageFunc, Exception exception, Object[] formatParameters);
+    public virtual IAsyncResult BeginInvoke(LogLevel logLevel, Func`1<string> messageFunc, Exception exception, Object[] formatParameters, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+internal class App.Metrics.Logging.LoggerExecutionWrapper : object {
+    private Logger _logger;
+    private ICallSiteExtension _callsiteLogger;
+    private Func`1<bool> _getIsDisabled;
+    internal static string FailedToGenerateLogMessage;
+    internal Logger WrappedLogger { get; }
+    internal LoggerExecutionWrapper(Logger logger, Func`1<bool> getIsDisabled);
+    internal Logger get_WrappedLogger();
+    public sealed virtual bool Log(LogLevel logLevel, Func`1<string> messageFunc, Exception exception, Object[] formatParameters);
+}
+public enum App.Metrics.Logging.LogLevel : Enum {
+    public int value__;
+    public static LogLevel Trace;
+    public static LogLevel Debug;
+    public static LogLevel Info;
+    public static LogLevel Warn;
+    public static LogLevel Error;
+    public static LogLevel Fatal;
+}
+public static class App.Metrics.Logging.LogProvider : object {
+    private static string NullLogProvider;
+    [DynamicAttribute]
+private static object s_currentLogProvider;
+    private static Action`1<ILogProvider> s_onCurrentLogProviderSet;
+    private static Lazy`1<ILogProvider> s_resolvedLogProvider;
+    [CompilerGeneratedAttribute]
+private static bool <IsDisabled>k__BackingField;
+    internal static List`1<Tuple`2<IsLoggerAvailable, CreateLogProvider>> LogProviderResolvers;
+    public static bool IsDisabled { get; public set; }
+    unknown static Action`1<ILogProvider> OnCurrentLogProviderSet {internal set; }
+    internal static ILogProvider CurrentLogProvider { get; }
+    private static LogProvider();
+    public static void SetCurrentLogProvider(ILogProvider logProvider);
+    [CompilerGeneratedAttribute]
+public static bool get_IsDisabled();
+    [CompilerGeneratedAttribute]
+public static void set_IsDisabled(bool value);
+    internal static void set_OnCurrentLogProviderSet(Action`1<ILogProvider> value);
+    internal static ILogProvider get_CurrentLogProvider();
+    public static ILog For();
+    public static ILog GetLogger(Type type, string fallbackTypeName);
+    public static ILog GetLogger(string name);
+    public static IDisposable OpenNestedContext(string message);
+    public static IDisposable OpenMappedContext(string key, string value);
+    private static void RaiseOnCurrentLogProviderSet();
+    internal static ILogProvider ResolveLogProvider();
+    internal static ILogProvider ForceResolveLogProvider();
+}
+internal class App.Metrics.Logging.LogProviders.DisposableAction : object {
+    private Action _onDispose;
+    public DisposableAction(Action onDispose);
+    public sealed virtual void Dispose();
+}
+internal class App.Metrics.Logging.LogProviders.EntLibLogProvider : LogProviderBase {
+    private static string TypeTemplate;
+    private static bool s_providerIsAvailableOverride;
+    private static Type LogEntryType;
+    private static Type LoggerType;
+    private static Type TraceEventTypeType;
+    private static Action`3<string, string, int> WriteLogEntry;
+    private static Func`3<string, int, bool> ShouldLogEntry;
+    public static bool ProviderIsAvailableOverride { get; public set; }
+    private static EntLibLogProvider();
+    public static bool get_ProviderIsAvailableOverride();
+    public static void set_ProviderIsAvailableOverride(bool value);
+    public virtual Logger GetLogger(string name);
+    internal static bool IsLoggerAvailable();
+    private static Action`3<string, string, int> GetWriteLogEntry();
+    private static Func`3<string, int, bool> GetShouldLogEntry();
+    private static MemberInitExpression GetWriteLogExpression(Expression message, Expression severityParameter, ParameterExpression logNameParameter);
+}
+internal class App.Metrics.Logging.LogProviders.Log4NetLogProvider : LogProviderBase {
+    private Func`2<string, object> _getLoggerByNameDelegate;
+    private static bool s_providerIsAvailableOverride;
+    public static bool ProviderIsAvailableOverride { get; public set; }
+    private static Log4NetLogProvider();
+    public static bool get_ProviderIsAvailableOverride();
+    public static void set_ProviderIsAvailableOverride(bool value);
+    public virtual Logger GetLogger(string name);
+    internal static bool IsLoggerAvailable();
+    protected virtual OpenNdc GetOpenNdcMethod();
+    protected virtual OpenMdc GetOpenMdcMethod();
+    private static Type GetLogManagerType();
+    private static Func`2<string, object> GetGetLoggerMethodCall();
+}
+internal static class App.Metrics.Logging.LogProviders.LogMessageFormatter : object {
+    private static Regex Pattern;
+    private static LogMessageFormatter();
+    public static Func`1<string> SimulateStructuredLogging(Func`1<string> messageBuilder, Object[] formatParameters);
+    private static string ReplaceFirst(string text, string search, string replace);
+    public static string FormatStructuredMessage(string targetMessage, Object[] formatParameters, IEnumerable`1& patternMatches);
+}
+internal abstract class App.Metrics.Logging.LogProviders.LogProviderBase : object {
+    private Lazy`1<OpenNdc> _lazyOpenNdcMethod;
+    private Lazy`1<OpenMdc> _lazyOpenMdcMethod;
+    private static IDisposable NoopDisposableInstance;
+    private static LogProviderBase();
+    public abstract virtual Logger GetLogger(string name);
+    public sealed virtual IDisposable OpenNestedContext(string message);
+    public sealed virtual IDisposable OpenMappedContext(string key, string value);
+    protected virtual OpenNdc GetOpenNdcMethod();
+    protected virtual OpenMdc GetOpenMdcMethod();
+}
+internal class App.Metrics.Logging.LogProviders.LoupeLogProvider : LogProviderBase {
+    private static bool s_providerIsAvailableOverride;
+    private WriteDelegate _logWriteDelegate;
+    public static bool ProviderIsAvailableOverride { get; public set; }
+    private static LoupeLogProvider();
+    public static bool get_ProviderIsAvailableOverride();
+    public static void set_ProviderIsAvailableOverride(bool value);
+    public virtual Logger GetLogger(string name);
+    public static bool IsLoggerAvailable();
+    private static Type GetLogManagerType();
+    private static WriteDelegate GetLogWriteDelegate();
+}
+internal class App.Metrics.Logging.LogProviders.NLogLogProvider : LogProviderBase {
+    private Func`2<string, object> _getLoggerByNameDelegate;
+    private static bool s_providerIsAvailableOverride;
+    public static bool ProviderIsAvailableOverride { get; public set; }
+    private static NLogLogProvider();
+    public static bool get_ProviderIsAvailableOverride();
+    public static void set_ProviderIsAvailableOverride(bool value);
+    public virtual Logger GetLogger(string name);
+    public static bool IsLoggerAvailable();
+    protected virtual OpenNdc GetOpenNdcMethod();
+    protected virtual OpenMdc GetOpenMdcMethod();
+    private static Type GetLogManagerType();
+    private static Func`2<string, object> GetGetLoggerMethodCall();
+}
+internal class App.Metrics.Logging.LogProviders.SerilogLogProvider : LogProviderBase {
+    private Func`2<string, object> _getLoggerByNameDelegate;
+    private static bool s_providerIsAvailableOverride;
+    private static Func`3<string, string, IDisposable> _pushProperty;
+    public static bool ProviderIsAvailableOverride { get; public set; }
+    private static SerilogLogProvider();
+    public static bool get_ProviderIsAvailableOverride();
+    public static void set_ProviderIsAvailableOverride(bool value);
+    public virtual Logger GetLogger(string name);
+    internal static bool IsLoggerAvailable();
+    protected virtual OpenNdc GetOpenNdcMethod();
+    protected virtual OpenMdc GetOpenMdcMethod();
+    private static Func`3<string, string, IDisposable> GetPushProperty();
+    private static Type GetLogManagerType();
+    private static Func`2<string, object> GetForContextMethodCall();
+}
+internal static class App.Metrics.Logging.LogProviders.TraceEventTypeValues : object {
+    internal static Type Type;
+    internal static int Verbose;
+    internal static int Information;
+    internal static int Warning;
+    internal static int Error;
+    internal static int Critical;
+    private static TraceEventTypeValues();
+}
+[ExtensionAttribute]
+internal static class App.Metrics.Logging.LogProviders.TypeExtensions : object {
+    [ExtensionAttribute]
+internal static ConstructorInfo GetConstructorPortable(Type type, Type[] types);
+    [ExtensionAttribute]
+internal static MethodInfo GetMethodPortable(Type type, string name);
+    [ExtensionAttribute]
+internal static MethodInfo GetMethodPortable(Type type, string name, Type[] types);
+    [ExtensionAttribute]
+internal static PropertyInfo GetPropertyPortable(Type type, string name);
+    [ExtensionAttribute]
+internal static IEnumerable`1<FieldInfo> GetFieldsPortable(Type type);
+    [ExtensionAttribute]
+internal static Type GetBaseTypePortable(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo GetGetMethod(PropertyInfo propertyInfo);
+    [ExtensionAttribute]
+internal static MethodInfo GetSetMethod(PropertyInfo propertyInfo);
+    [ExtensionAttribute]
+internal static Assembly GetAssemblyPortable(Type type);
+}
+public class App.Metrics.Meter.DefaultMeterBuilder : object {
+    public sealed virtual IMeterMetric Build(IClock clock);
+}
+internal class App.Metrics.Meter.DefaultMeterManager : object {
+    private IClock _clock;
+    private IBuildMeterMetrics _meterBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultMeterManager(IBuildMeterMetrics meterBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual void Mark(MeterOptions options);
+    public sealed virtual void Mark(MeterOptions options, long amount);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags, long amount);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags);
+    public sealed virtual void Mark(MeterOptions options, string item);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags, string item);
+    public sealed virtual void Mark(MeterOptions options, MetricSetItem setItem);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags, MetricSetItem setItem);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags, long amount, string item);
+    public sealed virtual void Mark(MeterOptions options, long amount, MetricSetItem setItem);
+    public sealed virtual void Mark(MeterOptions options, MetricTags tags, long amount, MetricSetItem setItem);
+    public sealed virtual void Mark(MeterOptions options, long amount, string item);
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__4_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__5_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__6_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__7_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__8_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__9_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__10_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__11_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__12_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__13_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__14_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Mark>b__15_0();
+}
+public class App.Metrics.Meter.DefaultMeterMetric : SimpleMeter {
+    private IClock _clock;
+    private bool _disposed;
+    private ConcurrentDictionary`2<string, SimpleMeter> _setMeters;
+    private long _startTime;
+    public MeterValue Value { get; }
+    public DefaultMeterMetric(IClock clock);
+    public DefaultMeterMetric(IClock clock, IMeterTickerScheduler schedular);
+    public sealed virtual MeterValue get_Value();
+    public virtual void Reset();
+    public sealed virtual void Dispose();
+    public void Dispose(bool disposing);
+    public sealed virtual MeterValue GetValue(bool resetMetric);
+    public sealed virtual void Mark();
+    public sealed virtual void Mark(string item);
+    public sealed virtual void Mark(MetricSetItem setItem);
+    public sealed virtual void Mark(MetricSetItem setItem, long amount);
+    public sealed virtual void Mark(string item, long amount);
+    private MeterValue GetValueWithSetItems(bool resetMetric);
+}
+public class App.Metrics.Meter.DefaultMeterMetricProvider : object {
+    private IClock _clock;
+    private IBuildMeterMetrics _meterBuilder;
+    private IMetricsRegistry _registry;
+    public DefaultMeterMetricProvider(IBuildMeterMetrics meterBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual IMeter Instance(MeterOptions options);
+    public sealed virtual IMeter Instance(MeterOptions options, Func`1<T> builder);
+    public sealed virtual IMeter Instance(MeterOptions options, MetricTags tags);
+    public sealed virtual IMeter Instance(MeterOptions options, MetricTags tags, Func`1<T> builder);
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Instance>b__4_0();
+    [CompilerGeneratedAttribute]
+private IMeterMetric <Instance>b__6_0();
+}
+[ExtensionAttribute]
+public static class App.Metrics.Meter.MeterExtensions : object {
+    private static MeterValue EmptyMeter;
+    private static MeterExtensions();
+    [ExtensionAttribute]
+public static MeterValue GetMeterValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static MeterValue GetMeterValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static MeterValue GetValueOrDefault(IMeter metric);
+}
+public class App.Metrics.Meter.SimpleMeter : object {
+    private static int FifteenMinutes;
+    private static int FiveMinutes;
+    private static double Interval;
+    private static long IntervalSeconds;
+    private static long NanosInSecond;
+    private static int OneMinute;
+    private static double SecondsPerMinute;
+    private static double M1Alpha;
+    private static double M5Alpha;
+    private static double M15Alpha;
+    private StripedLongAdder _uncounted;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _initialized;
+    private VolatileDouble _m15Rate;
+    private VolatileDouble _m1Rate;
+    private VolatileDouble _m5Rate;
+    private AtomicLong _total;
+    private double FifteenMinuteRate { get; }
+    private double FiveMinuteRate { get; }
+    private double OneMinuteRate { get; }
+    private static SimpleMeter();
+    private double get_FifteenMinuteRate();
+    private double get_FiveMinuteRate();
+    private double get_OneMinuteRate();
+    public virtual void Mark(long count);
+    public virtual void Reset();
+    public MeterValue GetValue(double elapsed);
+    public sealed virtual void Tick();
+    private static double GetMeanRate(long value, double elapsed);
+    private void Tick(long count);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricApdexFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<ApdexFields, string> metricFields, ApdexFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<ApdexFields, string> metricFields, ApdexFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<ApdexFields, string> metricFields, ApdexFields field, string value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricBucketHistogramFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<BucketHistogramFields, string> metricFields, BucketHistogramFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<BucketHistogramFields, string> metricFields, BucketHistogramFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<BucketHistogramFields, string> metricFields, BucketHistogramFields field, string value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricCounterFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<CounterFields, string> metricFields, CounterFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<CounterFields, string> metricFields, CounterFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<CounterFields, string> metricFields, CounterFields field, string value);
+}
+public class App.Metrics.MetricFieldsBuilder : object {
+    private MetricFields _metricFields;
+    private Action`1<MetricFields> _configureAction;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    public MetricFieldsBuilder(IMetricsBuilder metricsBuilder, MetricFields metricFields, Action`1<MetricFields> configureAction);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Configure(Action`1<MetricFields> configureAction);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricGaugeFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<GaugeFields, string> metricFields, GaugeFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<GaugeFields, string> metricFields, GaugeFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<GaugeFields, string> metricFields, GaugeFields field, string value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricHistogramFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<HistogramFields, string> metricFields, HistogramFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<HistogramFields, string> metricFields, HistogramFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<HistogramFields, string> metricFields, HistogramFields field, string value);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricMeterFieldsExtensions : object {
+    [ExtensionAttribute]
+public static void Exclude(IDictionary`2<MeterFields, string> metricFields, MeterFields[] fields);
+    [ExtensionAttribute]
+public static void OnlyInclude(IDictionary`2<MeterFields, string> metricFields, MeterFields[] fields);
+    [ExtensionAttribute]
+public static void Set(IDictionary`2<MeterFields, string> metricFields, MeterFields field, string value);
+}
+public static class App.Metrics.Metrics : object {
+    [CompilerGeneratedAttribute]
+private static IMetricsRoot <Instance>k__BackingField;
+    public static IMetricsRoot Instance { get; private set; }
+    [CompilerGeneratedAttribute]
+public static IMetricsRoot get_Instance();
+    [CompilerGeneratedAttribute]
+private static void set_Instance(IMetricsRoot value);
+    internal static void SetInstance(IMetricsRoot metricsRoot);
+}
+public class App.Metrics.MetricsBuilder : object {
+    private EnvFormatterCollection _envFormatters;
+    private EnvironmentInfoProvider _environmentInfoProvider;
+    private MetricsFormatterCollection _metricsOutputFormatters;
+    private MetricsReporterCollection _reporters;
+    private IClock _clock;
+    private IEnvOutputFormatter _defauEnvOutputFormatter;
+    private IMetricsOutputFormatter _defaultMetricsOutputFormatter;
+    private DefaultSamplingReservoirProvider _defaultSamplingReservoir;
+    private IFilterMetrics _metricsFilter;
+    private IRunMetricsReports _metricsReportRunner;
+    private MetricsOptions _options;
+    private MetricFields _metricFields;
+    public IMetricsConfigurationBuilder Configuration { get; }
+    public IMetricFieldsBuilder MetricFields { get; }
+    public IMetricsFilterBuilder Filter { get; }
+    public IEnvOutputFormattingBuilder OutputEnvInfo { get; }
+    public IMetricsOutputFormattingBuilder OutputMetrics { get; }
+    public IMetricsReportingBuilder Report { get; }
+    public IMetricsReservoirSamplingBuilder SampleWith { get; }
+    public IMetricsClockBuilder TimeWith { get; }
+    public sealed virtual IMetricsConfigurationBuilder get_Configuration();
+    public sealed virtual IMetricFieldsBuilder get_MetricFields();
+    public sealed virtual IMetricsFilterBuilder get_Filter();
+    public sealed virtual IEnvOutputFormattingBuilder get_OutputEnvInfo();
+    public sealed virtual IMetricsOutputFormattingBuilder get_OutputMetrics();
+    public sealed virtual IMetricsReportingBuilder get_Report();
+    public sealed virtual IMetricsReservoirSamplingBuilder get_SampleWith();
+    public sealed virtual IMetricsClockBuilder get_TimeWith();
+    public sealed virtual IMetricsRoot Build();
+    public sealed virtual bool CanReport();
+    [CompilerGeneratedAttribute]
+private void <get_Configuration>b__13_0(MetricsOptions options);
+    [CompilerGeneratedAttribute]
+private void <get_MetricFields>b__15_0(MetricFields metricFields);
+    [CompilerGeneratedAttribute]
+private void <get_Filter>b__17_0(IFilterMetrics metricsFilter);
+    [CompilerGeneratedAttribute]
+private void <get_OutputEnvInfo>b__19_0(IEnvOutputFormatter formatter);
+    [CompilerGeneratedAttribute]
+private void <get_OutputMetrics>b__21_0(bool replaceExisting, IMetricsOutputFormatter formatter);
+    [CompilerGeneratedAttribute]
+private void <get_Report>b__23_0(IReportMetrics reporter);
+    [CompilerGeneratedAttribute]
+private void <get_SampleWith>b__25_0(DefaultSamplingReservoirProvider reservoir);
+    [CompilerGeneratedAttribute]
+private void <get_TimeWith>b__27_0(IClock clock);
+    [CompilerGeneratedAttribute]
+private IMetricContextRegistry <Build>g__ContextRegistry|28_0(string context);
+}
+public class App.Metrics.MetricsClockBuilder : object {
+    private Action`1<IClock> _clock;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsClockBuilder(IMetricsBuilder metricsBuilder, Action`1<IClock> clock);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Clock(IClock clock);
+    public sealed virtual IMetricsBuilder Clock();
+    public sealed virtual IMetricsBuilder StopwatchClock();
+    public sealed virtual IMetricsBuilder SystemClock();
+}
+public class App.Metrics.MetricsConfigurationBuilder : object {
+    private Action`1<MetricsOptions> _setupAction;
+    private MetricsOptions _options;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsConfigurationBuilder(IMetricsBuilder metricsBuilder, MetricsOptions currentOptions, Action`1<MetricsOptions> setupAction);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Configure(MetricsOptions options);
+    public sealed virtual IMetricsBuilder Configure(IEnumerable`1<KeyValuePair`2<string, string>> optionValues);
+    public sealed virtual IMetricsBuilder Configure(MetricsOptions options, IEnumerable`1<KeyValuePair`2<string, string>> optionValues);
+    public sealed virtual IMetricsBuilder Configure(Action`1<MetricsOptions> setupAction);
+    public sealed virtual IMetricsBuilder Extend(IEnumerable`1<KeyValuePair`2<string, string>> optionValues);
+    public sealed virtual IMetricsBuilder Extend(MetricsOptions options);
+}
+[ExtensionAttribute]
+public static class App.Metrics.MetricsContextValueSourceExtensions : object {
+    [ExtensionAttribute]
+public static T ValueFor(IEnumerable`1<MetricValueSourceBase`1<T>> values, string metricName);
+}
+public class App.Metrics.MetricsFilterBuilder : object {
+    private IFilterMetrics _filter;
+    private Action`1<IFilterMetrics> _metricsFilter;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsFilterBuilder(IMetricsBuilder metricsBuilder, Action`1<IFilterMetrics> metricsFilter);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder ByIncludingOnlyContext(string context);
+    public sealed virtual IMetricsBuilder ByIncludingOnlyTagKeyValues(TagKeyValueFilter tagKeyValues);
+    public sealed virtual IMetricsBuilder ByIncludingOnlyTags(String[] tagKeys);
+    public sealed virtual IMetricsBuilder ByIncludingOnlyTypes(MetricType[] types);
+    public sealed virtual IMetricsBuilder With(IFilterMetrics filter);
+    public sealed virtual IMetricsBuilder With(Action`1<IFilterMetrics> setupAction);
+}
+public class App.Metrics.MetricsOutputFormattingBuilder : object {
+    private Action`2<bool, IMetricsOutputFormatter> _metricsFormatter;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsOutputFormattingBuilder(IMetricsBuilder metricsBuilder, Action`2<bool, IMetricsOutputFormatter> metricsFormatter);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Using(IMetricsOutputFormatter formatter);
+    public sealed virtual IMetricsBuilder Using(MetricFields fields);
+    public sealed virtual IMetricsBuilder Using(IMetricsOutputFormatter formatter, bool replaceExisting);
+    public sealed virtual IMetricsBuilder Using(bool replaceExisting, MetricFields fields);
+}
+public class App.Metrics.MetricsReportingBuilder : object {
+    private static IFilterMetrics NullMetricsFilter;
+    private MetricsFormatterCollection _formatters;
+    private Action`1<IReportMetrics> _reporters;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsReportingBuilder(IMetricsBuilder metricsBuilder, MetricsFormatterCollection formatters, Action`1<IReportMetrics> reporters);
+    private static MetricsReportingBuilder();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder Using(IReportMetrics reporter);
+    public sealed virtual IMetricsBuilder Using();
+    public sealed virtual IMetricsBuilder Using(IFilterMetrics filter);
+    public sealed virtual IMetricsBuilder Using(IMetricsOutputFormatter formatter);
+    public sealed virtual IMetricsBuilder Using(IMetricsOutputFormatter formatter, TimeSpan flushInterval);
+    public sealed virtual IMetricsBuilder Using(TimeSpan flushInterval);
+    public sealed virtual IMetricsBuilder Using(IFilterMetrics filter, TimeSpan flushInterval);
+    public sealed virtual IMetricsBuilder Using(IMetricsOutputFormatter formatter, IFilterMetrics filter, TimeSpan flushInterval);
+    private static void EnsureRequiredProperties(IReportMetrics reporter);
+    private void UseUserConfiguredFormatter(IReportMetrics reporter);
+}
+public class App.Metrics.MetricsReservoirSamplingBuilder : object {
+    private Action`1<DefaultSamplingReservoirProvider> _defaultReservoir;
+    [CompilerGeneratedAttribute]
+private IMetricsBuilder <Builder>k__BackingField;
+    public IMetricsBuilder Builder { get; }
+    internal MetricsReservoirSamplingBuilder(IMetricsBuilder metricsBuilder, Action`1<DefaultSamplingReservoirProvider> defaultReservoir);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsBuilder get_Builder();
+    public sealed virtual IMetricsBuilder AlgorithmR(int sampleSize);
+    public sealed virtual IMetricsBuilder AlgorithmR();
+    public sealed virtual IMetricsBuilder ForwardDecaying(int sampleSize, double alpha);
+    public sealed virtual IMetricsBuilder ForwardDecaying(int sampleSize, double alpha, double minimumSampleWeight);
+    public sealed virtual IMetricsBuilder ForwardDecaying(int sampleSize, double alpha, double minimumSampleWeight, IClock clock);
+    public sealed virtual IMetricsBuilder ForwardDecaying(int sampleSize, double alpha, double minimumSampleWeight, IClock clock, IReservoirRescaleScheduler rescaleScheduler);
+    public sealed virtual IMetricsBuilder ForwardDecaying(TimeSpan rescalePeriod);
+    public sealed virtual IMetricsBuilder ForwardDecaying(double alpha, TimeSpan rescalePeriod);
+    public sealed virtual IMetricsBuilder ForwardDecaying();
+    public sealed virtual IMetricsBuilder Reservoir(Func`1<IReservoir> reservoirBuilder);
+    public sealed virtual IMetricsBuilder Reservoir();
+    public sealed virtual IMetricsBuilder SlidingWindow(int sampleSize);
+    public sealed virtual IMetricsBuilder SlidingWindow();
+}
+internal class App.Metrics.MetricsRoot : object {
+    private EnvironmentInfoProvider _environmentInfoProvider;
+    private IMetrics _metrics;
+    [CompilerGeneratedAttribute]
+private IReadOnlyCollection`1<IMetricsOutputFormatter> <OutputMetricsFormatters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMetricsOutputFormatter <DefaultOutputMetricsFormatter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnvOutputFormatter <DefaultOutputEnvFormatter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyCollection`1<IEnvOutputFormatter> <OutputEnvFormatters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyCollection`1<IReportMetrics> <Reporters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IRunMetricsReports <ReportRunner>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MetricsOptions <Options>k__BackingField;
+    public IBuildMetrics Build { get; }
+    public IClock Clock { get; }
+    public IFilterMetrics Filter { get; }
+    public IManageMetrics Manage { get; }
+    public IMeasureMetrics Measure { get; }
+    public IProvideMetrics Provider { get; }
+    public IProvideMetricValues Snapshot { get; }
+    public IReadOnlyCollection`1<IMetricsOutputFormatter> OutputMetricsFormatters { get; }
+    public IMetricsOutputFormatter DefaultOutputMetricsFormatter { get; }
+    public IEnvOutputFormatter DefaultOutputEnvFormatter { get; }
+    public IReadOnlyCollection`1<IEnvOutputFormatter> OutputEnvFormatters { get; }
+    public IReadOnlyCollection`1<IReportMetrics> Reporters { get; }
+    public IRunMetricsReports ReportRunner { get; }
+    public MetricsOptions Options { get; }
+    public EnvironmentInfo EnvironmentInfo { get; }
+    public MetricsRoot(IMetrics metrics, MetricsOptions options, MetricsFormatterCollection metricsOutputFormatters, EnvFormatterCollection envOutputFormatters, IMetricsOutputFormatter defaultMetricsOutputFormatter, IEnvOutputFormatter defaultEnvOutputFormatter, EnvironmentInfoProvider environmentInfoProvider, MetricsReporterCollection reporterCollection, IRunMetricsReports reporter);
+    public sealed virtual IBuildMetrics get_Build();
+    public sealed virtual IClock get_Clock();
+    public sealed virtual IFilterMetrics get_Filter();
+    public sealed virtual IManageMetrics get_Manage();
+    public sealed virtual IMeasureMetrics get_Measure();
+    public sealed virtual IProvideMetrics get_Provider();
+    public sealed virtual IProvideMetricValues get_Snapshot();
+    [CompilerGeneratedAttribute]
+public sealed virtual IReadOnlyCollection`1<IMetricsOutputFormatter> get_OutputMetricsFormatters();
+    [CompilerGeneratedAttribute]
+public sealed virtual IMetricsOutputFormatter get_DefaultOutputMetricsFormatter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnvOutputFormatter get_DefaultOutputEnvFormatter();
+    [CompilerGeneratedAttribute]
+public sealed virtual IReadOnlyCollection`1<IEnvOutputFormatter> get_OutputEnvFormatters();
+    [CompilerGeneratedAttribute]
+public sealed virtual IReadOnlyCollection`1<IReportMetrics> get_Reporters();
+    [CompilerGeneratedAttribute]
+public sealed virtual IRunMetricsReports get_ReportRunner();
+    [CompilerGeneratedAttribute]
+public sealed virtual MetricsOptions get_Options();
+    public sealed virtual EnvironmentInfo get_EnvironmentInfo();
+}
+public class App.Metrics.ReservoirSampling.DefaultSamplingReservoirProvider : object {
+    [CompilerGeneratedAttribute]
+private Func`1<IReservoir> <Instance>k__BackingField;
+    public Func`1<IReservoir> Instance { get; }
+    public DefaultSamplingReservoirProvider(Func`1<IReservoir> instance);
+    [CompilerGeneratedAttribute]
+public Func`1<IReservoir> get_Instance();
+}
+public class App.Metrics.ReservoirSampling.ExponentialDecay.DefaultForwardDecayingReservoir : object {
+    private static ILog Logger;
+    private double _alpha;
+    private double _minimumSampleWeight;
+    private IClock _clock;
+    private IReservoirRescaleScheduler _rescaleScheduler;
+    private int _sampleSize;
+    private SortedList`2<double, WeightedSample> _values;
+    private AtomicLong _count;
+    private bool _disposed;
+    private SpinLock _lock;
+    private AtomicLong _startTime;
+    private AtomicDouble _sum;
+    public int Size { get; }
+    public DefaultForwardDecayingReservoir(int sampleSize, double alpha);
+    public DefaultForwardDecayingReservoir(int sampleSize, double alpha, double minimumSampleWeight);
+    public DefaultForwardDecayingReservoir(int sampleSize, double alpha, double minimumSampleWeight, IClock clock);
+    public DefaultForwardDecayingReservoir(int sampleSize, double alpha, double minimumSampleWeight, IClock clock, IReservoirRescaleScheduler rescaleScheduler);
+    private static DefaultForwardDecayingReservoir();
+    public int get_Size();
+    public sealed virtual void Dispose();
+    public void Dispose(bool disposing);
+    public sealed virtual IReservoirSnapshot GetSnapshot(bool resetReservoir);
+    public sealed virtual IReservoirSnapshot GetSnapshot();
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+    public sealed virtual void Rescale();
+    private void ResetReservoir();
+    private void Update(long value, string userValue, long timestamp);
+}
+public class App.Metrics.ReservoirSampling.ExponentialDecay.WeightedSample : ValueType {
+    public string UserValue;
+    public long Value;
+    public double Weight;
+    public WeightedSample(long value, string userValue, double weight);
+    public static bool op_Equality(WeightedSample left, WeightedSample right);
+    public static bool op_Inequality(WeightedSample left, WeightedSample right);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public bool Equals(WeightedSample other);
+}
+public class App.Metrics.ReservoirSampling.ExponentialDecay.WeightedSnapshot : object {
+    private Double[] _normWeights;
+    private Double[] _quantiles;
+    private Int64[] _values;
+    [CompilerGeneratedAttribute]
+private long <Count>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Sum>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaxUserValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinUserValue>k__BackingField;
+    public long Count { get; }
+    public double Sum { get; }
+    public long Max { get; }
+    public string MaxUserValue { get; }
+    public double Mean { get; }
+    public double Median { get; }
+    public long Min { get; }
+    public string MinUserValue { get; }
+    public double Percentile75 { get; }
+    public double Percentile95 { get; }
+    public double Percentile98 { get; }
+    public double Percentile99 { get; }
+    public double Percentile999 { get; }
+    public int Size { get; }
+    public double StdDev { get; }
+    public IEnumerable`1<long> Values { get; }
+    public WeightedSnapshot(long count, double sum, IEnumerable`1<WeightedSample> values);
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Count();
+    [CompilerGeneratedAttribute]
+public sealed virtual double get_Sum();
+    public sealed virtual long get_Max();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MaxUserValue();
+    public sealed virtual double get_Mean();
+    public sealed virtual double get_Median();
+    public sealed virtual long get_Min();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MinUserValue();
+    public sealed virtual double get_Percentile75();
+    public sealed virtual double get_Percentile95();
+    public sealed virtual double get_Percentile98();
+    public sealed virtual double get_Percentile99();
+    public sealed virtual double get_Percentile999();
+    public sealed virtual int get_Size();
+    public sealed virtual double get_StdDev();
+    public sealed virtual IEnumerable`1<long> get_Values();
+    public sealed virtual double GetValue(double quantile);
+}
+public class App.Metrics.ReservoirSampling.SlidingWindow.DefaultSlidingWindowReservoir : object {
+    private UserValueWrapper[] _values;
+    private AtomicLong _count;
+    private AtomicDouble _sum;
+    public DefaultSlidingWindowReservoir(int sampleSize);
+    public sealed virtual IReservoirSnapshot GetSnapshot(bool resetReservoir);
+    public sealed virtual IReservoirSnapshot GetSnapshot();
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+public class App.Metrics.ReservoirSampling.Uniform.DefaultAlgorithmRReservoir : object {
+    private UserValueWrapper[] _values;
+    private AtomicLong _count;
+    private AtomicDouble _sum;
+    public int Size { get; }
+    public DefaultAlgorithmRReservoir(int sampleSize);
+    public int get_Size();
+    public sealed virtual IReservoirSnapshot GetSnapshot(bool resetReservoir);
+    public sealed virtual IReservoirSnapshot GetSnapshot();
+    public sealed virtual void Reset();
+    public sealed virtual void Update(long value, string userValue);
+    public sealed virtual void Update(long value);
+}
+public class App.Metrics.ReservoirSampling.Uniform.UniformSnapshot : object {
+    private Int64[] _values;
+    [CompilerGeneratedAttribute]
+private long <Count>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MaxUserValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MinUserValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Sum>k__BackingField;
+    public long Count { get; }
+    public long Max { get; }
+    public string MaxUserValue { get; }
+    public double Mean { get; }
+    public double Median { get; }
+    public long Min { get; }
+    public string MinUserValue { get; }
+    public double Percentile75 { get; }
+    public double Percentile95 { get; }
+    public double Percentile98 { get; }
+    public double Percentile99 { get; }
+    public double Percentile999 { get; }
+    public int Size { get; }
+    public double StdDev { get; }
+    public double Sum { get; }
+    public IEnumerable`1<long> Values { get; }
+    public UniformSnapshot(long count, double sum, IEnumerable`1<long> values, bool valuesAreSorted, string minUserValue, string maxUserValue);
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Count();
+    public sealed virtual long get_Max();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MaxUserValue();
+    public sealed virtual double get_Mean();
+    public sealed virtual double get_Median();
+    public sealed virtual long get_Min();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MinUserValue();
+    public sealed virtual double get_Percentile75();
+    public sealed virtual double get_Percentile95();
+    public sealed virtual double get_Percentile98();
+    public sealed virtual double get_Percentile99();
+    public sealed virtual double get_Percentile999();
+    public sealed virtual int get_Size();
+    public sealed virtual double get_StdDev();
+    [CompilerGeneratedAttribute]
+public sealed virtual double get_Sum();
+    public sealed virtual IEnumerable`1<long> get_Values();
+    public sealed virtual double GetValue(double quantile);
+}
+public class App.Metrics.Scheduling.AppMetricsTaskScheduler : object {
+    private static ILog Logger;
+    private TimeSpan _interval;
+    private Func`1<Task> _task;
+    private object _syncLock;
+    private IMetricsTaskSchedular _scheduler;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposing;
+    public AppMetricsTaskScheduler(TimeSpan interval, Func`1<Task> task);
+    private static AppMetricsTaskScheduler();
+    public sealed virtual void Dispose();
+    public void Start();
+    [AsyncStateMachineAttribute("App.Metrics.Scheduling.AppMetricsTaskScheduler/<Tick>d__9")]
+private Task Tick();
+    [CompilerGeneratedAttribute]
+private Task <.ctor>b__6_0(CancellationToken c);
+}
+public class App.Metrics.Scheduling.DefaultMeterTickerScheduler : object {
+    private static ILog Logger;
+    private static TimeSpan TickInterval;
+    private static Stopwatch TickStopWatch;
+    private object _syncLock;
+    private ConcurrentBag`1<ITickingMeter> _meters;
+    private IMetricsTaskSchedular _scheduler;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposing;
+    [CompilerGeneratedAttribute]
+private static DefaultMeterTickerScheduler <Instance>k__BackingField;
+    public static DefaultMeterTickerScheduler Instance { get; }
+    private static DefaultMeterTickerScheduler();
+    [CompilerGeneratedAttribute]
+public static DefaultMeterTickerScheduler get_Instance();
+    public sealed virtual void ScheduleTick(ITickingMeter meter);
+    public sealed virtual void RemoveSchedule(ITickingMeter meter);
+    public sealed virtual void Dispose();
+    private void SetScheduler();
+    private Task Tick();
+    [CompilerGeneratedAttribute]
+private Task <.ctor>b__7_0(CancellationToken c);
+}
+public class App.Metrics.Scheduling.DefaultReservoirRescaleScheduler : object {
+    public static TimeSpan DefaultRescalePeriod;
+    private static ILog Logger;
+    private static Stopwatch TickStopWatch;
+    private object _syncLock;
+    private ConcurrentBag`1<IRescalingReservoir> _reservoirs;
+    private IMetricsTaskSchedular _scheduler;
+    private TimeSpan _rescalePeriod;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _disposing;
+    [CompilerGeneratedAttribute]
+private static DefaultReservoirRescaleScheduler <Instance>k__BackingField;
+    public static DefaultReservoirRescaleScheduler Instance { get; }
+    public TimeSpan RescalePeriod { get; }
+    public DefaultReservoirRescaleScheduler(TimeSpan rescalePeriod);
+    internal DefaultReservoirRescaleScheduler(TimeSpan rescalePeriod, IMetricsTaskSchedular scheduler);
+    private static DefaultReservoirRescaleScheduler();
+    [CompilerGeneratedAttribute]
+public static DefaultReservoirRescaleScheduler get_Instance();
+    public TimeSpan get_RescalePeriod();
+    public sealed virtual void RemoveSchedule(IRescalingReservoir reservoir);
+    public sealed virtual void ScheduleReScaling(IRescalingReservoir reservoir);
+    public sealed virtual void Dispose();
+    private void SetScheduler();
+    private Task Rescale();
+    [CompilerGeneratedAttribute]
+private Task <.ctor>b__10_0(CancellationToken cToken);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Timer.BucketTimerExtensions : object {
+    private static BucketHistogramValue EmptyHistogram;
+    private static MeterValue EmptyMeter;
+    private static BucketTimerValue EmptyTimer;
+    private static BucketTimerExtensions();
+    [ExtensionAttribute]
+public static BucketTimerValue GetBucketTimerValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static BucketTimerValue GetBucketTimerValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static BucketTimerValue GetBucketValueOrDefault(ITimer metric);
+}
+public class App.Metrics.Timer.DefaultTimerBuilder : object {
+    private DefaultSamplingReservoirProvider _defaultSamplingReservoirProvider;
+    public DefaultTimerBuilder(DefaultSamplingReservoirProvider defaultSamplingReservoirProvider);
+    public sealed virtual ITimerMetric Build(IHistogramMetric histogram, IClock clock);
+    public sealed virtual ITimerMetric Build(Func`1<IReservoir> setupReservoir, IClock clock);
+    public sealed virtual ITimerMetric Build(IHistogramMetric histogram, IMeterMetric meter, IClock clock);
+    public sealed virtual ITimerMetric Build(Func`1<IReservoir> setupReservoir, IMeterMetric meter, IClock clock);
+}
+internal class App.Metrics.Timer.DefaultTimerManager : object {
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    private IBuildTimerMetrics _timerBuilder;
+    public DefaultTimerManager(IBuildTimerMetrics timerBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual void Time(TimerOptions options, Action action);
+    public sealed virtual void Time(TimerOptions options, MetricTags tags, Action action);
+    public sealed virtual void Time(TimerOptions options, Action action, string userValue);
+    public sealed virtual void Time(TimerOptions options, MetricTags tags, Action action, string userValue);
+    public sealed virtual TimerContext Time(TimerOptions options, MetricTags tags, string userValue);
+    public sealed virtual TimerContext Time(TimerOptions options, MetricTags tags);
+    public sealed virtual TimerContext Time(TimerOptions options);
+    public sealed virtual TimerContext Time(TimerOptions options, string userValue);
+    public sealed virtual void Time(TimerOptions options, long time);
+    public sealed virtual void Time(TimerOptions options, MetricTags tags, long time);
+}
+public class App.Metrics.Timer.DefaultTimerMetric : object {
+    private StripedLongAdder _activeSessionsCounter;
+    private IClock _clock;
+    private IHistogramMetric _histogram;
+    private IMeterMetric _meter;
+    private bool _disposed;
+    public TimerValue Value { get; }
+    public DefaultTimerMetric(IHistogramMetric histogram, IClock clock);
+    public DefaultTimerMetric(IReservoir reservoir, IClock clock);
+    public DefaultTimerMetric(IReservoir reservoir, IMeterMetric meter, IClock clock);
+    public DefaultTimerMetric(IHistogramMetric histogram, IMeterMetric meter, IClock clock);
+    internal DefaultTimerMetric(IReservoir reservoir, IClock clock, IMeterTickerScheduler meterTickScheduler);
+    public sealed virtual TimerValue get_Value();
+    public sealed virtual long CurrentTime();
+    public sealed virtual void Dispose();
+    public void Dispose(bool disposing);
+    public sealed virtual long EndRecording();
+    public sealed virtual TimerValue GetValue(bool resetMetric);
+    public sealed virtual TimerContext NewContext(string userValue);
+    public sealed virtual TimerContext NewContext();
+    public sealed virtual void Record(long duration, TimeUnit unit, string userValue);
+    public sealed virtual void Record(long time, TimeUnit unit);
+    public sealed virtual void Reset();
+    public sealed virtual long StartRecording();
+    public sealed virtual void Time(Action action, string userValue);
+    public sealed virtual T Time(Func`1<T> action, string userValue);
+    public sealed virtual void Time(Action action);
+    public sealed virtual T Time(Func`1<T> action);
+}
+public class App.Metrics.Timer.DefaultTimerMetricProvider : object {
+    private IClock _clock;
+    private IMetricsRegistry _registry;
+    private IBuildTimerMetrics _timerBuilder;
+    public DefaultTimerMetricProvider(IBuildTimerMetrics timerBuilder, IMetricsRegistry registry, IClock clock);
+    public sealed virtual ITimer Instance(TimerOptions options);
+    public sealed virtual ITimer Instance(TimerOptions options, MetricTags tags);
+    public sealed virtual ITimer Instance(TimerOptions options, Func`1<T> builder);
+    public sealed virtual ITimer Instance(TimerOptions options, MetricTags tags, Func`1<T> builder);
+    public sealed virtual ITimer WithHistogram(TimerOptions options, Func`1<T> histogramMetricBuilder);
+    public sealed virtual ITimer WithHistogram(TimerOptions options, MetricTags tags, Func`1<T> histogramMetricBuilder);
+}
+[ExtensionAttribute]
+public static class App.Metrics.Timer.TimerExtensions : object {
+    private static HistogramValue EmptyHistogram;
+    private static MeterValue EmptyMeter;
+    private static TimerValue EmptyTimer;
+    private static TimerExtensions();
+    [ExtensionAttribute]
+public static TimerValue GetTimerValue(IProvideMetricValues valueService, string context, string metricName);
+    [ExtensionAttribute]
+public static TimerValue GetTimerValue(IProvideMetricValues valueService, string context, string metricName, MetricTags tags);
+    [ExtensionAttribute]
+public static TimerValue GetValueOrDefault(ITimer metric);
+}
+public class App.Metrics.UserValueWrapper : ValueType {
+    public static IComparer`1<UserValueWrapper> Comparer;
+    public static UserValueWrapper Empty;
+    [CompilerGeneratedAttribute]
+private string <UserValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Value>k__BackingField;
+    public string UserValue { get; }
+    public long Value { get; }
+    public UserValueWrapper(long value, string userValue);
+    private static UserValueWrapper();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_UserValue();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public long get_Value();
+    public static bool op_Equality(UserValueWrapper left, UserValueWrapper right);
+    public static bool op_Inequality(UserValueWrapper left, UserValueWrapper right);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public bool Equals(UserValueWrapper other);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[ExtensionAttribute]
+internal static class System.StringExtensions : object {
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+internal static string EnsureLeadingSlash(string url);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+internal static string EnsureTrailingSlash(string url);
+    [DebuggerStepThroughAttribute]
+internal static string GetSafeString(Func`1<string> action);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+internal static bool IsMissing(string value);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+internal static bool IsPresent(string value);
+    [ExtensionAttribute]
+[DebuggerStepThroughAttribute]
+internal static string RemoveLeadingSlash(string url);
+}
+[ExtensionAttribute]
+internal static class System.Threading.CancellationTokenExtensions : object {
+    [ExtensionAttribute]
+internal static bool WaitCancellationRequested(CancellationToken token, TimeSpan timeout);
+}
+[ExtensionAttribute]
+[ExcludeFromCodeCoverageAttribute]
+internal static class System.Threading.Tasks.TaskExtensions : object {
+    [AsyncStateMachineAttribute("System.Threading.Tasks.TaskExtensions/<WithAggregateException>d__0")]
+[ExtensionAttribute]
+public static Task WithAggregateException(Task source);
+}

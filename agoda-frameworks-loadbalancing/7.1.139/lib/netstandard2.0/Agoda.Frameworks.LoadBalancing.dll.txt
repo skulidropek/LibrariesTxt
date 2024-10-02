@@ -1,0 +1,247 @@
+public class Agoda.Frameworks.LoadBalancing.AgodaWeightManipulationStrategy : object {
+    private IWeightManipulationStrategy _strategy;
+    public sealed virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public class Agoda.Frameworks.LoadBalancing.ExecuteErrorEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Exception <Error>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <AttemptCount>k__BackingField;
+    public Exception Error { get; }
+    public int AttemptCount { get; }
+    public ExecuteErrorEventArgs(Exception error, int attemptCount);
+    [CompilerGeneratedAttribute]
+public Exception get_Error();
+    [CompilerGeneratedAttribute]
+public int get_AttemptCount();
+}
+public class Agoda.Frameworks.LoadBalancing.ExponentialWeightManipulationStrategy : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private double <Magnitude>k__BackingField;
+    public double Magnitude { get; }
+    public ExponentialWeightManipulationStrategy(double magnitude);
+    [CompilerGeneratedAttribute]
+public double get_Magnitude();
+    public sealed virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public class Agoda.Frameworks.LoadBalancing.FixedDeltaWeightManipulationStrategy : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <Delta>k__BackingField;
+    public int Delta { get; }
+    public FixedDeltaWeightManipulationStrategy(int delta);
+    [CompilerGeneratedAttribute]
+public int get_Delta();
+    public sealed virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public interface Agoda.Frameworks.LoadBalancing.IResourceManager`1 {
+    public IReadOnlyDictionary`2<TSource, WeightItem> Resources { get; }
+    public abstract virtual IReadOnlyDictionary`2<TSource, WeightItem> get_Resources();
+    public abstract virtual TSource SelectRandomly();
+    public abstract virtual void UpdateWeight(TSource source, bool isSuccess);
+    public abstract virtual void UpdateResources(IReadOnlyDictionary`2<TSource, WeightItem> newResources);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_OnUpdateWeight(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_OnUpdateWeight(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_OnAllSourcesReachBottom(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_OnAllSourcesReachBottom(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+}
+public interface Agoda.Frameworks.LoadBalancing.IWeightManipulationStrategy {
+    public abstract virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public class Agoda.Frameworks.LoadBalancing.NoopWeightManipulationStrategy : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private static NoopWeightManipulationStrategy <Default>k__BackingField;
+    public static NoopWeightManipulationStrategy Default { get; }
+    private static NoopWeightManipulationStrategy();
+    [CompilerGeneratedAttribute]
+public static NoopWeightManipulationStrategy get_Default();
+    public sealed virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public class Agoda.Frameworks.LoadBalancing.OnError : MulticastDelegate {
+    public OnError(object object, IntPtr method);
+    public virtual void Invoke(Exception error, int attemptCount);
+    public virtual IAsyncResult BeginInvoke(Exception error, int attemptCount, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Agoda.Frameworks.LoadBalancing.RandomSourceAsyncFunc`2 : MulticastDelegate {
+    public RandomSourceAsyncFunc`2(object object, IntPtr method);
+    public virtual Task`1<TResult> Invoke(TSource source, int attemptCount);
+    public virtual IAsyncResult BeginInvoke(TSource source, int attemptCount, AsyncCallback callback, object object);
+    public virtual Task`1<TResult> EndInvoke(IAsyncResult result);
+}
+public class Agoda.Frameworks.LoadBalancing.RandomSourceFunc`2 : MulticastDelegate {
+    public RandomSourceFunc`2(object object, IntPtr method);
+    public virtual TResult Invoke(TSource source, int attemptCount);
+    public virtual IAsyncResult BeginInvoke(TSource source, int attemptCount, AsyncCallback callback, object object);
+    public virtual TResult EndInvoke(IAsyncResult result);
+}
+public static class Agoda.Frameworks.LoadBalancing.ResourceManager : object {
+    public static IResourceManager`1<TSource> Create(IEnumerable`1<TSource> sources);
+}
+public class Agoda.Frameworks.LoadBalancing.ResourceManager`1 : object {
+    private ThreadLocal`1<Random> _random;
+    private ImmutableDictionary`2<TSource, WeightItem> _collection;
+    private IWeightManipulationStrategy _weightManipulationStrategy;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private EventHandler`1<UpdateWeightEventArgs`1<TSource>> OnUpdateWeight;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private EventHandler`1<UpdateWeightEventArgs`1<TSource>> OnAllSourcesReachBottom;
+    public IReadOnlyDictionary`2<TSource, WeightItem> Resources { get; }
+    public ResourceManager`1(IReadOnlyDictionary`2<TSource, WeightItem> collection, IWeightManipulationStrategy weightManipulationStrategy);
+    public sealed virtual IReadOnlyDictionary`2<TSource, WeightItem> get_Resources();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnUpdateWeight(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnUpdateWeight(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnAllSourcesReachBottom(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnAllSourcesReachBottom(EventHandler`1<UpdateWeightEventArgs`1<TSource>> value);
+    private static void CheckCollectionArg(IReadOnlyDictionary`2<TSource, WeightItem> collection);
+    public sealed virtual TSource SelectRandomly();
+    public sealed virtual void UpdateWeight(TSource source, bool isSuccess);
+    public sealed virtual void UpdateResources(IReadOnlyDictionary`2<TSource, WeightItem> collection);
+    private void RaiseWeightUpdateEvent(ImmutableDictionary`2<TSource, WeightItem> oldCollection, ImmutableDictionary`2<TSource, WeightItem> newCollection);
+    protected virtual void RaiseOnUpdateWeight(IReadOnlyDictionary`2<TSource, WeightItem> oldCollection, IReadOnlyDictionary`2<TSource, WeightItem> newCollection);
+    protected virtual void RaiseOnAllSourcesReachBottom(IReadOnlyDictionary`2<TSource, WeightItem> oldCollection, IReadOnlyDictionary`2<TSource, WeightItem> newCollection);
+}
+[ExtensionAttribute]
+public static class Agoda.Frameworks.LoadBalancing.ResourceManagerExtension : object {
+    [ExtensionAttribute]
+public static void UpdateResources(IResourceManager`1<TSource> mgr, IEnumerable`1<TSource> collection);
+    [ExtensionAttribute]
+public static TResult ExecuteAction(IResourceManager`1<TSource> mgr, RandomSourceFunc`2<TSource, TResult> func, ShouldRetryPredicate shouldRetry, OnError onError);
+    [ExtensionAttribute]
+public static Task`1<TResult> ExecuteAsync(IResourceManager`1<TSource> mgr, RandomSourceAsyncFunc`2<TSource, TResult> taskFunc, ShouldRetryPredicate shouldRetry, OnError onError);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<RetryActionResult`2<TSource, TResult>>> ExecuteAsyncWithDiag(IResourceManager`1<TSource> mgr, RandomSourceAsyncFunc`2<TSource, TResult> taskFunc, ShouldRetryPredicate shouldRetry, OnError onError);
+}
+public class Agoda.Frameworks.LoadBalancing.RetryAction`1 : object {
+    private UpdateWeight`1<TSource> _updateWeight;
+    private Func`1<TSource> _chooseRandomly;
+    public RetryAction`1(Func`1<TSource> chooseRandomly, UpdateWeight`1<TSource> updateWeight);
+    public TResult ExecuteAction(RandomSourceFunc`2<TSource, TResult> func, ShouldRetryPredicate shouldRetry, OnError onError);
+    [AsyncStateMachineAttribute("Agoda.Frameworks.LoadBalancing.RetryAction`1/<ExecuteAsync>d__4`1")]
+[DebuggerStepThroughAttribute]
+public Task`1<TResult> ExecuteAsync(RandomSourceAsyncFunc`2<TSource, TResult> taskFunc, ShouldRetryPredicate shouldRetry, OnError onError);
+    [AsyncStateMachineAttribute("Agoda.Frameworks.LoadBalancing.RetryAction`1/<ExecuteAsyncWithDiag>d__5`1")]
+[DebuggerStepThroughAttribute]
+public Task`1<IReadOnlyList`1<RetryActionResult`2<TSource, TResult>>> ExecuteAsyncWithDiag(RandomSourceAsyncFunc`2<TSource, TResult> taskFunc, ShouldRetryPredicate shouldRetry, OnError onError);
+}
+public class Agoda.Frameworks.LoadBalancing.RetryActionResult`2 : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private TSource <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private TResult <Result>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private TimeSpan <Elapsed>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Exception <Exception>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <Attempt>k__BackingField;
+    public TSource Source { get; }
+    public TResult Result { get; }
+    public TimeSpan Elapsed { get; }
+    public Exception Exception { get; }
+    public int Attempt { get; }
+    public bool IsError { get; }
+    public RetryActionResult`2(TSource source, TResult result, TimeSpan elapsed, Exception exception, int attempt);
+    [CompilerGeneratedAttribute]
+public TSource get_Source();
+    [CompilerGeneratedAttribute]
+public TResult get_Result();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_Elapsed();
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+    [CompilerGeneratedAttribute]
+public int get_Attempt();
+    public bool get_IsError();
+}
+public class Agoda.Frameworks.LoadBalancing.ShouldRetryPredicate : MulticastDelegate {
+    public ShouldRetryPredicate(object object, IntPtr method);
+    public virtual bool Invoke(int retryAttempt, Exception exception);
+    public virtual IAsyncResult BeginInvoke(int retryAttempt, Exception exception, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+public class Agoda.Frameworks.LoadBalancing.SplitWeightManipulationStrategy : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IWeightManipulationStrategy <Increment>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IWeightManipulationStrategy <Decrement>k__BackingField;
+    public IWeightManipulationStrategy Increment { get; }
+    public IWeightManipulationStrategy Decrement { get; }
+    public SplitWeightManipulationStrategy(IWeightManipulationStrategy increment, IWeightManipulationStrategy decrement);
+    [CompilerGeneratedAttribute]
+public IWeightManipulationStrategy get_Increment();
+    [CompilerGeneratedAttribute]
+public IWeightManipulationStrategy get_Decrement();
+    public sealed virtual WeightItem UpdateWeight(WeightItem originalWeight, bool isSuccess);
+}
+public class Agoda.Frameworks.LoadBalancing.UpdateWeight`1 : MulticastDelegate {
+    public UpdateWeight`1(object object, IntPtr method);
+    public virtual void Invoke(TSource source, bool isSuccess);
+    public virtual IAsyncResult BeginInvoke(TSource source, bool isSuccess, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class Agoda.Frameworks.LoadBalancing.UpdateWeightEventArgs`1 : EventArgs {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IReadOnlyDictionary`2<TSource, WeightItem> <OldResources>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IReadOnlyDictionary`2<TSource, WeightItem> <NewResources>k__BackingField;
+    public IReadOnlyDictionary`2<TSource, WeightItem> OldResources { get; }
+    public IReadOnlyDictionary`2<TSource, WeightItem> NewResources { get; }
+    public UpdateWeightEventArgs`1(IReadOnlyDictionary`2<TSource, WeightItem> oldCollection, IReadOnlyDictionary`2<TSource, WeightItem> newCollection);
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<TSource, WeightItem> get_OldResources();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<TSource, WeightItem> get_NewResources();
+}
+public class Agoda.Frameworks.LoadBalancing.WeightItem : object {
+    private Int32 modreq(System.Runtime.CompilerServices.IsVolatile) _weight;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <MinWeight>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <MaxWeight>k__BackingField;
+    public int Weight { get; }
+    public int MinWeight { get; }
+    public int MaxWeight { get; }
+    public WeightItem(int weight, int maxWeight);
+    public WeightItem(int weight, int maxWeight, int minWeight);
+    public int get_Weight();
+    [CompilerGeneratedAttribute]
+public int get_MinWeight();
+    [CompilerGeneratedAttribute]
+public int get_MaxWeight();
+    public virtual bool Equals(object obj);
+    private bool Equals(WeightItem other);
+    public virtual int GetHashCode();
+    public static WeightItem CreateDefaultItem();
+    public bool UpdateWeight(IWeightManipulationStrategy weightManipulationStrategy, bool isSuccess);
+}
+[ExtensionAttribute]
+public static class Agoda.Frameworks.LoadBalancing.WeightItemExtension : object {
+    [ExtensionAttribute]
+public static WeightItem SetNewWeight(WeightItem weight, int delta);
+}

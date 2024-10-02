@@ -1,0 +1,2203 @@
+public class Amazon.XRay.Recorder.Core.AWSXRayRecorder : AWSXRayRecorderImpl {
+    private static Logger _logger;
+    public static bool IsCustomRecorder;
+    public static AWSXRayRecorder Instance { get; private set; }
+    internal AWSXRayRecorder(ISegmentEmitter emitter);
+    private static AWSXRayRecorder();
+    public static AWSXRayRecorder get_Instance();
+    private static void set_Instance(AWSXRayRecorder value);
+    public static void InitializeInstance(AWSXRayRecorder recorder);
+    public virtual void BeginSubsegment(string name, Nullable`1<DateTime> timestamp);
+    public virtual void EndSubsegment(Nullable`1<DateTime> timestamp);
+    public virtual bool IsTracingDisabled();
+}
+public class Amazon.XRay.Recorder.Core.AWSXRayRecorderBuilder : object {
+    private static Logger _logger;
+    private static Char[] _validSeparators;
+    private static string _pluginNamespace;
+    private List`1<IPlugin> _plugins;
+    private ISamplingStrategy _samplingStrategy;
+    private ContextMissingStrategy _contextMissingStrategy;
+    private ISegmentEmitter _segmentEmitter;
+    private string _daemonAddress;
+    private ITraceContext _traceContext;
+    private ExceptionSerializationStrategy _exceptionSerializationStrategy;
+    private IStreamingStrategy _streamingStrategy;
+    public IReadOnlyList`1<IPlugin> Plugins { get; }
+    private static AWSXRayRecorderBuilder();
+    public IReadOnlyList`1<IPlugin> get_Plugins();
+    public static AWSXRayRecorderBuilder GetDefaultBuilder();
+    public AWSXRayRecorderBuilder WithPluginsFromAppSettings();
+    public AWSXRayRecorderBuilder WithContextMissingStrategyFromAppSettings();
+    public AWSXRayRecorderBuilder WithPlugin(IPlugin plugin);
+    public AWSXRayRecorderBuilder WithDaemonAddress(string address);
+    public AWSXRayRecorderBuilder WithSamplingStrategy(ISamplingStrategy newStrategy);
+    public AWSXRayRecorderBuilder WithStreamingStrategy(IStreamingStrategy newStreamingStrategy);
+    public AWSXRayRecorderBuilder WithContextMissingStrategy(ContextMissingStrategy strategy);
+    public AWSXRayRecorderBuilder WithSegmentEmitter(ISegmentEmitter segmentEmitter);
+    public AWSXRayRecorderBuilder WithTraceContext(ITraceContext traceContext);
+    public AWSXRayRecorderBuilder WithExceptionSerializationStrategy(ExceptionSerializationStrategy exceptionSerializationStartegy);
+    public AWSXRayRecorder Build();
+    private void PopulatePlugins(string setting);
+    private void PopulateRecorder(AWSXRayRecorder recorder);
+}
+public abstract class Amazon.XRay.Recorder.Core.AWSXRayRecorderImpl : object {
+    private static Logger _logger;
+    private static Lazy`1<AWSXRayRecorder> _lazyDefaultRecorder;
+    public static string EnvironmentVariableContextMissingStrategy;
+    protected static long MaxSubsegmentSize;
+    private ISegmentEmitter _emitter;
+    private bool disposed;
+    protected ContextMissingStrategy cntxtMissingStrategy;
+    private Dictionary`2<string, object> serviceContext;
+    [CompilerGeneratedAttribute]
+private string <Origin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISamplingStrategy <SamplingStrategy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITraceContext <TraceContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, object> <RuntimeContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ExceptionSerializationStrategy <ExceptionSerializationStrategy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IStreamingStrategy <StreamingStrategy>k__BackingField;
+    protected static Lazy`1<AWSXRayRecorder> LazyDefaultRecorder { get; protected set; }
+    public string Origin { get; public set; }
+    public ISamplingStrategy SamplingStrategy { get; public set; }
+    public ContextMissingStrategy ContextMissingStrategy { get; public set; }
+    public ITraceContext TraceContext { get; public set; }
+    public IDictionary`2<string, object> RuntimeContext { get; protected set; }
+    public ISegmentEmitter Emitter { get; public set; }
+    protected bool Disposed { get; protected set; }
+    protected Dictionary`2<string, object> ServiceContext { get; protected set; }
+    public ExceptionSerializationStrategy ExceptionSerializationStrategy { get; public set; }
+    public IStreamingStrategy StreamingStrategy { get; public set; }
+    protected AWSXRayRecorderImpl(ISegmentEmitter emitter);
+    private static AWSXRayRecorderImpl();
+    protected static Lazy`1<AWSXRayRecorder> get_LazyDefaultRecorder();
+    protected static void set_LazyDefaultRecorder(Lazy`1<AWSXRayRecorder> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Origin();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Origin(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ISamplingStrategy get_SamplingStrategy();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_SamplingStrategy(ISamplingStrategy value);
+    public sealed virtual ContextMissingStrategy get_ContextMissingStrategy();
+    public sealed virtual void set_ContextMissingStrategy(ContextMissingStrategy value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ITraceContext get_TraceContext();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_TraceContext(ITraceContext value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDictionary`2<string, object> get_RuntimeContext();
+    [CompilerGeneratedAttribute]
+protected void set_RuntimeContext(IDictionary`2<string, object> value);
+    public sealed virtual ISegmentEmitter get_Emitter();
+    public sealed virtual void set_Emitter(ISegmentEmitter value);
+    protected bool get_Disposed();
+    protected void set_Disposed(bool value);
+    protected Dictionary`2<string, object> get_ServiceContext();
+    protected void set_ServiceContext(Dictionary`2<string, object> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ExceptionSerializationStrategy get_ExceptionSerializationStrategy();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ExceptionSerializationStrategy(ExceptionSerializationStrategy value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IStreamingStrategy get_StreamingStrategy();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_StreamingStrategy(IStreamingStrategy value);
+    public sealed virtual void BeginSegment(string name, string traceId, string parentId, SamplingResponse samplingResponse, Nullable`1<DateTime> timestamp);
+    public sealed virtual void EndSegment(Nullable`1<DateTime> timestamp);
+    public abstract virtual void BeginSubsegment(string name, Nullable`1<DateTime> timestamp);
+    public sealed virtual void BeginSubsegmentWithoutSampling(string name);
+    public abstract virtual void EndSubsegment(Nullable`1<DateTime> timestamp);
+    public abstract virtual bool IsTracingDisabled();
+    public sealed virtual void AddAnnotation(string key, object value);
+    public sealed virtual void SetNamespace(string value);
+    protected void PopulateNewSegmentAttributes(Segment newSegment);
+    protected void PopulateNewSegmentAttributes(Segment newSegment, SamplingResponse sampleResponse);
+    private static void AddRuleName(Segment newSegment, SamplingResponse sampleResponse);
+    public sealed virtual void AddHttpInformation(string key, object value);
+    public sealed virtual void MarkFault();
+    public sealed virtual void MarkError();
+    public sealed virtual void AddException(Exception ex);
+    public sealed virtual void MarkThrottle();
+    public sealed virtual void AddPrecursorId(string precursorId);
+    public sealed virtual void AddSqlInformation(string key, string value);
+    public sealed virtual void AddMetadata(string key, object value);
+    public sealed virtual void AddMetadata(string nameSpace, string key, object value);
+    public sealed virtual void SetDaemonAddress(string daemonAddress);
+    public void SetTraceContext(ITraceContext traceContext);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    protected Subsegment[] GetSubsegmentsToStream(Entity entity);
+    protected void PopulateContexts();
+    protected void ProcessEndSegment(Segment segment);
+    protected void PrepEndSegment(Segment segment);
+    protected void ProcessEndSubsegment(Nullable`1<DateTime> timestamp);
+    private Subsegment PrepEndSubsegment();
+    protected void HandleEntityNotAvailableException(EntityNotAvailableException e, string message);
+    public sealed virtual TResult TraceMethod(string name, Func`1<TResult> method);
+    public sealed virtual void TraceMethod(string name, Action method);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.AWSXRayRecorderImpl/<TraceMethodAsync>d__81`1")]
+public sealed virtual Task`1<TResult> TraceMethodAsync(string name, Func`1<Task`1<TResult>> method);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.AWSXRayRecorderImpl/<TraceMethodAsync>d__82")]
+public sealed virtual Task TraceMethodAsync(string name, Func`1<Task> method);
+    public Entity GetEntity();
+    public void SetEntity(Entity entity);
+    public bool IsEntityPresent();
+    public void ClearEntity();
+    public void SetExceptionSerializationStrategy(ExceptionSerializationStrategy exceptionSerializationStartegy);
+}
+public class Amazon.XRay.Recorder.Core.Exceptions.AlreadyEmittedException : Exception {
+    public AlreadyEmittedException(string message);
+    public AlreadyEmittedException(string message, Exception inner);
+}
+public class Amazon.XRay.Recorder.Core.Exceptions.EntityNotAvailableException : Exception {
+    public EntityNotAvailableException(string message);
+    public EntityNotAvailableException(string message, Exception inner);
+}
+public class Amazon.XRay.Recorder.Core.Exceptions.InvalidAnnotationException : Exception {
+    public InvalidAnnotationException(string message);
+    public InvalidAnnotationException(string message, Exception inner);
+}
+public class Amazon.XRay.Recorder.Core.Exceptions.InvalidSamplingConfigurationException : Exception {
+    public InvalidSamplingConfigurationException(string message);
+    public InvalidSamplingConfigurationException(string message, Exception inner);
+}
+public class Amazon.XRay.Recorder.Core.Exceptions.UnsupportedOperationException : Exception {
+    public UnsupportedOperationException(string message);
+    public UnsupportedOperationException(string message, Exception inner);
+}
+public interface Amazon.XRay.Recorder.Core.IAWSXRayRecorder {
+    public string Origin { get; public set; }
+    public ISamplingStrategy SamplingStrategy { get; public set; }
+    public IStreamingStrategy StreamingStrategy { get; public set; }
+    public ContextMissingStrategy ContextMissingStrategy { get; public set; }
+    public IDictionary`2<string, object> RuntimeContext { get; }
+    public ExceptionSerializationStrategy ExceptionSerializationStrategy { get; public set; }
+    public ITraceContext TraceContext { get; public set; }
+    public ISegmentEmitter Emitter { get; public set; }
+    public abstract virtual string get_Origin();
+    public abstract virtual void set_Origin(string value);
+    public abstract virtual ISamplingStrategy get_SamplingStrategy();
+    public abstract virtual void set_SamplingStrategy(ISamplingStrategy value);
+    public abstract virtual IStreamingStrategy get_StreamingStrategy();
+    public abstract virtual void set_StreamingStrategy(IStreamingStrategy value);
+    public abstract virtual ContextMissingStrategy get_ContextMissingStrategy();
+    public abstract virtual void set_ContextMissingStrategy(ContextMissingStrategy value);
+    public abstract virtual IDictionary`2<string, object> get_RuntimeContext();
+    public abstract virtual ExceptionSerializationStrategy get_ExceptionSerializationStrategy();
+    public abstract virtual void set_ExceptionSerializationStrategy(ExceptionSerializationStrategy value);
+    public abstract virtual ITraceContext get_TraceContext();
+    public abstract virtual void set_TraceContext(ITraceContext value);
+    public abstract virtual ISegmentEmitter get_Emitter();
+    public abstract virtual void set_Emitter(ISegmentEmitter value);
+    public abstract virtual void BeginSegment(string name, string traceId, string parentId, SamplingResponse samplingResponse, Nullable`1<DateTime> timestamp);
+    public abstract virtual void EndSegment(Nullable`1<DateTime> timestamp);
+    public abstract virtual void BeginSubsegment(string name, Nullable`1<DateTime> timestamp);
+    public abstract virtual void BeginSubsegmentWithoutSampling(string name);
+    public abstract virtual void EndSubsegment(Nullable`1<DateTime> timestamp);
+    public abstract virtual void SetNamespace(string value);
+    public abstract virtual void AddAnnotation(string key, object value);
+    public abstract virtual void MarkFault();
+    public abstract virtual void MarkError();
+    public abstract virtual void AddException(Exception ex);
+    public abstract virtual TResult TraceMethod(string name, Func`1<TResult> method);
+    public abstract virtual void TraceMethod(string name, Action method);
+    public abstract virtual Task`1<TResult> TraceMethodAsync(string name, Func`1<Task`1<TResult>> method);
+    public abstract virtual Task TraceMethodAsync(string name, Func`1<Task> method);
+    public abstract virtual void AddHttpInformation(string key, object value);
+    public abstract virtual void MarkThrottle();
+    public abstract virtual void AddPrecursorId(string precursorId);
+    public abstract virtual void AddSqlInformation(string key, string value);
+    public abstract virtual void AddMetadata(string key, object value);
+    public abstract virtual void AddMetadata(string nameSpace, string key, object value);
+    public abstract virtual void SetDaemonAddress(string daemonAddress);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Context.CallContextContainer : TraceContextImpl {
+    private static string Key;
+    public virtual Entity GetEntity();
+    public virtual void SetEntity(Entity entity);
+    public virtual void ClearEntity();
+    public virtual bool IsEntityPresent();
+}
+public static class Amazon.XRay.Recorder.Core.Internal.Context.DefaultTraceContext : object {
+    public static ITraceContext GetTraceContext();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Context.HybridContextContainer : TraceContextImpl {
+    public static string XRayEntity;
+    private ITraceContext _defaultContext;
+    public virtual Entity GetEntity();
+    public virtual void SetEntity(Entity entity);
+    public virtual bool IsEntityPresent();
+    public virtual void ClearEntity();
+    private static HttpContext GetHTTPContext();
+    private static Entity GetEntityFromHTTPContext();
+    public Entity InjectEntityInTraceContext();
+    private static void StoreEntityInHTTPContext(Segment segment);
+}
+public interface Amazon.XRay.Recorder.Core.Internal.Context.ITraceContext {
+    public abstract virtual Entity GetEntity();
+    public abstract virtual void SetEntity(Entity entity);
+    public abstract virtual void ClearEntity();
+    public abstract virtual bool IsEntityPresent();
+    public abstract virtual void HandleEntityMissing(IAWSXRayRecorder recorder, Exception e, string message);
+}
+public abstract class Amazon.XRay.Recorder.Core.Internal.Context.TraceContextImpl : object {
+    private static Logger _logger;
+    private static TraceContextImpl();
+    public abstract virtual Entity GetEntity();
+    public abstract virtual void SetEntity(Entity entity);
+    public abstract virtual void ClearEntity();
+    public abstract virtual bool IsEntityPresent();
+    public sealed virtual void HandleEntityMissing(IAWSXRayRecorder recorder, Exception e, string message);
+}
+public interface Amazon.XRay.Recorder.Core.Internal.Emitters.ISegmentEmitter {
+    public abstract virtual void Send(Entity segment);
+    public abstract virtual void SetDaemonAddress(string daemonAddress);
+}
+public interface Amazon.XRay.Recorder.Core.Internal.Emitters.ISegmentMarshaller {
+    public abstract virtual string Marshall(Entity segment);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Emitters.JsonSegmentMarshaller : object {
+    private static string ProtocolHeader;
+    private static char ProtocolDelimiter;
+    public sealed virtual string Marshall(Entity segment);
+    private static void EntityExporter(Entity entity, JsonWriter writer);
+    private static void WriteEntityFields(Entity entity, JsonWriter writer);
+    private static void WriteSegmentFields(Segment segment, JsonWriter writer);
+    private static void WriteSubsegmentFields(Subsegment subsegment, JsonWriter writer);
+    private static void CauseExporter(Cause cause, JsonWriter writer);
+    private static void ExceptionDescriptorExporter(ExceptionDescriptor descriptor, JsonWriter writer);
+    private static void AnnotationsExporter(Annotations annotations, JsonWriter writer);
+    private static void HttpMethodExporter(HttpMethod method, JsonWriter writer);
+    private static void ConstantClassExporter(ConstantClass constantClass, JsonWriter writer);
+    private static void DelegateExporter(Delegate method, JsonWriter writer);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Emitters.UdpSegmentEmitter : object {
+    private static Logger _logger;
+    private IPAddress _defaultDaemonAddress;
+    private ISegmentMarshaller _marshaller;
+    private UdpClient _udpClient;
+    private DaemonConfig _daemonConfig;
+    private bool _disposed;
+    public IPEndPoint EndPoint { get; }
+    private UdpSegmentEmitter(ISegmentMarshaller marshaller);
+    private static UdpSegmentEmitter();
+    public IPEndPoint get_EndPoint();
+    public sealed virtual void Send(Entity segment);
+    public sealed virtual void SetDaemonAddress(string daemonAddress);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void SetEndPointOrDefault(string daemonAddress);
+}
+[DefaultMemberAttribute("Item")]
+public class Amazon.XRay.Recorder.Core.Internal.Entities.Annotations : object {
+    private IDictionary`2<string, object> _annotations;
+    public object Item { get; }
+    public object get_Item(string key);
+    public void Add(string key, string value);
+    public void Add(string key, int value);
+    public void Add(string key, double value);
+    public void Add(string key, long value);
+    public void Add(string key, bool value);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.Cause : object {
+    private Lazy`1<List`1<ExceptionDescriptor>> _exceptions;
+    [CompilerGeneratedAttribute]
+private string <WorkingDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<string> <Paths>k__BackingField;
+    public string WorkingDirectory { get; private set; }
+    public IList`1<string> Paths { get; private set; }
+    public ReadOnlyCollection`1<ExceptionDescriptor> ExceptionDescriptors { get; }
+    public bool IsExceptionAdded { get; }
+    [CompilerGeneratedAttribute]
+public string get_WorkingDirectory();
+    [CompilerGeneratedAttribute]
+private void set_WorkingDirectory(string value);
+    [CompilerGeneratedAttribute]
+public IList`1<string> get_Paths();
+    [CompilerGeneratedAttribute]
+private void set_Paths(IList`1<string> value);
+    public ReadOnlyCollection`1<ExceptionDescriptor> get_ExceptionDescriptors();
+    public bool get_IsExceptionAdded();
+    public void AddException(List`1<ExceptionDescriptor> exceptionDescriptors);
+}
+public abstract class Amazon.XRay.Recorder.Core.Internal.Entities.Entity : object {
+    private static string DefaultMetadataNamespace;
+    private static int SegmentIdHexDigits;
+    private Lazy`1<List`1<Subsegment>> _lazySubsegments;
+    private Lazy`1<ConcurrentDictionary`2<string, object>> _lazyHttp;
+    private Lazy`1<Annotations> _lazyAnnotations;
+    private Lazy`1<ConcurrentDictionary`2<string, string>> _lazySql;
+    private Lazy`1<ConcurrentDictionary`2<string, IDictionary>> _lazyMetadata;
+    private Lazy`1<ConcurrentDictionary`2<string, object>> _lazyAws;
+    private string _traceId;
+    private string _id;
+    private string _name;
+    private string _parentId;
+    private long _referenceCounter;
+    [CompilerGeneratedAttribute]
+private decimal <StartTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private decimal <EndTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasFault>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasError>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsThrottled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Cause <Cause>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsInProgress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasStreamed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SampleDecision <Sampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Segment <RootSegment>k__BackingField;
+    public string TraceId { get; public set; }
+    public string Id { get; public set; }
+    public decimal StartTime { get; public set; }
+    public decimal EndTime { get; public set; }
+    public string Name { get; public set; }
+    public List`1<Subsegment> Subsegments { get; }
+    public bool IsSubsegmentsAdded { get; }
+    public string ParentId { get; public set; }
+    public Annotations Annotations { get; }
+    public bool IsAnnotationsAdded { get; }
+    public bool HasFault { get; public set; }
+    public bool HasError { get; public set; }
+    public bool IsThrottled { get; public set; }
+    public Cause Cause { get; private set; }
+    public bool IsInProgress { get; public set; }
+    public bool HasStreamed { get; public set; }
+    public long Reference { get; }
+    public IDictionary`2<string, object> Http { get; }
+    public bool IsHttpAdded { get; }
+    public IDictionary`2<string, string> Sql { get; }
+    public bool IsSqlAdded { get; }
+    public IDictionary`2<string, IDictionary> Metadata { get; }
+    public bool IsMetadataAdded { get; }
+    public SampleDecision Sampled { get; public set; }
+    public Segment RootSegment { get; public set; }
+    public IDictionary`2<string, object> Aws { get; }
+    public bool IsAwsAdded { get; }
+    public Entity(string name);
+    public string get_TraceId();
+    public void set_TraceId(string value);
+    public string get_Id();
+    public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public decimal get_StartTime();
+    [CompilerGeneratedAttribute]
+public void set_StartTime(decimal value);
+    [CompilerGeneratedAttribute]
+public decimal get_EndTime();
+    [CompilerGeneratedAttribute]
+public void set_EndTime(decimal value);
+    public string get_Name();
+    public void set_Name(string value);
+    public List`1<Subsegment> get_Subsegments();
+    public bool get_IsSubsegmentsAdded();
+    public string get_ParentId();
+    public void set_ParentId(string value);
+    public Annotations get_Annotations();
+    public bool get_IsAnnotationsAdded();
+    [CompilerGeneratedAttribute]
+public bool get_HasFault();
+    [CompilerGeneratedAttribute]
+public void set_HasFault(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasError();
+    [CompilerGeneratedAttribute]
+public void set_HasError(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsThrottled();
+    [CompilerGeneratedAttribute]
+public void set_IsThrottled(bool value);
+    [CompilerGeneratedAttribute]
+public Cause get_Cause();
+    [CompilerGeneratedAttribute]
+private void set_Cause(Cause value);
+    [CompilerGeneratedAttribute]
+public bool get_IsInProgress();
+    [CompilerGeneratedAttribute]
+public void set_IsInProgress(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasStreamed();
+    [CompilerGeneratedAttribute]
+public void set_HasStreamed(bool value);
+    public long get_Reference();
+    public IDictionary`2<string, object> get_Http();
+    public bool get_IsHttpAdded();
+    public IDictionary`2<string, string> get_Sql();
+    public bool get_IsSqlAdded();
+    public IDictionary`2<string, IDictionary> get_Metadata();
+    public bool get_IsMetadataAdded();
+    [CompilerGeneratedAttribute]
+public SampleDecision get_Sampled();
+    [CompilerGeneratedAttribute]
+public void set_Sampled(SampleDecision value);
+    [CompilerGeneratedAttribute]
+public Segment get_RootSegment();
+    [CompilerGeneratedAttribute]
+public void set_RootSegment(Segment value);
+    public IDictionary`2<string, object> get_Aws();
+    public bool get_IsAwsAdded();
+    public static bool IsIdValid(string id);
+    public static string GenerateId();
+    public void SetStartTimeToNow();
+    public void SetEndTimeToNow();
+    public void SetStartTime(decimal timestamp);
+    public void SetEndTime(decimal timestamp);
+    public void SetStartTime(DateTime timestamp);
+    public void SetEndTime(DateTime timestamp);
+    public void AddAnnotation(string key, object value);
+    public void AddSubsegment(Subsegment subsegment);
+    public void AddException(Exception e);
+    public void AddMetadata(string key, object value);
+    public void AddMetadata(string nameSpace, string key, object value);
+    public abstract virtual bool IsEmittable();
+    public abstract virtual long Release();
+    protected long DecrementReferenceCounter();
+    protected long IncrementReferenceCounter();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.ExceptionDescriptor : object {
+    public static int ExceptionDescriptorIdLength;
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Remove>k__BackingField;
+    [CompilerGeneratedAttribute]
+private StackFrame[] <Stack>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Truncated>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Cause>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <Exception>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Remote>k__BackingField;
+    public string Id { get; public set; }
+    public string Message { get; public set; }
+    public string Type { get; public set; }
+    public bool Remove { get; public set; }
+    public StackFrame[] Stack { get; public set; }
+    public int Truncated { get; public set; }
+    public string Cause { get; public set; }
+    public Exception Exception { get; public set; }
+    public bool Remote { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Remove();
+    [CompilerGeneratedAttribute]
+public void set_Remove(bool value);
+    [CompilerGeneratedAttribute]
+public StackFrame[] get_Stack();
+    [CompilerGeneratedAttribute]
+public void set_Stack(StackFrame[] value);
+    [CompilerGeneratedAttribute]
+public int get_Truncated();
+    [CompilerGeneratedAttribute]
+public void set_Truncated(int value);
+    [CompilerGeneratedAttribute]
+public string get_Cause();
+    [CompilerGeneratedAttribute]
+public void set_Cause(string value);
+    [CompilerGeneratedAttribute]
+public Exception get_Exception();
+    [CompilerGeneratedAttribute]
+public void set_Exception(Exception value);
+    [CompilerGeneratedAttribute]
+public bool get_Remote();
+    [CompilerGeneratedAttribute]
+public void set_Remote(bool value);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.FacadeSegment : Segment {
+    private static string _mutationUnsupportedMessage;
+    public string Origin { get; public set; }
+    public IDictionary`2<string, object> Service { get; }
+    public bool IsServiceAdded { get; }
+    public IDictionary`2<string, object> Http { get; }
+    public bool HasFault { get; public set; }
+    public bool HasError { get; public set; }
+    public bool IsThrottled { get; public set; }
+    public IDictionary`2<string, string> Sql { get; }
+    public bool IsHttpAdded { get; }
+    public FacadeSegment(string name, string traceId, string parentId);
+    private static FacadeSegment();
+    public string get_Origin();
+    public void set_Origin(string value);
+    public IDictionary`2<string, object> get_Service();
+    public bool get_IsServiceAdded();
+    public void SetStartTime(decimal timestamp);
+    public void SetEndTime(decimal timestamp);
+    public void SetStartTime(DateTime timestamp);
+    public void SetEndTime(DateTime timestamp);
+    public void AddMetadata(string key, object value);
+    public void AddException(Exception e);
+    public void AddAnnotation(string key, object value);
+    public void SetStartTimeToNow();
+    public void SetEndTimeToNow();
+    public IDictionary`2<string, object> get_Http();
+    public bool get_HasFault();
+    public void set_HasFault(bool value);
+    public bool get_HasError();
+    public void set_HasError(bool value);
+    public bool get_IsThrottled();
+    public void set_IsThrottled(bool value);
+    public IDictionary`2<string, string> get_Sql();
+    public void AddMetadata(string nameSpace, string key, object value);
+    public bool get_IsHttpAdded();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.Segment : Entity {
+    private long _size;
+    private Lazy`1<ConcurrentDictionary`2<string, object>> _lazyService;
+    [CompilerGeneratedAttribute]
+private string <User>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Origin>k__BackingField;
+    public string User { get; public set; }
+    public string Origin { get; public set; }
+    public long Size { get; }
+    public IDictionary`2<string, object> Service { get; }
+    public bool IsServiceAdded { get; }
+    public Segment(string name, string traceId, string parentId);
+    [CompilerGeneratedAttribute]
+public string get_User();
+    [CompilerGeneratedAttribute]
+public void set_User(string value);
+    [CompilerGeneratedAttribute]
+public string get_Origin();
+    [CompilerGeneratedAttribute]
+public void set_Origin(string value);
+    public long get_Size();
+    public IDictionary`2<string, object> get_Service();
+    public bool get_IsServiceAdded();
+    public void IncrementSize();
+    public void DecrementSize();
+    public virtual long Release();
+    public virtual bool IsEmittable();
+    private void HasAlreadyStreamed();
+    public string GetUser();
+    public void SetUser(string user);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.Subsegment : Entity {
+    private Lazy`1<HashSet`1<string>> _lazyPrecursorIds;
+    [CompilerGeneratedAttribute]
+private string <Namespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Entity <Parent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    public string Namespace { get; public set; }
+    public Entity Parent { get; public set; }
+    public string Type { get; public set; }
+    public IEnumerable`1<string> PrecursorIds { get; }
+    public bool IsPrecursorIdAdded { get; }
+    public Subsegment(string name);
+    [CompilerGeneratedAttribute]
+public string get_Namespace();
+    [CompilerGeneratedAttribute]
+public void set_Namespace(string value);
+    [CompilerGeneratedAttribute]
+public Entity get_Parent();
+    [CompilerGeneratedAttribute]
+public void set_Parent(Entity value);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    public IEnumerable`1<string> get_PrecursorIds();
+    public bool get_IsPrecursorIdAdded();
+    public bool AddPrecursorId(string precursorId);
+    public virtual bool IsEmittable();
+    public virtual long Release();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Entities.TraceHeader : object {
+    public static string HeaderKey;
+    private static string RootKey;
+    private static string ParentKey;
+    private static string SampledKey;
+    private static Logger _logger;
+    private static Char[] _validSeparators;
+    [CompilerGeneratedAttribute]
+private string <RootTraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ParentId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SampleDecision <Sampled>k__BackingField;
+    public string RootTraceId { get; public set; }
+    public string ParentId { get; public set; }
+    public SampleDecision Sampled { get; public set; }
+    private static TraceHeader();
+    [CompilerGeneratedAttribute]
+public string get_RootTraceId();
+    [CompilerGeneratedAttribute]
+public void set_RootTraceId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ParentId();
+    [CompilerGeneratedAttribute]
+public void set_ParentId(string value);
+    [CompilerGeneratedAttribute]
+public SampleDecision get_Sampled();
+    [CompilerGeneratedAttribute]
+public void set_Sampled(SampleDecision value);
+    public static bool TryParse(string rawHeader, TraceHeader& header);
+    public static bool TryParseAll(string rawHeader, TraceHeader& traceHeader);
+    public static TraceHeader FromString(string rawHeader);
+    public static bool TryParse(Entity entity, TraceHeader& header);
+    public virtual string ToString();
+}
+public static class Amazon.XRay.Recorder.Core.Internal.Entities.TraceId : object {
+    private static int Version;
+    private static int ElementsCount;
+    private static int RandomNumberHexDigits;
+    private static int EpochHexDigits;
+    private static int VersionDigits;
+    private static int TotalLength;
+    private static char Delimiter;
+    public static string NewId();
+    public static bool IsIdValid(string traceId);
+}
+public static class Amazon.XRay.Recorder.Core.Internal.Utils.AppSettings : object {
+    private static string PluginSettingKey;
+    private static string SamplingRuleManifestKey;
+    private static string AWSServiceHandlerManifestKey;
+    private static string DisableXRayTracingKey;
+    private static string UseRuntimeErrorsKey;
+    private static string CollectSqlQueriesKey;
+    private static string _pluginSetting;
+    private static string _samplingRuleManifest;
+    private static string _awsServiceHandlerManifest;
+    private static bool _isXRayTracingDisabled;
+    private static bool _useRuntimeErrors;
+    private static bool _collectSqlQueries;
+    public static string PluginSetting { get; }
+    public static string SamplingRuleManifest { get; }
+    public static string AWSServiceHandlerManifest { get; }
+    public static bool IsXRayTracingDisabled { get; }
+    public static bool UseRuntimeErrors { get; }
+    public static bool CollectSqlQueries { get; }
+    private static AppSettings();
+    public static string get_PluginSetting();
+    public static string get_SamplingRuleManifest();
+    public static string get_AWSServiceHandlerManifest();
+    public static bool get_IsXRayTracingDisabled();
+    public static bool get_UseRuntimeErrors();
+    public static bool get_CollectSqlQueries();
+    public static void Reset();
+    private static string GetSetting(string key);
+    private static bool GetSettingBool(string key, bool defaultValue);
+    private static bool GetSettingBoolForRuntimeError(string key, bool defaultValue);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Utils.AWSXRayRecorderFactory : object {
+    public static AWSXRayRecorder CreateAWSXRayRecorder(ISegmentEmitter emitter);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Utils.DaemonConfig : object {
+    private static Logger _logger;
+    public static string EnvironmentVariableDaemonAddress;
+    public static string DefaultAddress;
+    private static int _defaultDaemonPort;
+    private static IPAddress _defaultDaemonAddress;
+    public static IPEndPoint DefaultEndpoint;
+    internal EndPoint _udpEndpoint;
+    internal EndPoint _tcpEndpoint;
+    public IPEndPoint UDPEndpoint { get; public set; }
+    public IPEndPoint TCPEndpoint { get; public set; }
+    private static DaemonConfig();
+    public IPEndPoint get_UDPEndpoint();
+    public void set_UDPEndpoint(IPEndPoint value);
+    public IPEndPoint get_TCPEndpoint();
+    public void set_TCPEndpoint(IPEndPoint value);
+    internal static DaemonConfig ParsEndpoint(string daemonAddress);
+    public static DaemonConfig GetEndPoint(string daemonAddress);
+}
+public class Amazon.XRay.Recorder.Core.Internal.Utils.EndPoint : object {
+    private HostEndPoint _h;
+    private IPEndPoint _i;
+    private bool _isHost;
+    public static EndPoint Of(HostEndPoint hostEndPoint);
+    public static EndPoint Of(IPEndPoint ipEndPoint);
+    public IPEndPoint GetIPEndPoint();
+}
+public class Amazon.XRay.Recorder.Core.Internal.Utils.HostEndPoint : object {
+    private int _cacheTtl;
+    private IPEndPoint _ipCache;
+    private Nullable`1<DateTime> _timestampOfLastIPCacheUpdate;
+    private static Logger _logger;
+    private ReaderWriterLockSlim cacheLock;
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Port>k__BackingField;
+    public string Host { get; }
+    public int Port { get; }
+    public HostEndPoint(string host, int port, int cacheTtl);
+    private static HostEndPoint();
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+public int get_Port();
+    private CacheState IPCacheIsValid();
+    private CacheState LockedIPCacheIsValid();
+    public IPEndPoint GetIPEndPoint(Boolean& updatePerformed);
+    private bool UpdateCache();
+}
+public static class Amazon.XRay.Recorder.Core.Internal.Utils.IPEndPointExtension : object {
+    private static string Ipv4Address;
+    private static Logger _logger;
+    private static char _addressDelimiter;
+    private static char _addressPortDelimiter;
+    private static string _udpKey;
+    private static string _tcpKey;
+    private static IPEndPointExtension();
+    public static bool IsIPAddress(string input);
+    public static bool TryParse(string input, IPEndPoint& endPoint);
+    public static bool TryParse(string input, HostEndPoint& hostEndpoint);
+    public static bool TryParse(string input, EndPoint& endpoint);
+    public static bool TryParse(string daemonAddress, DaemonConfig& daemonEndPoint);
+    private static bool TryParseDaemonAddress(String[] daemonAddress, DaemonConfig& endPoint);
+    private static bool ParseSingleForm(String[] daemonAddress, DaemonConfig& endPoint);
+    private static bool ParseDoubleForm(String[] daemonAddress, DaemonConfig& endPoint);
+}
+[ExtensionAttribute]
+public static class Amazon.XRay.Recorder.Core.Internal.Utils.StringExtension : object {
+    [ExtensionAttribute]
+public static string FromCamelCaseToSnakeCase(string camelCaseStr);
+    [ExtensionAttribute]
+public static bool WildcardMatch(string text, string pattern, bool isCaseInsensitive);
+    private static bool SimpleWildcardMatch(string text, string pattern);
+    private static bool IsWildcardGlob(string pattern);
+    public static bool IsMatch(string parameterToMatch, string ruleParameter);
+}
+public static class Amazon.XRay.Recorder.Core.Internal.Utils.ThreadSafeRandom : object {
+    private static Random _global;
+    private static ThreadLocal`1<Random> _local;
+    private static ThreadSafeRandom();
+    public static string GenerateHexNumber(int digits);
+    public static double NextDouble();
+    private static void NextBytes(Byte[] buffer);
+    private static int Next(int maxValue);
+}
+[ExtensionAttribute]
+public static class Amazon.XRay.Recorder.Core.Internal.Utils.UnixTimeExtension : object {
+    private static long TicksPerMicrosecond;
+    private static long MicrosecondPerSecond;
+    private static DateTime _epochStart;
+    private static long _unixEpochMicroseconds;
+    private static UnixTimeExtension();
+    [ExtensionAttribute]
+public static decimal ToUnixTimeSeconds(DateTime date);
+}
+public class Amazon.XRay.Recorder.Core.Plugins.EC2Plugin : object {
+    private static Logger _logger;
+    private static string metadata_base_url;
+    public string Origin { get; }
+    public string ServiceName { get; }
+    private static EC2Plugin();
+    public sealed virtual string get_Origin();
+    public sealed virtual string get_ServiceName();
+    public sealed virtual bool TryGetRuntimeContext(IDictionary`2& context);
+    private string GetToken();
+    private IDictionary`2<string, object> GetMetadata(string token);
+    protected virtual string DoRequest(string url, HttpMethod method, Dictionary`2<string, string> headers);
+    private static IDictionary`2<string, object> ParseMetadata(string jsonString);
+}
+public class Amazon.XRay.Recorder.Core.Plugins.ECSPlugin : object {
+    private static Logger _logger;
+    public string Origin { get; }
+    public string ServiceName { get; }
+    private static ECSPlugin();
+    public sealed virtual string get_Origin();
+    public sealed virtual string get_ServiceName();
+    public sealed virtual bool TryGetRuntimeContext(IDictionary`2& context);
+}
+public class Amazon.XRay.Recorder.Core.Plugins.ElasticBeanstalkPlugin : object {
+    private static Logger _logger;
+    private static string _confPath;
+    public string Origin { get; }
+    public string ServiceName { get; }
+    private static ElasticBeanstalkPlugin();
+    public sealed virtual string get_Origin();
+    public sealed virtual string get_ServiceName();
+    public sealed virtual bool TryGetRuntimeContext(IDictionary`2& context);
+    private static Dictionary`2<string, object> GetElasticBeanstalkMetaData();
+    private static Dictionary`2<string, object> ReadStream(Stream stream);
+}
+public interface Amazon.XRay.Recorder.Core.Plugins.IPlugin {
+    public string Origin { get; }
+    public string ServiceName { get; }
+    public abstract virtual string get_Origin();
+    public abstract virtual string get_ServiceName();
+    public abstract virtual bool TryGetRuntimeContext(IDictionary`2& context);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.DefaultSamplingStrategy : object {
+    private static Logger _logger;
+    private ISamplingStrategy _localFallbackRules;
+    private RuleCache _ruleCache;
+    private RulePoller _rulePoller;
+    private TargetPoller _targetPoller;
+    private IConnector _connector;
+    private bool _isPollerStarted;
+    private object _lock;
+    [CompilerGeneratedAttribute]
+private DaemonConfig <DaemonCfg>k__BackingField;
+    public XRayConfig XRayConfig;
+    public DaemonConfig DaemonCfg { get; private set; }
+    public DefaultSamplingStrategy(string samplingRuleManifest);
+    private static DefaultSamplingStrategy();
+    [CompilerGeneratedAttribute]
+public DaemonConfig get_DaemonCfg();
+    [CompilerGeneratedAttribute]
+private void set_DaemonCfg(DaemonConfig value);
+    private void InititalizeStrategy();
+    private void Start();
+    public sealed virtual SamplingResponse ShouldTrace(SamplingInput input);
+    private static SamplingResponse ProcessMatchedRule(SamplingRule sampleRule, TimeStamp time);
+    public void LoadDaemonConfig(DaemonConfig daemonConfig);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.GetSamplingRulesResponse : object {
+    public List`1<SamplingRule> Rules;
+    public GetSamplingRulesResponse(List`1<SamplingRule> rules);
+    internal bool IsRulePresent();
+}
+public class Amazon.XRay.Recorder.Core.Sampling.GetSamplingTargetsResponse : object {
+    [CompilerGeneratedAttribute]
+private TimeStamp <RuleFreshness>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Target> <Targets>k__BackingField;
+    public TimeStamp RuleFreshness { get; public set; }
+    public IList`1<Target> Targets { get; public set; }
+    public GetSamplingTargetsResponse(IList`1<Target> newTargets);
+    [CompilerGeneratedAttribute]
+public TimeStamp get_RuleFreshness();
+    [CompilerGeneratedAttribute]
+public void set_RuleFreshness(TimeStamp value);
+    [CompilerGeneratedAttribute]
+public IList`1<Target> get_Targets();
+    [CompilerGeneratedAttribute]
+public void set_Targets(IList`1<Target> value);
+}
+internal interface Amazon.XRay.Recorder.Core.Sampling.IConnector {
+    public abstract virtual Task`1<GetSamplingRulesResponse> GetSamplingRules();
+    public abstract virtual Task`1<GetSamplingTargetsResponse> GetSamplingTargets(List`1<SamplingRule> rules);
+}
+public interface Amazon.XRay.Recorder.Core.Sampling.ISamplingStrategy {
+    public abstract virtual SamplingResponse ShouldTrace(SamplingInput input);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Local.LocalizedSamplingStrategy : object {
+    private static string DefaultSamplingConfigurationResourceName;
+    private Int32[] SupportedSamplingConfigurationVersion;
+    private static Logger _logger;
+    private SamplingRule _defaultRule;
+    [CompilerGeneratedAttribute]
+private IList`1<SamplingRule> <Rules>k__BackingField;
+    public SamplingRule DefaultRule { get; public set; }
+    public IList`1<SamplingRule> Rules { get; private set; }
+    public LocalizedSamplingStrategy(string path);
+    private static LocalizedSamplingStrategy();
+    public SamplingRule get_DefaultRule();
+    public void set_DefaultRule(SamplingRule value);
+    [CompilerGeneratedAttribute]
+public IList`1<SamplingRule> get_Rules();
+    [CompilerGeneratedAttribute]
+private void set_Rules(IList`1<SamplingRule> value);
+    private SampleDecision Sample(string host, string path, string method);
+    public sealed virtual SamplingResponse ShouldTrace(SamplingInput input);
+    private static SampleDecision ApplyRule(SamplingRule rule);
+    private void InitWithDefaultSamplingRules();
+    private void Init(Stream stream);
+    private static bool IsValidVersion1(SamplingConfiguration samplingConfiguration, SamplingRule rule);
+    private static void ValidateVersion2(SamplingConfiguration samplingConfiguration, SamplingRule rule);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Local.RateLimiter : object {
+    private long _countInLastSecond;
+    private long _lastSecond;
+    [CompilerGeneratedAttribute]
+private long <LimitPerSecond>k__BackingField;
+    public long LimitPerSecond { get; public set; }
+    public RateLimiter(long limitPerSecond);
+    [CompilerGeneratedAttribute]
+public long get_LimitPerSecond();
+    [CompilerGeneratedAttribute]
+public void set_LimitPerSecond(long value);
+    public bool Request();
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Local.SamplingConfiguration : object {
+    [CompilerGeneratedAttribute]
+private int <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SamplingRule <Default>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<SamplingRule> <Rules>k__BackingField;
+    public int Version { get; public set; }
+    public SamplingRule Default { get; public set; }
+    public List`1<SamplingRule> Rules { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(int value);
+    [CompilerGeneratedAttribute]
+public SamplingRule get_Default();
+    [CompilerGeneratedAttribute]
+public void set_Default(SamplingRule value);
+    [CompilerGeneratedAttribute]
+public List`1<SamplingRule> get_Rules();
+    [CompilerGeneratedAttribute]
+public void set_Rules(List`1<SamplingRule> value);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Local.SamplingRule : object {
+    private static Logger _logger;
+    private int _fixedTarget;
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <HttpMethod>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UrlPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RateLimiter <RateLimiter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Rate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    public string Host { get; public set; }
+    public string ServiceName { get; public set; }
+    public string HttpMethod { get; public set; }
+    public string UrlPath { get; public set; }
+    public int FixedTarget { get; public set; }
+    public RateLimiter RateLimiter { get; private set; }
+    public double Rate { get; public set; }
+    public string Description { get; public set; }
+    public SamplingRule(string host, string urlPath, string httpMethod, int fixedTarget, double rate, string description);
+    private static SamplingRule();
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+public void set_Host(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_HttpMethod();
+    [CompilerGeneratedAttribute]
+public void set_HttpMethod(string value);
+    [CompilerGeneratedAttribute]
+public string get_UrlPath();
+    [CompilerGeneratedAttribute]
+public void set_UrlPath(string value);
+    public int get_FixedTarget();
+    public void set_FixedTarget(int value);
+    [CompilerGeneratedAttribute]
+public RateLimiter get_RateLimiter();
+    [CompilerGeneratedAttribute]
+private void set_RateLimiter(RateLimiter value);
+    [CompilerGeneratedAttribute]
+public double get_Rate();
+    [CompilerGeneratedAttribute]
+public void set_Rate(double value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    public bool IsMatch(string hostToMatch, string urlPathToMatch, string httpMethodToMatch);
+    public virtual string ToString();
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingRuleModel : object {
+    public string RuleName;
+    public Nullable`1<int> Priority;
+    public Nullable`1<double> FixedRate;
+    public Nullable`1<int> ReservoirSize;
+    public string Host;
+    public string ServiceName;
+    public string HTTPMethod;
+    public string URLPath;
+    public string ServiceType;
+    public string ResourceARN;
+    public string RuleARN;
+    public Nullable`1<int> Version;
+    public Dictionary`2<string, string> Attributes;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingRuleRecordsModel : object {
+    public Nullable`1<double> CreatedAt;
+    public Nullable`1<double> ModifiedAt;
+    public SamplingRuleModel SamplingRule;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingRuleResponseModel : object {
+    public string NextToken;
+    public List`1<SamplingRuleRecordsModel> SamplingRuleRecords;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingStatisticsDocumentModel : object {
+    [CompilerGeneratedAttribute]
+private string <ClientID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RuleName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <RequestCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <SampledCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <BorrowCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <Timestamp>k__BackingField;
+    public string ClientID { get; public set; }
+    public string RuleName { get; public set; }
+    public Nullable`1<int> RequestCount { get; public set; }
+    public Nullable`1<int> SampledCount { get; public set; }
+    public Nullable`1<int> BorrowCount { get; public set; }
+    public Nullable`1<double> Timestamp { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ClientID();
+    [CompilerGeneratedAttribute]
+public void set_ClientID(string value);
+    [CompilerGeneratedAttribute]
+public string get_RuleName();
+    [CompilerGeneratedAttribute]
+public void set_RuleName(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_RequestCount();
+    [CompilerGeneratedAttribute]
+public void set_RequestCount(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_SampledCount();
+    [CompilerGeneratedAttribute]
+public void set_SampledCount(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_BorrowCount();
+    [CompilerGeneratedAttribute]
+public void set_BorrowCount(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_Timestamp();
+    [CompilerGeneratedAttribute]
+public void set_Timestamp(Nullable`1<double> value);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingStatisticsModel : object {
+    [CompilerGeneratedAttribute]
+private List`1<SamplingStatisticsDocumentModel> <SamplingStatisticsDocuments>k__BackingField;
+    public List`1<SamplingStatisticsDocumentModel> SamplingStatisticsDocuments { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<SamplingStatisticsDocumentModel> get_SamplingStatisticsDocuments();
+    [CompilerGeneratedAttribute]
+public void set_SamplingStatisticsDocuments(List`1<SamplingStatisticsDocumentModel> value);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingTargetModel : object {
+    public Nullable`1<double> FixedRate;
+    public Nullable`1<int> ReservoirQuota;
+    public Nullable`1<double> ReservoirQuotaTTL;
+    public string RuleName;
+    public Nullable`1<int> Interval;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.SamplingTargetResponseModel : object {
+    public Nullable`1<double> LastRuleModification;
+    public List`1<SamplingTargetModel> SamplingTargetDocuments;
+    public List`1<UnprocessedStatisticsModel> UnprocessedStatistics;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Model.UnprocessedStatisticsModel : object {
+    public string RuleName;
+    public string ErrorCode;
+    public string Message;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Reservior : object {
+    private TimeStamp _thisSec;
+    private TimeStamp _refereshedAt;
+    private int _takenThisSec;
+    private int _borrowedThisSec;
+    private int _defaultInterval;
+    private ReaderWriterLockSlim _lock;
+    private static Logger _logger;
+    [CompilerGeneratedAttribute]
+private TimeStamp <TTL>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Quota>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Interval>k__BackingField;
+    public TimeStamp TTL { get; public set; }
+    public Nullable`1<int> Quota { get; public set; }
+    public Nullable`1<int> Interval { get; public set; }
+    private static Reservior();
+    [CompilerGeneratedAttribute]
+public TimeStamp get_TTL();
+    [CompilerGeneratedAttribute]
+public void set_TTL(TimeStamp value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_Quota();
+    [CompilerGeneratedAttribute]
+public void set_Quota(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_Interval();
+    [CompilerGeneratedAttribute]
+public void set_Interval(Nullable`1<int> value);
+    internal ReserviorDecision BorrowOrTake(TimeStamp current, bool canBorrow);
+    private void CalibrateThisSec(TimeStamp current);
+    internal void LoadQuota(Target t, TimeStamp now);
+    internal bool ShouldReport(TimeStamp now);
+    internal void CopyFrom(Reservior r);
+}
+public enum Amazon.XRay.Recorder.Core.Sampling.ReserviorDecision : Enum {
+    public int value__;
+    public static ReserviorDecision Take;
+    public static ReserviorDecision Borrow;
+    public static ReserviorDecision No;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.RuleCache : object {
+    private static Logger _logger;
+    private IDictionary`2<string, SamplingRule> _cache;
+    private ReaderWriterLockSlim _cacheLock;
+    [CompilerGeneratedAttribute]
+private TimeStamp <LastUpdated>k__BackingField;
+    public static int TTL;
+    public TimeStamp LastUpdated { get; public set; }
+    private static RuleCache();
+    [CompilerGeneratedAttribute]
+public TimeStamp get_LastUpdated();
+    [CompilerGeneratedAttribute]
+public void set_LastUpdated(TimeStamp value);
+    public SamplingRule GetMatchedRule(SamplingInput input, TimeStamp time);
+    private bool IsExpired(TimeStamp current);
+    public IList`1<SamplingRule> GetRules();
+    public void LoadTargets(IList`1<Target> targets);
+    public void LoadRules(List`1<SamplingRule> newRules);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.RulePoller : object {
+    private static Logger _logger;
+    private RuleCache _ruleCache;
+    private IConnector _connector;
+    private static int RefreshInterval;
+    private static int MaxJitter;
+    private Random _random;
+    private Timer _timer;
+    [CompilerGeneratedAttribute]
+private TimeStamp <TimeElasped>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeStamp <TimeToWait>k__BackingField;
+    internal TimeStamp TimeElasped { get; internal set; }
+    internal TimeStamp TimeToWait { get; internal set; }
+    public RulePoller(RuleCache ruleCache);
+    private static RulePoller();
+    [CompilerGeneratedAttribute]
+internal TimeStamp get_TimeElasped();
+    [CompilerGeneratedAttribute]
+internal void set_TimeElasped(TimeStamp value);
+    [CompilerGeneratedAttribute]
+internal TimeStamp get_TimeToWait();
+    [CompilerGeneratedAttribute]
+internal void set_TimeToWait(TimeStamp value);
+    internal void Poll(IConnector connector);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.RulePoller/<Start>d__17")]
+internal void Start(object state);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.RulePoller/<RefreshCache>d__18")]
+private Task RefreshCache();
+    internal void WakeUp();
+    private int GetDelay();
+    private int GenerateRandomJitter();
+}
+public enum Amazon.XRay.Recorder.Core.Sampling.SampleDecision : Enum {
+    public int value__;
+    public static SampleDecision Unknown;
+    public static SampleDecision Sampled;
+    public static SampleDecision NotSampled;
+    public static SampleDecision Requested;
+}
+public class Amazon.XRay.Recorder.Core.Sampling.SamplingInput : object {
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceType>k__BackingField;
+    public string Host { get; public set; }
+    public string Url { get; public set; }
+    public string Method { get; public set; }
+    public string ServiceName { get; public set; }
+    public string ServiceType { get; public set; }
+    public SamplingInput(string serviceName);
+    public SamplingInput(string host, string url, string method, string serviceName, string serviceType);
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+public void set_Host(string value);
+    [CompilerGeneratedAttribute]
+public string get_Url();
+    [CompilerGeneratedAttribute]
+public void set_Url(string value);
+    [CompilerGeneratedAttribute]
+public string get_Method();
+    [CompilerGeneratedAttribute]
+public void set_Method(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceType();
+    [CompilerGeneratedAttribute]
+public void set_ServiceType(string value);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.SamplingResponse : object {
+    [CompilerGeneratedAttribute]
+private SampleDecision <SampleDecision>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RuleName>k__BackingField;
+    public SampleDecision SampleDecision { get; public set; }
+    public string RuleName { get; public set; }
+    public SamplingResponse(string ruleName, SampleDecision sampleDecision);
+    public SamplingResponse(SampleDecision sampleDecision);
+    [CompilerGeneratedAttribute]
+public SampleDecision get_SampleDecision();
+    [CompilerGeneratedAttribute]
+public void set_SampleDecision(SampleDecision value);
+    [CompilerGeneratedAttribute]
+public string get_RuleName();
+    [CompilerGeneratedAttribute]
+public void set_RuleName(string value);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.SamplingRule : object {
+    private static Logger _logger;
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RuleName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Priority>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Reservior <Reservior>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Rate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ReservoirSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <HTTPMethod>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <URLPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ServiceType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ResourceARN>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Attributes>k__BackingField;
+    public Statistics Statistics;
+    [CompilerGeneratedAttribute]
+private bool <CanBorrow>k__BackingField;
+    private ReaderWriterLockSlim _lock;
+    public static string Default;
+    public string Host { get; public set; }
+    public string RuleName { get; public set; }
+    public int Priority { get; public set; }
+    public Reservior Reservior { get; public set; }
+    public double Rate { get; private set; }
+    public int ReservoirSize { get; private set; }
+    public string HTTPMethod { get; public set; }
+    public string ServiceName { get; public set; }
+    public string URLPath { get; private set; }
+    public string ServiceType { get; private set; }
+    public string ResourceARN { get; private set; }
+    public Dictionary`2<string, string> Attributes { get; private set; }
+    public bool CanBorrow { get; public set; }
+    public SamplingRule(string ruleName, int priority, double fixedRate, int reservoirSize, string host, string serviceName, string httpMethod, string urlPath, string serviceType, string resourceARN, Dictionary`2<string, string> attributes);
+    private static SamplingRule();
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+public void set_Host(string value);
+    [CompilerGeneratedAttribute]
+public string get_RuleName();
+    [CompilerGeneratedAttribute]
+public void set_RuleName(string value);
+    [CompilerGeneratedAttribute]
+public int get_Priority();
+    [CompilerGeneratedAttribute]
+public void set_Priority(int value);
+    [CompilerGeneratedAttribute]
+public Reservior get_Reservior();
+    [CompilerGeneratedAttribute]
+public void set_Reservior(Reservior value);
+    [CompilerGeneratedAttribute]
+public double get_Rate();
+    [CompilerGeneratedAttribute]
+private void set_Rate(double value);
+    [CompilerGeneratedAttribute]
+public int get_ReservoirSize();
+    [CompilerGeneratedAttribute]
+private void set_ReservoirSize(int value);
+    [CompilerGeneratedAttribute]
+public string get_HTTPMethod();
+    [CompilerGeneratedAttribute]
+public void set_HTTPMethod(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_URLPath();
+    [CompilerGeneratedAttribute]
+private void set_URLPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceType();
+    [CompilerGeneratedAttribute]
+private void set_ServiceType(string value);
+    [CompilerGeneratedAttribute]
+public string get_ResourceARN();
+    [CompilerGeneratedAttribute]
+private void set_ResourceARN(string value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Attributes();
+    [CompilerGeneratedAttribute]
+private void set_Attributes(Dictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public bool get_CanBorrow();
+    [CompilerGeneratedAttribute]
+public void set_CanBorrow(bool value);
+    internal void IncrementRequestCount();
+    internal void IncrementBorrowCount();
+    internal void IncrementSampledCount();
+    internal static bool IsValid(SamplingRuleModel rule);
+    internal bool IsDefault();
+    internal bool Match(SamplingInput input);
+    internal void SetRate(double fixedRate);
+    internal double GetRate();
+    internal bool ShouldReport(TimeStamp now);
+    internal bool EverMatched();
+    internal void Merge(SamplingRule oldRule);
+    internal Statistics SnapShotStatistics();
+    public sealed virtual int CompareTo(SamplingRule y);
+}
+internal class Amazon.XRay.Recorder.Core.Sampling.ServiceConnector : object {
+    private static Logger _logger;
+    private XRayConfig _xrayConfig;
+    private object _xrayClientLock;
+    private static int Version;
+    private DaemonConfig _daemonConfig;
+    private DateTime EpochStart;
+    private static HttpClient _httpClient;
+    public string ClientID;
+    public ServiceConnector(DaemonConfig daemonConfig, XRayConfig xrayConfig);
+    private static ServiceConnector();
+    private XRayConfig CreateXRayConfig();
+    private void RefreshEndPoint();
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.ServiceConnector/<GetSamplingRules>d__11")]
+public sealed virtual Task`1<GetSamplingRulesResponse> GetSamplingRules();
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.ServiceConnector/<GetSamplingInfoAsync>d__12")]
+private static Task`1<string> GetSamplingInfoAsync(string url, string content);
+    private static List`1<SamplingRule> UnmarshallSamplingRuleResponse(string responseContent);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.ServiceConnector/<GetSamplingTargets>d__14")]
+public sealed virtual Task`1<GetSamplingTargetsResponse> GetSamplingTargets(List`1<SamplingRule> rules);
+    private List`1<Target> ConvertTargetList(List`1<SamplingTargetModel> targetModels);
+    private static SamplingTargetResponseModel UnmarshallSamplingTargetResponse(string responseContent);
+    private List`1<SamplingStatisticsDocumentModel> GetSamplingStatisticsDocuments(List`1<SamplingRule> rules, DateTime currentTime);
+    private double ConvertDateTimeToDouble(DateTime currentTime);
+    private DateTime ConvertDoubleToDateTime(Nullable`1<double> seconds);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Statistics : object {
+    [CompilerGeneratedAttribute]
+private int <RequestCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <BorrowCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <SampledCount>k__BackingField;
+    private ReaderWriterLockSlim _lock;
+    public int RequestCount { get; public set; }
+    public int BorrowCount { get; public set; }
+    public int SampledCount { get; public set; }
+    public Statistics(int requestCount, int borrowCount, int sampledCount);
+    [CompilerGeneratedAttribute]
+public int get_RequestCount();
+    [CompilerGeneratedAttribute]
+public void set_RequestCount(int value);
+    [CompilerGeneratedAttribute]
+public int get_BorrowCount();
+    [CompilerGeneratedAttribute]
+public void set_BorrowCount(int value);
+    [CompilerGeneratedAttribute]
+public int get_SampledCount();
+    [CompilerGeneratedAttribute]
+public void set_SampledCount(int value);
+    internal void CopyFrom(Statistics statistics);
+    internal void IncrementRequestCount();
+    internal void IncrementBorrowCount();
+    internal void IncrementSampledCount();
+    internal Statistics GetSnapShot();
+    private void ResetStats();
+    internal int GetRequestCount();
+}
+public class Amazon.XRay.Recorder.Core.Sampling.Target : object {
+    public double FixedRate;
+    public Nullable`1<int> ReserviorQuota;
+    public TimeStamp TTL;
+    public string RuleName;
+    public Nullable`1<int> Interval;
+    public Target(string ruleName, double fixedRate, Nullable`1<int> reservoirQuota, Nullable`1<DateTime> ttl, Nullable`1<int> interval);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.TargetPoller : object {
+    private static Logger _logger;
+    private RuleCache _ruleCache;
+    private RulePoller _rulePoller;
+    private IConnector _connector;
+    private static int RefreshInterval;
+    private static double MaxJitter;
+    private Random _random;
+    private Timer _timer;
+    public TargetPoller(RuleCache ruleCache, RulePoller rulePoller);
+    private static TargetPoller();
+    internal void Poll(IConnector connector);
+    private Timer InitializeTimer();
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.TargetPoller/<Start>d__11")]
+internal void Start(object state);
+    [AsyncStateMachineAttribute("Amazon.XRay.Recorder.Core.Sampling.TargetPoller/<RefreshTargets>d__12")]
+internal Task RefreshTargets();
+    private List`1<SamplingRule> GetCandidates();
+    private int GetDelay();
+    private int GenerateRandomJitter();
+}
+public class Amazon.XRay.Recorder.Core.Sampling.TimeStamp : object {
+    [CompilerGeneratedAttribute]
+private Nullable`1<decimal> <Time>k__BackingField;
+    public Nullable`1<decimal> Time { get; public set; }
+    public TimeStamp(Nullable`1<DateTime> dateTime);
+    public TimeStamp(Nullable`1<decimal> time);
+    [CompilerGeneratedAttribute]
+public Nullable`1<decimal> get_Time();
+    [CompilerGeneratedAttribute]
+public void set_Time(Nullable`1<decimal> value);
+    public static TimeStamp CurrentTime();
+    public static DateTime CurrentDateTime();
+    internal bool IsGreaterThan(TimeStamp timeStamp);
+    internal void CopyFrom(TimeStamp t);
+    internal TimeStamp PlusSeconds(Nullable`1<int> interval);
+    internal bool IsAfter(TimeStamp timeStamp);
+    private static decimal GetUnixSeconds(DateTime utcNow);
+}
+public class Amazon.XRay.Recorder.Core.Sampling.XRayConfig : object {
+    [CompilerGeneratedAttribute]
+private string <ServiceURL>k__BackingField;
+    public string ServiceURL { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ServiceURL();
+    [CompilerGeneratedAttribute]
+public void set_ServiceURL(string value);
+}
+public enum Amazon.XRay.Recorder.Core.Strategies.ContextMissingStrategy : Enum {
+    public int value__;
+    public static ContextMissingStrategy RUNTIME_ERROR;
+    public static ContextMissingStrategy LOG_ERROR;
+}
+public class Amazon.XRay.Recorder.Core.Strategies.DefaultExceptionSerializationStrategy : object {
+    private static Logger _logger;
+    private static List`1<Type> _defaultExceptionClasses;
+    private List`1<Type> _remoteExceptionClasses;
+    public static int DefaultStackFrameSize;
+    [CompilerGeneratedAttribute]
+private int <MaxStackFrameSize>k__BackingField;
+    public int MaxStackFrameSize { get; private set; }
+    public DefaultExceptionSerializationStrategy(int stackFrameSize);
+    public DefaultExceptionSerializationStrategy(int stackFrameSize, List`1<Type> types);
+    public DefaultExceptionSerializationStrategy(List`1<Type> types);
+    private static DefaultExceptionSerializationStrategy();
+    [CompilerGeneratedAttribute]
+public int get_MaxStackFrameSize();
+    [CompilerGeneratedAttribute]
+private void set_MaxStackFrameSize(int value);
+    public static int GetValidStackFrameSize(int stackFrameSize);
+    private bool IsRemoteException(Exception e);
+    public sealed virtual List`1<ExceptionDescriptor> DescribeException(Exception e, IEnumerable`1<Subsegment> subsegments);
+}
+public class Amazon.XRay.Recorder.Core.Strategies.DefaultStreamingStrategy : object {
+    private static long DefaultMaxSubsegmentSize;
+    [CompilerGeneratedAttribute]
+private long <MaxSubsegmentSize>k__BackingField;
+    public long MaxSubsegmentSize { get; private set; }
+    public DefaultStreamingStrategy(long maxSubsegmentSize);
+    [CompilerGeneratedAttribute]
+public long get_MaxSubsegmentSize();
+    [CompilerGeneratedAttribute]
+private void set_MaxSubsegmentSize(long value);
+    public sealed virtual bool ShouldStream(Entity entity);
+    public sealed virtual void Stream(Entity entity, ISegmentEmitter emitter);
+}
+[CLSCompliantAttribute("False")]
+public class Amazon.XRay.Recorder.Core.Strategies.DynamicSegmentNamingStrategy : SegmentNamingStrategy {
+    private static Logger _logger;
+    [CompilerGeneratedAttribute]
+private string <HostNamePattern>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FallbackSegmentName>k__BackingField;
+    public string HostNamePattern { get; public set; }
+    public string FallbackSegmentName { get; public set; }
+    public DynamicSegmentNamingStrategy(string fallbackSegmentName, string hostNamePattern);
+    private static DynamicSegmentNamingStrategy();
+    [CompilerGeneratedAttribute]
+public string get_HostNamePattern();
+    [CompilerGeneratedAttribute]
+public void set_HostNamePattern(string value);
+    [CompilerGeneratedAttribute]
+public string get_FallbackSegmentName();
+    [CompilerGeneratedAttribute]
+public void set_FallbackSegmentName(string value);
+    public virtual string GetSegmentName(HttpRequestMessage httpRequest);
+    public virtual string GetSegmentName(HttpRequest httpRequest);
+    private string ValidateHostField(string hostField);
+}
+public interface Amazon.XRay.Recorder.Core.Strategies.ExceptionSerializationStrategy {
+    public abstract virtual List`1<ExceptionDescriptor> DescribeException(Exception e, IEnumerable`1<Subsegment> subsegments);
+}
+[CLSCompliantAttribute("False")]
+public class Amazon.XRay.Recorder.Core.Strategies.FixedSegmentNamingStrategy : SegmentNamingStrategy {
+    private static Logger _logger;
+    [CompilerGeneratedAttribute]
+private string <FixedName>k__BackingField;
+    public string FixedName { get; public set; }
+    public FixedSegmentNamingStrategy(string fixedName);
+    private static FixedSegmentNamingStrategy();
+    [CompilerGeneratedAttribute]
+public string get_FixedName();
+    [CompilerGeneratedAttribute]
+public void set_FixedName(string value);
+    public virtual string GetSegmentName(HttpRequestMessage httpRequest);
+    public virtual string GetSegmentName(HttpRequest httpRequest);
+}
+public interface Amazon.XRay.Recorder.Core.Strategies.IStreamingStrategy {
+    public abstract virtual bool ShouldStream(Entity entity);
+    public abstract virtual void Stream(Entity entity, ISegmentEmitter emitter);
+}
+[CLSCompliantAttribute("False")]
+public abstract class Amazon.XRay.Recorder.Core.Strategies.SegmentNamingStrategy : object {
+    public static string EnvironmentVariableSegmentName;
+    public static string GetSegmentNameFromEnvironmentVariable();
+    public abstract virtual string GetSegmentName(HttpRequestMessage httpRequest);
+    public abstract virtual string GetSegmentName(HttpRequest httpRequest);
+}
+internal class ThirdParty.LitJson.ArrayMetadata : ValueType {
+    private Type element_type;
+    private bool is_array;
+    private bool is_list;
+    public Type ElementType { get; public set; }
+    public bool IsArray { get; public set; }
+    public bool IsList { get; public set; }
+    public Type get_ElementType();
+    public void set_ElementType(Type value);
+    public bool get_IsArray();
+    public void set_IsArray(bool value);
+    public bool get_IsList();
+    public void set_IsList(bool value);
+}
+internal enum ThirdParty.LitJson.Condition : Enum {
+    public int value__;
+    public static Condition InArray;
+    public static Condition InObject;
+    public static Condition NotAProperty;
+    public static Condition Property;
+    public static Condition Value;
+}
+internal class ThirdParty.LitJson.ExporterFunc : MulticastDelegate {
+    public ExporterFunc(object object, IntPtr method);
+    public virtual void Invoke(object obj, JsonWriter writer);
+    public virtual IAsyncResult BeginInvoke(object obj, JsonWriter writer, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ThirdParty.LitJson.ExporterFunc`1 : MulticastDelegate {
+    public ExporterFunc`1(object object, IntPtr method);
+    public virtual void Invoke(T obj, JsonWriter writer);
+    public virtual IAsyncResult BeginInvoke(T obj, JsonWriter writer, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class ThirdParty.LitJson.FsmContext : object {
+    public bool Return;
+    public int NextState;
+    public Lexer L;
+    public int StateStack;
+}
+public interface ThirdParty.LitJson.IJsonWrapper {
+    public bool IsArray { get; }
+    public bool IsBoolean { get; }
+    public bool IsDouble { get; }
+    public bool IsInt { get; }
+    public bool IsLong { get; }
+    public bool IsObject { get; }
+    public bool IsString { get; }
+    public abstract virtual bool get_IsArray();
+    public abstract virtual bool get_IsBoolean();
+    public abstract virtual bool get_IsDouble();
+    public abstract virtual bool get_IsInt();
+    public abstract virtual bool get_IsLong();
+    public abstract virtual bool get_IsObject();
+    public abstract virtual bool get_IsString();
+    public abstract virtual bool GetBoolean();
+    public abstract virtual double GetDouble();
+    public abstract virtual int GetInt();
+    public abstract virtual JsonType GetJsonType();
+    public abstract virtual long GetLong();
+    public abstract virtual string GetString();
+    public abstract virtual void SetBoolean(bool val);
+    public abstract virtual void SetDouble(double val);
+    public abstract virtual void SetInt(int val);
+    public abstract virtual void SetJsonType(JsonType type);
+    public abstract virtual void SetLong(long val);
+    public abstract virtual void SetString(string val);
+    public abstract virtual string ToJson();
+    public abstract virtual void ToJson(JsonWriter writer);
+}
+internal class ThirdParty.LitJson.ImporterFunc : MulticastDelegate {
+    public ImporterFunc(object object, IntPtr method);
+    public virtual object Invoke(object input);
+    public virtual IAsyncResult BeginInvoke(object input, AsyncCallback callback, object object);
+    public virtual object EndInvoke(IAsyncResult result);
+}
+public class ThirdParty.LitJson.ImporterFunc`2 : MulticastDelegate {
+    public ImporterFunc`2(object object, IntPtr method);
+    public virtual TValue Invoke(TJson input);
+    public virtual IAsyncResult BeginInvoke(TJson input, AsyncCallback callback, object object);
+    public virtual TValue EndInvoke(IAsyncResult result);
+}
+[DefaultMemberAttribute("Item")]
+public class ThirdParty.LitJson.JsonData : object {
+    private IList`1<JsonData> inst_array;
+    private bool inst_boolean;
+    private double inst_double;
+    private int inst_int;
+    private long inst_long;
+    private IDictionary`2<string, JsonData> inst_object;
+    private string inst_string;
+    private string json;
+    private JsonType type;
+    private IList`1<KeyValuePair`2<string, JsonData>> object_list;
+    public int Count { get; }
+    public bool IsArray { get; }
+    public bool IsBoolean { get; }
+    public bool IsDouble { get; }
+    public bool IsInt { get; }
+    public bool IsLong { get; }
+    public bool IsObject { get; }
+    public bool IsString { get; }
+    public ICollection`1<string> Keys { get; }
+    private int System.Collections.ICollection.Count { get; }
+    private bool System.Collections.ICollection.IsSynchronized { get; }
+    private object System.Collections.ICollection.SyncRoot { get; }
+    private bool System.Collections.IDictionary.IsFixedSize { get; }
+    private bool System.Collections.IDictionary.IsReadOnly { get; }
+    private ICollection System.Collections.IDictionary.Keys { get; }
+    private ICollection System.Collections.IDictionary.Values { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsArray { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsBoolean { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsDouble { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsInt { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsLong { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsObject { get; }
+    private bool ThirdParty.LitJson.IJsonWrapper.IsString { get; }
+    private bool System.Collections.IList.IsFixedSize { get; }
+    private bool System.Collections.IList.IsReadOnly { get; }
+    private object System.Collections.IDictionary.Item { get; private set; }
+    private object System.Collections.Specialized.IOrderedDictionary.Item { get; private set; }
+    private object System.Collections.IList.Item { get; private set; }
+    public JsonData Item { get; public set; }
+    public JsonData Item { get; public set; }
+    public JsonData(bool boolean);
+    public JsonData(double number);
+    public JsonData(int number);
+    public JsonData(long number);
+    public JsonData(object obj);
+    public JsonData(string str);
+    public int get_Count();
+    public bool get_IsArray();
+    public bool get_IsBoolean();
+    public bool get_IsDouble();
+    public bool get_IsInt();
+    public bool get_IsLong();
+    public bool get_IsObject();
+    public bool get_IsString();
+    public ICollection`1<string> get_Keys();
+    private sealed virtual override int System.Collections.ICollection.get_Count();
+    private sealed virtual override bool System.Collections.ICollection.get_IsSynchronized();
+    private sealed virtual override object System.Collections.ICollection.get_SyncRoot();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsFixedSize();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsReadOnly();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Keys();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Values();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsArray();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsBoolean();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsDouble();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsInt();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsLong();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsObject();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.get_IsString();
+    private sealed virtual override bool System.Collections.IList.get_IsFixedSize();
+    private sealed virtual override bool System.Collections.IList.get_IsReadOnly();
+    private sealed virtual override object System.Collections.IDictionary.get_Item(object key);
+    private sealed virtual override void System.Collections.IDictionary.set_Item(object key, object value);
+    private sealed virtual override object System.Collections.Specialized.IOrderedDictionary.get_Item(int idx);
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.set_Item(int idx, object value);
+    private sealed virtual override object System.Collections.IList.get_Item(int index);
+    private sealed virtual override void System.Collections.IList.set_Item(int index, object value);
+    public JsonData get_Item(string prop_name);
+    public void set_Item(string prop_name, JsonData value);
+    public JsonData get_Item(int index);
+    public void set_Item(int index, JsonData value);
+    public static JsonData op_Implicit(bool data);
+    public static JsonData op_Implicit(double data);
+    public static JsonData op_Implicit(int data);
+    public static JsonData op_Implicit(long data);
+    public static JsonData op_Implicit(string data);
+    public static bool op_Explicit(JsonData data);
+    public static double op_Explicit(JsonData data);
+    public static int op_Explicit(JsonData data);
+    public static long op_Explicit(JsonData data);
+    public static string op_Explicit(JsonData data);
+    private sealed virtual override void System.Collections.ICollection.CopyTo(Array array, int index);
+    private sealed virtual override void System.Collections.IDictionary.Add(object key, object value);
+    private sealed virtual override void System.Collections.IDictionary.Clear();
+    private sealed virtual override bool System.Collections.IDictionary.Contains(object key);
+    private sealed virtual override IDictionaryEnumerator System.Collections.IDictionary.GetEnumerator();
+    private sealed virtual override void System.Collections.IDictionary.Remove(object key);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    private sealed virtual override bool ThirdParty.LitJson.IJsonWrapper.GetBoolean();
+    private sealed virtual override double ThirdParty.LitJson.IJsonWrapper.GetDouble();
+    private sealed virtual override int ThirdParty.LitJson.IJsonWrapper.GetInt();
+    private sealed virtual override long ThirdParty.LitJson.IJsonWrapper.GetLong();
+    private sealed virtual override string ThirdParty.LitJson.IJsonWrapper.GetString();
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.SetBoolean(bool val);
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.SetDouble(double val);
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.SetInt(int val);
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.SetLong(long val);
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.SetString(string val);
+    private sealed virtual override string ThirdParty.LitJson.IJsonWrapper.ToJson();
+    private sealed virtual override void ThirdParty.LitJson.IJsonWrapper.ToJson(JsonWriter writer);
+    private sealed virtual override int System.Collections.IList.Add(object value);
+    private sealed virtual override void System.Collections.IList.Clear();
+    private sealed virtual override bool System.Collections.IList.Contains(object value);
+    private sealed virtual override int System.Collections.IList.IndexOf(object value);
+    private sealed virtual override void System.Collections.IList.Insert(int index, object value);
+    private sealed virtual override void System.Collections.IList.Remove(object value);
+    private sealed virtual override void System.Collections.IList.RemoveAt(int index);
+    private sealed virtual override IDictionaryEnumerator System.Collections.Specialized.IOrderedDictionary.GetEnumerator();
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.Insert(int idx, object key, object value);
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.RemoveAt(int idx);
+    private ICollection EnsureCollection();
+    private IDictionary EnsureDictionary();
+    private IList EnsureList();
+    private static JsonData ToJsonData(object obj);
+    private static void WriteJson(IJsonWrapper obj, JsonWriter writer);
+    public int Add(object value);
+    public void Clear();
+    public sealed virtual bool Equals(JsonData x);
+    public sealed virtual JsonType GetJsonType();
+    public sealed virtual void SetJsonType(JsonType type);
+    public string ToJson();
+    public void ToJson(JsonWriter writer);
+    public virtual string ToString();
+}
+public class ThirdParty.LitJson.JsonException : ApplicationException {
+    internal JsonException(ParserToken token);
+    internal JsonException(ParserToken token, Exception inner_exception);
+    internal JsonException(int c);
+    internal JsonException(int c, Exception inner_exception);
+    public JsonException(string message);
+    public JsonException(string message, Exception inner_exception);
+}
+public class ThirdParty.LitJson.JsonMapper : object {
+    private static int max_nesting_depth;
+    private static IFormatProvider datetime_format;
+    private static IDictionary`2<Type, ExporterFunc> base_exporters_table;
+    private static IDictionary`2<Type, ExporterFunc> custom_exporters_table;
+    private static object custom_exporters_table_lock;
+    private static IDictionary`2<Type, IDictionary`2<Type, ImporterFunc>> base_importers_table;
+    private static IDictionary`2<Type, IDictionary`2<Type, ImporterFunc>> custom_importers_table;
+    private static object custom_importers_table_lock;
+    private static IDictionary`2<Type, ArrayMetadata> array_metadata;
+    private static object array_metadata_lock;
+    private static IDictionary`2<Type, IDictionary`2<Type, MethodInfo>> conv_ops;
+    private static object conv_ops_lock;
+    private static IDictionary`2<Type, ObjectMetadata> object_metadata;
+    private static object object_metadata_lock;
+    private static IDictionary`2<Type, IList`1<PropertyMetadata>> type_properties;
+    private static object type_properties_lock;
+    private static JsonWriter static_writer;
+    private static object static_writer_lock;
+    private static JsonMapper();
+    private static void AddArrayMetadata(Type type);
+    private static void AddObjectMetadata(Type type);
+    private static void AddTypeProperties(Type type);
+    private static MethodInfo GetConvOp(Type t1, Type t2);
+    private static object ReadValue(Type inst_type, JsonReader reader);
+    private static IJsonWrapper ReadValue(WrapperFactory factory, JsonReader reader);
+    private static void ReadSkip(JsonReader reader);
+    private static void RegisterBaseExporters();
+    private static void RegisterBaseImporters();
+    private static void RegisterImporter(IDictionary`2<Type, IDictionary`2<Type, ImporterFunc>> table, Type json_type, Type valueType, ImporterFunc importer);
+    private static void WriteValue(object obj, JsonWriter writer, bool writer_is_private, int depth);
+    public static string ToJson(object obj);
+    public static void ToJson(object obj, JsonWriter writer);
+    public static JsonData ToObject(JsonReader reader);
+    public static JsonData ToObject(TextReader reader);
+    public static JsonData ToObject(string json);
+    public static T ToObject(JsonReader reader);
+    public static T ToObject(TextReader reader);
+    public static T ToObject(string json);
+    public static IJsonWrapper ToWrapper(WrapperFactory factory, JsonReader reader);
+    public static IJsonWrapper ToWrapper(WrapperFactory factory, string json);
+    public static void RegisterExporter(ExporterFunc`1<T> exporter);
+    public static void RegisterImporter(ImporterFunc`2<TJson, TValue> importer);
+    public static void UnregisterExporters();
+    public static void UnregisterImporters();
+}
+public class ThirdParty.LitJson.JsonMockWrapper : object {
+    public bool IsArray { get; }
+    public bool IsBoolean { get; }
+    public bool IsDouble { get; }
+    public bool IsInt { get; }
+    public bool IsLong { get; }
+    public bool IsObject { get; }
+    public bool IsString { get; }
+    private bool System.Collections.IList.IsFixedSize { get; }
+    private bool System.Collections.IList.IsReadOnly { get; }
+    private object System.Collections.IList.Item { get; private set; }
+    private int System.Collections.ICollection.Count { get; }
+    private bool System.Collections.ICollection.IsSynchronized { get; }
+    private object System.Collections.ICollection.SyncRoot { get; }
+    private bool System.Collections.IDictionary.IsFixedSize { get; }
+    private bool System.Collections.IDictionary.IsReadOnly { get; }
+    private ICollection System.Collections.IDictionary.Keys { get; }
+    private ICollection System.Collections.IDictionary.Values { get; }
+    private object System.Collections.IDictionary.Item { get; private set; }
+    private object System.Collections.Specialized.IOrderedDictionary.Item { get; private set; }
+    public sealed virtual bool get_IsArray();
+    public sealed virtual bool get_IsBoolean();
+    public sealed virtual bool get_IsDouble();
+    public sealed virtual bool get_IsInt();
+    public sealed virtual bool get_IsLong();
+    public sealed virtual bool get_IsObject();
+    public sealed virtual bool get_IsString();
+    public sealed virtual bool GetBoolean();
+    public sealed virtual double GetDouble();
+    public sealed virtual int GetInt();
+    public sealed virtual JsonType GetJsonType();
+    public sealed virtual long GetLong();
+    public sealed virtual string GetString();
+    public sealed virtual void SetBoolean(bool val);
+    public sealed virtual void SetDouble(double val);
+    public sealed virtual void SetInt(int val);
+    public sealed virtual void SetJsonType(JsonType type);
+    public sealed virtual void SetLong(long val);
+    public sealed virtual void SetString(string val);
+    public sealed virtual string ToJson();
+    public sealed virtual void ToJson(JsonWriter writer);
+    private sealed virtual override bool System.Collections.IList.get_IsFixedSize();
+    private sealed virtual override bool System.Collections.IList.get_IsReadOnly();
+    private sealed virtual override object System.Collections.IList.get_Item(int index);
+    private sealed virtual override void System.Collections.IList.set_Item(int index, object value);
+    private sealed virtual override int System.Collections.IList.Add(object value);
+    private sealed virtual override void System.Collections.IList.Clear();
+    private sealed virtual override bool System.Collections.IList.Contains(object value);
+    private sealed virtual override int System.Collections.IList.IndexOf(object value);
+    private sealed virtual override void System.Collections.IList.Insert(int i, object v);
+    private sealed virtual override void System.Collections.IList.Remove(object value);
+    private sealed virtual override void System.Collections.IList.RemoveAt(int index);
+    private sealed virtual override int System.Collections.ICollection.get_Count();
+    private sealed virtual override bool System.Collections.ICollection.get_IsSynchronized();
+    private sealed virtual override object System.Collections.ICollection.get_SyncRoot();
+    private sealed virtual override void System.Collections.ICollection.CopyTo(Array array, int index);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsFixedSize();
+    private sealed virtual override bool System.Collections.IDictionary.get_IsReadOnly();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Keys();
+    private sealed virtual override ICollection System.Collections.IDictionary.get_Values();
+    private sealed virtual override object System.Collections.IDictionary.get_Item(object key);
+    private sealed virtual override void System.Collections.IDictionary.set_Item(object key, object value);
+    private sealed virtual override void System.Collections.IDictionary.Add(object k, object v);
+    private sealed virtual override void System.Collections.IDictionary.Clear();
+    private sealed virtual override bool System.Collections.IDictionary.Contains(object key);
+    private sealed virtual override void System.Collections.IDictionary.Remove(object key);
+    private sealed virtual override IDictionaryEnumerator System.Collections.IDictionary.GetEnumerator();
+    private sealed virtual override object System.Collections.Specialized.IOrderedDictionary.get_Item(int idx);
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.set_Item(int idx, object value);
+    private sealed virtual override IDictionaryEnumerator System.Collections.Specialized.IOrderedDictionary.GetEnumerator();
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.Insert(int i, object k, object v);
+    private sealed virtual override void System.Collections.Specialized.IOrderedDictionary.RemoveAt(int i);
+}
+public class ThirdParty.LitJson.JsonReader : object {
+    private static IDictionary`2<int, IDictionary`2<int, Int32[]>> parse_table;
+    private Stack`1<int> automaton_stack;
+    private int current_input;
+    private int current_symbol;
+    private bool end_of_json;
+    private bool end_of_input;
+    private Lexer lexer;
+    private bool parser_in_string;
+    private bool parser_return;
+    private bool read_started;
+    private TextReader reader;
+    private bool reader_is_owned;
+    private bool skip_non_members;
+    private object token_value;
+    private JsonToken token;
+    public bool AllowComments { get; public set; }
+    public bool AllowSingleQuotedStrings { get; public set; }
+    public bool SkipNonMembers { get; public set; }
+    public bool EndOfInput { get; }
+    public bool EndOfJson { get; }
+    public JsonToken Token { get; }
+    public object Value { get; }
+    private static JsonReader();
+    public JsonReader(string json_text);
+    public JsonReader(TextReader reader);
+    private JsonReader(TextReader reader, bool owned);
+    public bool get_AllowComments();
+    public void set_AllowComments(bool value);
+    public bool get_AllowSingleQuotedStrings();
+    public void set_AllowSingleQuotedStrings(bool value);
+    public bool get_SkipNonMembers();
+    public void set_SkipNonMembers(bool value);
+    public bool get_EndOfInput();
+    public bool get_EndOfJson();
+    public JsonToken get_Token();
+    public object get_Value();
+    private static void PopulateParseTable();
+    private static void TableAddCol(ParserToken row, int col, Int32[] symbols);
+    private static void TableAddRow(ParserToken rule);
+    private void ProcessNumber(string number);
+    private void ProcessSymbol();
+    private bool ReadToken();
+    public void Close();
+    public bool Read();
+}
+public enum ThirdParty.LitJson.JsonToken : Enum {
+    public int value__;
+    public static JsonToken None;
+    public static JsonToken ObjectStart;
+    public static JsonToken PropertyName;
+    public static JsonToken ObjectEnd;
+    public static JsonToken ArrayStart;
+    public static JsonToken ArrayEnd;
+    public static JsonToken Int;
+    public static JsonToken Long;
+    public static JsonToken Double;
+    public static JsonToken String;
+    public static JsonToken Boolean;
+    public static JsonToken Null;
+}
+public enum ThirdParty.LitJson.JsonType : Enum {
+    public int value__;
+    public static JsonType None;
+    public static JsonType Object;
+    public static JsonType Array;
+    public static JsonType String;
+    public static JsonType Int;
+    public static JsonType Long;
+    public static JsonType Double;
+    public static JsonType Boolean;
+}
+public class ThirdParty.LitJson.JsonWriter : object {
+    private static NumberFormatInfo number_format;
+    private WriterContext context;
+    private Stack`1<WriterContext> ctx_stack;
+    private bool has_reached_end;
+    private Char[] hex_seq;
+    private int indentation;
+    private int indent_value;
+    private StringBuilder inst_string_builder;
+    private bool pretty_print;
+    private bool validate;
+    private TextWriter writer;
+    public int IndentValue { get; public set; }
+    public bool PrettyPrint { get; public set; }
+    public TextWriter TextWriter { get; }
+    public bool Validate { get; public set; }
+    private static JsonWriter();
+    public JsonWriter(StringBuilder sb);
+    public JsonWriter(TextWriter writer);
+    public int get_IndentValue();
+    public void set_IndentValue(int value);
+    public bool get_PrettyPrint();
+    public void set_PrettyPrint(bool value);
+    public TextWriter get_TextWriter();
+    public bool get_Validate();
+    public void set_Validate(bool value);
+    private void DoValidation(Condition cond);
+    private void Init();
+    private static void IntToHex(int n, Char[] hex);
+    private void Indent();
+    private void Put(string str);
+    private void PutNewline();
+    private void PutNewline(bool add_comma);
+    private void PutString(string str);
+    private void Unindent();
+    public virtual string ToString();
+    public void Reset();
+    public void Write(bool boolean);
+    public void Write(decimal number);
+    public void Write(double number);
+    public void Write(int number);
+    public void Write(long number);
+    public void Write(string str);
+    [CLSCompliantAttribute("False")]
+public void Write(ulong number);
+    public void WriteArrayEnd();
+    public void WriteArrayStart();
+    public void WriteObjectEnd();
+    public void WriteObjectStart();
+    public void WritePropertyName(string property_name);
+}
+internal class ThirdParty.LitJson.Lexer : object {
+    private static Int32[] fsm_return_table;
+    private static StateHandler[] fsm_handler_table;
+    private bool allow_comments;
+    private bool allow_single_quoted_strings;
+    private bool end_of_input;
+    private FsmContext fsm_context;
+    private int input_buffer;
+    private int input_char;
+    private TextReader reader;
+    private int state;
+    private StringBuilder string_buffer;
+    private string string_value;
+    private int token;
+    private int unichar;
+    public bool AllowComments { get; public set; }
+    public bool AllowSingleQuotedStrings { get; public set; }
+    public bool EndOfInput { get; }
+    public int Token { get; }
+    public string StringValue { get; }
+    private static Lexer();
+    public Lexer(TextReader reader);
+    public bool get_AllowComments();
+    public void set_AllowComments(bool value);
+    public bool get_AllowSingleQuotedStrings();
+    public void set_AllowSingleQuotedStrings(bool value);
+    public bool get_EndOfInput();
+    public int get_Token();
+    public string get_StringValue();
+    private static int HexValue(int digit);
+    private static void PopulateFsmTables();
+    private static char ProcessEscChar(int esc_char);
+    private static bool State1(FsmContext ctx);
+    private static bool State2(FsmContext ctx);
+    private static bool State3(FsmContext ctx);
+    private static bool State4(FsmContext ctx);
+    private static bool State5(FsmContext ctx);
+    private static bool State6(FsmContext ctx);
+    private static bool State7(FsmContext ctx);
+    private static bool State8(FsmContext ctx);
+    private static bool State9(FsmContext ctx);
+    private static bool State10(FsmContext ctx);
+    private static bool State11(FsmContext ctx);
+    private static bool State12(FsmContext ctx);
+    private static bool State13(FsmContext ctx);
+    private static bool State14(FsmContext ctx);
+    private static bool State15(FsmContext ctx);
+    private static bool State16(FsmContext ctx);
+    private static bool State17(FsmContext ctx);
+    private static bool State18(FsmContext ctx);
+    private static bool State19(FsmContext ctx);
+    private static bool State20(FsmContext ctx);
+    private static bool State21(FsmContext ctx);
+    private static bool State22(FsmContext ctx);
+    private static bool State23(FsmContext ctx);
+    private static bool State24(FsmContext ctx);
+    private static bool State25(FsmContext ctx);
+    private static bool State26(FsmContext ctx);
+    private static bool State27(FsmContext ctx);
+    private static bool State28(FsmContext ctx);
+    private bool GetChar();
+    private int NextChar();
+    public bool NextToken();
+    private void UngetChar();
+}
+internal class ThirdParty.LitJson.ObjectMetadata : ValueType {
+    private Type element_type;
+    private bool is_dictionary;
+    private IDictionary`2<string, PropertyMetadata> properties;
+    public Type ElementType { get; public set; }
+    public bool IsDictionary { get; public set; }
+    public IDictionary`2<string, PropertyMetadata> Properties { get; public set; }
+    public Type get_ElementType();
+    public void set_ElementType(Type value);
+    public bool get_IsDictionary();
+    public void set_IsDictionary(bool value);
+    public IDictionary`2<string, PropertyMetadata> get_Properties();
+    public void set_Properties(IDictionary`2<string, PropertyMetadata> value);
+}
+internal class ThirdParty.LitJson.OrderedDictionaryEnumerator : object {
+    private IEnumerator`1<KeyValuePair`2<string, JsonData>> list_enumerator;
+    public object Current { get; }
+    public DictionaryEntry Entry { get; }
+    public object Key { get; }
+    public object Value { get; }
+    public OrderedDictionaryEnumerator(IEnumerator`1<KeyValuePair`2<string, JsonData>> enumerator);
+    public sealed virtual object get_Current();
+    public sealed virtual DictionaryEntry get_Entry();
+    public sealed virtual object get_Key();
+    public sealed virtual object get_Value();
+    public sealed virtual bool MoveNext();
+    public sealed virtual void Reset();
+}
+internal enum ThirdParty.LitJson.ParserToken : Enum {
+    public int value__;
+    public static ParserToken None;
+    public static ParserToken Number;
+    public static ParserToken True;
+    public static ParserToken False;
+    public static ParserToken Null;
+    public static ParserToken CharSeq;
+    public static ParserToken Char;
+    public static ParserToken Text;
+    public static ParserToken Object;
+    public static ParserToken ObjectPrime;
+    public static ParserToken Pair;
+    public static ParserToken PairRest;
+    public static ParserToken Array;
+    public static ParserToken ArrayPrime;
+    public static ParserToken Value;
+    public static ParserToken ValueRest;
+    public static ParserToken String;
+    public static ParserToken End;
+    public static ParserToken Epsilon;
+}
+internal class ThirdParty.LitJson.PropertyMetadata : ValueType {
+    public MemberInfo Info;
+    public bool IsField;
+    public Type Type;
+}
+public class ThirdParty.LitJson.WrapperFactory : MulticastDelegate {
+    public WrapperFactory(object object, IntPtr method);
+    public virtual IJsonWrapper Invoke();
+    public virtual IAsyncResult BeginInvoke(AsyncCallback callback, object object);
+    public virtual IJsonWrapper EndInvoke(IAsyncResult result);
+}
+internal class ThirdParty.LitJson.WriterContext : object {
+    public int Count;
+    public bool InArray;
+    public bool InObject;
+    public bool ExpectingValue;
+    public int Padding;
+}

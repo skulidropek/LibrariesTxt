@@ -1,0 +1,674 @@
+internal class AspNetCoreRateLimit.AsyncKeyLock : object {
+    private static Dictionary`2<string, AsyncKeyLockDoorman> Keys;
+    private static Stack`1<AsyncKeyLockDoorman> Pool;
+    private static int MaxPoolSize;
+    private static SpinLock _spinLock;
+    private static AsyncKeyLock();
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.AsyncKeyLock/<ReaderLockAsync>d__4")]
+public Task`1<IDisposable> ReaderLockAsync(string key);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.AsyncKeyLock/<WriterLockAsync>d__5")]
+public Task`1<IDisposable> WriterLockAsync(string key);
+    private static AsyncKeyLockDoorman GetDoorman(string key);
+    private static void ReleaseDoorman(AsyncKeyLockDoorman doorman);
+}
+internal class AspNetCoreRateLimit.AsyncKeyLockDoorman : object {
+    private Queue`1<TaskCompletionSource`1<Releaser>> _waitingWriters;
+    private Task`1<Releaser> _readerReleaser;
+    private Task`1<Releaser> _writerReleaser;
+    private Action`1<AsyncKeyLockDoorman> _reset;
+    private TaskCompletionSource`1<Releaser> _waitingReader;
+    private int _readersWaiting;
+    private int _status;
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <RefCount>k__BackingField;
+    public string Key { get; public set; }
+    public int RefCount { get; public set; }
+    public AsyncKeyLockDoorman(Action`1<AsyncKeyLockDoorman> reset);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public void set_Key(string value);
+    [CompilerGeneratedAttribute]
+public int get_RefCount();
+    [CompilerGeneratedAttribute]
+public void set_RefCount(int value);
+    public Task`1<Releaser> ReaderLockAsync();
+    public Task`1<Releaser> WriterLockAsync();
+    private void ReaderRelease();
+    private void WriterRelease();
+}
+public class AspNetCoreRateLimit.AsyncKeyLockProcessingStrategy : ProcessingStrategy {
+    private IRateLimitCounterStore _counterStore;
+    private IRateLimitConfiguration _config;
+    private static AsyncKeyLock AsyncLock;
+    public AsyncKeyLockProcessingStrategy(IRateLimitCounterStore counterStore, IRateLimitConfiguration config);
+    private static AsyncKeyLockProcessingStrategy();
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.AsyncKeyLockProcessingStrategy/<ProcessRequestAsync>d__4")]
+public virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken);
+}
+internal static class AspNetCoreRateLimit.Bits : object {
+    internal static Byte[] Not(Byte[] bytes);
+    internal static Byte[] And(Byte[] A, Byte[] B);
+    internal static Byte[] Or(Byte[] A, Byte[] B);
+    internal static bool GE(Byte[] A, Byte[] B);
+    internal static bool LE(Byte[] A, Byte[] B);
+    internal static Byte[] GetBitMask(int sizeOfBuff, int bitLen);
+}
+public class AspNetCoreRateLimit.ClientCounterKeyBuilder : object {
+    private ClientRateLimitOptions _options;
+    public ClientCounterKeyBuilder(ClientRateLimitOptions options);
+    public sealed virtual string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+}
+public class AspNetCoreRateLimit.ClientHeaderResolveContributor : object {
+    private string _headerName;
+    public ClientHeaderResolveContributor(string headerName);
+    public sealed virtual Task`1<string> ResolveClientAsync(HttpContext httpContext);
+}
+public class AspNetCoreRateLimit.ClientRateLimitMiddleware : RateLimitMiddleware`1<ClientRateLimitProcessor> {
+    private ILogger`1<ClientRateLimitMiddleware> _logger;
+    public ClientRateLimitMiddleware(RequestDelegate next, IProcessingStrategy processingStrategy, IOptions`1<ClientRateLimitOptions> options, IClientPolicyStore policyStore, IRateLimitConfiguration config, ILogger`1<ClientRateLimitMiddleware> logger);
+    protected virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule);
+}
+public class AspNetCoreRateLimit.ClientRateLimitOptions : RateLimitOptions {
+    [CompilerGeneratedAttribute]
+private string <ClientPolicyPrefix>k__BackingField;
+    public string ClientPolicyPrefix { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ClientPolicyPrefix();
+    [CompilerGeneratedAttribute]
+public void set_ClientPolicyPrefix(string value);
+}
+public class AspNetCoreRateLimit.ClientRateLimitPolicies : object {
+    [CompilerGeneratedAttribute]
+private List`1<ClientRateLimitPolicy> <ClientRules>k__BackingField;
+    public List`1<ClientRateLimitPolicy> ClientRules { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<ClientRateLimitPolicy> get_ClientRules();
+    [CompilerGeneratedAttribute]
+public void set_ClientRules(List`1<ClientRateLimitPolicy> value);
+}
+public class AspNetCoreRateLimit.ClientRateLimitPolicy : RateLimitPolicy {
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    public string ClientId { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public void set_ClientId(string value);
+}
+public class AspNetCoreRateLimit.ClientRateLimitProcessor : RateLimitProcessor {
+    private ClientRateLimitOptions _options;
+    private IProcessingStrategy _processingStrategy;
+    private IRateLimitStore`1<ClientRateLimitPolicy> _policyStore;
+    private ICounterKeyBuilder _counterKeyBuilder;
+    public ClientRateLimitProcessor(ClientRateLimitOptions options, IClientPolicyStore policyStore, IProcessingStrategy processingStrategy);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.ClientRateLimitProcessor/<GetMatchingRulesAsync>d__5")]
+public sealed virtual Task`1<IEnumerable`1<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.ClientRateLimitProcessor/<ProcessRequestAsync>d__6")]
+public sealed virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken);
+}
+public class AspNetCoreRateLimit.ClientRequestIdentity : object {
+    [CompilerGeneratedAttribute]
+private string <ClientIp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <HttpVerb>k__BackingField;
+    public string ClientIp { get; public set; }
+    public string ClientId { get; public set; }
+    public string Path { get; public set; }
+    public string HttpVerb { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ClientIp();
+    [CompilerGeneratedAttribute]
+public void set_ClientIp(string value);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public void set_ClientId(string value);
+    [CompilerGeneratedAttribute]
+public string get_Path();
+    [CompilerGeneratedAttribute]
+public void set_Path(string value);
+    [CompilerGeneratedAttribute]
+public string get_HttpVerb();
+    [CompilerGeneratedAttribute]
+public void set_HttpVerb(string value);
+}
+public class AspNetCoreRateLimit.DistributedCacheClientPolicyStore : DistributedCacheRateLimitStore`1<ClientRateLimitPolicy> {
+    private ClientRateLimitOptions _options;
+    private ClientRateLimitPolicies _policies;
+    public DistributedCacheClientPolicyStore(IDistributedCache cache, IOptions`1<ClientRateLimitOptions> options, IOptions`1<ClientRateLimitPolicies> policies);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.DistributedCacheClientPolicyStore/<SeedAsync>d__3")]
+public sealed virtual Task SeedAsync();
+}
+public class AspNetCoreRateLimit.DistributedCacheIpPolicyStore : DistributedCacheRateLimitStore`1<IpRateLimitPolicies> {
+    private IpRateLimitOptions _options;
+    private IpRateLimitPolicies _policies;
+    public DistributedCacheIpPolicyStore(IDistributedCache cache, IOptions`1<IpRateLimitOptions> options, IOptions`1<IpRateLimitPolicies> policies);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.DistributedCacheIpPolicyStore/<SeedAsync>d__3")]
+public sealed virtual Task SeedAsync();
+}
+public class AspNetCoreRateLimit.DistributedCacheRateLimitCounterStore : DistributedCacheRateLimitStore`1<Nullable`1<RateLimitCounter>> {
+    public DistributedCacheRateLimitCounterStore(IDistributedCache cache);
+}
+public class AspNetCoreRateLimit.DistributedCacheRateLimitStore`1 : object {
+    private IDistributedCache _cache;
+    public DistributedCacheRateLimitStore`1(IDistributedCache cache);
+    public sealed virtual Task SetAsync(string id, T entry, Nullable`1<TimeSpan> expirationTime, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.DistributedCacheRateLimitStore`1/<ExistsAsync>d__3")]
+public sealed virtual Task`1<bool> ExistsAsync(string id, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.DistributedCacheRateLimitStore`1/<GetAsync>d__4")]
+public sealed virtual Task`1<T> GetAsync(string id, CancellationToken cancellationToken);
+    public sealed virtual Task RemoveAsync(string id, CancellationToken cancellationToken);
+}
+public class AspNetCoreRateLimit.EndpointCounterKeyBuilder : object {
+    public sealed virtual string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+}
+[ExtensionAttribute]
+public static class AspNetCoreRateLimit.Extensions : object {
+    [ExtensionAttribute]
+public static bool IsUrlMatch(string source, string value, bool useRegex);
+    [ExtensionAttribute]
+public static bool IsWildCardMatch(string source, string value);
+    [ExtensionAttribute]
+public static bool IsRegexMatch(string source, string value);
+    [ExtensionAttribute]
+public static string RetryAfterFrom(DateTime timestamp, RateLimitRule rule);
+    [ExtensionAttribute]
+public static TimeSpan ToTimeSpan(string timeSpan);
+}
+public interface AspNetCoreRateLimit.IClientPolicyStore {
+    public abstract virtual Task SeedAsync();
+}
+public interface AspNetCoreRateLimit.IClientResolveContributor {
+    public abstract virtual Task`1<string> ResolveClientAsync(HttpContext httpContext);
+}
+public interface AspNetCoreRateLimit.ICounterKeyBuilder {
+    public abstract virtual string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+}
+public interface AspNetCoreRateLimit.IIpAddressParser {
+    public abstract virtual bool ContainsIp(string ipRule, string clientIp);
+    public abstract virtual bool ContainsIp(List`1<string> ipRules, string clientIp);
+    public abstract virtual bool ContainsIp(List`1<string> ipRules, string clientIp, String& rule);
+    public abstract virtual IPAddress GetClientIp(HttpContext context);
+    public abstract virtual IPAddress ParseIp(string ipAddress);
+}
+public interface AspNetCoreRateLimit.IIpPolicyStore {
+    public abstract virtual Task SeedAsync();
+}
+public interface AspNetCoreRateLimit.IIpResolveContributor {
+    public abstract virtual string ResolveIp(HttpContext httpContext);
+}
+public class AspNetCoreRateLimit.IpAddressRange : object {
+    [CompilerGeneratedAttribute]
+private IPAddress <Begin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IPAddress <End>k__BackingField;
+    public IPAddress Begin { get; public set; }
+    public IPAddress End { get; public set; }
+    public IpAddressRange(string ipRangeString);
+    [CompilerGeneratedAttribute]
+public IPAddress get_Begin();
+    [CompilerGeneratedAttribute]
+public void set_Begin(IPAddress value);
+    [CompilerGeneratedAttribute]
+public IPAddress get_End();
+    [CompilerGeneratedAttribute]
+public void set_End(IPAddress value);
+    public bool Contains(IPAddress ipaddress);
+}
+public class AspNetCoreRateLimit.IpAddressUtil : object {
+    public static bool ContainsIp(string rule, string clientIp);
+    public static bool ContainsIp(List`1<string> ipRules, string clientIp);
+    public static bool ContainsIp(List`1<string> ipRules, string clientIp, String& rule);
+    public static IPAddress ParseIp(string ipAddress);
+}
+public class AspNetCoreRateLimit.IpConnectionResolveContributor : object {
+    public sealed virtual string ResolveIp(HttpContext httpContext);
+}
+public class AspNetCoreRateLimit.IpCounterKeyBuilder : object {
+    private IpRateLimitOptions _options;
+    public IpCounterKeyBuilder(IpRateLimitOptions options);
+    public sealed virtual string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+}
+public class AspNetCoreRateLimit.IpHeaderResolveContributor : object {
+    private string _headerName;
+    public IpHeaderResolveContributor(string headerName);
+    public sealed virtual string ResolveIp(HttpContext httpContext);
+}
+public static class AspNetCoreRateLimit.IpParser : object {
+    public static bool ContainsIp(string ipRule, string clientIp);
+    public static bool ContainsIp(List`1<string> ipRules, string clientIp);
+    public static bool ContainsIp(List`1<string> ipRules, string clientIp, String& rule);
+    public static IPAddress ParseIp(string ipAddress);
+}
+public class AspNetCoreRateLimit.IpRateLimitMiddleware : RateLimitMiddleware`1<IpRateLimitProcessor> {
+    private ILogger`1<IpRateLimitMiddleware> _logger;
+    public IpRateLimitMiddleware(RequestDelegate next, IProcessingStrategy processingStrategy, IOptions`1<IpRateLimitOptions> options, IIpPolicyStore policyStore, IRateLimitConfiguration config, ILogger`1<IpRateLimitMiddleware> logger);
+    protected virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule);
+}
+public class AspNetCoreRateLimit.IpRateLimitOptions : RateLimitOptions {
+    [CompilerGeneratedAttribute]
+private string <IpPolicyPrefix>k__BackingField;
+    public string IpPolicyPrefix { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_IpPolicyPrefix();
+    [CompilerGeneratedAttribute]
+public void set_IpPolicyPrefix(string value);
+}
+public class AspNetCoreRateLimit.IpRateLimitPolicies : object {
+    [CompilerGeneratedAttribute]
+private List`1<IpRateLimitPolicy> <IpRules>k__BackingField;
+    public List`1<IpRateLimitPolicy> IpRules { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<IpRateLimitPolicy> get_IpRules();
+    [CompilerGeneratedAttribute]
+public void set_IpRules(List`1<IpRateLimitPolicy> value);
+}
+public class AspNetCoreRateLimit.IpRateLimitPolicy : RateLimitPolicy {
+    [CompilerGeneratedAttribute]
+private string <Ip>k__BackingField;
+    public string Ip { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Ip();
+    [CompilerGeneratedAttribute]
+public void set_Ip(string value);
+}
+public class AspNetCoreRateLimit.IpRateLimitProcessor : RateLimitProcessor {
+    private IpRateLimitOptions _options;
+    private IRateLimitStore`1<IpRateLimitPolicies> _policyStore;
+    private IProcessingStrategy _processingStrategy;
+    private ICounterKeyBuilder _counterKeyBuilder;
+    public IpRateLimitProcessor(IpRateLimitOptions options, IIpPolicyStore policyStore, IProcessingStrategy processingStrategy);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.IpRateLimitProcessor/<GetMatchingRulesAsync>d__5")]
+public sealed virtual Task`1<IEnumerable`1<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.IpRateLimitProcessor/<ProcessRequestAsync>d__6")]
+public sealed virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken);
+}
+public interface AspNetCoreRateLimit.IProcessingStrategy {
+    public abstract virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken);
+}
+public interface AspNetCoreRateLimit.IRateLimitConfiguration {
+    public IList`1<IClientResolveContributor> ClientResolvers { get; }
+    public IList`1<IIpResolveContributor> IpResolvers { get; }
+    public ICounterKeyBuilder EndpointCounterKeyBuilder { get; }
+    public Func`1<double> RateIncrementer { get; }
+    public abstract virtual IList`1<IClientResolveContributor> get_ClientResolvers();
+    public abstract virtual IList`1<IIpResolveContributor> get_IpResolvers();
+    public abstract virtual ICounterKeyBuilder get_EndpointCounterKeyBuilder();
+    public abstract virtual Func`1<double> get_RateIncrementer();
+    public abstract virtual void RegisterResolvers();
+}
+public interface AspNetCoreRateLimit.IRateLimitCounterStore {
+}
+public interface AspNetCoreRateLimit.IRateLimitProcessor {
+    public abstract virtual Task`1<IEnumerable`1<RateLimitRule>> GetMatchingRulesAsync(ClientRequestIdentity identity, CancellationToken cancellationToken);
+    public abstract virtual RateLimitHeaders GetRateLimitHeaders(Nullable`1<RateLimitCounter> counter, RateLimitRule rule, CancellationToken cancellationToken);
+    public abstract virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, CancellationToken cancellationToken);
+    public abstract virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity);
+}
+public interface AspNetCoreRateLimit.IRateLimitStore`1 {
+    public abstract virtual Task`1<bool> ExistsAsync(string id, CancellationToken cancellationToken);
+    public abstract virtual Task`1<T> GetAsync(string id, CancellationToken cancellationToken);
+    public abstract virtual Task RemoveAsync(string id, CancellationToken cancellationToken);
+    public abstract virtual Task SetAsync(string id, T entry, Nullable`1<TimeSpan> expirationTime, CancellationToken cancellationToken);
+}
+public class AspNetCoreRateLimit.MemoryCacheClientPolicyStore : MemoryCacheRateLimitStore`1<ClientRateLimitPolicy> {
+    private ClientRateLimitOptions _options;
+    private ClientRateLimitPolicies _policies;
+    public MemoryCacheClientPolicyStore(IMemoryCache cache, IOptions`1<ClientRateLimitOptions> options, IOptions`1<ClientRateLimitPolicies> policies);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.MemoryCacheClientPolicyStore/<SeedAsync>d__3")]
+public sealed virtual Task SeedAsync();
+}
+public class AspNetCoreRateLimit.MemoryCacheIpPolicyStore : MemoryCacheRateLimitStore`1<IpRateLimitPolicies> {
+    private IpRateLimitOptions _options;
+    private IpRateLimitPolicies _policies;
+    public MemoryCacheIpPolicyStore(IMemoryCache cache, IOptions`1<IpRateLimitOptions> options, IOptions`1<IpRateLimitPolicies> policies);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.MemoryCacheIpPolicyStore/<SeedAsync>d__3")]
+public sealed virtual Task SeedAsync();
+}
+public class AspNetCoreRateLimit.MemoryCacheRateLimitCounterStore : MemoryCacheRateLimitStore`1<Nullable`1<RateLimitCounter>> {
+    public MemoryCacheRateLimitCounterStore(IMemoryCache cache);
+}
+public class AspNetCoreRateLimit.MemoryCacheRateLimitStore`1 : object {
+    private IMemoryCache _cache;
+    public MemoryCacheRateLimitStore`1(IMemoryCache cache);
+    public sealed virtual Task`1<bool> ExistsAsync(string id, CancellationToken cancellationToken);
+    public sealed virtual Task`1<T> GetAsync(string id, CancellationToken cancellationToken);
+    public sealed virtual Task RemoveAsync(string id, CancellationToken cancellationToken);
+    public sealed virtual Task SetAsync(string id, T entry, Nullable`1<TimeSpan> expirationTime, CancellationToken cancellationToken);
+}
+public class AspNetCoreRateLimit.PathCounterKeyBuilder : object {
+    public sealed virtual string Build(ClientRequestIdentity requestIdentity, RateLimitRule rule);
+}
+public abstract class AspNetCoreRateLimit.ProcessingStrategy : object {
+    private IRateLimitConfiguration _config;
+    protected ProcessingStrategy(IRateLimitConfiguration config);
+    public abstract virtual Task`1<RateLimitCounter> ProcessRequestAsync(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions, CancellationToken cancellationToken);
+    protected virtual string BuildCounterKey(ClientRequestIdentity requestIdentity, RateLimitRule rule, ICounterKeyBuilder counterKeyBuilder, RateLimitOptions rateLimitOptions);
+}
+public class AspNetCoreRateLimit.QuotaExceededResponse : object {
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Content>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <StatusCode>k__BackingField;
+    public string ContentType { get; public set; }
+    public string Content { get; public set; }
+    public Nullable`1<int> StatusCode { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ContentType();
+    [CompilerGeneratedAttribute]
+public void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public string get_Content();
+    [CompilerGeneratedAttribute]
+public void set_Content(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_StatusCode();
+    [CompilerGeneratedAttribute]
+public void set_StatusCode(Nullable`1<int> value);
+}
+public class AspNetCoreRateLimit.RateLimitConfiguration : object {
+    [CompilerGeneratedAttribute]
+private IList`1<IClientResolveContributor> <ClientResolvers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<IIpResolveContributor> <IpResolvers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounterKeyBuilder <EndpointCounterKeyBuilder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`1<double> <RateIncrementer>k__BackingField;
+    protected IpRateLimitOptions IpRateLimitOptions;
+    protected ClientRateLimitOptions ClientRateLimitOptions;
+    public IList`1<IClientResolveContributor> ClientResolvers { get; }
+    public IList`1<IIpResolveContributor> IpResolvers { get; }
+    public ICounterKeyBuilder EndpointCounterKeyBuilder { get; }
+    public Func`1<double> RateIncrementer { get; }
+    public RateLimitConfiguration(IOptions`1<IpRateLimitOptions> ipOptions, IOptions`1<ClientRateLimitOptions> clientOptions);
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<IClientResolveContributor> get_ClientResolvers();
+    [CompilerGeneratedAttribute]
+public sealed virtual IList`1<IIpResolveContributor> get_IpResolvers();
+    [CompilerGeneratedAttribute]
+public virtual ICounterKeyBuilder get_EndpointCounterKeyBuilder();
+    [CompilerGeneratedAttribute]
+public virtual Func`1<double> get_RateIncrementer();
+    public virtual void RegisterResolvers();
+    protected string GetClientIdHeader();
+    protected string GetRealIp();
+}
+public class AspNetCoreRateLimit.RateLimitCounter : ValueType {
+    [CompilerGeneratedAttribute]
+private DateTime <Timestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Count>k__BackingField;
+    public DateTime Timestamp { get; public set; }
+    public double Count { get; public set; }
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public DateTime get_Timestamp();
+    [CompilerGeneratedAttribute]
+public void set_Timestamp(DateTime value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public double get_Count();
+    [CompilerGeneratedAttribute]
+public void set_Count(double value);
+}
+public class AspNetCoreRateLimit.RateLimitHeaders : object {
+    [CompilerGeneratedAttribute]
+private HttpContext <Context>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Limit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Remaining>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Reset>k__BackingField;
+    public HttpContext Context { get; public set; }
+    public string Limit { get; public set; }
+    public string Remaining { get; public set; }
+    public string Reset { get; public set; }
+    [CompilerGeneratedAttribute]
+public HttpContext get_Context();
+    [CompilerGeneratedAttribute]
+public void set_Context(HttpContext value);
+    [CompilerGeneratedAttribute]
+public string get_Limit();
+    [CompilerGeneratedAttribute]
+public void set_Limit(string value);
+    [CompilerGeneratedAttribute]
+public string get_Remaining();
+    [CompilerGeneratedAttribute]
+public void set_Remaining(string value);
+    [CompilerGeneratedAttribute]
+public string get_Reset();
+    [CompilerGeneratedAttribute]
+public void set_Reset(string value);
+}
+public abstract class AspNetCoreRateLimit.RateLimitMiddleware`1 : object {
+    private RequestDelegate _next;
+    private TProcessor _processor;
+    private RateLimitOptions _options;
+    private IRateLimitConfiguration _config;
+    protected RateLimitMiddleware`1(RequestDelegate next, RateLimitOptions options, TProcessor processor, IRateLimitConfiguration config);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.RateLimitMiddleware`1/<Invoke>d__5")]
+public Task Invoke(HttpContext context);
+    [AsyncStateMachineAttribute("AspNetCoreRateLimit.RateLimitMiddleware`1/<ResolveIdentityAsync>d__6")]
+public virtual Task`1<ClientRequestIdentity> ResolveIdentityAsync(HttpContext httpContext);
+    public virtual Task ReturnQuotaExceededResponse(HttpContext httpContext, RateLimitRule rule, string retryAfter);
+    private static string FormatPeriodTimespan(TimeSpan period);
+    protected abstract virtual void LogBlockedRequest(HttpContext httpContext, ClientRequestIdentity identity, RateLimitCounter counter, RateLimitRule rule);
+    private Task SetRateLimitHeaders(object rateLimitHeaders);
+}
+public class AspNetCoreRateLimit.RateLimitOptions : object {
+    [CompilerGeneratedAttribute]
+private List`1<RateLimitRule> <GeneralRules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <EndpointWhitelist>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientIdHeader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <ClientWhitelist>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RealIpHeader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <IpWhitelist>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <HttpStatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <QuotaExceededMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QuotaExceededResponse <QuotaExceededResponse>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RateLimitCounterPrefix>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <StackBlockedRequests>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EnableEndpointRateLimiting>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DisableRateLimitHeaders>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EnableRegexRuleMatching>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Func`5<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> <RequestBlockedBehaviorAsync>k__BackingField;
+    public List`1<RateLimitRule> GeneralRules { get; public set; }
+    public List`1<string> EndpointWhitelist { get; public set; }
+    public string ClientIdHeader { get; public set; }
+    public List`1<string> ClientWhitelist { get; public set; }
+    public string RealIpHeader { get; public set; }
+    public List`1<string> IpWhitelist { get; public set; }
+    public int HttpStatusCode { get; public set; }
+    public string QuotaExceededMessage { get; public set; }
+    public QuotaExceededResponse QuotaExceededResponse { get; public set; }
+    public string RateLimitCounterPrefix { get; public set; }
+    public bool StackBlockedRequests { get; public set; }
+    public bool EnableEndpointRateLimiting { get; public set; }
+    public bool DisableRateLimitHeaders { get; public set; }
+    public bool EnableRegexRuleMatching { get; public set; }
+    public Func`5<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> RequestBlockedBehaviorAsync { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<RateLimitRule> get_GeneralRules();
+    [CompilerGeneratedAttribute]
+public void set_GeneralRules(List`1<RateLimitRule> value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_EndpointWhitelist();
+    [CompilerGeneratedAttribute]
+public void set_EndpointWhitelist(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_ClientIdHeader();
+    [CompilerGeneratedAttribute]
+public void set_ClientIdHeader(string value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_ClientWhitelist();
+    [CompilerGeneratedAttribute]
+public void set_ClientWhitelist(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_RealIpHeader();
+    [CompilerGeneratedAttribute]
+public void set_RealIpHeader(string value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_IpWhitelist();
+    [CompilerGeneratedAttribute]
+public void set_IpWhitelist(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public int get_HttpStatusCode();
+    [CompilerGeneratedAttribute]
+public void set_HttpStatusCode(int value);
+    [CompilerGeneratedAttribute]
+public string get_QuotaExceededMessage();
+    [CompilerGeneratedAttribute]
+public void set_QuotaExceededMessage(string value);
+    [CompilerGeneratedAttribute]
+public QuotaExceededResponse get_QuotaExceededResponse();
+    [CompilerGeneratedAttribute]
+public void set_QuotaExceededResponse(QuotaExceededResponse value);
+    [CompilerGeneratedAttribute]
+public string get_RateLimitCounterPrefix();
+    [CompilerGeneratedAttribute]
+public void set_RateLimitCounterPrefix(string value);
+    [CompilerGeneratedAttribute]
+public bool get_StackBlockedRequests();
+    [CompilerGeneratedAttribute]
+public void set_StackBlockedRequests(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableEndpointRateLimiting();
+    [CompilerGeneratedAttribute]
+public void set_EnableEndpointRateLimiting(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_DisableRateLimitHeaders();
+    [CompilerGeneratedAttribute]
+public void set_DisableRateLimitHeaders(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableRegexRuleMatching();
+    [CompilerGeneratedAttribute]
+public void set_EnableRegexRuleMatching(bool value);
+    [CompilerGeneratedAttribute]
+public Func`5<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> get_RequestBlockedBehaviorAsync();
+    [CompilerGeneratedAttribute]
+public void set_RequestBlockedBehaviorAsync(Func`5<HttpContext, ClientRequestIdentity, RateLimitCounter, RateLimitRule, Task> value);
+}
+public class AspNetCoreRateLimit.RateLimitPolicy : object {
+    [CompilerGeneratedAttribute]
+private List`1<RateLimitRule> <Rules>k__BackingField;
+    public List`1<RateLimitRule> Rules { get; public set; }
+    [CompilerGeneratedAttribute]
+public List`1<RateLimitRule> get_Rules();
+    [CompilerGeneratedAttribute]
+public void set_Rules(List`1<RateLimitRule> value);
+}
+public abstract class AspNetCoreRateLimit.RateLimitProcessor : object {
+    private RateLimitOptions _options;
+    protected RateLimitProcessor(RateLimitOptions options);
+    public virtual bool IsWhitelisted(ClientRequestIdentity requestIdentity);
+    public virtual RateLimitHeaders GetRateLimitHeaders(Nullable`1<RateLimitCounter> counter, RateLimitRule rule, CancellationToken cancellationToken);
+    protected virtual List`1<RateLimitRule> GetMatchingRules(ClientRequestIdentity identity, List`1<RateLimitRule> rules);
+}
+public class AspNetCoreRateLimit.RateLimitRule : object {
+    [CompilerGeneratedAttribute]
+private string <Endpoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Period>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <PeriodTimespan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Limit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QuotaExceededResponse <QuotaExceededResponse>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <MonitorMode>k__BackingField;
+    public string Endpoint { get; public set; }
+    public string Period { get; public set; }
+    public Nullable`1<TimeSpan> PeriodTimespan { get; public set; }
+    public double Limit { get; public set; }
+    public QuotaExceededResponse QuotaExceededResponse { get; public set; }
+    public bool MonitorMode { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Endpoint();
+    [CompilerGeneratedAttribute]
+public void set_Endpoint(string value);
+    [CompilerGeneratedAttribute]
+public string get_Period();
+    [CompilerGeneratedAttribute]
+public void set_Period(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_PeriodTimespan();
+    [CompilerGeneratedAttribute]
+public void set_PeriodTimespan(Nullable`1<TimeSpan> value);
+    [CompilerGeneratedAttribute]
+public double get_Limit();
+    [CompilerGeneratedAttribute]
+public void set_Limit(double value);
+    [CompilerGeneratedAttribute]
+public QuotaExceededResponse get_QuotaExceededResponse();
+    [CompilerGeneratedAttribute]
+public void set_QuotaExceededResponse(QuotaExceededResponse value);
+    [CompilerGeneratedAttribute]
+public bool get_MonitorMode();
+    [CompilerGeneratedAttribute]
+public void set_MonitorMode(bool value);
+}
+[ExtensionAttribute]
+public static class AspNetCoreRateLimit.StartupExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddInMemoryRateLimiting(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddDistributedRateLimiting(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddDistributedRateLimiting(IServiceCollection services);
+    [ExtensionAttribute]
+private static IServiceCollection AddDistributedRateLimitingStores(IServiceCollection services);
+    [ExtensionAttribute]
+public static IApplicationBuilder UseIpRateLimiting(IApplicationBuilder builder);
+    [ExtensionAttribute]
+public static IApplicationBuilder UseClientRateLimiting(IApplicationBuilder builder);
+}
+[ExtensionAttribute]
+public static class AspNetCoreRateLimit.WildcardMatcher : object {
+    [ExtensionAttribute]
+public static bool IsMatch(string value, string pattern, char singleWildcard, char multipleWildcard);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

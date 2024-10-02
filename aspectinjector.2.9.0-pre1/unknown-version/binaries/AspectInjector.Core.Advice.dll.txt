@@ -1,0 +1,249 @@
+public class AspectInjector.Core.Advice.AdviceReader : object {
+    private ILogger _log;
+    public AdviceReader(ILogger log);
+    public sealed virtual IReadOnlyCollection`1<Effect> Read(ICustomAttributeProvider host);
+    private IReadOnlyCollection`1<AdviceEffectBase> Extract(MethodDefinition method);
+    private List`1<AdviceArgument> ExtractArguments(MethodDefinition method);
+    private void ValidateArgument(MethodDefinition method, ParameterDefinition param, Source source);
+    internal static AdviceEffectBase CreateEffect(Kind adviceType);
+}
+internal static class AspectInjector.Core.Advice.Constants : object {
+    public static string Prefix;
+    public static string AfterStateMachineMethodName;
+    public static string MovedThis;
+    public static string MovedArgs;
+    private static Constants();
+}
+internal class AspectInjector.Core.Advice.Effects.AdviceArgument : object {
+    [CompilerGeneratedAttribute]
+private Source <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ParameterDefinition <Parameter>k__BackingField;
+    public Source Source { get; public set; }
+    public ParameterDefinition Parameter { get; public set; }
+    [CompilerGeneratedAttribute]
+public Source get_Source();
+    [CompilerGeneratedAttribute]
+public void set_Source(Source value);
+    [CompilerGeneratedAttribute]
+public ParameterDefinition get_Parameter();
+    [CompilerGeneratedAttribute]
+public void set_Parameter(ParameterDefinition value);
+}
+internal abstract class AspectInjector.Core.Advice.Effects.AdviceEffectBase : Effect {
+    [CompilerGeneratedAttribute]
+private Target <Target>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MethodDefinition <Method>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<AdviceArgument> <Arguments>k__BackingField;
+    public Target Target { get; public set; }
+    public MethodDefinition Method { get; public set; }
+    public List`1<AdviceArgument> Arguments { get; public set; }
+    public Kind Kind { get; }
+    [CompilerGeneratedAttribute]
+public Target get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(Target value);
+    [CompilerGeneratedAttribute]
+public MethodDefinition get_Method();
+    [CompilerGeneratedAttribute]
+public void set_Method(MethodDefinition value);
+    [CompilerGeneratedAttribute]
+public List`1<AdviceArgument> get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(List`1<AdviceArgument> value);
+    public abstract virtual Kind get_Kind();
+    public virtual bool IsApplicableFor(IMemberDefinition target);
+    protected bool IsApplicableForModifier(MethodDefinition target);
+    public virtual bool Equals(Effect other);
+    public virtual bool Validate(AspectDefinition aspect, ILogger log);
+    protected virtual void ValidateSupportedArguments(AspectDefinition aspectDefinition, ILogger log);
+    protected void LogWrongArgs(AdviceArgument[] wrongArgs, AspectDefinition aspectDefinition, ILogger log);
+    public virtual string ToString();
+}
+internal class AspectInjector.Core.Advice.Effects.AfterAdviceEffect : BeforeAdviceEffect {
+    public Kind Kind { get; }
+    public virtual Kind get_Kind();
+    protected virtual void ValidateSupportedArguments(AspectDefinition aspectDefinition, ILogger log);
+}
+internal class AspectInjector.Core.Advice.Effects.AroundAdviceEffect : AdviceEffectBase {
+    public Kind Kind { get; }
+    public virtual Kind get_Kind();
+    public virtual bool Validate(AspectDefinition aspect, ILogger log);
+    protected virtual void ValidateSupportedArguments(AspectDefinition aspectDefinition, ILogger log);
+}
+internal class AspectInjector.Core.Advice.Effects.BeforeAdviceEffect : AdviceEffectBase {
+    public Kind Kind { get; }
+    public virtual Kind get_Kind();
+    public virtual bool Validate(AspectDefinition aspect, ILogger log);
+}
+public class AspectInjector.Core.Advice.Weavers.AdviceAroundWeaver : AdviceInlineWeaver {
+    public byte Priority { get; }
+    public AdviceAroundWeaver(ILogger logger);
+    public virtual byte get_Priority();
+    public virtual bool CanWeave(InjectionDefinition injection);
+    protected virtual void WeaveMethod(MethodDefinition method, InjectionDefinition injection);
+}
+public class AspectInjector.Core.Advice.Weavers.AdviceInlineWeaver : object {
+    protected ILogger _log;
+    public byte Priority { get; }
+    public AdviceInlineWeaver(ILogger log);
+    public virtual byte get_Priority();
+    public virtual bool CanWeave(InjectionDefinition injection);
+    public sealed virtual void Weave(InjectionDefinition injection);
+    protected virtual void WeaveMethod(MethodDefinition method, InjectionDefinition injection);
+}
+public class AspectInjector.Core.Advice.Weavers.AdviceStateMachineWeaver : AdviceInlineWeaver {
+    public byte Priority { get; }
+    public AdviceStateMachineWeaver(ILogger logger);
+    public virtual byte get_Priority();
+    public virtual bool CanWeave(InjectionDefinition injection);
+    protected virtual void WeaveMethod(MethodDefinition method, InjectionDefinition injection);
+}
+internal class AspectInjector.Core.Advice.Weavers.Processes.AdviceAfterProcess : AdviceWeaveProcessBase`1<AfterAdviceEffect> {
+    private static Dictionary`2<MethodBody, VariableDefinition> _returnVariablesCache;
+    private VariableDefinition _retvar;
+    public AdviceAfterProcess(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    private static AdviceAfterProcess();
+    private VariableDefinition GetOrCreateRetVar();
+    public virtual void Execute();
+    protected virtual Cut LoadReturnValueArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    [CompilerGeneratedAttribute]
+private Cut <Execute>b__4_0(Cut& exit);
+}
+internal class AspectInjector.Core.Advice.Weavers.Processes.AdviceAroundProcess : AdviceWeaveProcessBase`1<AroundAdviceEffect> {
+    private string _wrapperNamePrefix;
+    private string _unWrapperName;
+    private string _movedOriginalName;
+    private MethodDefinition _wrapper;
+    public AdviceAroundProcess(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    public virtual void Execute();
+    protected virtual Cut LoadTargetArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    private static MethodReference CreateFuncCtorRef(Cut& cut);
+    protected virtual Cut LoadArgumentsArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    public MethodDefinition GetNextWrapper();
+    private void RedirectPreviousWrapper(MethodDefinition prev, MethodDefinition next);
+    private MethodDefinition GetOrCreateUnwrapper();
+    private Cut WriteUnwrapperBody(Cut& cut, ParameterDefinition argsParam, MethodDefinition original);
+    private MethodDefinition WrapEntryPoint(MethodDefinition unwrapper);
+    private MethodReference CreateRef(MethodDefinition definition, MethodDefinition callSite);
+    private void MoveBody(MethodDefinition from, MethodDefinition to);
+    private MethodDefinition CloneDefinition(MethodDefinition origin);
+    private static string GetAroundMethodPrefix(MethodDefinition target);
+    [CompilerGeneratedAttribute]
+private Cut <Execute>b__5_0(Cut& e);
+    [CompilerGeneratedAttribute]
+private bool <GetNextWrapper>b__9_0(MethodDefinition m);
+    [CompilerGeneratedAttribute]
+private <>f__AnonymousType0`2<MethodDefinition, ushort> <GetNextWrapper>b__9_1(MethodDefinition m);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Cut <>n__0(Cut& pc, AdviceArgument parameter);
+}
+internal class AspectInjector.Core.Advice.Weavers.Processes.AdviceBeforeProcess : AdviceWeaveProcessBase`1<BeforeAdviceEffect> {
+    public AdviceBeforeProcess(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    public virtual void Execute();
+    [CompilerGeneratedAttribute]
+private Cut <Execute>b__1_0(Cut& e);
+}
+internal abstract class AspectInjector.Core.Advice.Weavers.Processes.AdviceWeaveProcessBase`1 : object {
+    protected MethodDefinition _method;
+    protected TypeDefinition _type;
+    protected ModuleDefinition _module;
+    protected TEffect _effect;
+    protected InjectionDefinition _injection;
+    protected ILogger _log;
+    protected AspectDefinition _aspect;
+    protected AdviceWeaveProcessBase`1(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    public abstract virtual void Execute();
+    protected Cut LoadAdviceArgs(Cut& cut);
+    protected virtual Cut LoadTypeArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadTargetArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadReturnValueArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadReturnTypeArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadMethodArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadInstanceArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadInjectionsArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadArgumentsArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadNameArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+}
+internal class AspectInjector.Core.Advice.Weavers.Processes.AfterAsyncWeaveProcess : AfterStateMachineWeaveProcessBase {
+    private TypeReference _builder;
+    private TypeReference _asyncResult;
+    public AfterAsyncWeaveProcess(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    private TypeReference GetStateMachine();
+    protected virtual MethodDefinition FindOrCreateAfterStateMachineMethod();
+    protected virtual Cut LoadReturnValueArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadReturnTypeArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual void InsertStateMachineCall(PointCut code);
+}
+internal class AspectInjector.Core.Advice.Weavers.Processes.AfterIteratorWeaveProcess : AfterStateMachineWeaveProcessBase {
+    public AfterIteratorWeaveProcess(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    private TypeReference GetStateMachine();
+    protected virtual MethodDefinition FindOrCreateAfterStateMachineMethod();
+    protected virtual Cut LoadReturnValueArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadReturnTypeArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual void InsertStateMachineCall(PointCut code);
+}
+internal abstract class AspectInjector.Core.Advice.Weavers.Processes.AfterStateMachineWeaveProcessBase : AdviceWeaveProcessBase`1<AfterAdviceEffect> {
+    protected TypeDefinition _stateMachine;
+    protected TypeReference _stateMachineRef;
+    private Func`1<FieldReference> _originalThis;
+    protected AfterStateMachineWeaveProcessBase(ILogger log, MethodDefinition target, InjectionDefinition injection);
+    protected void SetStateMachine(TypeReference stateMachineRef);
+    private FieldReference GetThisField();
+    private FieldReference GetArgsField();
+    protected abstract virtual void InsertStateMachineCall(PointCut code);
+    public virtual void Execute();
+    protected Cut LoadOriginalThis(Cut& pc);
+    protected virtual Cut LoadInstanceArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected virtual Cut LoadArgumentsArgument(Cut& modreq(System.Runtime.InteropServices.InAttribute) pc, AdviceArgument parameter);
+    protected abstract virtual MethodDefinition FindOrCreateAfterStateMachineMethod();
+    [CompilerGeneratedAttribute]
+private FieldReference <.ctor>b__3_0();
+    [CompilerGeneratedAttribute]
+private Cut <Execute>b__8_0(Cut& e);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+internal class System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute : Attribute {
+}
+internal class System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute : Attribute {
+    [NullableContextAttribute("1")]
+public CompilerFeatureRequiredAttribute(string feature);
+}
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal static class System.Runtime.CompilerServices.IsExternalInit : object {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
+internal class System.Runtime.CompilerServices.RequiredMemberAttribute : Attribute {
+}
