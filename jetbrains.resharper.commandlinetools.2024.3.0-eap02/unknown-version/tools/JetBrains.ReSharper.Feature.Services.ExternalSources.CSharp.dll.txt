@@ -1,0 +1,1586 @@
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.AssemblyExporter : object {
+    private IPsiModules myPsiModules;
+    private ITaskHost myTasks;
+    private AssemblyToAssemblyReferencesResolveManager myAssemblyToAssemblyReferencesResolveManager;
+    private ISharedDecompilationCache mySharedDecompilationCache;
+    private HashSet`1<FileSystemPath> myDecompilationCacheItems;
+    private IProgressIndicator myProgressIndicator;
+    private PsiLanguageType myLanguage;
+    private Tuple`2<PsiLanguageType, string> myLanguageAndExtensionPair;
+    private string mySourcesExtensionWithDot;
+    private static string ourRootLocalReferencesFolderShortPath;
+    private static string ourDecompilationTempFolderShortPath;
+    private static string ourGeneratedResourcesExtensionWithDot;
+    private static string ourAssemblyInfoShortPathWithoutExtension;
+    private static string ourAssemblyInfoAlternativeShortPathWithoutExtension;
+    private static List`1<string> ourWpfReferences;
+    private object myFolderLock;
+    private object myResourcesFilesLock;
+    private object myContainsUnsafeCodeLock;
+    private IAssembly myAssembly;
+    private IAssemblyLocation myAssemblyFileLocation;
+    private IMetadataTranslator myTranslator;
+    private Lifetime myLifetime;
+    private ITypeFileMappings mySourcesFilesMappings;
+    private List`1<string> myResourcesFiles;
+    private List`1<string> myEmbeddedResourcesFiles;
+    private List`1<string> myXamlFiles;
+    private List`1<ProjFileReference> myReferences;
+    private IAssemblyExportParameters myAssemblyExportParameters;
+    private string myDefaultNamespaceFolderName;
+    private bool myContainsUnsafeCode;
+    private DebugData myDebugData;
+    private VirtualFileSystemPath myRootFolder;
+    private AssemblyExporter(Lifetime lifetime, ITypeFileMappings typeFileMappings, IPsiModules psiModules, ITaskHost tasks, ILanguageManager languageManager, AssemblyToAssemblyReferencesResolveManager assemblyToAssemblyReferencesResolveManager, ISharedDecompilationCache sharedDecompilationCache, IProgressIndicator progressIndicator);
+    private static AssemblyExporter();
+    [NotNullAttribute]
+public static Task`1<ProjFile> Export(Lifetime lifetime, IAssemblyExportParameters assemblyExportParameters, ITypeFileMappings typeFileMappings, IPsiModules psiModules, ITaskHost tasks, ILanguageManager languageManager, AssemblyToAssemblyReferencesResolveManager assemblyToAssemblyReferencesResolveManager, ISharedDecompilationCache sharedDecompilationCache, IProgressIndicator progressIndicator);
+    private bool Prepare(IAssemblyExportParameters assemblyExportParameters);
+    [NotNullAttribute]
+private Task`1<ProjFile> Export(IAssemblyExportParameters assemblyExportParameters);
+    private void AddWpfReferences(List`1<ProjFileReference> references);
+    private List`1<ProjFileReference> CollectAllAndCopyLocalReferences(VirtualFileSystemPath projectRootFolder, bool performCopy);
+    private void CopyFromTempFolder(FileSystemPath tempRootFolder);
+    private void CheckCachedSources(FileSystemPath rootFolder, IEnumerable`1<string> files);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.AssemblyExporter/<DecompileResourcesActions>d__40")]
+private IEnumerable`1<Action> DecompileResourcesActions(IManifestResourceDisposition[] resources, FileSystemPath rootFolder, IProgressIndicator progressIndicator);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.AssemblyExporter/<DecompileTypesActions>d__41")]
+private IEnumerable`1<Action> DecompileTypesActions(ICollection`1<ITypeElement> typeElements, FileSystemPath rootFolder, IProgressIndicator progressIndicator);
+    private Task`1<FileSystemPath> DecompileToTempFolder();
+    private static int GetMaxTaskCount();
+    private static void DeleteTempFiles(FileSystemPath tempRootFolder);
+    private static void CopyFiles(FileSystemPath fromRootFolder, FileSystemPath toRootFolder, IEnumerable`1<string> files);
+    protected virtual Guid GenerateGuid(bool generateEmptyGuid);
+    [CanBeNullAttribute]
+protected virtual ProjFile SaveProject();
+    private void SavePdb();
+    private void SaveAssemblyInfo(FileSystemPath rootFolder);
+    private bool TrySaveAssemblyInfo(string relativeAssemblyInfoFileName, FileSystemPath rootFolder);
+    private bool DecompileAssemblyInfo(FileSystemPath assemblyInfoPath);
+    private FileSystemPath PrepareTempRootFolder();
+    private void PrepareRootFolder();
+    private static VirtualFileSystemPath GetRootFolder(IAssemblyExportParameters assemblyExportParameters);
+    public static VirtualFileSystemPath GetProjFilePath(IAssemblyExportParameters assemblyExportParameters);
+    public static VirtualFileSystemPath GetSolutionFilePath(IAssemblyExportParameters assemblyExportParameters);
+    public static VirtualFileSystemPath GetPdbFilePath(IAssemblyExportParameters assemblyExportParameters);
+    [NotNullAttribute]
+private string ConvertResourceName(string resourceName);
+    private void DecompileResource(IManifestResourceDisposition disposition, FileSystemPath rootFolder, IProgressIndicator progressIndicator, bool performDecompitation);
+    private void SaveResourceToFile(Stream resourceStream, string resourceName, FileSystemPath rootFolder, ICollection`1<string> resourcesFiles, ICollection`1<string> xamlFiles, bool performDecompilation);
+    private FileSystemPath GetResourcePath(string resourceName, FileSystemPath resourcesFolder, bool createNonexistentFolder, ResType& resType);
+    private static void CopyStream(Stream source, Stream destination);
+    private void DecompileTypeElement(ITypeElement typeElement, bool isPartial, string relativeFilePath, FileSystemPath rootFolder, IProgressIndicator progressIndicator, bool performDecompitation);
+    private bool DecompileTypeElement(ITypeElement typeElement, bool isPartial, FileSystemPath filePath, string relativeFilePath, IProgressIndicator progressIndicator);
+    private string GetFullUrl(string url);
+    private MetadataTranslatorOptions GetTranslatorOptions(bool addPartialModifier);
+    private FileSystemPath GetFilePathAndCreateNonexistentFolder(string relativeFilePath, FileSystemPath rootFolder, bool createNonexistentFolder);
+    [CompilerGeneratedAttribute]
+private bool <Export>b__35_0(Task`1<FileSystemPath> t);
+    [CompilerGeneratedAttribute]
+private ProjFile <Export>b__35_1(Task`1<bool> t);
+}
+public abstract class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.AssemblyExportManagerBase : object {
+    protected Lifetime Lifetime;
+    protected IPsiModules PsiModules;
+    protected ISymbolCache SymbolCache;
+    protected ILogger Logger;
+    private IShellLocks myShellLocks;
+    private ILanguageManager myLanguageManager;
+    private IGenerationManager myGenerationManager;
+    private AssemblyToAssemblyReferencesResolveManager myAssemblyToAssemblyReferencesResolveManager;
+    protected ISharedDecompilationCache mySharedDecompilationCache;
+    protected ProtectedAssemblies myProtectedAssemblies;
+    private int myCurrentIndex;
+    private object myLockObject;
+    private Dictionary`2<int, AssemblyParameters> myParameters;
+    protected AssemblyExportManagerBase(ISolution solution, ILogger logger, IPsiModules psiModules, ISymbolCache symbolCache, IShellLocks shellLocks, ILanguageManager languageManager, IGenerationManager generationManager, AssemblyToAssemblyReferencesResolveManager assemblyToAssemblyReferencesResolveManager, ISharedDecompilationCache sharedDecompilationCache, ProtectedAssemblies protectedAssemblies);
+    public Task`1<ProjFile> Export(IAssemblyExportParameters assemblyExportParameters);
+    protected int Add(IAssemblyExportParameters assemblyExportParameters, FileSystemPath presentationPdbPath);
+    protected int AddParameters(IAssemblyExportParameters assemblyExportParameters, IProgressIndicator progressIndicator);
+    protected void UpdateParameters(int parametersIndex, IAssemblyExportParameters newAssemblyExportParameters);
+    private int GetNextParametersIndex();
+    protected IProgressIndicator CreateProgressIndicator(GenerationStateViewModel state);
+    public void ShowDoneItemWithInfo(int parametersIndex, string message);
+    [NotNullAttribute]
+public Task`1<ProjFile> Export(int parametersIndex);
+    [NotNullAttribute]
+private Task`1<ProjFile> Export(IAssemblyExportParameters assemblyExportParameters, IProgressIndicator progressIndicator);
+    [CanBeNullAttribute]
+private AssemblyParameters ExtractParameters(int parametersIndex);
+    [CanBeNullAttribute]
+protected abstract virtual ITypeFileMappings TryCreateTypeFileMappings(IAssemblyExportParameters assemblyExportParameters);
+    [CanBeNullAttribute]
+private GenerationStateViewModel AddProjFileGenerationItem(IAssemblyExportParameters assemblyExportParameters);
+    [CanBeNullAttribute]
+private GenerationStateViewModel AddPdbFileGenerationItem(IAssemblyExportParameters assemblyExportParameters, VirtualFileSystemPath presentationPdbPath);
+    [CanBeNullAttribute]
+protected GenerationStateViewModel AddGenerationItem(FileSystemPath filePath, IAssemblyLocation assemblyLocation);
+    private IAssemblyLocation GetAssemblyLocation(IAssemblyExportParameters assemblyExportParameters);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.AssemblyExportParameters : object {
+    [CompilerGeneratedAttribute]
+private IAssemblyFile <AssemblyFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CreateFolderForProject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private VirtualFileSystemPath <Folder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FolderIsNotEmptyAction <FolderIsNotEmptyChoice>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProjectName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CreateProject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CreateSolution>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CreatePdb>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DebugInfo <DebugInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private VirtualFileSystemPath <PdbFolder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PerformSourcesDecompilation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PerformResourcesDecompilation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <GenerateEmptyGuid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <WriteBoundAssemblyComment>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ShowDescriptiveHeader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ShowAssemblyInfoInHeader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PutSourcesIntoDecompilationCache>k__BackingField;
+    public IAssemblyFile AssemblyFile { get; }
+    public bool CreateFolderForProject { get; }
+    public VirtualFileSystemPath Folder { get; }
+    public FolderIsNotEmptyAction FolderIsNotEmptyChoice { get; }
+    public string ProjectName { get; }
+    public bool CreateProject { get; }
+    public bool CreateSolution { get; }
+    public bool CreatePdb { get; }
+    public DebugInfo DebugInfo { get; }
+    public VirtualFileSystemPath PdbFolder { get; }
+    public bool PerformSourcesDecompilation { get; }
+    public bool PerformResourcesDecompilation { get; }
+    public bool GenerateEmptyGuid { get; }
+    public bool WriteBoundAssemblyComment { get; }
+    public bool ShowDescriptiveHeader { get; }
+    public bool ShowAssemblyInfoInHeader { get; }
+    public bool ShowCompilerGeneratedCode { get; }
+    public bool PutSourcesIntoDecompilationCache { get; }
+    public AssemblyExportParameters(IAssemblyFile assemblyFile, VirtualFileSystemPath folder, FolderIsNotEmptyAction folderIsNotEmptyChoice, string projectName, bool createProject, bool createSolution, bool performSourcesDecompilation, bool performResourcesDecompilation, bool createPdb, DebugInfo debugInfo, VirtualFileSystemPath pdbFolder, bool generateEmptyGuid, bool writeBoundAssemblyComment, bool showDescriptiveHeader, bool showAssemblyInfoInHeader, bool createFolderForProject, bool putSourcesIntoDecompilationCache);
+    [CompilerGeneratedAttribute]
+public sealed virtual IAssemblyFile get_AssemblyFile();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_CreateFolderForProject();
+    [CompilerGeneratedAttribute]
+public sealed virtual VirtualFileSystemPath get_Folder();
+    [CompilerGeneratedAttribute]
+public sealed virtual FolderIsNotEmptyAction get_FolderIsNotEmptyChoice();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ProjectName();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_CreateProject();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_CreateSolution();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_CreatePdb();
+    [CompilerGeneratedAttribute]
+public sealed virtual DebugInfo get_DebugInfo();
+    [CompilerGeneratedAttribute]
+public sealed virtual VirtualFileSystemPath get_PdbFolder();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PerformSourcesDecompilation();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PerformResourcesDecompilation();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_GenerateEmptyGuid();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_WriteBoundAssemblyComment();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_ShowDescriptiveHeader();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_ShowAssemblyInfoInHeader();
+    public sealed virtual bool get_ShowCompilerGeneratedCode();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PutSourcesIntoDecompilationCache();
+    public sealed virtual bool Check();
+    public virtual string ToString();
+}
+public enum JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.FolderIsNotEmptyAction : Enum {
+    public int value__;
+    public static FolderIsNotEmptyAction RewriteExistingFiles;
+    public static FolderIsNotEmptyAction DeleteFolderContent;
+}
+public interface JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.IAssemblyExportParameters {
+    public IAssemblyFile AssemblyFile { get; }
+    public bool CreateFolderForProject { get; }
+    public VirtualFileSystemPath Folder { get; }
+    public FolderIsNotEmptyAction FolderIsNotEmptyChoice { get; }
+    public string ProjectName { get; }
+    public bool CreateProject { get; }
+    public bool CreateSolution { get; }
+    public bool CreatePdb { get; }
+    [CanBeNullAttribute]
+public DebugInfo DebugInfo { get; }
+    [CanBeNullAttribute]
+public VirtualFileSystemPath PdbFolder { get; }
+    public bool PerformSourcesDecompilation { get; }
+    public bool PerformResourcesDecompilation { get; }
+    public bool GenerateEmptyGuid { get; }
+    public bool WriteBoundAssemblyComment { get; }
+    public bool ShowCompilerGeneratedCode { get; }
+    public bool ShowDescriptiveHeader { get; }
+    public bool ShowAssemblyInfoInHeader { get; }
+    public bool PutSourcesIntoDecompilationCache { get; }
+    public abstract virtual IAssemblyFile get_AssemblyFile();
+    public abstract virtual bool get_CreateFolderForProject();
+    public abstract virtual VirtualFileSystemPath get_Folder();
+    public abstract virtual FolderIsNotEmptyAction get_FolderIsNotEmptyChoice();
+    public abstract virtual string get_ProjectName();
+    public abstract virtual bool get_CreateProject();
+    public abstract virtual bool get_CreateSolution();
+    public abstract virtual bool get_CreatePdb();
+    public abstract virtual DebugInfo get_DebugInfo();
+    public abstract virtual VirtualFileSystemPath get_PdbFolder();
+    public abstract virtual bool get_PerformSourcesDecompilation();
+    public abstract virtual bool get_PerformResourcesDecompilation();
+    public abstract virtual bool get_GenerateEmptyGuid();
+    public abstract virtual bool get_WriteBoundAssemblyComment();
+    public abstract virtual bool get_ShowCompilerGeneratedCode();
+    public abstract virtual bool get_ShowDescriptiveHeader();
+    public abstract virtual bool get_ShowAssemblyInfoInHeader();
+    public abstract virtual bool get_PutSourcesIntoDecompilationCache();
+    public abstract virtual bool Check();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Mappings.DecompilationCacheStructureTypeFileMappings : object {
+    private Dictionary`2<ITypeElement, string> myTypeToFile;
+    public INamespace DefaultNamespace { get; }
+    private DecompilationCacheStructureTypeFileMappings(IEnumerable`1<ITypeElement> types, IAssembly assembly, DecompilationCacheStructure decompilationCacheStructure, PsiLanguageType language);
+    public static ITypeFileMappings Create(IAssemblyFile assemblyFile, IPsiModules psiModules, ISymbolCache symbolCache, DecompilationCacheStructure decompilationCacheStructure, PsiLanguageType language, bool includeCompilerGeneratedTypes);
+    public sealed virtual string TryGetFile(ITypeElement type);
+    public sealed virtual ICollection`1<ITypeElement> GetAllTypes();
+    public sealed virtual IEnumerable`1<string> GetAllFiles();
+    public sealed virtual bool Contains(string file);
+    public sealed virtual INamespace get_DefaultNamespace();
+    public sealed virtual string GetFolder(INamespace ns);
+    public sealed virtual string TryGetXamlFile(ITypeElement type);
+    public sealed virtual void BindXamlFiles(IEnumerable`1<string> xamlFiles);
+    public sealed virtual IEnumerable`1<string> TryGetBoundXamlFiles(string file);
+    public sealed virtual void SetAssemblyInfoFileName(string assemblyInfoFile);
+}
+public interface JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Mappings.ITypeFileMappings {
+    [CanBeNullAttribute]
+public INamespace DefaultNamespace { get; }
+    public abstract virtual INamespace get_DefaultNamespace();
+    public abstract virtual string GetFolder(INamespace ns);
+    [CanBeNullAttribute]
+public abstract virtual string TryGetFile(ITypeElement type);
+    [CanBeNullAttribute]
+public abstract virtual string TryGetXamlFile(ITypeElement type);
+    public abstract virtual void BindXamlFiles(IEnumerable`1<string> xamlFiles);
+    [CanBeNullAttribute]
+public abstract virtual IEnumerable`1<string> TryGetBoundXamlFiles(string file);
+    public abstract virtual ICollection`1<ITypeElement> GetAllTypes();
+    public abstract virtual IEnumerable`1<string> GetAllFiles();
+    public abstract virtual bool Contains(string file);
+    public abstract virtual void SetAssemblyInfoFileName(string assemblyInfoFile);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Mappings.NamespaceFolderMappings : object {
+    private Dictionary`2<string, HashSet`1<string>> myNamespacesFolders;
+    private string myDefaultNamespaceFolderName;
+    public NamespaceFolderMappings(INamespace defaultNamespace);
+    public void AddMapping(INamespace ns, string folder);
+    [CanBeNullAttribute]
+private string TryGetFolderFromDictionary(INamespace ns);
+    [NotNullAttribute]
+public string GetFolder(INamespace ns);
+    private string AddMappingAndReturnFolder(INamespace ns, string folder);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Mappings.TypeFileMappings : object {
+    private object myLock;
+    private UniqueFilePathGenerator myUniqueFilePathGenerator;
+    private NamespaceFolderMappings myNamespaceFolderMappings;
+    private string myAssemblyInfoFile;
+    private ICollection`1<string> myFiles;
+    private Dictionary`2<ITypeElement, string> myTypesFiles;
+    private Dictionary`2<ITypeElement, string> myTypesXamlFiles;
+    private Dictionary`2<string, List`1<ITypeElement>> myFilesTypes;
+    private Dictionary`2<string, ITypeElement> myXamlFilesTypes;
+    private static string csExtension;
+    private static string xamlCsExtension;
+    private static string gCsExtension;
+    [CompilerGeneratedAttribute]
+private INamespace <DefaultNamespace>k__BackingField;
+    public INamespace DefaultNamespace { get; }
+    private TypeFileMappings(IEnumerable`1<ITypeElement> types, INamespace defaultNamespace, CompactOneToListMap`2<string, string> typeToFilesMapping, IEnumerable`1<string> xamlFiles);
+    private static TypeFileMappings();
+    [CompilerGeneratedAttribute]
+public sealed virtual INamespace get_DefaultNamespace();
+    public static ITypeFileMappings Create(IAssemblyFile assemblyFile, IPsiModules psiModules, ISymbolCache symbolCache, PdbCache pdbCache, IEnumerable`1<string> xamlFiles, bool includeCompilerGeneratedTypes);
+    private void AddToDictionaries(ITypeElement type, string file);
+    private void RemoveFromDictionaries(ITypeElement type, string file);
+    private void AddTypeWithUniqueFilePath(ITypeElement type, string suggestedFileName, string relativeFolderPath);
+    public sealed virtual string GetFolder(INamespace ns);
+    private string GetFolder(ITypeElement type);
+    private void GenerateFileNamesForTypes(IEnumerable`1<ITypeElement> types);
+    private string GetBestFileName(ITypeElement type, FileSystemPath filePath, IDictionary`2<string, FileSystemPath> type2FileMappings);
+    private Pair`2<string, string> GetFileAndFolder(ITypeElement type, IDictionary`2<string, FileSystemPath> type2FileMappings, FileSystemPath rootFolder);
+    private void ExtractFileNamesForTypes(IEnumerable`1<ITypeElement> types, CompactOneToListMap`2<string, string> typeToFilesMapping);
+    private IDictionary`2<string, FileSystemPath> ConvertToOneToOneMappings(CompactOneToListMap`2<string, string> type2FilesMapping);
+    [CanBeNullAttribute]
+private string SelectBestMatchingFile(IEnumerable`1<string> files, string typeFullName, String& xamlFile);
+    private string GetTypeShortName(string typeFullName);
+    private FileSystemPath GetContainingFolder(ICollection`1<FileSystemPath> files);
+    public sealed virtual string TryGetFile(ITypeElement type);
+    public sealed virtual string TryGetXamlFile(ITypeElement type);
+    private void SetNewFileForType(ITypeElement type, string file);
+    private void SetXamlFileForType(ITypeElement type, string xamlFile);
+    [CanBeNullAttribute]
+private ITypeElement FindBestMatchingType(string xamlFile);
+    public sealed virtual void BindXamlFiles(IEnumerable`1<string> xamlFiles);
+    public sealed virtual IEnumerable`1<string> TryGetBoundXamlFiles(string file);
+    public sealed virtual ICollection`1<ITypeElement> GetAllTypes();
+    [CanBeNullAttribute]
+private IEnumerable`1<ITypeElement> TryGetTypes(string file);
+    private ITypeElement TryGetTypeFromXaml(string xamlFile);
+    public sealed virtual IEnumerable`1<string> GetAllFiles();
+    public sealed virtual bool Contains(string file);
+    public sealed virtual void SetAssemblyInfoFileName(string assemblyInfoFile);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Mappings.UniqueFilePathGenerator : object {
+    private HashSet`1<string> myFilePaths;
+    public string Generate(ITypeElement typeElement, string relativeFolderPath);
+    public string Generate(string relativeFilePath);
+    public string Generate(string suggestedFileName, string relativeFolderPath);
+    public bool Contains(string filePath);
+    public bool Delete(string filePath);
+}
+[SolutionComponentAttribute("10")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.PdbGenerationManager : AssemblyExportManagerBase {
+    public PdbGenerationManager(ISolution solution, ILogger logger, IPsiModules psiModules, ISymbolCache symbolCache, IShellLocks shellLocks, ILanguageManager languageManager, IGenerationManager generationManager, AssemblyToAssemblyReferencesResolveManager assemblyToAssemblyReferencesResolveManager, ISharedDecompilationCache sharedDecompilationCache, ProtectedAssemblies protectedAssemblies);
+    private IAssemblyExportParameters GetExportParameters(IAssemblyFile assemblyFile, FileSystemPath pdbPath, DebugInfo debugInfo);
+    private FileSystemPath GetFolderForSources(IAssemblyFile assemblyFile);
+    public int Add(IAssemblyFile assemblyFile, FileSystemPath pdbPath, DebugInfo debugInfo, FileSystemPath presentationPdbPath);
+    public int AddPdbGenerationItem(FileSystemPath presentationPdbPath, IAssemblyLocation presentationAssemblyLocation);
+    public void Update(int parametersIndex, IAssemblyFile assemblyFile, FileSystemPath pdbPath, DebugInfo debugInfo);
+    protected virtual ITypeFileMappings TryCreateTypeFileMappings(IAssemblyExportParameters assemblyExportParameters);
+}
+[SolutionComponentAttribute("10")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjectGenerationManager : AssemblyExportManagerBase {
+    private PdbCache myPdbCache;
+    public ProjectGenerationManager(ISolution solution, ILogger logger, IPsiModules psiModules, ISymbolCache symbolCache, PdbCache pdbCache, IShellLocks shellLocks, ILanguageManager languageManager, IGenerationManager generationManager, AssemblyToAssemblyReferencesResolveManager assemblyToAssemblyReferencesResolveManager, ISharedDecompilationCache sharedDecompilationCache, ProtectedAssemblies protectedAssemblies);
+    public int Add(IAssemblyExportParameters assemblyExportParameters);
+    protected virtual ITypeFileMappings TryCreateTypeFileMappings(IAssemblyExportParameters assemblyExportParameters);
+}
+[ExtensionAttribute]
+internal static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileGenerator : object {
+    private static string MsBuildToolsPathProperty;
+    private static string MsBuildBinPathProperty;
+    private static string GeneratorMsBuildCompile;
+    private static string OutputPathRelease;
+    private static string OutputPathDebug;
+    private static string CSharpTargets;
+    private static string ourCSharpTargetsPath;
+    private static string ourCSharpTargetsPathDotNet3;
+    private static string ourConfigurationReference;
+    private static string ourPlatformReference;
+    private static Version ourVersion35;
+    private static Version ourVersion40;
+    public static string BoundAssemblyComment;
+    private static ProjFileGenerator();
+    private static ProjectElement GenerateProjectElement(IProjFileProperties properties);
+    public static ProjFileRoot GenerateProjFileRoot(IProjFileProperties properties);
+    private static ProjFileElementAttribute ConditionEqAttribute(string stringA, string stringB);
+    private static PropertyGroupElement GenerateConfigurationPlatformPropertyGroup(string configuration, string platform, IProjFileProperties properties);
+    private static string GetPlatform(ProcessorArchitecture processorArchitecture);
+    private static string GetPlatform(IAssembly assembly);
+    private static TargetFrameworkId GetTargetFramework(IAssembly assembly);
+    private static Version GetToolsVersion(TargetFrameworkId targetFrameworkId);
+    private static string GetTargetFrameworkVersionString(TargetFrameworkId targetFrameworkId);
+    [CanBeNullAttribute]
+private static string GetApplicationVersion(IAssembly assembly);
+    private static string GetTargetFrameworkProfile(TargetFrameworkId targetFrameworkId);
+    public static string GuidValue(Guid guid);
+    private static string GetOutputType(IAssembly assembly);
+    private static Subsystem GetSubsystem(IAssemblyLocation assemblyLocation);
+    [ExtensionAttribute]
+private static void AddAssemblyInfo(PropertyGroupElement propertyGroup, IAssembly assembly, Guid projectGuid, TargetFrameworkId targetFrameworkId);
+    [ExtensionAttribute]
+private static void AddBoundAssemblyComment(ProjFileElement element, IAssembly assembly);
+    [ExtensionAttribute]
+private static void AddNonEmptyRootNamespace(PropertyGroupElement propertyGroup, INamespace rootNamespace);
+    [ExtensionAttribute]
+private static void AddReferences(ItemGroupElement itemGroup, IEnumerable`1<ProjFileReference> references);
+    [ExtensionAttribute]
+private static ItemGroupElement AddReferenceItemGroup(ProjectElement rootElement, IEnumerable`1<ProjFileReference> references);
+    [ExtensionAttribute]
+private static ItemGroupElement AddCompileItemGroup(ProjectElement rootElement, ITypeFileMappings sources);
+    private static string ExtractFileName(string fullName);
+    [ExtensionAttribute]
+private static ItemGroupElement AddPageItemGroup(ProjectElement rootElement, IEnumerable`1<string> xamlResources);
+    [ExtensionAttribute]
+private static ItemGroupElement AddItemGroup(ProjectElement rootElement, string itemsName, IEnumerable`1<string> itemIncludes, Action`1<ItemElement> itemMetadataAdder);
+    [ExtensionAttribute]
+private static ItemGroupElement AddNonEmptyItemGroup(ProjectElement rootElement, ItemGroupElement itemGroup);
+    [ExtensionAttribute]
+private static void AddItems(ItemGroupElement itemGroup, string itemsName, IEnumerable`1<string> itemIncludes, Action`1<ItemElement> itemMetadataAdder);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileAttributeUsageInfo : object {
+    public static string VariousNames;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Required>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AlternativeAttributeName>k__BackingField;
+    private Func`2<string, bool> myValueChecker;
+    public string Name { get; }
+    public bool Required { get; }
+    [CanBeNullAttribute]
+public string AlternativeAttributeName { get; }
+    public ProjFileAttributeUsageInfo(string name, Func`2<string, bool> valueChecker, bool required, string alternativeAttributeName);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    public bool CheckValue(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Required();
+    [CompilerGeneratedAttribute]
+public string get_AlternativeAttributeName();
+    public virtual string ToString();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileElementAttribute : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    private string myNameValue;
+    public string Name { get; }
+    public string Value { get; }
+    public ProjFileElementAttribute(string name, string value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    public virtual bool Equals(object obj);
+    public bool Equals(ProjFileElementAttribute other);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileElementConditionAttribute : ProjFileElementAttribute {
+    public ProjFileElementConditionAttribute(string condition);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileElementIncludeAttribute : ProjFileElementAttribute {
+    public ProjFileElementIncludeAttribute(string include);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileElementNameAttribute : ProjFileElementAttribute {
+    public ProjFileElementNameAttribute(string name);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.Attributes.ProjFileElementProjectAttribute : ProjFileElementAttribute {
+    public ProjFileElementProjectAttribute(string project);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ChooseElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ChooseElement();
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ImportElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ImportElement();
+    public ImportElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ImportGroupElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ImportGroupElement();
+    public ImportGroupElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public interface JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.IProjFileElementChild {
+    [CanBeNullAttribute]
+public ProjFileElement Parent { get; }
+    public abstract virtual ProjFileElement get_Parent();
+    public abstract virtual void Write(XmlWriter xmlWriter);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ItemDefinitionElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ItemDefinitionElement();
+    public ItemDefinitionElement(string name, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ItemDefinitionGroupElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ItemDefinitionGroupElement();
+    public ItemDefinitionGroupElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ItemElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    [CompilerGeneratedAttribute]
+private string <Include>k__BackingField;
+    public string Include { get; }
+    private static ItemElement();
+    public ItemElement(string name, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+    [CompilerGeneratedAttribute]
+public string get_Include();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ItemGroupElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ItemGroupElement();
+    public ItemGroupElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ItemMetadataElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ItemMetadataElement();
+    public ItemMetadataElement(string name, string value, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.OnErrorElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static OnErrorElement();
+    public OnErrorElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.OtherwiseElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static OtherwiseElement();
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.OtherXmlElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static OtherXmlElement();
+    public OtherXmlElement(string name, string value, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.OutputElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static OutputElement();
+    public OutputElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ParameterElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ParameterElement();
+    public ParameterElement(string name, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ParameterGroupElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ParameterGroupElement();
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjectElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ProjectElement();
+    public ProjectElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    protected virtual void WriteStartElement(XmlWriter xmlWriter);
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjectExtensionsElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    public ProjectExtensionsElement(string value);
+    private static ProjectExtensionsElement();
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjFileComment : object {
+    [CompilerGeneratedAttribute]
+private string <Comment>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProjFileElement <Parent>k__BackingField;
+    public string Comment { get; }
+    public ProjFileElement Parent { get; }
+    public ProjFileComment(string comment, ProjFileElement parent);
+    [CompilerGeneratedAttribute]
+public string get_Comment();
+    [CompilerGeneratedAttribute]
+public sealed virtual ProjFileElement get_Parent();
+    public sealed virtual void Write(XmlWriter xmlWriter);
+}
+public abstract class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjFileElement : object {
+    public static string NoValue;
+    private ProjFileElement myParent;
+    private ProjFileElementChildren myChildren;
+    private List`1<ProjFileElementAttribute> myAttributes;
+    private IEnumerable`1<ProjFileAttributeUsageInfo> myAttributeUsageInfos;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    public string Name { get; }
+    public string Value { get; }
+    public IEnumerable`1<ProjFileElementAttribute> Attributes { get; }
+    [CanBeNullAttribute]
+public ProjFileElement Parent { get; public set; }
+    public IEnumerable`1<ProjFileElement> ChildElements { get; }
+    public IEnumerable`1<ProjFileComment> ChildComments { get; }
+    protected ProjFileElement(string name, string value, ProjFileElementAttribute[] attributes);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    public IEnumerable`1<ProjFileElementAttribute> get_Attributes();
+    [CanBeNullAttribute]
+public string GetAttributeValue(string attributeName);
+    public sealed virtual ProjFileElement get_Parent();
+    public void set_Parent(ProjFileElement value);
+    public IEnumerable`1<ProjFileElement> get_ChildElements();
+    public IEnumerable`1<ProjFileComment> get_ChildComments();
+    public bool CheckParent(ProjFileElement testedElement);
+    public abstract virtual bool CheckChild(ProjFileElement testedElement);
+    public ProjFileElement AddChild(ProjFileElement child);
+    [CanBeNullAttribute]
+protected abstract virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+    [CanBeNullAttribute]
+public ProjFileElement TryAddChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+    public ProjFileComment AddChildComment(string comment);
+    protected abstract virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public sealed virtual void Write(XmlWriter xmlWriter);
+    protected virtual void WriteStartElement(XmlWriter xmlWriter);
+    protected virtual void WriteValue(XmlWriter xmlWriter);
+    protected virtual void WriteEndElement(XmlWriter xmlWriter);
+    protected virtual void WriteAttributes(XmlWriter xmlWriter);
+    protected virtual void WriteChildren(XmlWriter xmlWriter);
+    public bool HasChildElements();
+    public bool HasChildComments();
+    public IEnumerable`1<ProjFileElement> GetChildElements(string name);
+    private bool AddAttribute(ProjFileElementAttribute attribute);
+    private bool CheckAttribute(ProjFileElementAttribute attribute);
+    private bool CheckForRequiredAttributes();
+    private bool CheckForRequiredVarNameAttributes();
+    private bool VarNameAttributeExists();
+    [CanBeNullAttribute]
+private ProjFileAttributeUsageInfo GetAttributeUsageInfo(string attributeName);
+    private bool HasAttribute(string attributeName);
+    public IEnumerable`1<string> GetPossibleAttributeNames();
+    public IEnumerable`1<ProjFileAttributeUsageInfo> GetPossibleAttributeUsageInfos();
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+private bool <CheckForRequiredAttributes>b__40_1(ProjFileAttributeUsageInfo attributeUsageInfo);
+    [CompilerGeneratedAttribute]
+private bool <CheckForRequiredVarNameAttributes>b__41_1(ProjFileAttributeUsageInfo attributeUsageInfo);
+    [CompilerGeneratedAttribute]
+private bool <VarNameAttributeExists>b__42_0(ProjFileElementAttribute attribute);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjFileElementChildren : object {
+    private List`1<IProjFileElementChild> myChildren;
+    private int myElementCount;
+    private int myCommentCount;
+    public IEnumerable`1<ProjFileElement> Elements { get; }
+    public IEnumerable`1<ProjFileComment> Comments { get; }
+    public IEnumerable`1<IProjFileElementChild> ElementsAndComments { get; }
+    public void AddElement(ProjFileElement element);
+    public void AddComment(ProjFileComment comment);
+    public IEnumerable`1<ProjFileElement> get_Elements();
+    public IEnumerable`1<ProjFileComment> get_Comments();
+    public IEnumerable`1<IProjFileElementChild> get_ElementsAndComments();
+    public bool HasChildElements();
+    public bool HasChildComments();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.ProjFileRoot : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static ProjFileRoot();
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+    protected virtual void WriteStartElement(XmlWriter xmlWriter);
+    protected virtual void WriteEndElement(XmlWriter xmlWriter);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.PropertyElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static PropertyElement();
+    public PropertyElement(string name, string value, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.PropertyGroupElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static PropertyGroupElement();
+    public PropertyGroupElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.TargetElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static TargetElement();
+    public TargetElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.TaskBodyElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static TaskBodyElement();
+    public TaskBodyElement(string value, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.TaskElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static TaskElement();
+    public TaskElement(string name, ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.UsingTaskElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static UsingTaskElement();
+    public UsingTaskElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ElementNodes.WhenElement : ProjFileElement {
+    private static List`1<ProjFileAttributeUsageInfo> ourAttributeUsageInfos;
+    private static WhenElement();
+    public WhenElement(ProjFileElementAttribute[] attributes);
+    protected virtual IEnumerable`1<ProjFileAttributeUsageInfo> GetAttributeUsageInfos();
+    public virtual bool CheckChild(ProjFileElement testedElement);
+    protected virtual ProjFileElement CreateChild(string childName, string childValue, ProjFileElementAttribute[] childAttributes);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.FolderElement : object {
+    [CompilerGeneratedAttribute]
+private VirtualFileSystemPath <Path>k__BackingField;
+    private List`1<FolderElement> myChildFolders;
+    private List`1<LinkedItemElement> myChildItems;
+    [CompilerGeneratedAttribute]
+private FolderElement <Parent>k__BackingField;
+    public VirtualFileSystemPath Path { get; }
+    public IEnumerable`1<LinkedItemElement> ChildItems { get; }
+    public IEnumerable`1<FolderElement> ChildFolders { get; }
+    [CanBeNullAttribute]
+public FolderElement Parent { get; }
+    public FolderElement(VirtualFileSystemPath path, FolderElement parent);
+    [CompilerGeneratedAttribute]
+public VirtualFileSystemPath get_Path();
+    public IEnumerable`1<LinkedItemElement> get_ChildItems();
+    public IEnumerable`1<FolderElement> get_ChildFolders();
+    private void AddChildFolder(FolderElement child);
+    public void AddChildItem(LinkedItemElement linkedItem);
+    [CompilerGeneratedAttribute]
+public FolderElement get_Parent();
+    public virtual string ToString();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.LinkedItemElement : object {
+    [CompilerGeneratedAttribute]
+private ItemElement <Item>k__BackingField;
+    [CompilerGeneratedAttribute]
+private VirtualFileSystemPath <Path>k__BackingField;
+    public ItemElement Item { get; }
+    public VirtualFileSystemPath Path { get; }
+    public LinkedItemElement(ItemElement item, VirtualFileSystemPath path);
+    [CompilerGeneratedAttribute]
+public ItemElement get_Item();
+    [CompilerGeneratedAttribute]
+public VirtualFileSystemPath get_Path();
+    public virtual string ToString();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ProjFile : object {
+    private IPsiModules myPsiModules;
+    private ISymbolCache mySymbolCache;
+    private PdbCache myPdbCacheManager;
+    private bool myAllreadyTriedGetTypeFileMappings;
+    private ITypeFileMappings myTypeFileMappings;
+    private ProjFileRoot myProjFileRoot;
+    private VirtualFileSystemPath myRootFolder;
+    private Dictionary`2<string, FolderElement> myFolderTreeNodes;
+    [CompilerGeneratedAttribute]
+private FolderElement <RootFolderElement>k__BackingField;
+    [CompilerGeneratedAttribute]
+private VirtualFileSystemPath <Path>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IAssembly <Assembly>k__BackingField;
+    private List`1<LinkedItemElement> myLinkedItems;
+    private List`1<PropertyElement> myProperties;
+    private Dictionary`2<string, List`1<PropertyElement>> myPropertiesDictionary;
+    private List`1<ItemElement> myReferences;
+    [CompilerGeneratedAttribute]
+private string <DefaultNamespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DefaultNamespaceFolderName>k__BackingField;
+    [NotNullAttribute]
+public FolderElement RootFolderElement { get; }
+    public VirtualFileSystemPath Path { get; }
+    [CanBeNullAttribute]
+public IAssembly Assembly { get; }
+    [NotNullAttribute]
+public IEnumerable`1<LinkedItemElement> LinkedItems { get; }
+    [NotNullAttribute]
+public IEnumerable`1<PropertyElement> Properties { get; }
+    public string DefaultNamespace { get; private set; }
+    public string DefaultNamespaceFolderName { get; private set; }
+    public IEnumerable`1<ItemElement> References { get; }
+    [CanBeNullAttribute]
+public ProjectElement GetProjectElement { get; }
+    private ProjFile(VirtualFileSystemPath projFilePath, ProjFileRoot projFileRoot, IAssembly assembly, ITypeFileMappings typeFileMappings, IPsiModules psiModules, ISymbolCache symbolCache, PdbCache pdbCacheManager);
+    [CompilerGeneratedAttribute]
+public FolderElement get_RootFolderElement();
+    [CompilerGeneratedAttribute]
+public sealed virtual VirtualFileSystemPath get_Path();
+    [CompilerGeneratedAttribute]
+public IAssembly get_Assembly();
+    public IEnumerable`1<LinkedItemElement> get_LinkedItems();
+    public IEnumerable`1<PropertyElement> get_Properties();
+    [CanBeNullAttribute]
+public IEnumerable`1<PropertyElement> GetPropertyElements(string propertyName);
+    [CanBeNullAttribute]
+public string TryGetPropertyValue(string propertyName);
+    [CompilerGeneratedAttribute]
+public string get_DefaultNamespace();
+    [CompilerGeneratedAttribute]
+private void set_DefaultNamespace(string value);
+    [CompilerGeneratedAttribute]
+public string get_DefaultNamespaceFolderName();
+    [CompilerGeneratedAttribute]
+private void set_DefaultNamespaceFolderName(string value);
+    public IEnumerable`1<ItemElement> get_References();
+    public ProjectElement get_GetProjectElement();
+    [CanBeNullAttribute]
+public string TryGetFile(ITypeElement type);
+    [CanBeNullAttribute]
+public VirtualFileSystemPath GetFolder(INamespace ns);
+    public string GetRelativePath(VirtualFileSystemPath path);
+    private string GetKeyFromPath(VirtualFileSystemPath path);
+    [CanBeNullAttribute]
+private ITypeFileMappings TryGetTypeFileMappings();
+    private IEnumerable`1<string> GetXamlFiles();
+    public static ProjFile Create(VirtualFileSystemPath projFilePath, IAssembly assembly, IPsiModules psiModules, ISymbolCache symbolCache, PdbCache pdbCacheManager);
+    public static ProjFile CreateAndSave(VirtualFileSystemPath projFilePath, IProjFileProperties properties);
+    private void Save();
+    private VirtualFileSystemPath GetItemPath(ItemElement item);
+    private List`1<LinkedItemElement> CreateLinkedItemsList();
+    private void CollectProperties();
+    private List`1<ItemElement> CreateReferencesList();
+    private static void DoForAllElementsInTree(ProjFileElement rootElement, Action`1<ProjFileElement> action);
+    private FolderElement CreateFolderTree();
+    private void AddLinkedItem(LinkedItemElement linkedItem);
+    private FolderElement GetOrCreateFolderElement(VirtualFileSystemPath folderPath);
+    public bool Equals(ProjFile other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    [CompilerGeneratedAttribute]
+private void <CollectProperties>b__51_0(ProjFileElement element);
+}
+[ExtensionAttribute]
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ProjFileExtensions : object {
+    [ExtensionAttribute]
+public static Guid GetProjectGuid(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetAssemblyName(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetDefaultPlatform(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetDefaultConfiguration(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetToolsVersion(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetTargetFrameworkVersion(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetTargetFrameworkProfile(ProjFile projFile);
+    [ExtensionAttribute]
+public static string GetOutputType(ProjFile projFile);
+    [ExtensionAttribute]
+public static VirtualFileSystemPath GetPath(ProjFile projFile, string relativePath);
+    [ExtensionAttribute]
+public static VirtualFileSystemPath GetPath(ProjFile projFile, ITypeElement typeElement);
+}
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileModel.ProjFileUtil : object {
+    public static string ConfigurationAllConfigurations;
+    public static string ConfigurationDebug;
+    public static string ConfigurationRelease;
+    public static string DebugTypeFull;
+    public static string DebugTypeNone;
+    public static string DebugTypePdbonly;
+    public static string DefineConstantDebug;
+    public static string DefineConstantTrace;
+    public static string ErrorReportPrompt;
+    public static string PlatformAnyCpu;
+    public static string PlatformArm;
+    public static string PlatformAnyCpu32BitPreferred;
+    public static string PlatformItanium;
+    public static string PlatformWin32;
+    public static string PlatformX64;
+    public static string PlatformX86;
+    public static string TargetBuild;
+    public static string ValueTrue;
+    public static string ValueFalse;
+    public static string ValueDelimeter;
+    public static string VerticalBarSymbol;
+    public static string DefaultWarningLevel;
+    public static string DefaultFileAlignment;
+    public static string DefaultToolsVersion;
+    public static string DefaultTargetFrameworkVersion;
+    public static string TargetFrameworkVersion45;
+    public static string TargetFrameworkVersion46;
+    public static string MetadataReference(string metadataName);
+    public static string PropertyReference(string propertyName);
+    public static string ItemListReference(string itemName);
+    public static string CombineValues(string valueA, string valueB);
+    public static string ConditionString(string parameter, string value, string comparisonSymbol);
+    public static string ConditionEqString(string parameter, string value);
+}
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileReader : object {
+    [CanBeNullAttribute]
+public static ProjFileRoot ReadFromFile(VirtualFileSystemPath projFilePath);
+    [CanBeNullAttribute]
+public static FileSystemPath TryReadBoundAssemblyPath(VirtualFileSystemPath projFilePath);
+    [CanBeNullAttribute]
+public static ProjFileRoot ImportFromXmlDocument(XmlDocument document);
+    private static void AddChildren(ProjFileElement element, XmlNode xmlElement);
+    private static void TryAddChildElement(ProjFileElement element, XmlElement childXmlElement);
+    private static void TryAddChildComment(ProjFileElement element, XmlComment childXmlComment);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProjFileReference : object {
+    [CompilerGeneratedAttribute]
+private string <Reference>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <HintPath>k__BackingField;
+    [NotNullAttribute]
+public string Reference { get; }
+    [CanBeNullAttribute]
+public string HintPath { get; }
+    public ProjFileReference(string reference, string hintPath);
+    [CompilerGeneratedAttribute]
+public string get_Reference();
+    [CompilerGeneratedAttribute]
+public string get_HintPath();
+}
+public interface JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Properties.IProjFileProperties {
+    public Guid ProjectGuid { get; }
+    public IAssembly Assembly { get; }
+    public ITypeFileMappings Sources { get; }
+    public IEnumerable`1<ProjFileReference> References { get; }
+    public IEnumerable`1<string> Resources { get; }
+    public IEnumerable`1<string> EmbeddedResources { get; }
+    public IEnumerable`1<string> XamlResources { get; }
+    public bool AllowUnsafeBlocks { get; }
+    public bool WriteBoundAssemblyComment { get; }
+    public abstract virtual Guid get_ProjectGuid();
+    public abstract virtual IAssembly get_Assembly();
+    public abstract virtual ITypeFileMappings get_Sources();
+    public abstract virtual IEnumerable`1<ProjFileReference> get_References();
+    public abstract virtual IEnumerable`1<string> get_Resources();
+    public abstract virtual IEnumerable`1<string> get_EmbeddedResources();
+    public abstract virtual IEnumerable`1<string> get_XamlResources();
+    public abstract virtual bool get_AllowUnsafeBlocks();
+    public abstract virtual bool get_WriteBoundAssemblyComment();
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.Properties.ProjFileProperties : object {
+    [CompilerGeneratedAttribute]
+private Guid <ProjectGuid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IAssembly <Assembly>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITypeFileMappings <Sources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<ProjFileReference> <References>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <Resources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <EmbeddedResources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <XamlResources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowUnsafeBlocks>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <WriteBoundAssemblyComment>k__BackingField;
+    public Guid ProjectGuid { get; }
+    public IAssembly Assembly { get; }
+    public ITypeFileMappings Sources { get; }
+    public IEnumerable`1<ProjFileReference> References { get; }
+    public IEnumerable`1<string> Resources { get; }
+    public IEnumerable`1<string> EmbeddedResources { get; }
+    public IEnumerable`1<string> XamlResources { get; }
+    public bool AllowUnsafeBlocks { get; }
+    public bool WriteBoundAssemblyComment { get; }
+    public ProjFileProperties(Guid projectGuid, IAssembly assembly, ITypeFileMappings sources, IEnumerable`1<ProjFileReference> references, IEnumerable`1<string> resources, IEnumerable`1<string> embeddedResources, IEnumerable`1<string> xamlResources, bool allowUnsafeBlocks, bool writeBoundAssemblyComment);
+    [CompilerGeneratedAttribute]
+public sealed virtual Guid get_ProjectGuid();
+    [CompilerGeneratedAttribute]
+public sealed virtual IAssembly get_Assembly();
+    [CompilerGeneratedAttribute]
+public sealed virtual ITypeFileMappings get_Sources();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<ProjFileReference> get_References();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<string> get_Resources();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<string> get_EmbeddedResources();
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<string> get_XamlResources();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_AllowUnsafeBlocks();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_WriteBoundAssemblyComment();
+}
+[SolutionComponentAttribute("16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ProtectedAssemblies : object {
+    public bool IsAllowedToDisassemble(IAssemblyLocation assemblyLocation);
+    private static bool IsProtectedFromDisassembly(IAssemblyLocation assemblyLocation);
+    protected virtual bool DecompileProtectedAssemblies();
+}
+public enum JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ResourceUtils.ResType : Enum {
+    public int value__;
+    public static ResType Undefined;
+    public static ResType ResX;
+    public static ResType Xaml;
+}
+internal static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.ResourceUtils.XamlUtil : object {
+    public static void ConvertToXaml(Stream bamlStream, FileSystemPath xamlFilePath, IAssemblyLocation assemblyLocation, AssemblyToAssemblyReferencesResolveManager resolveManager);
+}
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.SolutionFileGenerator : object {
+    private static string SolutionFileFormatVersion;
+    private static string VisualStudioName;
+    private static string Indent;
+    private static string PlatformAnyCPU;
+    private static string ActiveCfg;
+    private static string Build0;
+    private static string ProjectStartTag;
+    private static string ProjectEndTag;
+    private static string GlobalStartTag;
+    private static string GlobalEndTag;
+    private static string GlobalSectionStartTag;
+    private static string GlobalSectionEndTag;
+    private static string SolutionConfigurationPlatformsParameter;
+    private static string ProjectConfigurationPlatformsParameter;
+    private static string SolutionPropertiesParameter;
+    private static string NestedProjectsParameter;
+    private static string PreSolutionValue;
+    private static string PostSolutionValue;
+    private static string HideSolutionNodeFalse;
+    public static void SaveSolutionFile(VirtualFileSystemPath solutionFilePath, ProjFile projFile);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.SolutionFileGenerator/<GenerateSolutionFileFormatBlock>d__20")]
+private static IEnumerable`1<string> GenerateSolutionFileFormatBlock(ProjFile projFile);
+    private static List`1<string> GenerateConfigurationPlatformPairs(ProjFile projFile);
+    private static IEnumerable`1<string> GenerateSolutionConfigurationPlatformsInnerLines(IEnumerable`1<string> configurationPlatformPairs);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.SolutionFileGenerator/<GenerateProjectConfigurationPlatformsInnerLines>d__23")]
+private static IEnumerable`1<string> GenerateProjectConfigurationPlatformsInnerLines(ProjFile projFile, IEnumerable`1<string> configurationPlatformPairs);
+    private static void WriteLines(StreamWriter writer, IEnumerable`1<string> lines);
+    private static IEnumerable`1<string> GenerateBlock(string startTag, string endTag, string indent, string parameter, string value, IEnumerable`1<string> innerLines);
+    private static string Quotes(string s);
+    private static IEnumerable`1<string> GenerateProjectInfoBlock(ProjFile projFile, VirtualFileSystemPath solutionFilePath);
+    private static string GetProjectRelativePath(VirtualFileSystemPath projFilePath, VirtualFileSystemPath solutionFilePath);
+}
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.AssemblyExport.TypesAnalyzer : object {
+    private bool myIncludeCompilerGeneratedTypes;
+    private static int ourMaxTypesCountOutsideDefaultNamespace;
+    private ISymbolScope mySymbolScope;
+    private List`1<ITypeElement> myFilteredTypeElements;
+    private int myDefaultNamespaceTypesCount;
+    [CompilerGeneratedAttribute]
+private INamespace <DefaultNamespace>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <TypesCount>k__BackingField;
+    [CanBeNullAttribute]
+public INamespace DefaultNamespace { get; private set; }
+    public int TypesCount { get; }
+    public IEnumerable`1<ITypeElement> Types { get; }
+    public TypesAnalyzer(IAssemblyFile assemblyFile, IPsiModules psiModules, ISymbolCache symbolCache, bool includeCompilerGeneratedTypes);
+    private static TypesAnalyzer();
+    [CompilerGeneratedAttribute]
+public INamespace get_DefaultNamespace();
+    [CompilerGeneratedAttribute]
+private void set_DefaultNamespace(INamespace value);
+    [CompilerGeneratedAttribute]
+public int get_TypesCount();
+    public IEnumerable`1<ITypeElement> get_Types();
+    [CanBeNullAttribute]
+private static ISymbolScope TryGetSymbolScope(IAssemblyFile assemblyFile, IPsiModules psiModules, ISymbolCache symbolsCache);
+    private bool Filter(ITypeElement typeElement);
+    private IEnumerable`1<ITypeElement> GetFilteredNestedTypeElements(INamespace ns);
+    private int GetInnerTypesCount(INamespace ns);
+    private int CollectNestedTypes(INamespace ns);
+    private void CheckDefaultNamespace(INamespace ns, int innerTypesCount);
+}
+[LanguageAttribute("JetBrains.ReSharper.Psi.CSharp.CSharpLanguage", "16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.MetadataTranslator.CSharpMetadataTranslator : object {
+    public static string ImportStart;
+    public static string ImportEnd;
+    private Lifetime myLifetime;
+    public bool IsAvailable { get; }
+    public bool IsMethodBodiesDecompilationSupported { get; }
+    public CSharpMetadataTranslator(Lifetime lifetime);
+    public sealed virtual bool get_IsAvailable();
+    public sealed virtual bool get_IsMethodBodiesDecompilationSupported();
+    private void AppendLine(StringBuilder stringBuilder, string text);
+    private void AppendLine(StringBuilder stringBuilder);
+    private ValueTuple`2<StringBuilder, int> WriteHeader(ITypeElement element, IAssemblyPsiModule assemblyPsiModule, IMetadataTypeInfo typeInfo, MetadataTranslatorOptions options, IMetadataLocalVariablesNameProvider metadataLocalVariablesNameProvider);
+    public sealed virtual string TranslateTopLevelTypeElement(ITypeElement element, IAssemblyPsiModule assemblyPsiModule, MetadataTranslatorOptions options, IMetadataLocalVariablesNameProvider metadataLocalVariablesNameProvider, Boolean& containsUnsafeCode, IProgressIndicator indicator, DebugData debugData, int documentIndex);
+    public sealed virtual string TranslateTopLevelTypeElementByDecompiler(IMetadataTypeInfo typeInfo, IAssemblyPsiModule context, MetadataTranslatorOptions options, IMetadataLocalVariablesNameProvider metadataLocalVariablesNameProvider, IProgressIndicator indicator, DebugData debugData, int documentIndex);
+    public sealed virtual string TranslateAssemblyInfo(IAssemblyPsiModule context, MetadataTranslatorOptions options);
+    public sealed virtual string TranslateAssemblyInfo(IMetadataAssembly assembly, MetadataTranslatorOptions options);
+    private string TranslateAssemblyInfo(Lifetime lifetime, IMetadataAssembly assembly, MetadataTranslatorOptions options, bool projectionIsUsed);
+    private static string TranslateByMetadataView(ITypeElement typeElement, IAssemblyPsiModule assemblyPsiModule, MetadataTranslatorOptions options);
+    private static string GetNamespace(ITypeElement typeElement);
+    [CanBeNullAttribute]
+private IMetadataAssembly LoadMetadataAssembly(Lifetime lifetime, IAssemblyPsiModule assemblyPsiModule);
+    [CanBeNullAttribute]
+private string TranslateByDecompiler(ITypeElement typeElement, IAssemblyPsiModule assemblyPsiModule, MetadataTranslatorOptions options, IMetadataLocalVariablesNameProvider metadataLocalVariablesNameProvider, Boolean& containsUnsafeCode, IProgressIndicator indicator, DebugData debugData, int documentIndex, int startLinesCount);
+    [CanBeNullAttribute]
+private string TranslateTopLevelTypeElementByDecompiler(IMetadataTypeInfo typeInfo, Lifetime lifetime, IAssemblyPsiModule assemblyPsiModule, MetadataTranslatorOptions options, IMetadataLocalVariablesNameProvider metadataLocalVariablesNameProvider, Boolean& containsUnsafeCode, IProgressIndicator indicator, DebugData debugData, int documentIndex, int startLinesCount);
+}
+internal class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.MetadataTranslator.CSharpMetadataTranslatorInstance : MetadataTranslatorInstanceBase {
+    private static Dictionary`2<string, string> ourBinaryOperatorsMap;
+    private static Dictionary`2<string, string> ourUnaryOperatorsMap;
+    private LanguageService myLanguageService;
+    private MetadataTranslatorOptions myOptions;
+    private IPsiModule myContext;
+    private ITextAndDebugDataWriter myWriter;
+    private bool myIsProjectionUsed;
+    private bool myNullableEnabled;
+    private bool mySkipNullableAnnotations;
+    public CSharpMetadataTranslatorInstance(ITextAndDebugDataWriter writer, MetadataTranslatorOptions options, IPsiModule context);
+    private static CSharpMetadataTranslatorInstance();
+    private void RenderXmlDoc(IDeclaredElement declaredElement);
+    protected virtual void RenderType(ITypeElement typeElement);
+    private bool HasExplicitImplementationOfVisibleInterface(ITypeMember typeMember);
+    protected virtual IDisposable WithNamespace(INamespace ns);
+    private IDisposable WithBraces();
+    protected virtual bool ShouldRenderTypeMember(IDeclaredElement typeMember);
+    private void RenderDelegate(IDelegate delegate);
+    private static bool ShouldRenderMethod(IMethod method, RecordMembers recordMembers);
+    private int RenderTypeMembers(ITypeElement typeElement, RecordMembers recordMembers);
+    private void RenderConversionOperator(IConversionOperator conversionOperator);
+    private void RenderDestructor(IMethod method);
+    private void RenderMethod(IFunction method);
+    private void RenderReturnType(IParametersOwner method);
+    private void RenderReturnKind(ReferenceKind returnKind);
+    [CanBeNullAttribute]
+private static string GetOperatorSign(ISignOperator signOperator);
+    private void RenderSignOperator(ISignOperator signOperator);
+    private void RenderParameters(IList`1<IParameter> parameters, Boolean& onSingleLine);
+    private void RenderParameterKindTypeName(ITextAndDebugDataWriter writer, IParameter parameter);
+    private static void RenderParameterKind(ITextAndDebugDataWriter writer, ParameterKind parameterKind);
+    private void RenderParameter(IParameter parameter);
+    private void RenderDefaultValue(DefaultValue value);
+    private static string GetAccessorName(IAccessor accessor);
+    private void RenderAccessor(IAccessor accessor);
+    private void RenderProperty(IProperty property);
+    private void RenderEvent(IEvent event);
+    private bool RenderFixedBufferFieldPart(IField field);
+    private void RenderField(IField field);
+    private void RenderConstantValue(ConstantValue constantValue, IField field);
+    private void RenderFloatConstantValue(ConstantValue constantValue, IField field);
+    private void RenderDoubleConstantValue(ConstantValue constantValue, IField field);
+    private void RenderTypeRef(IType type, bool skipNullableAnnotation, bool isAttribute);
+    private void RenderTypeRef(ITextAndDebugDataWriter writer, IType type, bool skipFirstNullableAnnotation, bool isAttribute);
+    private void RenderAttributeTypeRef(IType type);
+    private void RenderModifiers(IModifiersOwner owner, bool isExplicitImplementation);
+    private static bool IsReadOnly(IModifiersOwner owner);
+    private static bool IsExplicitImplementation(IOverridableMember overridableMember);
+    private void RenderInterfaceQualification(IOverridableMember overridableMember);
+    private void RenderNewModifierIfNeeded(ITypeMember typeMember);
+    private void RenderAccessRights(IAccessRightsOwner accessRightsOwner);
+    private void RenderAttributes(IAttributesSet attributesSet, AttributesPlacement attributesPlacement, string target);
+    private void RenderAttributeTarget(string target);
+    private void RenderAttribute(IAttributeInstance attr);
+    private void RenderAttributeValue(AttributeValue value);
+    private void RenderClassLike(string classLikeType, ITypeElement typeElement);
+    private void RenderClassLikeKind(string kind, bool isRecord);
+    private void RenderInheritors(ITypeElement typeElement, bool isRecord, Boolean& multiline);
+    private void RenderTypeConstraints(ITypeParametersOwner typeParametersOwner, Boolean& multilineHeader);
+    private void RenderTypeParameters(ITypeParametersOwner typeParametersOwner);
+    private void RenderEnumConstantValue(ConstantValue target);
+    private void RenderFlagsEnum(IEnum enum);
+    private static ConstantValue EnumBitwiseOr(IEnum csEnum, CSharpConstantCalculator calculator, ConstantValue left, ConstantValue right);
+    private static ConstantValue EnumBitwiseAnd(IEnum csEnum, CSharpConstantCalculator calculator, ConstantValue left, ConstantValue right);
+    private static bool CheckEnumFlags(ConstantValue targetValue, IEnum enum, ICollection`1<ConstantValue> values);
+    private void RenderOrdinalEnum(IEnum enum);
+    private void RenderPointerTypeRef(ITextAndDebugDataWriter writer, IPointerType pointerType, bool skipFirstNullableAnnotation);
+    private void RenderFunctionPointerTypeRef(ITextAndDebugDataWriter writer, IFunctionPointerType functionPointerType, bool skipFirstNullableAnnotation);
+    private void RenderArrayTypeRef(ITextAndDebugDataWriter writer, IArrayType arrayType);
+    private void RenderDeclaredTypeRef(ITextAndDebugDataWriter writer, IDeclaredType declaredType, bool isAttribute);
+    private void RenderTypeArgumentList(ITextAndDebugDataWriter writer, ITypeElement element, ISubstitution substitution);
+    private bool ShouldAddNullableAnnotation(IType type);
+    private IDisposable SkipNullableAnnotations();
+    protected virtual void SetTopLevelNullableAnnotationContext(ITypeElement topLevelType);
+    private static bool HasAnyNullableAnnotation(ITypeElement typeElement);
+    private static bool HasAnyNullableAnnotation(IFunction function);
+    private static bool HasNullableAttributeOnTypeParameter(ITypeParametersOwner typeParametersOwner);
+    private static bool HasNullableContextAttribute(IAttributesSet attributesOwner);
+    private static bool HasNullableAttribute(IAttributesSet attributesOwner);
+    private void SetNullableAnnotationContext(bool nullableEnabled, bool forceWriteDirective);
+    private IDisposable WithNullableAnnotationIfNeeded(ICodeTextWriter writer, IType type, bool skipNullableAnnotation);
+    private void RenderMethodTokenIfNeeded(IFunction method, bool inline);
+    private void RenderTokenIfNeeded(IMetadataTokenOwner tokenOwner, string name, string memberType, bool inline);
+    [CompilerGeneratedAttribute]
+private void <RenderTypeConstraints>b__56_0();
+    [CompilerGeneratedAttribute]
+private void <RenderTypeConstraints>b__56_2();
+    [CompilerGeneratedAttribute]
+private void <RenderTypeConstraints>b__56_3();
+    [CompilerGeneratedAttribute]
+private void <RenderTypeConstraints>b__56_4();
+    [CompilerGeneratedAttribute]
+private void <RenderTypeConstraints>b__56_5();
+    [CompilerGeneratedAttribute]
+private void <RenderTypeParameters>b__57_0(ITypeParameter p, ITextAndDebugDataWriter writer);
+    [CompilerGeneratedAttribute]
+internal static void <RenderFunctionPointerTypeRef>g__AppendCallingConventions|65_0(CallingConvention callingConvention, <>c__DisplayClass65_0& );
+    [CompilerGeneratedAttribute]
+private void <RenderDeclaredTypeRef>b__67_0(TupleTypeComponent component, ITextAndDebugDataWriter w);
+    [CompilerGeneratedAttribute]
+private void <RenderDeclaredTypeRef>b__67_1(IType t, ITextAndDebugDataWriter w);
+    [CompilerGeneratedAttribute]
+private void <SkipNullableAnnotations>b__70_0();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.MetadataTranslator.CSharpTranslatorLanguageWithPriority : object {
+    public PsiLanguageType Language { get; }
+    public int Priority { get; }
+    public sealed virtual PsiLanguageType get_Language();
+    public sealed virtual int get_Priority();
+}
+internal class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.MetadataTranslator.RecordMembers : object {
+    [CompilerGeneratedAttribute]
+private IConstructor <PrimaryConstructor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IConstructor <CopyConstructor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <Deconstructor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <Clone>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <PrintMembers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <ObjectToString>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <ObjectGetHashCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <ObjectEquals>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMethod <TypedEquals>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IOperator <OpEquality>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IOperator <OpInequality>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, IProperty> <Properties>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IProperty <EqualityContract>k__BackingField;
+    [CanBeNullAttribute]
+public IConstructor PrimaryConstructor { get; public set; }
+    [CanBeNullAttribute]
+public IConstructor CopyConstructor { get; public set; }
+    [CanBeNullAttribute]
+public IMethod Deconstructor { get; public set; }
+    [CanBeNullAttribute]
+public IMethod Clone { get; public set; }
+    [CanBeNullAttribute]
+public IMethod PrintMembers { get; public set; }
+    [CanBeNullAttribute]
+public IMethod ObjectToString { get; public set; }
+    [CanBeNullAttribute]
+public IMethod ObjectGetHashCode { get; public set; }
+    [CanBeNullAttribute]
+public IMethod ObjectEquals { get; public set; }
+    [CanBeNullAttribute]
+public IMethod TypedEquals { get; public set; }
+    [CanBeNullAttribute]
+public IOperator OpEquality { get; public set; }
+    [CanBeNullAttribute]
+public IOperator OpInequality { get; public set; }
+    [CanBeNullAttribute]
+public Dictionary`2<string, IProperty> Properties { get; public set; }
+    [CanBeNullAttribute]
+public IProperty EqualityContract { get; public set; }
+    [CompilerGeneratedAttribute]
+public IConstructor get_PrimaryConstructor();
+    [CompilerGeneratedAttribute]
+public void set_PrimaryConstructor(IConstructor value);
+    [CompilerGeneratedAttribute]
+public IConstructor get_CopyConstructor();
+    [CompilerGeneratedAttribute]
+public void set_CopyConstructor(IConstructor value);
+    [CompilerGeneratedAttribute]
+public IMethod get_Deconstructor();
+    [CompilerGeneratedAttribute]
+public void set_Deconstructor(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_Clone();
+    [CompilerGeneratedAttribute]
+public void set_Clone(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_PrintMembers();
+    [CompilerGeneratedAttribute]
+public void set_PrintMembers(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_ObjectToString();
+    [CompilerGeneratedAttribute]
+public void set_ObjectToString(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_ObjectGetHashCode();
+    [CompilerGeneratedAttribute]
+public void set_ObjectGetHashCode(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_ObjectEquals();
+    [CompilerGeneratedAttribute]
+public void set_ObjectEquals(IMethod value);
+    [CompilerGeneratedAttribute]
+public IMethod get_TypedEquals();
+    [CompilerGeneratedAttribute]
+public void set_TypedEquals(IMethod value);
+    [CompilerGeneratedAttribute]
+public IOperator get_OpEquality();
+    [CompilerGeneratedAttribute]
+public void set_OpEquality(IOperator value);
+    [CompilerGeneratedAttribute]
+public IOperator get_OpInequality();
+    [CompilerGeneratedAttribute]
+public void set_OpInequality(IOperator value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, IProperty> get_Properties();
+    [CompilerGeneratedAttribute]
+public void set_Properties(Dictionary`2<string, IProperty> value);
+    [CompilerGeneratedAttribute]
+public IProperty get_EqualityContract();
+    [CompilerGeneratedAttribute]
+public void set_EqualityContract(IProperty value);
+    public bool Contains(IConstructor constructor);
+    public bool Contains(IMethod method);
+    public bool Contains(IOperator op);
+    public bool Contains(IProperty property);
+    [CanBeNullAttribute]
+public static RecordMembers GetRecordMembers(ITypeElement type);
+    private void FindPrimaryConstructor(List`1<IConstructor> constructors, List`1<IMethod> cgDeconstructors, List`1<IProperty> cgProperties);
+    private static bool ImplementsIEquatable(ITypeElement type);
+    private static bool HasSignature(IMethod method, string returnTypeFqn, string parameterFqn);
+    private static bool HasSignature(IFunction function, string returnTypeFqn, string parameterFqn);
+    private static bool HasSignature(IMethod method, string returnTypeFqn);
+    private static bool HasOperatorSignature(IOperator op, string recordFqn);
+    private static bool HasDeconstructSignature(IMethod method);
+    private static bool HasFqn(IType type, string fqn);
+}
+[ShellFeaturePartAttribute("16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Navigation.ExternalSourcesOverloadsContextSearch : object {
+    public sealed virtual IEnumerable`1<DocumentRange> GetOverloadRanges(IDataContext dataContext);
+    public sealed virtual bool IsAvailable(IDataContext dataContext);
+    [IteratorStateMachineAttribute("JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Navigation.ExternalSourcesOverloadsContextSearch/<GetOverloadsRanges>d__2")]
+private static IEnumerable`1<DocumentRange> GetOverloadsRanges(IDataContext dataContext);
+    public sealed virtual bool IsContextApplicable(IDataContext dataContext);
+}
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings : object {
+    private static ILogger ourLog;
+    private static Lazy`1<JetResourceManager> ourResourceManager;
+    [EditorBrowsableAttribute("2")]
+public static JetResourceManager ResourceManager { get; }
+    public static string GeneratingPDBs_Text { get; }
+    public static string SymbolServerAssemblyFilterSettingDescription { get; }
+    public static string SymbolServerFirstStartSettingDescription { get; }
+    public static string SymbolServerOptionsSettingDescription { get; }
+    public static string SymbolServerPortSettingDescription { get; }
+    public static string SymbolServerRunningStateSettingDescription { get; }
+    public static string Decompiling__Text { get; }
+    public static string DecompilingSourcesAndResources_Text { get; }
+    public static string DecompilingSourcesAndResourcesToTemp_Text { get; }
+    public static string AssemblyInfo_Text { get; }
+    public static string PdbFileIsCopiedFromTheCacheSignature__Text { get; }
+    public static string PdbFileIsInTheCacheSignature__Text { get; }
+    public static string PdbFileIsInTheCache_Text { get; }
+    public static string CantGeneratePdbForOutputAssembly_Text { get; }
+    public static string PdbHasNotBeenGeneratedBecauseAssemblyDoesNotContainAnyDebugDirectory_Text { get; }
+    public static string Assembly_IsProtectedFromDecompilation_Text { get; }
+    public static string AssemblyFile_DoesNotContainAnyDebugDirectory_Text { get; }
+    public static string PdbFileHasAlreadyBeenRequestedSignature__Text { get; }
+    public static string UnableToGeneratePdbBecauseTheAssemblyWithPdbName_AndSignature_IsNotFound_Text { get; }
+    public static string PdbHasNotBeenGeneratedBecauseAssembly_WithPdbName_AndSignature___Text { get; }
+    public static string AssemblyIsNotInAssemblyExplorer_Text { get; }
+    public static string AssemblyIsFromDotNetFramework_Text { get; }
+    public static string AssemblyIsLocatedInGAC_Text { get; }
+    public static string AssemblyIsLocatedInNuGetPackagesCache_Text { get; }
+    private static Strings();
+    public static JetResourceManager get_ResourceManager();
+    public static string Choice(string format, Object[] args);
+    public static string get_GeneratingPDBs_Text();
+    public static string get_SymbolServerAssemblyFilterSettingDescription();
+    public static string get_SymbolServerFirstStartSettingDescription();
+    public static string get_SymbolServerOptionsSettingDescription();
+    public static string get_SymbolServerPortSettingDescription();
+    public static string get_SymbolServerRunningStateSettingDescription();
+    public static string get_Decompiling__Text();
+    public static string get_DecompilingSourcesAndResources_Text();
+    public static string get_DecompilingSourcesAndResourcesToTemp_Text();
+    public static string get_AssemblyInfo_Text();
+    public static string get_PdbFileIsCopiedFromTheCacheSignature__Text();
+    public static string get_PdbFileIsInTheCacheSignature__Text();
+    public static string get_PdbFileIsInTheCache_Text();
+    public static string get_CantGeneratePdbForOutputAssembly_Text();
+    public static string get_PdbHasNotBeenGeneratedBecauseAssemblyDoesNotContainAnyDebugDirectory_Text();
+    public static string get_Assembly_IsProtectedFromDecompilation_Text();
+    public static string get_AssemblyFile_DoesNotContainAnyDebugDirectory_Text();
+    public static string get_PdbFileHasAlreadyBeenRequestedSignature__Text();
+    public static string get_UnableToGeneratePdbBecauseTheAssemblyWithPdbName_AndSignature_IsNotFound_Text();
+    public static string get_PdbHasNotBeenGeneratedBecauseAssembly_WithPdbName_AndSignature___Text();
+    public static string get_AssemblyIsNotInAssemblyExplorer_Text();
+    public static string get_AssemblyIsFromDotNetFramework_Text();
+    public static string get_AssemblyIsLocatedInGAC_Text();
+    public static string get_AssemblyIsLocatedInNuGetPackagesCache_Text();
+}
+[ShellComponentAttribute("10")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.SymbolServer.CSharpGeneratedPdbCache : GeneratedPdbCacheBase {
+    private static string CSharpFolder;
+    public CSharpGeneratedPdbCache(ProductSettingsLocation productSettingsLocation);
+}
+[SolutionComponentAttribute("16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.SymbolServer.FrameworkAssemblyByPdbProvider : FrameworkAssemblyByPdbDefaultProvider {
+    private IPlatformManager myPlatformManager;
+    public FrameworkAssemblyByPdbProvider(AssemblyInfoDatabase assemblyInfoDataBase, IPlatformManager platformManager);
+    protected virtual IEnumerable`1<FileSystemPath> GetAssembliesWithName(string name);
+}
+[SolutionComponentAttribute("0")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.SymbolServer.PdbManager : object {
+    private static string Id;
+    private Lifetime myLifetime;
+    private PdbGenerationManager myPdbGenerationManager;
+    private IGenerationManager myGenerationManager;
+    private IAssemblyFactory myAssemblyFactory;
+    private IAssemblyCollection myAssemblyCollection;
+    private OutputAssemblies myOutputAssemblies;
+    private ProtectedAssemblies myProtectedAssemblies;
+    private IShellLocks myLocks;
+    private IPsiCaches myPsiCaches;
+    private ILogger myLogger;
+    private IGacAssemblyByPdbProvider myGacAssemblyByPdbProvider;
+    private INuGetPackagesCacheAssemblyByPdbProvider myNuGetPackagesCacheAssemblyByPdbProvider;
+    private IAssemblyExplorerAssemblyByPdbProvider myAssemblyExplorerAssemblyByPdbProvider;
+    private IFrameworkAssemblyByPdbProvider myFrameworkAssemblyByPdbProvider;
+    private IInMemoryAssemblyByPdbProvider myInMemoryAssemblyByPdbProvider;
+    private IGeneratedPdbCache myPdbCache;
+    private Dictionary`2<PdbNameAndSignature, Tuple`2<Task, DebugInfo>> myIncompleteGenerationTasks;
+    private IProperty`1<SymbolServerAssemblyFilter> myAssemblyFilterProperty;
+    private object myCopyFileLock;
+    public Lifetime Lifetime { get; }
+    public PdbManager(Lifetime lifetime, PdbGenerationManager pdbGenerationManager, IGenerationManager generationManager, IGeneratedPdbCache pdbCache, IAssemblyFactory assemblyFactory, IAssemblyCollection assemblyCollection, OutputAssemblies outputAssemblies, ProtectedAssemblies protectedAssemblies, IShellLocks locks, IPsiCaches psiCaches, ISettingsStore settingsStore, ILogger logger, IGacAssemblyByPdbProvider gacAssemblyByPdbProvider, INuGetPackagesCacheAssemblyByPdbProvider nugetPackagesCacheAssemblyByPdbProvider, IAssemblyExplorerAssemblyByPdbProvider assemblyExplorerAssemblyByPdbProvider, IFrameworkAssemblyByPdbProvider frameworkAssemblyByPdbProvider, IInMemoryAssemblyByPdbProvider inMemoryAssemblyByPdbProvider);
+    public Lifetime get_Lifetime();
+    public void TryGetPdb(PdbNameAndSignature pdb, Action`1<DebugInfoType> priorGenerationAction, Action`2<FileSystemPath, DebugInfoType> pdbPathAction);
+    private Task GeneratePdbsForAssembly(int parametersIndex, IAssemblyFile assemblyFile, FileSystemPath rootFolderForPresentation);
+    private Tuple`2<Task, DebugInfo> GeneratePdb(int parametersIndex, IAssemblyFile assemblyFile, IList`1<DebugInfo> debugInfos, FileSystemPath rootFolderForPresentation);
+    private void ShowDoneItem(string infoMessage, FileSystemPath pdbPath);
+    private void ShowInfoItem(string infoMessage, string pdbName);
+    private void ShowInfoItem(string infoMessage, FileSystemPath assemblyPath);
+    private void ShowInfoItem(string infoMessage, int parametersIndex);
+    private void GeneratePdbsForAssembly(int parametersIndex, IAssemblyLocation assemblyLocation, Action continuation);
+    [CanBeNullAttribute]
+private FileSystemPath TryGetAssemblyPath(PdbNameAndSignature pdb);
+    private static string GetReasonString(string reason, FileSystemPath assemblyPath, PdbNameAndSignature pdb);
+    private static string GetReasonString(string reason, string assemblyName, PdbNameAndSignature pdb);
+    public void PutPdbsForAssemblyIntoFolder(IAssemblyFile assemblyFile, FileSystemPath rootFolder, Action successContinuation);
+    public void ShowDebugDirectoryAbsenceMessage(IAssemblyLocation assemblyLocation);
+    private void ShowOutputAssemblyErrorMessage(FileSystemPath assemblyPath);
+    private void ShowAssemblyIsProtectedErrorMessage(IAssemblyLocation assemblyLocation);
+    private void CopyPdbsFromCacheToFolder(IAssemblyFile assemblyFile, IList`1<DebugInfo> debugInfos, FileSystemPath rootFolder, bool showGenerationItems);
+    private bool AllPdbsAreInCache(IAssemblyFile assemblyFile, IList`1<DebugInfo> debugInfos, FileSystemPath rootFolderForPresentation);
+    [CanBeNullAttribute]
+private FileSystemPath TryGetExistingPdbFile(string pdbFileName, string pdbSignature, bool includeRelatedSignatures);
+    [CanBeNullAttribute]
+private FileSystemPath TryGetExistingPdbFile(DebugInfo debugInfo);
+    private FileSystemPath GetPdbFilePath(DebugInfo debugInfo);
+    private void CopyFile(FileSystemPath fromFile, FileSystemPath toFile);
+    [CompilerGeneratedAttribute]
+private void <CopyPdbsFromCacheToFolder>g__CopyPdbFromCacheToFolder|38_0(string pdbFileName, string pdbSignature, <>c__DisplayClass38_0& );
+}
+public enum JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.SymbolServer.SymbolServerAssemblyFilter : Enum {
+    public int value__;
+    public static SymbolServerAssemblyFilter All;
+    public static SymbolServerAssemblyFilter ExceptFramework;
+    public static SymbolServerAssemblyFilter ExceptGac;
+    public static SymbolServerAssemblyFilter ExceptNuGetPackagesCache;
+    public static SymbolServerAssemblyFilter OnlyAssemblyExplorer;
+}
+[SettingsKeyAttribute("JetBrains.ReSharper.Feature.Services.ExternalSource.ExternalSourcesSettings", "JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings", "SymbolServerOptionsSettingDescription")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.SymbolServer.SymbolServerSettings : object {
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings", "SymbolServerRunningStateSettingDescription")]
+public bool RunningState;
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings", "SymbolServerPortSettingDescription")]
+public ushort Port;
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings", "SymbolServerFirstStartSettingDescription")]
+public bool FirstStart;
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Resources.Strings", "SymbolServerAssemblyFilterSettingDescription")]
+public SymbolServerAssemblyFilter AssemblyFilter;
+}
+[LanguageAttribute("JetBrains.ReSharper.Psi.CSharp.CSharpLanguage", "16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Utils.CSharpDeclaredElementBinder : DeclaredElementBinder {
+    public virtual void BindDeclarations(IFile file, IPsiModule psiModule, bool failOnUnresolvedSymbols);
+    private static void BindAccessors(IAccessorDeclaration accessorDeclaration);
+    private static void BindTypeDeclarations(ICSharpTypeDeclaration typeDeclaration, ISymbolScope cache, bool failOnUnresolvedSymbols);
+    private static void BindTypeMembersOfMethod(IMethodDeclaration methodDeclaration, bool failOnUnresolvedSymbols);
+    private static void BindNamespaces(INamespaceDeclaration namespaceDeclaration, ISymbolScope cache, bool failOnUnresolvedSymbols);
+}
+[LanguageAttribute("JetBrains.ReSharper.Psi.CSharp.CSharpLanguage", "16")]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Utils.CSharpReorderMembers : object {
+    public sealed virtual void ReorderMembers(IFile file);
+}
+[ExtensionAttribute]
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Utils.TaskHostEx3 : object {
+    [ExtensionAttribute]
+public static Task Execute(ITaskHost taskHost, Lifetime lifetime, IEnumerable`1<Action> actions, int maxDegreeOfParallelism, TaskPriority priority);
+}
+[ExtensionAttribute]
+public static class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.Utils.TypeElementCSharpFileNameExtensions : object {
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+public static string TryGetCSharpFileName(ITypeElement typeElement);
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+public static string TryGetElementCSharpFileName(IClrDeclaredElement declaredElement);
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+public static string TryGetRelativeCSharpFilePath(IClrDeclaredElement declaredElement);
+    private static Tuple`2<PsiLanguageType, string> GetCSharpLanguageAndExtension();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.ReSharper.Feature.Services.ExternalSources.CSharp.ZoneMarker : object {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
