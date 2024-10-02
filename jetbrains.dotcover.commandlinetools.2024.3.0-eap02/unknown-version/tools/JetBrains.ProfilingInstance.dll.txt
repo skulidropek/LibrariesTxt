@@ -1,0 +1,228 @@
+public class JetBrains.ProfilingInstance.CustomSnapshotDirectoriesController : object {
+    private FileSystemPath myDiagnosticDir;
+    private FileSystemPath myTempDir;
+    private FileSystemPath mySnapshotDir;
+    private FileSystemPath myStreamingDir;
+    public CustomSnapshotDirectoriesController(FileSystemPath snapshotDir, FileSystemPath diagnosticDir, FileSystemPath tempDir, FileSystemPath streamingDir);
+    public sealed virtual void BeforeProfilingStarted(Lifetime profilerLifetime, IHostProfileSubscription hostProfileSubscription);
+    private void OnConnecting(ConnectingEventArgs args);
+}
+public class JetBrains.ProfilingInstance.DelegateResultHandler : object {
+    private Action`1<AlertEventArgs> myHostAlert;
+    private Action`3<AlertEventArgs, int, string> myCoreAlert;
+    private Action`2<CoreIdentity, ProfileeProcessInfo> myCoreConnected;
+    private Action`2<LogDoneEventArgs, ProfileeProcessInfo> myLogDone;
+    private Action`2<SnapshotDoneEventArgs, ProfileeProcessInfo> mySnapshotDone;
+    private Action`1<ExitCodeGetter> myProfilingFinished;
+    public DelegateResultHandler(Action`1<AlertEventArgs> hostAlert, Action`3<AlertEventArgs, int, string> coreAlert, Action`2<CoreIdentity, ProfileeProcessInfo> coreConnected, Action`2<LogDoneEventArgs, ProfileeProcessInfo> logDone, Action`2<SnapshotDoneEventArgs, ProfileeProcessInfo> snapshotDone, Action`1<ExitCodeGetter> profilingFinished);
+    public sealed virtual void OnHostAlert(AlertEventArgs args);
+    public sealed virtual void OnCoreAlert(AlertEventArgs args, int processId, string executable);
+    public sealed virtual void OnCoreConnected(CoreIdentity coreIdentity, ProfileeProcessInfo processInfo);
+    public sealed virtual void OnLogDone(LogDoneEventArgs args, ProfileeProcessInfo info);
+    public sealed virtual void OnSnapshotDone(SnapshotDoneEventArgs args, ProfileeProcessInfo info);
+    public sealed virtual void OnProfilingFinished(ExitCodeGetter getter);
+}
+public class JetBrains.ProfilingInstance.ExcludeForProfiling : object {
+    private ILogger myLogger;
+    [CanBeNullAttribute]
+private IEnumerable`1<string> myExcludeExecutables;
+    public ExcludeForProfiling(IEnumerable`1<string> excludeExecutables);
+    public sealed virtual void BeforeProfilingStarted(Lifetime profilerLifetime, IHostProfileSubscription hostProfileSubscription);
+}
+public class JetBrains.ProfilingInstance.ExitCodeGetter : MulticastDelegate {
+    public ExitCodeGetter(object object, IntPtr method);
+    public virtual Nullable`1<int> Invoke(TimeSpan timeout);
+    public virtual IAsyncResult BeginInvoke(TimeSpan timeout, AsyncCallback callback, object object);
+    public virtual Nullable`1<int> EndInvoke(IAsyncResult result);
+}
+public interface JetBrains.ProfilingInstance.ICustomProfilingViewer {
+    public abstract virtual void BeforeProfilingStarted(Lifetime profilerLifetime, IHostProfileSubscription hostProfileSubscription);
+}
+public interface JetBrains.ProfilingInstance.ILifetimedProfilerResultsHandler {
+    public Lifetime Lifetime { get; }
+    public abstract virtual Lifetime get_Lifetime();
+}
+public interface JetBrains.ProfilingInstance.IMeasureProfilerCommandProcessingListener {
+    public abstract virtual void OnCommandFailure(IMeasureCoreHostProfile core, MeasureCoreCommand command);
+}
+public interface JetBrains.ProfilingInstance.IMeasureProfilingInstance {
+    public abstract virtual void ExecuteOrQueueCoreCommand(MeasureCoreCommand command);
+    public abstract virtual void AddProfilerResultsHandler(Lifetime lifetime, IProfilerResultsHandler handler, bool handlePreviousResults);
+}
+public interface JetBrains.ProfilingInstance.IMemoryProfilingInstance {
+    public abstract virtual void ExecuteOrQueueCoreCommand(MemoryCoreCommand command);
+}
+public interface JetBrains.ProfilingInstance.IProfilerResultsHandler {
+    public abstract virtual void OnHostAlert(AlertEventArgs args);
+    public abstract virtual void OnCoreAlert(AlertEventArgs args, int processId, string executable);
+    public abstract virtual void OnCoreConnected(CoreIdentity coreIdentity, ProfileeProcessInfo profileeProcessInfo);
+    public abstract virtual void OnLogDone(LogDoneEventArgs args, ProfileeProcessInfo processInfo);
+    public abstract virtual void OnSnapshotDone(SnapshotDoneEventArgs args, ProfileeProcessInfo processInfo);
+    public abstract virtual void OnProfilingFinished(ExitCodeGetter exitCodeGetter);
+}
+public interface JetBrains.ProfilingInstance.IProfilerResultsHandlersCollection {
+    public abstract virtual void AddProfilerResultsHandler(Lifetime lifetime, IProfilerResultsHandler handler, bool handlePreviousResults);
+}
+public interface JetBrains.ProfilingInstance.IProfilingInstance {
+    public Nullable`1<int> ProcessId { get; }
+    public bool Connected { get; }
+    public abstract virtual void KillAllCores();
+    public abstract virtual void DetachAllCores();
+    public abstract virtual bool WaitForProfilingFinished();
+    public abstract virtual bool WaitForProfilingFinished(TimeSpan timeout);
+    public abstract virtual Nullable`1<int> get_ProcessId();
+    public abstract virtual bool get_Connected();
+}
+public interface JetBrains.ProfilingInstance.IResultsHandlersModifier {
+    [CanBeNullAttribute]
+public abstract virtual AlertEventArgs Convert(AlertEventArgs args);
+}
+public class JetBrains.ProfilingInstance.LifetimedProfilerResultsHandler : object {
+    private IProfilerResultsHandler myInnerHandler;
+    [CompilerGeneratedAttribute]
+private Lifetime <Lifetime>k__BackingField;
+    public Lifetime Lifetime { get; }
+    public LifetimedProfilerResultsHandler(Lifetime lifetime, IProfilerResultsHandler innerHandler);
+    [CompilerGeneratedAttribute]
+public sealed virtual Lifetime get_Lifetime();
+    public sealed virtual void OnHostAlert(AlertEventArgs args);
+    public sealed virtual void OnCoreAlert(AlertEventArgs args, int processId, string executable);
+    public sealed virtual void OnCoreConnected(CoreIdentity coreIdentity, ProfileeProcessInfo profileeProcessInfo);
+    public sealed virtual void OnLogDone(LogDoneEventArgs args, ProfileeProcessInfo processInfo);
+    public sealed virtual void OnSnapshotDone(SnapshotDoneEventArgs args, ProfileeProcessInfo processInfo);
+    public sealed virtual void OnProfilingFinished(ExitCodeGetter exitCodeGetter);
+}
+public enum JetBrains.ProfilingInstance.MeasureCoreCommand : Enum {
+    public int value__;
+    public static MeasureCoreCommand Start;
+    public static MeasureCoreCommand StopDrop;
+    public static MeasureCoreCommand StopSave;
+    public static MeasureCoreCommand StopDropStart;
+    public static MeasureCoreCommand StopSaveStart;
+    public static MeasureCoreCommand Close;
+    public static MeasureCoreCommand Detach;
+    public static MeasureCoreCommand Throw;
+}
+public class JetBrains.ProfilingInstance.MeasureProfilerCoresController : object {
+    private static ILogger ourLogger;
+    private bool myKillProcessesOnCloseCommand;
+    private bool myDropSnapshotOnCloseCommand;
+    private IMeasureProfilerCommandProcessingListener myListener;
+    private object mySyncObject;
+    private Dictionary`2<IMeasureCoreHostProfile, SingleCoreController> myConnectedCores;
+    private IProperty`1<int> myConnectedCoresCount;
+    private IHostProfile myHostProfile;
+    private bool myCloseCommandReceived;
+    public int ConnectedCores { get; }
+    public MeasureProfilerCoresController(bool killProcessesOnCloseCommand, bool dropSnapshotOnCloseCommand, IMeasureProfilerCommandProcessingListener listener);
+    private static MeasureProfilerCoresController();
+    public int get_ConnectedCores();
+    public sealed virtual void BeforeProfilingStarted(Lifetime profilerLifetime, IHostProfileSubscription hostProfileSubscription);
+    public void ExecuteOrQueueCommand(MeasureCoreCommand command, Func`2<IEnumerable`1<IMeasureCoreHostProfile>, IEnumerable`1<IMeasureCoreHostProfile>> acceptFilter);
+    public void ExecuteOrQueueCommand(MeasureCoreCommand command);
+    private void DoWhenNoConnectedCores(Action action);
+    [CompilerGeneratedAttribute]
+private void <BeforeProfilingStarted>b__12_0(Lifetime lt, ICoreHostProfile core);
+}
+public class JetBrains.ProfilingInstance.MeasureProfilingInstance : object {
+    private MeasureProfilerCoresController myCoresController;
+    private ProfilingInstance myProfilingInstance;
+    private IProfilerResultsHandlersCollection myCustomViewerToHandlersAdapter;
+    public Nullable`1<int> ProcessId { get; }
+    public bool Connected { get; }
+    public MeasureProfilingInstance(ProfileConfiguration configuration, bool isAttach, IHostManager hostManager, IHostUI hostUI, IThreading threading, IProgressIndicator progressIndicator, IProfilerResultsHandler profilerResultsHandler, IResultsHandlersModifier profilerResultsHandlerModifier, ICustomProfilingViewer[] customProfilingViewersArray);
+    public sealed virtual void AddProfilerResultsHandler(Lifetime lifetime, IProfilerResultsHandler handler, bool handlePreviousResults);
+    public sealed virtual void ExecuteOrQueueCoreCommand(MeasureCoreCommand command);
+    public sealed virtual void KillAllCores();
+    public sealed virtual void DetachAllCores();
+    public sealed virtual bool WaitForProfilingFinished();
+    public sealed virtual bool WaitForProfilingFinished(TimeSpan timeout);
+    public sealed virtual Nullable`1<int> get_ProcessId();
+    public sealed virtual bool get_Connected();
+}
+[ExtensionAttribute]
+public static class JetBrains.ProfilingInstance.MeasureProfilingInstanceExtensions : object {
+    [ExtensionAttribute]
+public static void AddProfilerResultsHandler(IMeasureProfilingInstance profilingInstance, ILifetimedProfilerResultsHandler profilerResultsHandler);
+}
+public enum JetBrains.ProfilingInstance.MemoryCoreCommand : Enum {
+    public int value__;
+    public static MemoryCoreCommand ForceGc;
+    public static MemoryCoreCommand Dump;
+    public static MemoryCoreCommand EnableAllocations;
+    public static MemoryCoreCommand DisableAllocations;
+    public static MemoryCoreCommand Close;
+}
+public class JetBrains.ProfilingInstance.ProfilerResultsHandlersCollection : object {
+    private ICollection`1<AlertEventArgs> myHostAlertEvents;
+    private ICollection`1<CoreAlertEventParams> myCoreAlertEvents;
+    private ICollection`1<LogDoneEventArgs> myLogDoneEvents;
+    private ICollection`1<SnapshotDoneEventArgs> mySnapshotDoneEvents;
+    private ICollection`1<CoreConnectedEventArgs> myConnectedArgs;
+    private ICollection`1<IProfilerResultsHandler> myHandlers;
+    private IThreading myThreading;
+    [CanBeNullAttribute]
+private IResultsHandlersModifier myModifier;
+    private Dictionary`2<CoreIdentity, ProfileeProcessInfo> myId2ProcessInfoMap;
+    private object mySyncObject;
+    private IHostProfile myProfile;
+    private bool myProfilingFinished;
+    public ProfilerResultsHandlersCollection(IThreading threading, IResultsHandlersModifier modifier);
+    public sealed virtual void BeforeProfilingStarted(Lifetime profilerLifetime, IHostProfileSubscription hostProfileSubscription);
+    private ProfileeProcessInfo GetProfileProcessInfo(IIdentity identity);
+    public sealed virtual void AddProfilerResultsHandler(Lifetime lifetime, IProfilerResultsHandler handler, bool handlePreviousResults);
+    private void OnHostAlert(AlertEventArgs args);
+    private void OnCoreAlert(AlertEventArgs args, int processId, string executable);
+    private void OnLogDone(ResponsibilityEventArgs`1<LogDoneEventArgs> args);
+    private void OnCoreConnected(ICoreHostProfile core);
+    private void OnSnapshotDone(ResponsibilityEventArgs`1<SnapshotDoneEventArgs> args);
+    private void ProcessProfilerEvent(TEventParams eventParams, ICollection`1<TEventParams> eventsCollection, Action`3<IProfilerResultsHandler, TEventParams, ProfileeProcessInfo> action, Func`2<TEventParams, ProfileeProcessInfo> getCoreIdentity);
+    private void OnFinished();
+    private Nullable`1<int> WaitForApplicationExitAndGetExitCode(TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+private void <BeforeProfilingStarted>b__15_0(Lifetime lt, ICoreHostProfile core);
+    [CompilerGeneratedAttribute]
+private ProfileeProcessInfo <OnHostAlert>b__18_1(AlertEventArgs a);
+    [CompilerGeneratedAttribute]
+private ProfileeProcessInfo <OnLogDone>b__20_1(LogDoneEventArgs a);
+    [CompilerGeneratedAttribute]
+private ProfileeProcessInfo <OnSnapshotDone>b__22_1(SnapshotDoneEventArgs a);
+}
+public class JetBrains.ProfilingInstance.ProfilingInstance : object {
+    private IThreading myThreading;
+    private LifetimeDefinition myProfilerLifetimeDefinition;
+    private ManualResetEvent myProfilingFinishedEvent;
+    private IHostProfile myProfile;
+    public Nullable`1<int> ProcessId { get; }
+    public bool Connected { get; }
+    public ProfilingInstance(ProfileConfiguration configuration, IHostManager hostManager, IHostUI hostUI, IThreading threading, IProgressIndicator progressIndicator, IEnumerable`1<ICustomProfilingViewer> customProfilingViewers);
+    public sealed virtual void KillAllCores();
+    public sealed virtual void DetachAllCores();
+    public sealed virtual bool WaitForProfilingFinished();
+    public sealed virtual bool WaitForProfilingFinished(TimeSpan timeout);
+    private void OnFinished();
+    public sealed virtual Nullable`1<int> get_ProcessId();
+    public sealed virtual bool get_Connected();
+    [CompilerGeneratedAttribute]
+private void <KillAllCores>b__5_0();
+    [CompilerGeneratedAttribute]
+private void <DetachAllCores>b__6_0();
+    [CompilerGeneratedAttribute]
+private bool <WaitForProfilingFinished>b__8_0();
+}
+public abstract class JetBrains.ProfilingInstance.ResultsHandlersModifierBase : object {
+    private Dictionary`2<HResults, string> myOverridenMessages;
+    protected ResultsHandlersModifierBase(Dictionary`2<HResults, string> overridenMessages);
+    public sealed virtual AlertEventArgs Convert(AlertEventArgs args);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

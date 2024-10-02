@@ -1,0 +1,1257 @@
+public class Jaeger.Baggage.BaggageSetter : object {
+    private IBaggageRestrictionManager _restrictionManager;
+    private IMetrics _metrics;
+    public BaggageSetter(IBaggageRestrictionManager restrictionManager, IMetrics metrics);
+    public SpanContext SetBaggage(Span span, string key, string value);
+    private void LogFields(Span span, string key, string value, string prevItem, bool truncated, bool valid);
+}
+public class Jaeger.Baggage.DefaultBaggageRestrictionManager : object {
+    private Restriction _restriction;
+    public DefaultBaggageRestrictionManager(int maxValueLength);
+    public virtual Restriction GetRestriction(string service, string key);
+}
+public class Jaeger.Baggage.Http.BaggageRestrictionResponse : ValueObject {
+    [CompilerGeneratedAttribute]
+private string <BaggageKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxValueLength>k__BackingField;
+    public string BaggageKey { get; }
+    public int MaxValueLength { get; }
+    public BaggageRestrictionResponse(string baggageKey, int maxValueLength);
+    [CompilerGeneratedAttribute]
+public string get_BaggageKey();
+    [CompilerGeneratedAttribute]
+public int get_MaxValueLength();
+    [IteratorStateMachineAttribute("Jaeger.Baggage.Http.BaggageRestrictionResponse/<GetAtomicValues>d__7")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Baggage.HttpBaggageRestrictionManagerProxy : object {
+    private static string DefaultHostPort;
+    private IHttpClient _httpClient;
+    private string _hostPort;
+    public HttpBaggageRestrictionManagerProxy(IHttpClient httpClient, string hostPort);
+    internal List`1<BaggageRestrictionResponse> ParseJson(string json);
+    [AsyncStateMachineAttribute("Jaeger.Baggage.HttpBaggageRestrictionManagerProxy/<GetBaggageRestrictionsAsync>d__5")]
+public sealed virtual Task`1<List`1<BaggageRestrictionResponse>> GetBaggageRestrictionsAsync(string serviceName);
+}
+public interface Jaeger.Baggage.IBaggageRestrictionManager {
+    public abstract virtual Restriction GetRestriction(string service, string key);
+}
+public interface Jaeger.Baggage.IBaggageRestrictionManagerProxy {
+    public abstract virtual Task`1<List`1<BaggageRestrictionResponse>> GetBaggageRestrictionsAsync(string serviceName);
+}
+public class Jaeger.Baggage.RemoteBaggageRestrictionManager : object {
+    private static TimeSpan DefaultRefreshInveral;
+    private static TimeSpan DefaultInitialDelay;
+    private string _serviceName;
+    private IBaggageRestrictionManagerProxy _proxy;
+    private Timer _pollTimer;
+    private IMetrics _metrics;
+    private bool _denyBaggageOnInitializationFailure;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) _initialized;
+    private Dictionary`2 modreq(System.Runtime.CompilerServices.IsVolatile) _restrictions;
+    private Restriction _invalidRestriction;
+    private Restriction _validRestriction;
+    public RemoteBaggageRestrictionManager(string serviceName, IBaggageRestrictionManagerProxy proxy, IMetrics metrics, bool denyBaggageOnInitializationFailure);
+    public RemoteBaggageRestrictionManager(string serviceName, IBaggageRestrictionManagerProxy proxy, IMetrics metrics, bool denyBaggageOnInitializationFailure, TimeSpan refreshInterval);
+    public RemoteBaggageRestrictionManager(string serviceName, IBaggageRestrictionManagerProxy proxy, IMetrics metrics, bool denyBaggageOnInitializationFailure, TimeSpan refreshInterval, TimeSpan initialDelay);
+    private static RemoteBaggageRestrictionManager();
+    public bool IsReady();
+    internal void UpdateBaggageRestrictions();
+    private void UpdateBaggageRestrictions(List`1<BaggageRestrictionResponse> restrictions);
+    public sealed virtual void Dispose();
+    public sealed virtual Restriction GetRestriction(string service, string key);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__13_0(object _);
+}
+public class Jaeger.Baggage.Restriction : ValueObject {
+    public static int DefaultMaxValueLength;
+    [CompilerGeneratedAttribute]
+private bool <KeyAllowed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxValueLength>k__BackingField;
+    public bool KeyAllowed { get; }
+    public int MaxValueLength { get; }
+    public Restriction(bool keyAllowed, int maxValueLength);
+    [CompilerGeneratedAttribute]
+public bool get_KeyAllowed();
+    [CompilerGeneratedAttribute]
+public int get_MaxValueLength();
+    [IteratorStateMachineAttribute("Jaeger.Baggage.Restriction/<GetAtomicValues>d__8")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Configuration : object {
+    public static string JaegerPrefix;
+    public static string JaegerEndpoint;
+    public static string JaegerAuthToken;
+    public static string JaegerUser;
+    public static string JaegerPassword;
+    public static string JaegerAgentHost;
+    public static string JaegerAgentPort;
+    public static string JaegerGrpcTarget;
+    public static string JaegerGrpcRootCertificate;
+    public static string JaegerGrpcClientChain;
+    public static string JaegerGrpcClientKey;
+    public static string JaegerReporterLogSpans;
+    public static string JaegerReporterMaxQueueSize;
+    public static string JaegerReporterFlushInterval;
+    public static string JaegerSamplerType;
+    public static string JaegerSamplerParam;
+    [ObsoleteAttribute("Please use SamplingEndpoint instead!")]
+public static string JaegerSamplerManagerHostPort;
+    public static string JaegerSamplingEndpoint;
+    public static string JaegerServiceName;
+    public static string JaegerTags;
+    public static string JaegerSenderFactory;
+    public static string JaegerTraceId128Bit;
+    public static string JaegerPropagation;
+    private object _lock;
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    private ILoggerFactory _loggerFactory;
+    private ILogger _logger;
+    private IMetricsFactory _metricsFactory;
+    private Dictionary`2<string, string> _tracerTags;
+    private Tracer _tracer;
+    [CompilerGeneratedAttribute]
+private SamplerConfiguration <SamplerConfig>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ReporterConfiguration <ReporterConfig>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CodecConfiguration <CodecConfig>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseTraceId128Bit>k__BackingField;
+    public string ServiceName { get; }
+    public SamplerConfiguration SamplerConfig { get; private set; }
+    public ReporterConfiguration ReporterConfig { get; private set; }
+    public CodecConfiguration CodecConfig { get; private set; }
+    public bool UseTraceId128Bit { get; private set; }
+    public IReadOnlyDictionary`2<string, string> TracerTags { get; }
+    public Configuration(string serviceName, ILoggerFactory loggerFactory);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public SamplerConfiguration get_SamplerConfig();
+    [CompilerGeneratedAttribute]
+private void set_SamplerConfig(SamplerConfiguration value);
+    [CompilerGeneratedAttribute]
+public ReporterConfiguration get_ReporterConfig();
+    [CompilerGeneratedAttribute]
+private void set_ReporterConfig(ReporterConfiguration value);
+    [CompilerGeneratedAttribute]
+public CodecConfiguration get_CodecConfig();
+    [CompilerGeneratedAttribute]
+private void set_CodecConfig(CodecConfiguration value);
+    [CompilerGeneratedAttribute]
+public bool get_UseTraceId128Bit();
+    [CompilerGeneratedAttribute]
+private void set_UseTraceId128Bit(bool value);
+    public IReadOnlyDictionary`2<string, string> get_TracerTags();
+    public static Configuration FromIConfiguration(ILoggerFactory loggerFactory, IConfiguration configuration);
+    public static Configuration FromEnv(ILoggerFactory loggerFactory);
+    public Builder GetTracerBuilder();
+    public ITracer GetTracer();
+    [AsyncStateMachineAttribute("Jaeger.Configuration/<CloseTracerAsync>d__56")]
+public Task CloseTracerAsync(CancellationToken cancellationToken);
+    public void WithMetricsFactory(IMetricsFactory metricsFactory);
+    public Configuration WithReporter(ReporterConfiguration reporterConfig);
+    public Configuration WithSampler(SamplerConfiguration samplerConfig);
+    public Configuration WithCodec(CodecConfiguration codecConfig);
+    public Configuration WithTraceId128Bit(bool useTraceId128Bit);
+    public Configuration WithTracerTags(Dictionary`2<string, string> tracerTags);
+    [ObsoleteAttribute("Use the property 'TracerTags' instead.")]
+public IReadOnlyDictionary`2<string, string> GetTracerTags();
+    private static string StringOrDefault(string value, string defaultValue);
+    private static string GetProperty(string name, ILogger logger, IConfiguration configuration, string replacedBy);
+    private static Nullable`1<int> GetPropertyAsInt(string name, ILogger logger, IConfiguration configuration);
+    private static Nullable`1<double> GetPropertyAsDouble(string name, ILogger logger, IConfiguration configuration);
+    private static Nullable`1<TimeSpan> GetPropertyAsTimeSpan(string name, ILogger logger, IConfiguration configuration);
+    private static Nullable`1<bool> GetPropertyAsBool(string name, ILogger logger, IConfiguration configuration);
+    private static Dictionary`2<string, string> TracerTagsFromIConfiguration(ILogger logger, IConfiguration configuration);
+    private static string ResolveValue(string value, ILogger logger, IConfiguration configuration);
+}
+public class Jaeger.Constants : object {
+    public static string XUberSource;
+    public static string SamplerTypeTagKey;
+    public static string SamplerParamTagKey;
+    public static string DebugIdHeaderKey;
+    public static string JaegerClientVersionTagKey;
+    public static string TracerHostnameTagKey;
+    public static string TracerIpTagKey;
+}
+public class Jaeger.Exceptions.SenderException : Exception {
+    [CompilerGeneratedAttribute]
+private int <DroppedSpanCount>k__BackingField;
+    public int DroppedSpanCount { get; }
+    public SenderException(string message, int droppedSpans);
+    public SenderException(string message, Exception innerException, int droppedSpans);
+    [CompilerGeneratedAttribute]
+public int get_DroppedSpanCount();
+}
+public class Jaeger.LogData : object {
+    [CompilerGeneratedAttribute]
+private DateTime <TimestampUtc>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<KeyValuePair`2<string, object>> <Fields>k__BackingField;
+    public DateTime TimestampUtc { get; }
+    public string Message { get; }
+    public IEnumerable`1<KeyValuePair`2<string, object>> Fields { get; }
+    public LogData(DateTime timestampUtc, string message);
+    public LogData(DateTime timestampUtc, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    [CompilerGeneratedAttribute]
+public DateTime get_TimestampUtc();
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<KeyValuePair`2<string, object>> get_Fields();
+    internal object GetFieldValue(string key);
+}
+public interface Jaeger.Metrics.ICounter {
+    public abstract virtual void Inc(long delta);
+}
+public interface Jaeger.Metrics.IGauge {
+    public abstract virtual void Update(long amount);
+}
+public interface Jaeger.Metrics.IMetrics {
+    public ICounter TraceStartedSampled { get; }
+    public ICounter TraceStartedNotSampled { get; }
+    public ICounter TracesJoinedSampled { get; }
+    public ICounter TracesJoinedNotSampled { get; }
+    public ICounter SpansStartedSampled { get; }
+    public ICounter SpansStartedNotSampled { get; }
+    public ICounter SpansFinished { get; }
+    public ICounter DecodingErrors { get; }
+    public ICounter ReporterSuccess { get; }
+    public ICounter ReporterFailure { get; }
+    public ICounter ReporterDropped { get; }
+    public IGauge ReporterQueueLength { get; }
+    public ICounter SamplerRetrieved { get; }
+    public ICounter SamplerQueryFailure { get; }
+    public ICounter SamplerUpdated { get; }
+    public ICounter SamplerParsingFailure { get; }
+    public ICounter BaggageUpdateSuccess { get; }
+    public ICounter BaggageUpdateFailure { get; }
+    public ICounter BaggageTruncate { get; }
+    public ICounter BaggageRestrictionsUpdateSuccess { get; }
+    public ICounter BaggageRestrictionsUpdateFailure { get; }
+    public abstract virtual ICounter get_TraceStartedSampled();
+    public abstract virtual ICounter get_TraceStartedNotSampled();
+    public abstract virtual ICounter get_TracesJoinedSampled();
+    public abstract virtual ICounter get_TracesJoinedNotSampled();
+    public abstract virtual ICounter get_SpansStartedSampled();
+    public abstract virtual ICounter get_SpansStartedNotSampled();
+    public abstract virtual ICounter get_SpansFinished();
+    public abstract virtual ICounter get_DecodingErrors();
+    public abstract virtual ICounter get_ReporterSuccess();
+    public abstract virtual ICounter get_ReporterFailure();
+    public abstract virtual ICounter get_ReporterDropped();
+    public abstract virtual IGauge get_ReporterQueueLength();
+    public abstract virtual ICounter get_SamplerRetrieved();
+    public abstract virtual ICounter get_SamplerQueryFailure();
+    public abstract virtual ICounter get_SamplerUpdated();
+    public abstract virtual ICounter get_SamplerParsingFailure();
+    public abstract virtual ICounter get_BaggageUpdateSuccess();
+    public abstract virtual ICounter get_BaggageUpdateFailure();
+    public abstract virtual ICounter get_BaggageTruncate();
+    public abstract virtual ICounter get_BaggageRestrictionsUpdateSuccess();
+    public abstract virtual ICounter get_BaggageRestrictionsUpdateFailure();
+}
+public interface Jaeger.Metrics.IMetricsFactory {
+    public abstract virtual ICounter CreateCounter(string name, Dictionary`2<string, string> tags);
+    public abstract virtual ITimer CreateTimer(string name, Dictionary`2<string, string> tags);
+    public abstract virtual IGauge CreateGauge(string name, Dictionary`2<string, string> tags);
+}
+public class Jaeger.Metrics.InMemoryMetricsFactory : object {
+    private ConcurrentDictionary`2<string, AtomicLong> _counters;
+    private ConcurrentDictionary`2<string, AtomicLong> _timers;
+    private ConcurrentDictionary`2<string, AtomicLong> _gauges;
+    public sealed virtual ICounter CreateCounter(string name, Dictionary`2<string, string> tags);
+    public sealed virtual ITimer CreateTimer(string name, Dictionary`2<string, string> tags);
+    public sealed virtual IGauge CreateGauge(string name, Dictionary`2<string, string> tags);
+    public long GetCounter(string name, string tags);
+    public long GetCounter(string name, Dictionary`2<string, string> tags);
+    public long GetGauge(string name, string tags);
+    public long GetGauge(string name, Dictionary`2<string, string> tags);
+    public long GetTimer(string name, string tags);
+    public long GetTimer(string name, Dictionary`2<string, string> tags);
+    private long GetValue(IDictionary`2<string, AtomicLong> collection, string name, string tags);
+    private long GetValue(IDictionary`2<string, AtomicLong> collection, string name, Dictionary`2<string, string> tags);
+    private long GetValue(IDictionary`2<string, AtomicLong> collection, string name);
+}
+public interface Jaeger.Metrics.ITimer {
+    public abstract virtual void DurationTicks(long ticks);
+}
+[AttributeUsageAttribute("128")]
+public class Jaeger.Metrics.MetricAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, string> <Tags>k__BackingField;
+    public string Name { get; }
+    public IReadOnlyDictionary`2<string, string> Tags { get; }
+    public MetricAttribute(string name);
+    public MetricAttribute(string name, string tags);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, string> get_Tags();
+    private static IReadOnlyDictionary`2<string, string> ParseTags(string tags);
+}
+public class Jaeger.Metrics.MetricsImpl : object {
+    [CompilerGeneratedAttribute]
+private ICounter <TraceStartedSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <TraceStartedNotSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <TracesJoinedSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <TracesJoinedNotSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SpansStartedSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SpansStartedNotSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SpansFinished>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <DecodingErrors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <ReporterSuccess>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <ReporterFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <ReporterDropped>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IGauge <ReporterQueueLength>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SamplerRetrieved>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SamplerQueryFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SamplerUpdated>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <SamplerParsingFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <BaggageUpdateSuccess>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <BaggageUpdateFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <BaggageTruncate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <BaggageRestrictionsUpdateSuccess>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICounter <BaggageRestrictionsUpdateFailure>k__BackingField;
+    [MetricAttribute("traces", "state=started,sampled=y")]
+public ICounter TraceStartedSampled { get; private set; }
+    [MetricAttribute("traces", "state=started,sampled=n")]
+public ICounter TraceStartedNotSampled { get; private set; }
+    [MetricAttribute("traces", "state=joined,sampled=y")]
+public ICounter TracesJoinedSampled { get; private set; }
+    [MetricAttribute("traces", "state=joined,sampled=n")]
+public ICounter TracesJoinedNotSampled { get; private set; }
+    [MetricAttribute("started_spans", "sampled=y")]
+public ICounter SpansStartedSampled { get; private set; }
+    [MetricAttribute("started_spans", "sampled=n")]
+public ICounter SpansStartedNotSampled { get; private set; }
+    [MetricAttribute("finished_spans")]
+public ICounter SpansFinished { get; private set; }
+    [MetricAttribute("span_context_decoding_errors")]
+public ICounter DecodingErrors { get; private set; }
+    [MetricAttribute("reporter_spans", "result=ok")]
+public ICounter ReporterSuccess { get; private set; }
+    [MetricAttribute("reporter_spans", "result=err")]
+public ICounter ReporterFailure { get; private set; }
+    [MetricAttribute("reporter_spans", "result=dropped")]
+public ICounter ReporterDropped { get; private set; }
+    [MetricAttribute("reporter_queue_length")]
+public IGauge ReporterQueueLength { get; private set; }
+    [MetricAttribute("sampler_queries", "result=ok")]
+public ICounter SamplerRetrieved { get; private set; }
+    [MetricAttribute("sampler_queries", "result=err")]
+public ICounter SamplerQueryFailure { get; private set; }
+    [MetricAttribute("sampler_updates", "result=ok")]
+public ICounter SamplerUpdated { get; private set; }
+    [MetricAttribute("sampler_updates", "result=err")]
+public ICounter SamplerParsingFailure { get; private set; }
+    [MetricAttribute("baggage_updates", "result=ok")]
+public ICounter BaggageUpdateSuccess { get; private set; }
+    [MetricAttribute("baggage_updates", "result=err")]
+public ICounter BaggageUpdateFailure { get; private set; }
+    [MetricAttribute("baggage_truncations")]
+public ICounter BaggageTruncate { get; private set; }
+    [MetricAttribute("baggage_restrictions_updates", "result=ok")]
+public ICounter BaggageRestrictionsUpdateSuccess { get; private set; }
+    [MetricAttribute("baggage_restrictions_updates", "result=err")]
+public ICounter BaggageRestrictionsUpdateFailure { get; private set; }
+    public MetricsImpl(IMetricsFactory factory);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_TraceStartedSampled();
+    [CompilerGeneratedAttribute]
+private void set_TraceStartedSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_TraceStartedNotSampled();
+    [CompilerGeneratedAttribute]
+private void set_TraceStartedNotSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_TracesJoinedSampled();
+    [CompilerGeneratedAttribute]
+private void set_TracesJoinedSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_TracesJoinedNotSampled();
+    [CompilerGeneratedAttribute]
+private void set_TracesJoinedNotSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SpansStartedSampled();
+    [CompilerGeneratedAttribute]
+private void set_SpansStartedSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SpansStartedNotSampled();
+    [CompilerGeneratedAttribute]
+private void set_SpansStartedNotSampled(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SpansFinished();
+    [CompilerGeneratedAttribute]
+private void set_SpansFinished(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_DecodingErrors();
+    [CompilerGeneratedAttribute]
+private void set_DecodingErrors(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_ReporterSuccess();
+    [CompilerGeneratedAttribute]
+private void set_ReporterSuccess(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_ReporterFailure();
+    [CompilerGeneratedAttribute]
+private void set_ReporterFailure(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_ReporterDropped();
+    [CompilerGeneratedAttribute]
+private void set_ReporterDropped(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IGauge get_ReporterQueueLength();
+    [CompilerGeneratedAttribute]
+private void set_ReporterQueueLength(IGauge value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SamplerRetrieved();
+    [CompilerGeneratedAttribute]
+private void set_SamplerRetrieved(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SamplerQueryFailure();
+    [CompilerGeneratedAttribute]
+private void set_SamplerQueryFailure(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SamplerUpdated();
+    [CompilerGeneratedAttribute]
+private void set_SamplerUpdated(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_SamplerParsingFailure();
+    [CompilerGeneratedAttribute]
+private void set_SamplerParsingFailure(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_BaggageUpdateSuccess();
+    [CompilerGeneratedAttribute]
+private void set_BaggageUpdateSuccess(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_BaggageUpdateFailure();
+    [CompilerGeneratedAttribute]
+private void set_BaggageUpdateFailure(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_BaggageTruncate();
+    [CompilerGeneratedAttribute]
+private void set_BaggageTruncate(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_BaggageRestrictionsUpdateSuccess();
+    [CompilerGeneratedAttribute]
+private void set_BaggageRestrictionsUpdateSuccess(ICounter value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ICounter get_BaggageRestrictionsUpdateFailure();
+    [CompilerGeneratedAttribute]
+private void set_BaggageRestrictionsUpdateFailure(ICounter value);
+    private void CreateMetrics(IMetricsFactory factory);
+    public static string AddTagsToMetricName(string name, Dictionary`2<string, string> tags);
+}
+public class Jaeger.Metrics.NoopMetricsFactory : object {
+    public static NoopMetricsFactory Instance;
+    private NoopMetric _metric;
+    private static NoopMetricsFactory();
+    public sealed virtual ICounter CreateCounter(string name, Dictionary`2<string, string> tags);
+    public sealed virtual IGauge CreateGauge(string name, Dictionary`2<string, string> tags);
+    public sealed virtual ITimer CreateTimer(string name, Dictionary`2<string, string> tags);
+}
+public class Jaeger.Propagation.B3TextMapCodec : Codec`1<ITextMap> {
+    public static string TraceIdName;
+    public static string SpanIdName;
+    public static string ParentSpanIdName;
+    public static string SampledName;
+    public static string FlagsName;
+    protected virtual void Inject(SpanContext spanContext, ITextMap carrier);
+    protected virtual SpanContext Extract(ITextMap carrier);
+}
+public abstract class Jaeger.Propagation.Codec`1 : object {
+    public sealed virtual void Inject(SpanContext spanContext, object carrier);
+    public sealed virtual SpanContext Extract(object carrier);
+    protected abstract virtual void Inject(SpanContext spanContext, TCarrier carrier);
+    protected abstract virtual SpanContext Extract(TCarrier carrier);
+}
+public class Jaeger.Propagation.CompositeCodec`1 : Codec`1<TCarrier> {
+    private List`1<Codec`1<TCarrier>> _codecs;
+    public CompositeCodec`1(List`1<Codec`1<TCarrier>> codecs);
+    public virtual string ToString();
+    protected virtual void Inject(SpanContext spanContext, TCarrier carrier);
+    protected virtual SpanContext Extract(TCarrier carrier);
+}
+public abstract class Jaeger.Propagation.Extractor`1 : object {
+    public sealed virtual SpanContext Extract(object carrier);
+    protected abstract virtual SpanContext Extract(TCarrier carrier);
+}
+public interface Jaeger.Propagation.ICodec {
+}
+public interface Jaeger.Propagation.IExtractor {
+    public abstract virtual SpanContext Extract(object carrier);
+}
+public interface Jaeger.Propagation.IInjector {
+    public abstract virtual void Inject(SpanContext spanContext, object carrier);
+}
+public abstract class Jaeger.Propagation.Injector`1 : object {
+    public sealed virtual void Inject(SpanContext spanContext, object carrier);
+    protected abstract virtual void Inject(SpanContext spanContext, TCarrier carrier);
+}
+public class Jaeger.Propagation.PrefixedKeys : object {
+    public string PrefixedKey(string key, string prefix);
+    public string UnprefixedKey(string key, string prefix);
+}
+public class Jaeger.Propagation.TextMapCodec : Codec`1<ITextMap> {
+    private static string SpanContextKey;
+    private static string BaggageKeyPrefix;
+    private static PrefixedKeys Keys;
+    private string _contextKey;
+    private string _baggagePrefix;
+    private bool _urlEncoding;
+    public TextMapCodec(bool urlEncoding);
+    private TextMapCodec(Builder builder);
+    private static TextMapCodec();
+    public virtual string ToString();
+    protected virtual void Inject(SpanContext spanContext, ITextMap carrier);
+    protected virtual SpanContext Extract(ITextMap carrier);
+    private string EncodedValue(string value);
+    private string DecodedValue(string value);
+}
+internal class Jaeger.PropagationRegistry : object {
+    private ILogger _logger;
+    private Dictionary`2<object, IInjector> _injectors;
+    private Dictionary`2<object, IExtractor> _extractors;
+    public PropagationRegistry(ILoggerFactory loggerFactory);
+    internal IInjector GetInjector(IFormat`1<TCarrier> format);
+    internal IExtractor GetExtractor(IFormat`1<TCarrier> format);
+    public void Register(IFormat`1<TCarrier> format, Injector`1<TCarrier> injector);
+    public void Register(IFormat`1<TCarrier> format, Extractor`1<TCarrier> extractor);
+    public void Register(IFormat`1<TCarrier> format, Codec`1<TCarrier> codec);
+}
+public class Jaeger.Reference : ValueObject {
+    [CompilerGeneratedAttribute]
+private SpanContext <Context>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    public SpanContext Context { get; }
+    public string Type { get; }
+    public Reference(SpanContext context, string type);
+    [CompilerGeneratedAttribute]
+public SpanContext get_Context();
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [IteratorStateMachineAttribute("Jaeger.Reference/<GetAtomicValues>d__7")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Reporters.CompositeReporter : object {
+    private List`1<IReporter> _reporters;
+    public CompositeReporter(IReporter[] reporters);
+    public sealed virtual void Report(Span span);
+    [AsyncStateMachineAttribute("Jaeger.Reporters.CompositeReporter/<CloseAsync>d__3")]
+public sealed virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual string ToString();
+}
+public class Jaeger.Reporters.InMemoryReporter : object {
+    private object _lock;
+    private List`1<Span> _spans;
+    public sealed virtual void Report(Span span);
+    public IReadOnlyList`1<Span> GetSpans();
+    public void Clear();
+    public sealed virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual string ToString();
+}
+public interface Jaeger.Reporters.IReporter {
+    public abstract virtual void Report(Span span);
+    public abstract virtual Task CloseAsync(CancellationToken cancellationToken);
+}
+public class Jaeger.Reporters.LoggingReporter : object {
+    [CompilerGeneratedAttribute]
+private ILogger <Logger>k__BackingField;
+    private ILogger Logger { get; }
+    public LoggingReporter(ILoggerFactory loggerFactory);
+    [CompilerGeneratedAttribute]
+private ILogger get_Logger();
+    public sealed virtual void Report(Span span);
+    public sealed virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual string ToString();
+}
+public class Jaeger.Reporters.NoopReporter : object {
+    public sealed virtual void Report(Span span);
+    public sealed virtual Task CloseAsync(CancellationToken cancellationToken);
+    public virtual string ToString();
+}
+public class Jaeger.Reporters.RemoteReporter : object {
+    public static int DefaultMaxQueueSize;
+    public static TimeSpan DefaultFlushInterval;
+    private BufferBlock`1<ICommand> _commandQueue;
+    private Task _queueProcessorTask;
+    private TimeSpan _flushInterval;
+    private Task _flushTask;
+    private ISender _sender;
+    private IMetrics _metrics;
+    private ILogger _logger;
+    internal RemoteReporter(ISender sender, TimeSpan flushInterval, int maxQueueSize, IMetrics metrics, ILoggerFactory loggerFactory);
+    private static RemoteReporter();
+    public sealed virtual void Report(Span span);
+    [AsyncStateMachineAttribute("Jaeger.Reporters.RemoteReporter/<CloseAsync>d__11")]
+public sealed virtual Task CloseAsync(CancellationToken cancellationToken);
+    internal void Flush();
+    [AsyncStateMachineAttribute("Jaeger.Reporters.RemoteReporter/<FlushLoop>d__13")]
+private Task FlushLoop();
+    [AsyncStateMachineAttribute("Jaeger.Reporters.RemoteReporter/<ProcessQueueLoop>d__14")]
+private Task ProcessQueueLoop();
+    public virtual string ToString();
+    [AsyncStateMachineAttribute("Jaeger.Reporters.RemoteReporter/<<-ctor>b__9_0>d")]
+[CompilerGeneratedAttribute]
+private Task <.ctor>b__9_0();
+}
+public class Jaeger.Samplers.ConstSampler : ValueObject {
+    public static string Type;
+    private bool _decision;
+    private IReadOnlyDictionary`2<string, object> _tags;
+    public ConstSampler(bool sample);
+    public sealed virtual SamplingStatus Sample(string operation, TraceId id);
+    public sealed virtual void Close();
+    public virtual string ToString();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.ConstSampler/<GetAtomicValues>d__7")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.GuaranteedThroughputSampler : ValueObject {
+    public static string Type;
+    private object _lock;
+    private ProbabilisticSampler _probabilisticSampler;
+    private RateLimitingSampler _lowerBoundSampler;
+    private IReadOnlyDictionary`2<string, object> _tags;
+    public GuaranteedThroughputSampler(double samplingRate, double lowerBound);
+    public virtual bool Update(double samplingRate, double lowerBound);
+    public virtual SamplingStatus Sample(string operation, TraceId id);
+    public virtual string ToString();
+    public sealed virtual void Close();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.GuaranteedThroughputSampler/<GetAtomicValues>d__10")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HTTP.OperationSamplingParameters : ValueObject {
+    [CompilerGeneratedAttribute]
+private double <DefaultSamplingProbability>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <DefaultLowerBoundTracesPerSecond>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<PerOperationSamplingParameters> <PerOperationStrategies>k__BackingField;
+    public double DefaultSamplingProbability { get; }
+    public double DefaultLowerBoundTracesPerSecond { get; }
+    public List`1<PerOperationSamplingParameters> PerOperationStrategies { get; }
+    public OperationSamplingParameters(double defaultSamplingProbability, double defaultLowerBoundTracesPerSecond, List`1<PerOperationSamplingParameters> perOperationStrategies);
+    [CompilerGeneratedAttribute]
+public double get_DefaultSamplingProbability();
+    [CompilerGeneratedAttribute]
+public double get_DefaultLowerBoundTracesPerSecond();
+    [CompilerGeneratedAttribute]
+public List`1<PerOperationSamplingParameters> get_PerOperationStrategies();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.HTTP.OperationSamplingParameters/<GetAtomicValues>d__10")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HTTP.PerOperationSamplingParameters : ValueObject {
+    [CompilerGeneratedAttribute]
+private string <Operation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProbabilisticSamplingStrategy <ProbabilisticSampling>k__BackingField;
+    public string Operation { get; }
+    public ProbabilisticSamplingStrategy ProbabilisticSampling { get; }
+    public PerOperationSamplingParameters(string operation, ProbabilisticSamplingStrategy probabilisticSampling);
+    [CompilerGeneratedAttribute]
+public string get_Operation();
+    [CompilerGeneratedAttribute]
+public ProbabilisticSamplingStrategy get_ProbabilisticSampling();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.HTTP.PerOperationSamplingParameters/<GetAtomicValues>d__7")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HTTP.ProbabilisticSamplingStrategy : ValueObject {
+    [CompilerGeneratedAttribute]
+private double <SamplingRate>k__BackingField;
+    public double SamplingRate { get; }
+    public ProbabilisticSamplingStrategy(double samplingRate);
+    [CompilerGeneratedAttribute]
+public double get_SamplingRate();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.HTTP.ProbabilisticSamplingStrategy/<GetAtomicValues>d__4")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HTTP.RateLimitingSamplingStrategy : ValueObject {
+    [CompilerGeneratedAttribute]
+private double <MaxTracesPerSecond>k__BackingField;
+    public double MaxTracesPerSecond { get; }
+    public RateLimitingSamplingStrategy(double maxTracesPerSecond);
+    [CompilerGeneratedAttribute]
+public double get_MaxTracesPerSecond();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.HTTP.RateLimitingSamplingStrategy/<GetAtomicValues>d__4")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HTTP.SamplingStrategyResponse : ValueObject {
+    [CompilerGeneratedAttribute]
+private ProbabilisticSamplingStrategy <ProbabilisticSampling>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RateLimitingSamplingStrategy <RateLimitingSampling>k__BackingField;
+    [CompilerGeneratedAttribute]
+private OperationSamplingParameters <OperationSampling>k__BackingField;
+    public ProbabilisticSamplingStrategy ProbabilisticSampling { get; }
+    public RateLimitingSamplingStrategy RateLimitingSampling { get; }
+    public OperationSamplingParameters OperationSampling { get; }
+    public SamplingStrategyResponse(ProbabilisticSamplingStrategy probabilisticSampling, RateLimitingSamplingStrategy rateLimitingSampling, OperationSamplingParameters operationSampling);
+    [CompilerGeneratedAttribute]
+public ProbabilisticSamplingStrategy get_ProbabilisticSampling();
+    [CompilerGeneratedAttribute]
+public RateLimitingSamplingStrategy get_RateLimitingSampling();
+    [CompilerGeneratedAttribute]
+public OperationSamplingParameters get_OperationSampling();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.HTTP.SamplingStrategyResponse/<GetAtomicValues>d__10")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.HttpSamplingManager : object {
+    public static string DefaultHostPort;
+    public static string DefaultEndpoint;
+    private IHttpClient _httpClient;
+    private string _endpoint;
+    public HttpSamplingManager(string endpoint);
+    public HttpSamplingManager(IHttpClient httpClient, string endpoint);
+    internal SamplingStrategyResponse ParseJson(string json);
+    [AsyncStateMachineAttribute("Jaeger.Samplers.HttpSamplingManager/<GetSamplingStrategyAsync>d__7")]
+public sealed virtual Task`1<SamplingStrategyResponse> GetSamplingStrategyAsync(string serviceName);
+    public virtual string ToString();
+}
+public interface Jaeger.Samplers.ISampler {
+    public abstract virtual SamplingStatus Sample(string operation, TraceId id);
+    public abstract virtual void Close();
+}
+public interface Jaeger.Samplers.ISamplingManager {
+    public abstract virtual Task`1<SamplingStrategyResponse> GetSamplingStrategyAsync(string serviceName);
+}
+public class Jaeger.Samplers.PerOperationSampler : ValueObject {
+    private object _lock;
+    private ILogger`1<PerOperationSampler> _logger;
+    [CompilerGeneratedAttribute]
+private int <MaxOperations>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, GuaranteedThroughputSampler> <OperationNameToSampler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProbabilisticSampler <DefaultSampler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <LowerBound>k__BackingField;
+    internal int MaxOperations { get; }
+    internal Dictionary`2<string, GuaranteedThroughputSampler> OperationNameToSampler { get; }
+    internal ProbabilisticSampler DefaultSampler { get; private set; }
+    internal double LowerBound { get; private set; }
+    public PerOperationSampler(int maxOperations, OperationSamplingParameters strategies, ILoggerFactory loggerFactory);
+    internal PerOperationSampler(int maxOperations, Dictionary`2<string, GuaranteedThroughputSampler> samplers, ProbabilisticSampler probabilisticSampler, double lowerBound, ILoggerFactory loggerFactory);
+    [CompilerGeneratedAttribute]
+internal int get_MaxOperations();
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, GuaranteedThroughputSampler> get_OperationNameToSampler();
+    [CompilerGeneratedAttribute]
+internal ProbabilisticSampler get_DefaultSampler();
+    [CompilerGeneratedAttribute]
+private void set_DefaultSampler(ProbabilisticSampler value);
+    [CompilerGeneratedAttribute]
+internal double get_LowerBound();
+    [CompilerGeneratedAttribute]
+private void set_LowerBound(double value);
+    public bool Update(OperationSamplingParameters strategies);
+    public sealed virtual SamplingStatus Sample(string operation, TraceId id);
+    public virtual string ToString();
+    public sealed virtual void Close();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.PerOperationSampler/<GetAtomicValues>d__22")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.ProbabilisticSampler : ValueObject {
+    public static double DefaultSamplingProbability;
+    public static string Type;
+    private long _positiveSamplingBoundary;
+    private long _negativeSamplingBoundary;
+    private IReadOnlyDictionary`2<string, object> _tags;
+    [CompilerGeneratedAttribute]
+private double <SamplingRate>k__BackingField;
+    public double SamplingRate { get; }
+    public ProbabilisticSampler(double samplingRate);
+    [CompilerGeneratedAttribute]
+public virtual double get_SamplingRate();
+    public virtual SamplingStatus Sample(string operation, TraceId id);
+    public virtual string ToString();
+    public sealed virtual void Close();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.ProbabilisticSampler/<GetAtomicValues>d__12")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.RateLimitingSampler : ValueObject {
+    public static string Type;
+    private RateLimiter _rateLimiter;
+    private IReadOnlyDictionary`2<string, object> _tags;
+    [CompilerGeneratedAttribute]
+private double <MaxTracesPerSecond>k__BackingField;
+    public double MaxTracesPerSecond { get; }
+    public RateLimitingSampler(double maxTracesPerSecond);
+    [CompilerGeneratedAttribute]
+public double get_MaxTracesPerSecond();
+    public sealed virtual SamplingStatus Sample(string operation, TraceId id);
+    public virtual string ToString();
+    public sealed virtual void Close();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.RateLimitingSampler/<GetAtomicValues>d__10")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public class Jaeger.Samplers.RemoteControlledSampler : ValueObject {
+    public static string Type;
+    public static TimeSpan DefaultPollingInterval;
+    private object _lock;
+    private int _maxOperations;
+    private string _serviceName;
+    private ISamplingManager _samplingManager;
+    private ILoggerFactory _loggerFactory;
+    private ILogger _logger;
+    private IMetrics _metrics;
+    private Timer _pollTimer;
+    [CompilerGeneratedAttribute]
+private ISampler <Sampler>k__BackingField;
+    internal ISampler Sampler { get; private set; }
+    private RemoteControlledSampler(Builder builder);
+    private static RemoteControlledSampler();
+    [CompilerGeneratedAttribute]
+internal ISampler get_Sampler();
+    [CompilerGeneratedAttribute]
+private void set_Sampler(ISampler value);
+    [AsyncStateMachineAttribute("Jaeger.Samplers.RemoteControlledSampler/<UpdateSampler>d__15")]
+internal void UpdateSampler();
+    private void UpdateRateLimitingOrProbabilisticSampler(SamplingStrategyResponse response);
+    internal void UpdatePerOperationSampler(OperationSamplingParameters samplingParameters);
+    public sealed virtual SamplingStatus Sample(string operation, TraceId id);
+    public virtual string ToString();
+    public sealed virtual void Close();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.RemoteControlledSampler/<GetAtomicValues>d__21")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__14_0(object _);
+}
+public class Jaeger.Samplers.SamplingStatus : ValueObject {
+    [CompilerGeneratedAttribute]
+private bool <IsSampled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, object> <Tags>k__BackingField;
+    public bool IsSampled { get; }
+    public IReadOnlyDictionary`2<string, object> Tags { get; }
+    public SamplingStatus(bool isSampled, IReadOnlyDictionary`2<string, object> tags);
+    [CompilerGeneratedAttribute]
+public bool get_IsSampled();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, object> get_Tags();
+    [IteratorStateMachineAttribute("Jaeger.Samplers.SamplingStatus/<GetAtomicValues>d__7")]
+protected virtual IEnumerable`1<object> GetAtomicValues();
+}
+public interface Jaeger.Senders.ISender {
+    public abstract virtual Task`1<int> AppendAsync(Span span, CancellationToken cancellationToken);
+    public abstract virtual Task`1<int> FlushAsync(CancellationToken cancellationToken);
+    public abstract virtual Task`1<int> CloseAsync(CancellationToken cancellationToken);
+}
+public interface Jaeger.Senders.ISenderFactory {
+    public string FactoryName { get; }
+    public abstract virtual ISender GetSender(ILoggerFactory loggerFactory, SenderConfiguration senderConfiguration);
+    public abstract virtual string get_FactoryName();
+}
+public class Jaeger.Senders.NoopSender : object {
+    public static NoopSender Instance;
+    private static NoopSender();
+    public sealed virtual Task`1<int> AppendAsync(Span span, CancellationToken cancellationToken);
+    public sealed virtual Task`1<int> FlushAsync(CancellationToken cancellationToken);
+    public sealed virtual Task`1<int> CloseAsync(CancellationToken cancellationToken);
+    public virtual string ToString();
+}
+public class Jaeger.Senders.SenderResolver : object {
+    private ILoggerFactory _loggerFactory;
+    private ILogger _logger;
+    private IDictionary`2<string, ISenderFactory> _senderFactories;
+    public SenderResolver(ILoggerFactory loggerFactory);
+    public SenderResolver RegisterSenderFactory();
+    public SenderResolver RegisterSenderFactory(ISenderFactory factory);
+    public ISender Resolve();
+    public ISender Resolve(SenderConfiguration senderConfiguration);
+    private ISenderFactory GetSenderFactory(string requestedFactoryName);
+    private ISender GetSenderFromFactory(ISenderFactory senderFactory, SenderConfiguration configuration);
+}
+public class Jaeger.Span : object {
+    private static IReadOnlyList`1<LogData> EmptyLogs;
+    private static IReadOnlyDictionary`2<string, object> EmptyTags;
+    private static IReadOnlyList`1<Reference> EmptyReferences;
+    private object _lock;
+    private Dictionary`2<string, object> _tags;
+    private IReadOnlyList`1<Reference> _references;
+    private List`1<LogData> _logs;
+    [CompilerGeneratedAttribute]
+private Tracer <Tracer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <StartTimestampUtc>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperationName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SpanContext <Context>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <FinishTimestampUtc>k__BackingField;
+    public Tracer Tracer { get; }
+    public DateTime StartTimestampUtc { get; }
+    public string OperationName { get; private set; }
+    public SpanContext Context { get; private set; }
+    private ISpanContext OpenTracing.ISpan.Context { get; }
+    public Nullable`1<DateTime> FinishTimestampUtc { get; private set; }
+    internal Span(Tracer tracer, string operationName, SpanContext context, DateTime startTimestampUtc, Dictionary`2<string, object> tags, IReadOnlyList`1<Reference> references);
+    private static Span();
+    [CompilerGeneratedAttribute]
+public Tracer get_Tracer();
+    [CompilerGeneratedAttribute]
+public DateTime get_StartTimestampUtc();
+    [CompilerGeneratedAttribute]
+public string get_OperationName();
+    [CompilerGeneratedAttribute]
+private void set_OperationName(string value);
+    [CompilerGeneratedAttribute]
+public SpanContext get_Context();
+    [CompilerGeneratedAttribute]
+private void set_Context(SpanContext value);
+    private sealed virtual override ISpanContext OpenTracing.ISpan.get_Context();
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_FinishTimestampUtc();
+    [CompilerGeneratedAttribute]
+private void set_FinishTimestampUtc(Nullable`1<DateTime> value);
+    public IReadOnlyList`1<Reference> GetReferences();
+    public IReadOnlyDictionary`2<string, object> GetTags();
+    public sealed virtual ISpan SetOperationName(string operationName);
+    public string GetServiceName();
+    public IReadOnlyList`1<LogData> GetLogs();
+    public sealed virtual ISpan SetBaggageItem(string key, string value);
+    public sealed virtual string GetBaggageItem(string key);
+    public virtual string ToString();
+    public sealed virtual void Finish();
+    public sealed virtual void Finish(DateTimeOffset finishTimestamp);
+    private void FinishInternal(DateTime finishTimestampUtc);
+    public sealed virtual ISpan SetTag(string key, bool value);
+    public sealed virtual ISpan SetTag(string key, double value);
+    public sealed virtual ISpan SetTag(string key, int value);
+    public sealed virtual ISpan SetTag(string key, string value);
+    public sealed virtual ISpan SetTag(BooleanTag tag, bool value);
+    public sealed virtual ISpan SetTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpan SetTag(IntTag tag, int value);
+    public sealed virtual ISpan SetTag(StringTag tag, string value);
+    private ISpan SetTagAsObject(string key, object value);
+    public sealed virtual ISpan Log(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    private ISpan LogInternal(DateTime timestampUtc, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(string event);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, string event);
+    private ISpan LogInternal(DateTime timestampUtc, string event);
+    private static IEnumerable`1<KeyValuePair`2<string, object>> AddExceptionLogs(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+}
+internal class Jaeger.SpanBuilder : object {
+    private Tracer _tracer;
+    private string _operationName;
+    private Dictionary`2<string, object> _tags;
+    private Nullable`1<DateTime> _startTimestampUtc;
+    private List`1<Reference> _references;
+    private bool _ignoreActiveSpan;
+    internal SpanBuilder(Tracer tracer, string operationName);
+    public sealed virtual ISpanBuilder AsChildOf(ISpan parent);
+    public sealed virtual ISpanBuilder AsChildOf(ISpanContext parent);
+    public sealed virtual ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext);
+    public sealed virtual ISpanBuilder WithTag(string key, bool value);
+    public sealed virtual ISpanBuilder WithTag(string key, double value);
+    public sealed virtual ISpanBuilder WithTag(string key, int value);
+    public sealed virtual ISpanBuilder WithTag(string key, string value);
+    public sealed virtual ISpanBuilder WithTag(BooleanTag tag, bool value);
+    public sealed virtual ISpanBuilder WithTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpanBuilder WithTag(IntTag tag, int value);
+    public sealed virtual ISpanBuilder WithTag(StringTag tag, string value);
+    public sealed virtual ISpanBuilder WithStartTimestamp(DateTimeOffset startTimestamp);
+    public sealed virtual ISpanBuilder IgnoreActiveSpan();
+    public sealed virtual IScope StartActive();
+    public sealed virtual IScope StartActive(bool finishSpanOnDispose);
+    public sealed virtual ISpan Start();
+    private SpanContext CreateNewContext(string debugId);
+    private IReadOnlyDictionary`2<string, string> CreateChildBaggage();
+    private SpanContext CreateChildContext();
+    internal bool IsRpcServer();
+    private SpanContext PreferredReference();
+    private bool IsSampled();
+    private string DebugId();
+}
+public class Jaeger.SpanContext : object {
+    internal static IReadOnlyDictionary`2<string, string> EmptyBaggage;
+    private string _cachedTraceIdToString;
+    private string _cachedSpanIdToString;
+    [CompilerGeneratedAttribute]
+private TraceId <TraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SpanId <SpanId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SpanId <ParentId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SpanContextFlags <Flags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, string> <Baggage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DebugId>k__BackingField;
+    public TraceId TraceId { get; }
+    public SpanId SpanId { get; }
+    public SpanId ParentId { get; }
+    public SpanContextFlags Flags { get; }
+    internal IReadOnlyDictionary`2<string, string> Baggage { get; }
+    internal string DebugId { get; }
+    public bool IsSampled { get; }
+    public bool IsDebug { get; }
+    private string OpenTracing.ISpanContext.TraceId { get; }
+    private string OpenTracing.ISpanContext.SpanId { get; }
+    public SpanContext(TraceId traceId, SpanId spanId, SpanId parentId, SpanContextFlags flags);
+    internal SpanContext(TraceId traceId, SpanId spanId, SpanId parentId, SpanContextFlags flags, IReadOnlyDictionary`2<string, string> baggage, string debugId);
+    private static SpanContext();
+    [CompilerGeneratedAttribute]
+public TraceId get_TraceId();
+    [CompilerGeneratedAttribute]
+public SpanId get_SpanId();
+    [CompilerGeneratedAttribute]
+public SpanId get_ParentId();
+    [CompilerGeneratedAttribute]
+public SpanContextFlags get_Flags();
+    [CompilerGeneratedAttribute]
+internal IReadOnlyDictionary`2<string, string> get_Baggage();
+    [CompilerGeneratedAttribute]
+internal string get_DebugId();
+    public bool get_IsSampled();
+    public bool get_IsDebug();
+    private sealed virtual override string OpenTracing.ISpanContext.get_TraceId();
+    private sealed virtual override string OpenTracing.ISpanContext.get_SpanId();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> GetBaggageItems();
+    public string GetBaggageItem(string key);
+    public string ContextAsString();
+    public virtual string ToString();
+    public static SpanContext ContextFromString(string value);
+    public SpanContext WithBaggageItem(string key, string value);
+    public SpanContext WithBaggage(Dictionary`2<string, string> newBaggage);
+    public SpanContext WithFlags(SpanContextFlags flags);
+    internal bool IsDebugIdContainerOnly();
+    public static SpanContext WithDebugId(string debugId);
+}
+[FlagsAttribute]
+public enum Jaeger.SpanContextFlags : Enum {
+    public int value__;
+    public static SpanContextFlags None;
+    public static SpanContextFlags Sampled;
+    public static SpanContextFlags Debug;
+}
+[IsReadOnlyAttribute]
+public class Jaeger.SpanId : ValueType {
+    [CompilerGeneratedAttribute]
+private long <Id>k__BackingField;
+    private long Id { get; }
+    public SpanId(long spanId);
+    public SpanId(TraceId traceId);
+    [CompilerGeneratedAttribute]
+private long get_Id();
+    public static SpanId NewUniqueId();
+    public bool Equals(SpanId other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public Byte[] ToByteArray();
+    public static long op_Implicit(SpanId s);
+    public static SpanId FromString(string from);
+}
+[IsReadOnlyAttribute]
+public class Jaeger.TraceId : ValueType {
+    [CompilerGeneratedAttribute]
+private long <High>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Low>k__BackingField;
+    public long High { get; }
+    public long Low { get; }
+    public bool IsZero { get; }
+    public TraceId(long low);
+    public TraceId(long high, long low);
+    [CompilerGeneratedAttribute]
+public long get_High();
+    [CompilerGeneratedAttribute]
+public long get_Low();
+    public bool get_IsZero();
+    public static TraceId NewUniqueId(bool useHigh);
+    public bool Equals(TraceId other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public Byte[] ToByteArray();
+    public static TraceId FromString(string from);
+}
+public class Jaeger.Tracer : object {
+    private BaggageSetter _baggageSetter;
+    private bool _isClosed;
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReporter <Reporter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISampler <Sampler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PropagationRegistry <Registry>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IClock <Clock>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMetrics <Metrics>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ILogger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IScopeManager <ScopeManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, object> <Tags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ZipkinSharedRpcSpan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ExpandExceptionLogs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseTraceId128Bit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <IPv4>k__BackingField;
+    public string ServiceName { get; }
+    public IReporter Reporter { get; }
+    public ISampler Sampler { get; }
+    internal PropagationRegistry Registry { get; }
+    public IClock Clock { get; }
+    public IMetrics Metrics { get; }
+    public ILogger Logger { get; }
+    public IScopeManager ScopeManager { get; }
+    public ISpan ActiveSpan { get; }
+    public IReadOnlyDictionary`2<string, object> Tags { get; }
+    public string Version { get; }
+    public bool ZipkinSharedRpcSpan { get; }
+    public bool ExpandExceptionLogs { get; }
+    public bool UseTraceId128Bit { get; }
+    public long IPv4 { get; }
+    private Tracer(string serviceName, IReporter reporter, ISampler sampler, PropagationRegistry registry, IClock clock, IMetrics metrics, ILoggerFactory loggerFactory, Dictionary`2<string, object> tags, bool zipkinSharedRpcSpan, IScopeManager scopeManager, IBaggageRestrictionManager baggageRestrictionManager, bool expandExceptionLogs, bool useTraceId128Bit);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public IReporter get_Reporter();
+    [CompilerGeneratedAttribute]
+public ISampler get_Sampler();
+    [CompilerGeneratedAttribute]
+internal PropagationRegistry get_Registry();
+    [CompilerGeneratedAttribute]
+public IClock get_Clock();
+    [CompilerGeneratedAttribute]
+public IMetrics get_Metrics();
+    [CompilerGeneratedAttribute]
+public ILogger get_Logger();
+    [CompilerGeneratedAttribute]
+public sealed virtual IScopeManager get_ScopeManager();
+    public sealed virtual ISpan get_ActiveSpan();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, object> get_Tags();
+    [CompilerGeneratedAttribute]
+public string get_Version();
+    [CompilerGeneratedAttribute]
+public bool get_ZipkinSharedRpcSpan();
+    [CompilerGeneratedAttribute]
+public bool get_ExpandExceptionLogs();
+    [CompilerGeneratedAttribute]
+public bool get_UseTraceId128Bit();
+    [CompilerGeneratedAttribute]
+public long get_IPv4();
+    public virtual string ToString();
+    public void ReportSpan(Span span);
+    public sealed virtual ISpanBuilder BuildSpan(string operationName);
+    public sealed virtual void Inject(ISpanContext spanContext, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual ISpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+    public SpanContext SetBaggage(Span span, string key, string value);
+    [AsyncStateMachineAttribute("Jaeger.Tracer/<CloseAsync>d__53")]
+public Task CloseAsync(CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    internal string GetHostName();
+    private static string LoadVersion();
+}
+[ExtensionAttribute]
+public static class Jaeger.Util.DateTimeExtensions : object {
+    private static int DaysPerYear;
+    private static int DaysPer4Years;
+    private static int DaysPer100Years;
+    private static int DaysPer400Years;
+    private static int DaysTo1970;
+    private static long UnixEpochTicks;
+    private static long TicksPerMicrosecond;
+    private static long UnixEpochMicroseconds;
+    [ExtensionAttribute]
+public static long ToUnixTimeMicroseconds(DateTime utcTimestamp);
+    [ExtensionAttribute]
+public static long ToUnixTimeMilliseconds(DateTime utcTimestamp);
+}
+public class Jaeger.Util.DefaultHttpClient : object {
+    private static int TimeoutMs;
+    private HttpClient _httpClient;
+    public DefaultHttpClient(HttpClient httpClient);
+    [AsyncStateMachineAttribute("Jaeger.Util.DefaultHttpClient/<MakeGetRequestAsync>d__3")]
+public sealed virtual Task`1<string> MakeGetRequestAsync(string requestUri);
+    public sealed virtual Task`1<HttpResponseMessage> SendAsync(HttpRequestMessage request);
+}
+public interface Jaeger.Util.IClock {
+    public abstract virtual DateTime UtcNow();
+}
+public interface Jaeger.Util.IHttpClient {
+    public abstract virtual Task`1<string> MakeGetRequestAsync(string urlToRead);
+    public abstract virtual Task`1<HttpResponseMessage> SendAsync(HttpRequestMessage request);
+}
+public class Jaeger.Util.RateLimiter : object {
+    private double _creditsPerMillisecond;
+    private double _maxBalance;
+    private IClock _clock;
+    private double _balance;
+    private long _lastTick;
+    public RateLimiter(double creditsPerSecond, double maxBalance);
+    public RateLimiter(double creditsPerSecond, double maxBalance, IClock clock);
+    public bool CheckCredit(double itemCost);
+}
+public class Jaeger.Util.SystemClock : object {
+    public sealed virtual DateTime UtcNow();
+}
+public static class Jaeger.Util.Utils : object {
+    private static Random Random;
+    private static Utils();
+    public static int IpToInt(string ipAddress);
+    public static int IpToInt(IPAddress ipAddress);
+    public static long UniqueId();
+    public static Byte[] LongToNetworkBytes(long data);
+}
+public abstract class Jaeger.Util.ValueObject : object {
+    protected static bool EqualOperator(ValueObject left, ValueObject right);
+    protected static bool NotEqualOperator(ValueObject left, ValueObject right);
+    protected abstract virtual IEnumerable`1<object> GetAtomicValues();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public ValueObject GetCopy();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}

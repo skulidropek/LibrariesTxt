@@ -1,0 +1,134 @@
+public interface InfluxDB.LineProtocol.Client.ILineProtocolClient {
+    public abstract virtual Task`1<LineProtocolWriteResult> SendAsync(LineProtocolWriter lineProtocolWriter, CancellationToken cancellationToken);
+    public abstract virtual Task`1<LineProtocolWriteResult> WriteAsync(LineProtocolPayload payload, CancellationToken cancellationToken);
+}
+public class InfluxDB.LineProtocol.Client.LineProtocolClient : LineProtocolClientBase {
+    private HttpClient _httpClient;
+    private bool _enableCompression;
+    public LineProtocolClient(Uri serverBaseAddress, string database, string username, string password, bool enableCompression);
+    protected LineProtocolClient(HttpMessageHandler handler, Uri serverBaseAddress, string database, string username, string password, bool enableCompression);
+    [AsyncStateMachineAttribute("InfluxDB.LineProtocol.Client.LineProtocolClient/<OnSendAsync>d__4")]
+protected virtual Task`1<LineProtocolWriteResult> OnSendAsync(string payload, Precision precision, CancellationToken cancellationToken);
+    private Byte[] Compress(Byte[] input);
+}
+public abstract class InfluxDB.LineProtocol.Client.LineProtocolClientBase : object {
+    protected string _database;
+    protected string _username;
+    protected string _password;
+    protected LineProtocolClientBase(Uri serverBaseAddress, string database, string username, string password);
+    public sealed virtual Task`1<LineProtocolWriteResult> WriteAsync(LineProtocolPayload payload, CancellationToken cancellationToken);
+    public sealed virtual Task`1<LineProtocolWriteResult> SendAsync(LineProtocolWriter lineProtocolWriter, CancellationToken cancellationToken);
+    protected abstract virtual Task`1<LineProtocolWriteResult> OnSendAsync(string payload, Precision precision, CancellationToken cancellationToken);
+}
+public class InfluxDB.LineProtocol.Client.LineProtocolUdpClient : LineProtocolClientBase {
+    private UdpClient _udpClient;
+    private string _udpHostName;
+    private int _udpPort;
+    public LineProtocolUdpClient(Uri serverBaseAddress, string database, string username, string password);
+    [AsyncStateMachineAttribute("InfluxDB.LineProtocol.Client.LineProtocolUdpClient/<OnSendAsync>d__4")]
+protected virtual Task`1<LineProtocolWriteResult> OnSendAsync(string payload, Precision precision, CancellationToken cancellationToken);
+}
+public class InfluxDB.LineProtocol.Client.LineProtocolWriteResult : ValueType {
+    [CompilerGeneratedAttribute]
+private bool <Success>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    public bool Success { get; }
+    public string ErrorMessage { get; }
+    public LineProtocolWriteResult(bool success, string errorMessage);
+    [CompilerGeneratedAttribute]
+public bool get_Success();
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+}
+public class InfluxDB.LineProtocol.LineProtocolWriter : object {
+    private static DateTime UnixEpoch;
+    private TextWriter textWriter;
+    private PrecisionResolutionStrategy defaultResolutionStrategy;
+    private LinePosition position;
+    [CompilerGeneratedAttribute]
+private Precision <Precision>k__BackingField;
+    public Precision Precision { get; }
+    public LineProtocolWriter(Precision precision, PrecisionResolutionStrategy defaultResolutionStrategy);
+    private static LineProtocolWriter();
+    [CompilerGeneratedAttribute]
+public Precision get_Precision();
+    public LineProtocolWriter Measurement(string name);
+    public LineProtocolWriter Tag(string name, string value);
+    public LineProtocolWriter Field(string name, float value);
+    public LineProtocolWriter Field(string name, double value);
+    public LineProtocolWriter Field(string name, decimal value);
+    public LineProtocolWriter Field(string name, long value);
+    public LineProtocolWriter Field(string name, string value);
+    public LineProtocolWriter Field(string name, bool value);
+    public void Timestamp(long nanoseconds);
+    public void Timestamp(long nanoseconds, PrecisionResolutionStrategy resolutionStrategy);
+    public void Timestamp(TimeSpan value);
+    public void Timestamp(TimeSpan value, PrecisionResolutionStrategy resolutionStrategy);
+    public void Timestamp(DateTimeOffset value);
+    public void Timestamp(DateTimeOffset value, PrecisionResolutionStrategy resolutionStrategy);
+    public void Timestamp(DateTime value);
+    public void Timestamp(DateTime value, PrecisionResolutionStrategy resolutionStrategy);
+    public virtual string ToString();
+    private void WriteFieldKey(string name);
+    private void WriteEscapedName(string name);
+    private InvalidOperationException InvalidPositionException(string message);
+}
+public class InfluxDB.LineProtocol.Payload.LineProtocolPayload : object {
+    private List`1<LineProtocolPoint> _points;
+    public void Add(LineProtocolPoint point);
+    public void Format(TextWriter textWriter);
+}
+public class InfluxDB.LineProtocol.Payload.LineProtocolPoint : object {
+    [CompilerGeneratedAttribute]
+private string <Measurement>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, object> <Fields>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, string> <Tags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <UtcTimestamp>k__BackingField;
+    public string Measurement { get; }
+    public IReadOnlyDictionary`2<string, object> Fields { get; }
+    public IReadOnlyDictionary`2<string, string> Tags { get; }
+    public Nullable`1<DateTime> UtcTimestamp { get; }
+    public LineProtocolPoint(string measurement, IReadOnlyDictionary`2<string, object> fields, IReadOnlyDictionary`2<string, string> tags, Nullable`1<DateTime> utcTimestamp);
+    [CompilerGeneratedAttribute]
+public string get_Measurement();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, object> get_Fields();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, string> get_Tags();
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_UtcTimestamp();
+    public void Format(TextWriter textWriter);
+}
+internal class InfluxDB.LineProtocol.Payload.LineProtocolSyntax : object {
+    private static DateTime Origin;
+    private static Dictionary`2<Type, Func`2<object, string>> Formatters;
+    private static LineProtocolSyntax();
+    public static string EscapeName(string nameOrKey);
+    public static string FormatValue(object value);
+    private static string FormatInteger(object i);
+    private static string FormatFloat(object f);
+    private static string FormatTimespan(object ts);
+    private static string FormatBoolean(object b);
+    private static string FormatString(string s);
+    public static string FormatTimestamp(DateTime utcTimestamp);
+}
+public enum InfluxDB.LineProtocol.Precision : Enum {
+    public long value__;
+    public static Precision Nanoseconds;
+    public static Precision Microseconds;
+    public static Precision Milliseconds;
+    public static Precision Seconds;
+    public static Precision Minutes;
+    public static Precision Hours;
+}
+public enum InfluxDB.LineProtocol.PrecisionResolutionStrategy : Enum {
+    public int value__;
+    public static PrecisionResolutionStrategy Error;
+    public static PrecisionResolutionStrategy Round;
+    public static PrecisionResolutionStrategy Floor;
+    public static PrecisionResolutionStrategy Ceiling;
+}

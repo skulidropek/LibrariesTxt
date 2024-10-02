@@ -1,0 +1,1560 @@
+[DataContractAttribute]
+public class Microsoft.VisualStudio.TestPlatform.Common.DataCollection.BeforeTestRunStartResult : object {
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <EnvironmentVariables>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <DataCollectionEventsPort>k__BackingField;
+    [DataMemberAttribute]
+public IDictionary`2<string, string> EnvironmentVariables { get; private set; }
+    [DataMemberAttribute]
+public int DataCollectionEventsPort { get; private set; }
+    public BeforeTestRunStartResult(IDictionary`2<string, string> environmentVariables, int dataCollectionEventsPort);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_EnvironmentVariables();
+    [CompilerGeneratedAttribute]
+private void set_EnvironmentVariables(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public int get_DataCollectionEventsPort();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectionEventsPort(int value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.DataCollectionAttachmentManager : object {
+    private static object attachmentTaskLock;
+    private static string DefaultOutputDirectoryName;
+    private IMessageSink messageSink;
+    private Dictionary`2<DataCollectionContext, List`1<Task>> attachmentTasks;
+    private CancellationTokenSource cancellationTokenSource;
+    private IFileHelper fileHelper;
+    [CompilerGeneratedAttribute]
+private string <SessionOutputDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<DataCollectionContext, Dictionary`2<Uri, AttachmentSet>> <AttachmentSets>k__BackingField;
+    internal string SessionOutputDirectory { get; private set; }
+    internal Dictionary`2<DataCollectionContext, Dictionary`2<Uri, AttachmentSet>> AttachmentSets { get; private set; }
+    protected DataCollectionAttachmentManager(IFileHelper fileHelper);
+    private static DataCollectionAttachmentManager();
+    [CompilerGeneratedAttribute]
+internal string get_SessionOutputDirectory();
+    [CompilerGeneratedAttribute]
+private void set_SessionOutputDirectory(string value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<DataCollectionContext, Dictionary`2<Uri, AttachmentSet>> get_AttachmentSets();
+    [CompilerGeneratedAttribute]
+private void set_AttachmentSets(Dictionary`2<DataCollectionContext, Dictionary`2<Uri, AttachmentSet>> value);
+    public sealed virtual void Initialize(SessionId id, string outputDirectory, IMessageSink messageSink);
+    public sealed virtual List`1<AttachmentSet> GetAttachments(DataCollectionContext dataCollectionContext);
+    public sealed virtual void AddAttachment(FileTransferInformation fileTransferInfo, AsyncCompletedEventHandler sendFileCompletedCallback, Uri uri, string friendlyName);
+    public sealed virtual void Cancel();
+    private static void Validate(FileTransferInformation fileTransferInfo, string localFilePath);
+    private void AddNewFileTransfer(FileTransferInformation fileTransferInfo, AsyncCompletedEventHandler sendFileCompletedCallback, Uri uri, string friendlyName);
+    private void LogError(string errorMessage, Uri collectorUri, string collectorFriendlyName, Guid testCaseId);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.DataCollectionEnvironmentVariable : object {
+    private KeyValuePair`2<string, string> variable;
+    private List`1<string> dataCollectorsThatRequested;
+    public string Name { get; }
+    public string Value { get; }
+    public string FirstDataCollectorThatRequested { get; }
+    public DataCollectionEnvironmentVariable(KeyValuePair`2<string, string> variable, string requestingDataCollectorFriendlyName);
+    public string get_Name();
+    public string get_Value();
+    public string get_FirstDataCollectorThatRequested();
+    public void AddRequestingDataCollector(string requestingDataCollectorFriendlyName);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.DataCollectionManager : object {
+    private static object syncObject;
+    private bool isDataCollectionEnabled;
+    private DataCollectionEnvironmentContext dataCollectionEnvironmentContext;
+    private IDataCollectionAttachmentManager attachmentManager;
+    private IMessageSink messageSink;
+    private TestPlatformDataCollectionEvents events;
+    private bool disposed;
+    private DataCollectorExtensionManager dataCollectorExtensionManager;
+    [CompilerGeneratedAttribute]
+private static DataCollectionManager <Instance>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<Type, DataCollectorInformation> <RunDataCollectors>k__BackingField;
+    public static DataCollectionManager Instance { get; private set; }
+    internal Dictionary`2<Type, DataCollectorInformation> RunDataCollectors { get; private set; }
+    private DataCollectorExtensionManager DataCollectorExtensionManager { get; }
+    internal DataCollectionManager(IMessageSink messageSink);
+    protected DataCollectionManager(IDataCollectionAttachmentManager datacollectionAttachmentManager, IMessageSink messageSink);
+    private static DataCollectionManager();
+    [CompilerGeneratedAttribute]
+public static DataCollectionManager get_Instance();
+    [CompilerGeneratedAttribute]
+private static void set_Instance(DataCollectionManager value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<Type, DataCollectorInformation> get_RunDataCollectors();
+    [CompilerGeneratedAttribute]
+private void set_RunDataCollectors(Dictionary`2<Type, DataCollectorInformation> value);
+    private DataCollectorExtensionManager get_DataCollectorExtensionManager();
+    public static DataCollectionManager Create(IMessageSink messageSink);
+    public sealed virtual IDictionary`2<string, string> InitializeDataCollectors(string settingsXml);
+    public sealed virtual void Dispose();
+    public sealed virtual Collection`1<AttachmentSet> SessionEnded(bool isCancelled);
+    public sealed virtual void TestHostLaunched(int processId);
+    public sealed virtual bool SessionStarted();
+    public sealed virtual void TestCaseStarted(TestCaseStartEventArgs testCaseStartEventArgs);
+    public sealed virtual Collection`1<AttachmentSet> TestCaseEnded(TestCaseEndEventArgs testCaseEndEventArgs);
+    protected virtual void Dispose(bool disposing);
+    private void CleanupPlugins();
+    protected virtual bool TryGetUriFromFriendlyName(string friendlyName, String& dataCollectorUri);
+    protected virtual DataCollector TryGetTestExtension(string extensionUri);
+    private void LoadAndInitialize(DataCollectorSettings dataCollectorSettings, string settingsXml);
+    private List`1<DataCollectorSettings> GetDataCollectorsEnabledForRun(DataCollectionRunSettings dataCollectionSettings);
+    private void LogWarning(string warningMessage);
+    private void SendEvent(DataCollectionEventArgs args);
+    private Dictionary`2<string, DataCollectionEnvironmentVariable> GetEnvironmentVariables(Boolean& unloadedAnyCollector);
+    private void AddCollectorEnvironmentVariables(DataCollectorInformation dataCollectionWrapper, Dictionary`2<string, DataCollectionEnvironmentVariable> dataCollectorEnvironmentVariables);
+    private void RemoveDataCollectors(IReadOnlyCollection`1<DataCollectorInformation> dataCollectorsToRemove);
+    private void LogAttachments(List`1<AttachmentSet> attachmentSets);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.DataCollectorConfig : TestExtensionPluginInformation {
+    [CompilerGeneratedAttribute]
+private Type <DataCollectorType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <TypeUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public Type DataCollectorType { get; private set; }
+    public Uri TypeUri { get; private set; }
+    public string FriendlyName { get; private set; }
+    public string IdentifierData { get; }
+    public ICollection`1<object> Metadata { get; }
+    public DataCollectorConfig(Type type);
+    [CompilerGeneratedAttribute]
+public Type get_DataCollectorType();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectorType(Type value);
+    [CompilerGeneratedAttribute]
+public Uri get_TypeUri();
+    [CompilerGeneratedAttribute]
+private void set_TypeUri(Uri value);
+    [CompilerGeneratedAttribute]
+public string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+    public virtual string get_IdentifierData();
+    public virtual ICollection`1<object> get_Metadata();
+    private static Uri GetTypeUri(Type dataCollectorType);
+    private static string GetFriendlyName(Type dataCollectorType);
+    private static Object[] GetAttributes(Type dataCollectorType, Type attributeType);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.DataCollectorInformation : object {
+    [CompilerGeneratedAttribute]
+private DataCollector <DataCollector>k__BackingField;
+    [CompilerGeneratedAttribute]
+private XmlElement <ConfigurationElement>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectorConfig <DataCollectorConfig>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TestPlatformDataCollectionEvents <Events>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TestPlatformDataCollectionSink <DataCollectionSink>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectionEnvironmentContext <EnvironmentContext>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TestPlatformDataCollectionLogger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SettingsXml>k__BackingField;
+    private static string DefaultConfigurationSettings;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<KeyValuePair`2<string, string>> <TestExecutionEnvironmentVariables>k__BackingField;
+    public DataCollector DataCollector { get; public set; }
+    public XmlElement ConfigurationElement { get; public set; }
+    public DataCollectorConfig DataCollectorConfig { get; public set; }
+    public TestPlatformDataCollectionEvents Events { get; private set; }
+    public TestPlatformDataCollectionSink DataCollectionSink { get; private set; }
+    public DataCollectionEnvironmentContext EnvironmentContext { get; private set; }
+    public TestPlatformDataCollectionLogger Logger { get; private set; }
+    private string SettingsXml { get; private set; }
+    public IEnumerable`1<KeyValuePair`2<string, string>> TestExecutionEnvironmentVariables { get; public set; }
+    internal DataCollectorInformation(DataCollector dataCollector, XmlElement configurationElement, DataCollectorConfig dataCollectorConfig, DataCollectionEnvironmentContext environmentContext, IDataCollectionAttachmentManager attachmentManager, TestPlatformDataCollectionEvents events, IMessageSink messageSink, string settingsXml);
+    [CompilerGeneratedAttribute]
+public DataCollector get_DataCollector();
+    [CompilerGeneratedAttribute]
+public void set_DataCollector(DataCollector value);
+    [CompilerGeneratedAttribute]
+public XmlElement get_ConfigurationElement();
+    [CompilerGeneratedAttribute]
+public void set_ConfigurationElement(XmlElement value);
+    [CompilerGeneratedAttribute]
+public DataCollectorConfig get_DataCollectorConfig();
+    [CompilerGeneratedAttribute]
+public void set_DataCollectorConfig(DataCollectorConfig value);
+    [CompilerGeneratedAttribute]
+public TestPlatformDataCollectionEvents get_Events();
+    [CompilerGeneratedAttribute]
+private void set_Events(TestPlatformDataCollectionEvents value);
+    [CompilerGeneratedAttribute]
+public TestPlatformDataCollectionSink get_DataCollectionSink();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectionSink(TestPlatformDataCollectionSink value);
+    [CompilerGeneratedAttribute]
+public DataCollectionEnvironmentContext get_EnvironmentContext();
+    [CompilerGeneratedAttribute]
+private void set_EnvironmentContext(DataCollectionEnvironmentContext value);
+    [CompilerGeneratedAttribute]
+public TestPlatformDataCollectionLogger get_Logger();
+    [CompilerGeneratedAttribute]
+private void set_Logger(TestPlatformDataCollectionLogger value);
+    [CompilerGeneratedAttribute]
+private string get_SettingsXml();
+    [CompilerGeneratedAttribute]
+private void set_SettingsXml(string value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<KeyValuePair`2<string, string>> get_TestExecutionEnvironmentVariables();
+    [CompilerGeneratedAttribute]
+public void set_TestExecutionEnvironmentVariables(IEnumerable`1<KeyValuePair`2<string, string>> value);
+    internal void InitializeDataCollector();
+    private void UpdateConfigurationElement();
+    private static void AppendChildNodeOrInnerText(XmlDocument doc, XmlElement owner, string elementName, string nameSpaceUri, string innerText);
+    internal void DisposeDataCollector();
+    public void SetTestExecutionEnvironmentVariables();
+}
+internal interface Microsoft.VisualStudio.TestPlatform.Common.DataCollector.Interfaces.IDataCollectionAttachmentManager {
+    public abstract virtual void Initialize(SessionId id, string outputDirectory, IMessageSink messageSink);
+    public abstract virtual List`1<AttachmentSet> GetAttachments(DataCollectionContext dataCollectionContext);
+    public abstract virtual void AddAttachment(FileTransferInformation fileTransferInfo, AsyncCompletedEventHandler sendFileCompletedCallback, Uri dataCollectorUri, string friendlyName);
+    public abstract virtual void Cancel();
+}
+internal interface Microsoft.VisualStudio.TestPlatform.Common.DataCollector.Interfaces.IDataCollectionManager {
+    public abstract virtual IDictionary`2<string, string> InitializeDataCollectors(string settingsXml);
+    public abstract virtual void TestCaseStarted(TestCaseStartEventArgs testCaseStartEventArgs);
+    public abstract virtual Collection`1<AttachmentSet> TestCaseEnded(TestCaseEndEventArgs testCaseEndEventArgs);
+    public abstract virtual void TestHostLaunched(int processId);
+    public abstract virtual bool SessionStarted();
+    public abstract virtual Collection`1<AttachmentSet> SessionEnded(bool isCancelled);
+}
+internal interface Microsoft.VisualStudio.TestPlatform.Common.DataCollector.Interfaces.IMessageSink {
+    public abstract virtual void SendMessage(DataCollectionMessageEventArgs args);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.TestPlatformDataCollectionEvents : DataCollectionEvents {
+    private Dictionary`2<Type, EventInvoker> eventArgsToEventInvokerMap;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestHostLaunchedEventArgs> TestHostLaunched;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<SessionStartEventArgs> SessionStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<SessionEndEventArgs> SessionEnd;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestCaseStartEventArgs> TestCaseStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestCaseEndEventArgs> TestCaseEnd;
+    [CompilerGeneratedAttribute]
+public virtual void add_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestHostLaunched(EventHandler`1<TestHostLaunchedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_SessionStart(EventHandler`1<SessionStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_SessionEnd(EventHandler`1<SessionEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestCaseStart(EventHandler`1<TestCaseStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestCaseEnd(EventHandler`1<TestCaseEndEventArgs> value);
+    internal void RaiseEvent(DataCollectionEventArgs e);
+    internal bool AreTestCaseEventsSubscribed();
+    private bool HasEventListener(MulticastDelegate eventToCheck, bool valueOnFailure);
+    private void OnTestHostLaunched(DataCollectionEventArgs e);
+    private void OnSessionStart(DataCollectionEventArgs e);
+    private void OnSessionEnd(DataCollectionEventArgs e);
+    private void OnTestCaseStart(DataCollectionEventArgs e);
+    private void OnTestCaseEnd(DataCollectionEventArgs e);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.TestPlatformDataCollectionLogger : DataCollectionLogger {
+    private DataCollectorConfig dataCollectorConfig;
+    private IMessageSink sink;
+    internal TestPlatformDataCollectionLogger(IMessageSink sink, DataCollectorConfig dataCollectorConfig);
+    public virtual void LogError(DataCollectionContext context, string text);
+    public virtual void LogError(DataCollectionContext context, string text, Exception exception);
+    public virtual void LogWarning(DataCollectionContext context, string text);
+    private void SendTextMessage(DataCollectionContext context, string text, TestMessageLevel level);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.DataCollector.TestPlatformDataCollectionSink : DataCollectionSink {
+    [CompilerGeneratedAttribute]
+private AsyncCompletedEventHandler SendFileCompleted;
+    [CompilerGeneratedAttribute]
+private IDataCollectionAttachmentManager <AttachmentManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DataCollectorConfig <DataCollectorConfig>k__BackingField;
+    private IDataCollectionAttachmentManager AttachmentManager { get; private set; }
+    private DataCollectorConfig DataCollectorConfig { get; private set; }
+    internal TestPlatformDataCollectionSink(IDataCollectionAttachmentManager attachmentManager, DataCollectorConfig dataCollectorConfig);
+    [CompilerGeneratedAttribute]
+public virtual void add_SendFileCompleted(AsyncCompletedEventHandler value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_SendFileCompleted(AsyncCompletedEventHandler value);
+    [CompilerGeneratedAttribute]
+private IDataCollectionAttachmentManager get_AttachmentManager();
+    [CompilerGeneratedAttribute]
+private void set_AttachmentManager(IDataCollectionAttachmentManager value);
+    [CompilerGeneratedAttribute]
+private DataCollectorConfig get_DataCollectorConfig();
+    [CompilerGeneratedAttribute]
+private void set_DataCollectorConfig(DataCollectorConfig value);
+    public virtual void SendFileAsync(FileTransferInformation fileTransferInformation);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Exceptions.InvalidLoggerException : TestPlatformException {
+    public InvalidLoggerException(string message);
+    public InvalidLoggerException(string message, Exception innerException);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.DataCollectorExtensionManager : TestExtensionManager`2<DataCollector, IDataCollectorCapabilities> {
+    protected DataCollectorExtensionManager(IEnumerable`1<LazyExtension`2<DataCollector, Dictionary`2<string, object>>> unfilteredTestExtensions, IEnumerable`1<LazyExtension`2<DataCollector, IDataCollectorCapabilities>> testExtensions, IMessageLogger logger);
+    public static DataCollectorExtensionManager Create(IMessageLogger messageLogger);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.DataCollectorMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <ExtensionUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public string ExtensionUri { get; private set; }
+    public string FriendlyName { get; private set; }
+    public DataCollectorMetadata(string extension, string friendlyName);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ExtensionUri();
+    [CompilerGeneratedAttribute]
+private void set_ExtensionUri(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestDiscovererMetadata : object {
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <FileExtension>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <DefaultExecutorUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private AssemblyType <AssemblyType>k__BackingField;
+    public IEnumerable`1<string> FileExtension { get; private set; }
+    public Uri DefaultExecutorUri { get; private set; }
+    public AssemblyType AssemblyType { get; private set; }
+    public TestDiscovererMetadata(IReadOnlyCollection`1<string> fileExtensions, string defaultExecutorUri, AssemblyType assemblyType);
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<string> get_FileExtension();
+    [CompilerGeneratedAttribute]
+private void set_FileExtension(IEnumerable`1<string> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Uri get_DefaultExecutorUri();
+    [CompilerGeneratedAttribute]
+private void set_DefaultExecutorUri(Uri value);
+    [CompilerGeneratedAttribute]
+public sealed virtual AssemblyType get_AssemblyType();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyType(AssemblyType value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestDiscoveryExtensionManager : object {
+    private static TestDiscoveryExtensionManager testDiscoveryExtensionManager;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<LazyExtension`2<ITestDiscoverer, Dictionary`2<string, object>>> <UnfilteredDiscoverers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> <Discoverers>k__BackingField;
+    public IEnumerable`1<LazyExtension`2<ITestDiscoverer, Dictionary`2<string, object>>> UnfilteredDiscoverers { get; private set; }
+    public IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> Discoverers { get; private set; }
+    protected TestDiscoveryExtensionManager(IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> discoverers, IEnumerable`1<LazyExtension`2<ITestDiscoverer, Dictionary`2<string, object>>> unfilteredDiscoverers);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<LazyExtension`2<ITestDiscoverer, Dictionary`2<string, object>>> get_UnfilteredDiscoverers();
+    [CompilerGeneratedAttribute]
+private void set_UnfilteredDiscoverers(IEnumerable`1<LazyExtension`2<ITestDiscoverer, Dictionary`2<string, object>>> value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> get_Discoverers();
+    [CompilerGeneratedAttribute]
+private void set_Discoverers(IEnumerable`1<LazyExtension`2<ITestDiscoverer, ITestDiscovererCapabilities>> value);
+    public static TestDiscoveryExtensionManager Create();
+    public static TestDiscoveryExtensionManager GetDiscoveryExtensionManager(string extensionAssembly);
+    internal static void LoadAndInitializeAllExtensions(bool throwOnError);
+    internal static void Destroy();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestExecutorExtensionManager : TestExtensionManager`2<ITestExecutor, ITestExecutorCapabilities> {
+    private static TestExecutorExtensionManager testExecutorExtensionManager;
+    private static object synclock;
+    protected TestExecutorExtensionManager(IEnumerable`1<LazyExtension`2<ITestExecutor, Dictionary`2<string, object>>> unfilteredTestExtensions, IEnumerable`1<LazyExtension`2<ITestExecutor, ITestExecutorCapabilities>> testExtensions, IMessageLogger logger);
+    private static TestExecutorExtensionManager();
+    internal static TestExecutorExtensionManager Create();
+    internal static TestExecutorExtensionManager GetExecutionExtensionManager(string extensionAssembly);
+    internal static void Destroy();
+    internal static void LoadAndInitializeAllExtensions(bool shouldThrowOnError);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestExecutorMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <ExtensionUri>k__BackingField;
+    public string ExtensionUri { get; private set; }
+    public TestExecutorMetadata(string extensionUri);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ExtensionUri();
+    [CompilerGeneratedAttribute]
+private void set_ExtensionUri(string value);
+}
+internal abstract class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestExtensionManager`2 : object {
+    private IMessageLogger logger;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<LazyExtension`2<TExtension, Dictionary`2<string, object>>> <UnfilteredTestExtensions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<LazyExtension`2<TExtension, TMetadata>> <TestExtensions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<Uri, LazyExtension`2<TExtension, TMetadata>> <TestExtensionByUri>k__BackingField;
+    public IEnumerable`1<LazyExtension`2<TExtension, Dictionary`2<string, object>>> UnfilteredTestExtensions { get; private set; }
+    public IEnumerable`1<LazyExtension`2<TExtension, TMetadata>> TestExtensions { get; private set; }
+    public Dictionary`2<Uri, LazyExtension`2<TExtension, TMetadata>> TestExtensionByUri { get; private set; }
+    protected TestExtensionManager`2(IEnumerable`1<LazyExtension`2<TExtension, Dictionary`2<string, object>>> unfilteredTestExtensions, IEnumerable`1<LazyExtension`2<TExtension, TMetadata>> testExtensions, IMessageLogger logger);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<LazyExtension`2<TExtension, Dictionary`2<string, object>>> get_UnfilteredTestExtensions();
+    [CompilerGeneratedAttribute]
+private void set_UnfilteredTestExtensions(IEnumerable`1<LazyExtension`2<TExtension, Dictionary`2<string, object>>> value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<LazyExtension`2<TExtension, TMetadata>> get_TestExtensions();
+    [CompilerGeneratedAttribute]
+private void set_TestExtensions(IEnumerable`1<LazyExtension`2<TExtension, TMetadata>> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<Uri, LazyExtension`2<TExtension, TMetadata>> get_TestExtensionByUri();
+    [CompilerGeneratedAttribute]
+private void set_TestExtensionByUri(Dictionary`2<Uri, LazyExtension`2<TExtension, TMetadata>> value);
+    public LazyExtension`2<TExtension, TMetadata> TryGetTestExtension(Uri extensionUri);
+    public LazyExtension`2<TExtension, TMetadata> TryGetTestExtension(string extensionUri);
+    private void PopulateMap();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestLoggerExtensionManager : TestExtensionManager`2<ITestLogger, ITestLoggerCapabilities> {
+    protected TestLoggerExtensionManager(IEnumerable`1<LazyExtension`2<ITestLogger, Dictionary`2<string, object>>> unfilteredTestExtensions, IEnumerable`1<LazyExtension`2<ITestLogger, ITestLoggerCapabilities>> testExtensions, IMessageLogger logger);
+    public static TestLoggerExtensionManager Create(IMessageLogger messageLogger);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestLoggerMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <ExtensionUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public string ExtensionUri { get; private set; }
+    public string FriendlyName { get; private set; }
+    public TestLoggerMetadata(string extension, string friendlyName);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ExtensionUri();
+    [CompilerGeneratedAttribute]
+private void set_ExtensionUri(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestPluginCache : object {
+    private Dictionary`2<string, Assembly> resolvedAssemblies;
+    private List`1<string> filterableExtensionPaths;
+    private List`1<string> unfilterableExtensionPaths;
+    private AssemblyResolver assemblyResolver;
+    private object lockForExtensionsUpdate;
+    private static TestPluginCache instance;
+    private List`1<string> defaultExtensionPaths;
+    [CompilerGeneratedAttribute]
+private TestExtensions <TestExtensions>k__BackingField;
+    public static TestPluginCache Instance { get; internal set; }
+    internal TestExtensions TestExtensions { get; private set; }
+    internal IEnumerable`1<string> DefaultExtensionPaths { get; internal set; }
+    public static TestPluginCache get_Instance();
+    internal static void set_Instance(TestPluginCache value);
+    [CompilerGeneratedAttribute]
+internal TestExtensions get_TestExtensions();
+    [CompilerGeneratedAttribute]
+private void set_TestExtensions(TestExtensions value);
+    public List`1<string> GetExtensionPaths(string endsWithPattern, bool skipDefaultExtensions);
+    public Dictionary`2<string, TPluginInfo> DiscoverTestExtensions(string endsWithPattern);
+    public void UpdateExtensions(IEnumerable`1<string> additionalExtensionsPath, bool skipExtensionFilters);
+    public void ClearExtensions();
+    internal IEnumerable`1<string> get_DefaultExtensionPaths();
+    internal void set_DefaultExtensionPaths(IEnumerable`1<string> value);
+    internal Dictionary`2<string, TPluginInfo> GetTestExtensions(string extensionAssembly);
+    internal IList`1<string> GetResolutionPaths(string extensionAssembly);
+    internal IList`1<string> GetDefaultResolutionPaths();
+    protected virtual IEnumerable`1<string> GetFilteredExtensions(List`1<string> extensions, string endsWithPattern);
+    private static bool TryMergeExtensionPaths(List`1<string> extensionsList, List`1<string> additionalExtensions, List`1& mergedExtensionsList);
+    private Dictionary`2<string, TPluginInfo> GetTestExtensions(IEnumerable`1<string> extensionPaths);
+    private void SetupAssemblyResolver(string extensionAssembly);
+    private Assembly CurrentDomainAssemblyResolve(object sender, AssemblyResolveEventArgs args);
+    private void LogExtensions();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestPluginDiscoverer : object {
+    private IFileHelper fileHelper;
+    internal TestPluginDiscoverer(IFileHelper fileHelper);
+    public Dictionary`2<string, TPluginInfo> GetTestExtensionsInformation(IEnumerable`1<string> extensionPaths);
+    private void AddKnownExtensions(IEnumerable`1& extensionPaths);
+    private void GetTestExtensionsFromFiles(String[] files, Dictionary`2<string, TPluginInfo> pluginInfos);
+    private void GetTestExtensionsFromAssembly(Assembly assembly, Dictionary`2<string, TPluginInfo> pluginInfos);
+    private void GetTestExtensionFromType(Type type, Type extensionType, Dictionary`2<string, TPluginInfo> extensionCollection);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.TestPluginManager : object {
+    private static TestPluginManager instance;
+    public static TestPluginManager Instance { get; }
+    public static TestPluginManager get_Instance();
+    public static Type GetTestExtensionType(string extensionTypeName);
+    public static T CreateTestExtension(Type extensionType);
+    public void GetSpecificTestExtensions(string endsWithPattern, IEnumerable`1& unfiltered, IEnumerable`1& filtered);
+    public void GetTestExtensions(string extensionAssembly, IEnumerable`1& unfiltered, IEnumerable`1& filtered);
+    private IEnumerable`1<TestPluginInformation> GetValuesFromDictionary(Dictionary`2<string, T> dictionary);
+    private void GetExtensions(Dictionary`2<string, TPluginInfo> testPluginInfo, IEnumerable`1& unfiltered, IEnumerable`1& filtered);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.LazyExtension`2 : object {
+    private static object synclock;
+    private TExtension extension;
+    private TMetadata metadata;
+    private TestPluginInformation testPluginInfo;
+    private Type metadataType;
+    private bool isExtensionCreated;
+    private Func`1<TExtension> extensionCreator;
+    internal bool IsExtensionCreated { get; }
+    public TExtension Value { get; }
+    public TMetadata Metadata { get; }
+    public LazyExtension`2(TExtension instance, TMetadata metadata);
+    public LazyExtension`2(TestPluginInformation pluginInfo, Type metadataType);
+    public LazyExtension`2(TestPluginInformation pluginInfo, TMetadata metadata);
+    public LazyExtension`2(Func`1<TExtension> creator, TMetadata metadata);
+    private static LazyExtension`2();
+    internal bool get_IsExtensionCreated();
+    public TExtension get_Value();
+    public TMetadata get_Metadata();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestDiscovererPluginInformation : TestPluginInformation {
+    [CompilerGeneratedAttribute]
+private List`1<string> <FileExtensions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DefaultExecutorUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private AssemblyType <AssemblyType>k__BackingField;
+    public ICollection`1<object> Metadata { get; }
+    public List`1<string> FileExtensions { get; private set; }
+    public string DefaultExecutorUri { get; private set; }
+    public AssemblyType AssemblyType { get; private set; }
+    public TestDiscovererPluginInformation(Type testDiscovererType);
+    public virtual ICollection`1<object> get_Metadata();
+    [CompilerGeneratedAttribute]
+public List`1<string> get_FileExtensions();
+    [CompilerGeneratedAttribute]
+private void set_FileExtensions(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public string get_DefaultExecutorUri();
+    [CompilerGeneratedAttribute]
+private void set_DefaultExecutorUri(string value);
+    [CompilerGeneratedAttribute]
+public AssemblyType get_AssemblyType();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyType(AssemblyType value);
+    private static List`1<string> GetFileExtensions(Type testDicovererType);
+    private static string GetDefaultExecutorUri(Type testDiscovererType);
+    private AssemblyType GetAssemblyType(Type testDiscovererType);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestExecutorPluginInformation : TestExtensionPluginInformation {
+    public TestExecutorPluginInformation(Type testExecutorType);
+}
+internal abstract class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestExtensionPluginInformation : TestPluginInformation {
+    [CompilerGeneratedAttribute]
+private string <ExtensionUri>k__BackingField;
+    public string IdentifierData { get; }
+    public ICollection`1<object> Metadata { get; }
+    public string ExtensionUri { get; private set; }
+    public TestExtensionPluginInformation(Type type);
+    public virtual string get_IdentifierData();
+    public virtual ICollection`1<object> get_Metadata();
+    [CompilerGeneratedAttribute]
+public string get_ExtensionUri();
+    [CompilerGeneratedAttribute]
+private void set_ExtensionUri(string value);
+    private static string GetExtensionUri(Type testLoggerType);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestExtensions : object {
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, TestDiscovererPluginInformation> <TestDiscoverers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestDiscoverersCached>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, TestExecutorPluginInformation> <TestExecutors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestExecutorsCached>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, TestSettingsProviderPluginInformation> <TestSettingsProviders>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestSettingsProvidersCached>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, TestLoggerPluginInformation> <TestLoggers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestLoggersCached>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, TestRuntimePluginInformation> <TestHosts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestHostsCached>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, DataCollectorConfig> <DataCollectors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreDataCollectorsCached>k__BackingField;
+    internal Dictionary`2<string, TestDiscovererPluginInformation> TestDiscoverers { get; internal set; }
+    internal bool AreTestDiscoverersCached { get; internal set; }
+    internal Dictionary`2<string, TestExecutorPluginInformation> TestExecutors { get; internal set; }
+    internal bool AreTestExecutorsCached { get; internal set; }
+    internal Dictionary`2<string, TestSettingsProviderPluginInformation> TestSettingsProviders { get; internal set; }
+    internal bool AreTestSettingsProvidersCached { get; internal set; }
+    internal Dictionary`2<string, TestLoggerPluginInformation> TestLoggers { get; internal set; }
+    internal bool AreTestLoggersCached { get; internal set; }
+    internal Dictionary`2<string, TestRuntimePluginInformation> TestHosts { get; internal set; }
+    internal bool AreTestHostsCached { get; internal set; }
+    internal Dictionary`2<string, DataCollectorConfig> DataCollectors { get; internal set; }
+    internal bool AreDataCollectorsCached { get; internal set; }
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, TestDiscovererPluginInformation> get_TestDiscoverers();
+    [CompilerGeneratedAttribute]
+internal void set_TestDiscoverers(Dictionary`2<string, TestDiscovererPluginInformation> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreTestDiscoverersCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreTestDiscoverersCached(bool value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, TestExecutorPluginInformation> get_TestExecutors();
+    [CompilerGeneratedAttribute]
+internal void set_TestExecutors(Dictionary`2<string, TestExecutorPluginInformation> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreTestExecutorsCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreTestExecutorsCached(bool value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, TestSettingsProviderPluginInformation> get_TestSettingsProviders();
+    [CompilerGeneratedAttribute]
+internal void set_TestSettingsProviders(Dictionary`2<string, TestSettingsProviderPluginInformation> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreTestSettingsProvidersCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreTestSettingsProvidersCached(bool value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, TestLoggerPluginInformation> get_TestLoggers();
+    [CompilerGeneratedAttribute]
+internal void set_TestLoggers(Dictionary`2<string, TestLoggerPluginInformation> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreTestLoggersCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreTestLoggersCached(bool value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, TestRuntimePluginInformation> get_TestHosts();
+    [CompilerGeneratedAttribute]
+internal void set_TestHosts(Dictionary`2<string, TestRuntimePluginInformation> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreTestHostsCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreTestHostsCached(bool value);
+    [CompilerGeneratedAttribute]
+internal Dictionary`2<string, DataCollectorConfig> get_DataCollectors();
+    [CompilerGeneratedAttribute]
+internal void set_DataCollectors(Dictionary`2<string, DataCollectorConfig> value);
+    [CompilerGeneratedAttribute]
+internal bool get_AreDataCollectorsCached();
+    [CompilerGeneratedAttribute]
+internal void set_AreDataCollectorsCached(bool value);
+    internal Dictionary`2<string, TPluginInfo> AddExtension(Dictionary`2<string, TPluginInfo> newExtensions);
+    internal TestExtensions GetExtensionsDiscoveredFromAssembly(string extensionAssembly);
+    internal Dictionary`2<string, TPluginInfo> GetTestExtensionCache();
+    internal bool AreTestExtensionsCached();
+    internal void SetTestExtensionsCacheStatus();
+    internal void InvalidateCache();
+    internal Dictionary`2<string, TPluginInfo> GetExtensionsDiscoveredFromAssembly(Dictionary`2<string, TPluginInfo> extensionCollection, string extensionAssembly);
+    private void SetTestExtensionCache(Dictionary`2<string, TPluginInfo> testPluginInfos);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestLoggerPluginInformation : TestExtensionPluginInformation {
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public string FriendlyName { get; private set; }
+    public ICollection`1<object> Metadata { get; }
+    public TestLoggerPluginInformation(Type testLoggerType);
+    [CompilerGeneratedAttribute]
+public string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+    public virtual ICollection`1<object> get_Metadata();
+    private static string GetFriendlyName(Type testLoggerType);
+}
+public abstract class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestPluginInformation : object {
+    [CompilerGeneratedAttribute]
+private string <AssemblyQualifiedName>k__BackingField;
+    public string IdentifierData { get; }
+    public ICollection`1<object> Metadata { get; }
+    public string AssemblyQualifiedName { get; private set; }
+    protected TestPluginInformation(Type testExtensionType);
+    public virtual string get_IdentifierData();
+    public virtual ICollection`1<object> get_Metadata();
+    [CompilerGeneratedAttribute]
+public string get_AssemblyQualifiedName();
+    [CompilerGeneratedAttribute]
+private void set_AssemblyQualifiedName(string value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestRuntimePluginInformation : TestExtensionPluginInformation {
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public string FriendlyName { get; private set; }
+    public ICollection`1<object> Metadata { get; }
+    public TestRuntimePluginInformation(Type testHostType);
+    [CompilerGeneratedAttribute]
+public string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+    public virtual ICollection`1<object> get_Metadata();
+    private static string GetFriendlyName(Type testHostType);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.Utilities.TestSettingsProviderPluginInformation : TestPluginInformation {
+    [CompilerGeneratedAttribute]
+private string <SettingsName>k__BackingField;
+    public string IdentifierData { get; }
+    public ICollection`1<object> Metadata { get; }
+    public string SettingsName { get; private set; }
+    public TestSettingsProviderPluginInformation(Type testSettingsProviderType);
+    public virtual string get_IdentifierData();
+    public virtual ICollection`1<object> get_Metadata();
+    [CompilerGeneratedAttribute]
+public string get_SettingsName();
+    [CompilerGeneratedAttribute]
+private void set_SettingsName(string value);
+    private static string GetTestSettingsName(Type testSettingsProviderType);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.ExtensionFramework.VSExtensionManager : object {
+    private static string ExtensionManagerService;
+    private static string ExtensionManagerAssemblyName;
+    private static string ExtensionManagerImplAssemblyName;
+    private static string SettingsManagerTypeName;
+    private static string SettingsManagerAssemblyName;
+    private IFileHelper fileHelper;
+    private Assembly extensionManagerAssembly;
+    private Assembly extensionManagerImplAssembly;
+    private Type extensionManagerServiceType;
+    private Assembly settingsManagerAssembly;
+    private Type settingsManagerType;
+    private Assembly ExtensionManagerDefAssembly { get; }
+    private Assembly ExtensionManagerImplAssembly { get; }
+    private Type ExtensionManagerServiceType { get; }
+    private Assembly SettingsManagerAssembly { get; }
+    private Type SettingsManagerType { get; }
+    internal VSExtensionManager(IFileHelper fileHelper);
+    public sealed virtual IEnumerable`1<string> GetUnitTestExtensions();
+    private IEnumerable`1<string> GetTestExtensionsInternal(string extensionType);
+    private Assembly get_ExtensionManagerDefAssembly();
+    private Assembly get_ExtensionManagerImplAssembly();
+    private Type get_ExtensionManagerServiceType();
+    private Assembly get_SettingsManagerAssembly();
+    private Type get_SettingsManagerType();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Filtering.Condition : object {
+    public static string DefaultPropertyName;
+    public static Operation DefaultOperation;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Operation <Operation>k__BackingField;
+    internal string Name { get; private set; }
+    internal string Value { get; private set; }
+    internal Operation Operation { get; private set; }
+    internal Condition(string name, Operation operation, string value);
+    [CompilerGeneratedAttribute]
+internal string get_Name();
+    [CompilerGeneratedAttribute]
+private void set_Name(string value);
+    [CompilerGeneratedAttribute]
+internal string get_Value();
+    [CompilerGeneratedAttribute]
+private void set_Value(string value);
+    [CompilerGeneratedAttribute]
+internal Operation get_Operation();
+    [CompilerGeneratedAttribute]
+private void set_Operation(Operation value);
+    internal bool Evaluate(Func`2<string, object> propertyValueProvider);
+    internal static Condition Parse(string conditionString);
+    private static void ThrownFormatExceptionForInvalidCondition(string conditionString);
+    internal bool ValidForProperties(IEnumerable`1<string> properties, Func`2<string, TestProperty> propertyProvider);
+    private bool ValidForContainsOperation(Func`2<string, TestProperty> propertyProvider);
+    private static Operation GetOperator(string operationString);
+    private String[] GetPropertyValue(Func`2<string, object> propertyValueProvider);
+    internal static IEnumerable`1<string> TokenizeFilterConditionString(string str);
+    [IteratorStateMachineAttribute("Microsoft.VisualStudio.TestPlatform.Common.Filtering.Condition/<<TokenizeFilterConditionString>g__TokenizeFilterConditionStringWorker|22_0>d")]
+[CompilerGeneratedAttribute]
+internal static IEnumerable`1<string> <TokenizeFilterConditionString>g__TokenizeFilterConditionStringWorker|22_0(string s);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Filtering.FastFilter : object {
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, ISet`1<string>> <FilterProperties>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsFilteredOutWhenMatched>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Regex <PropertyValueRegex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PropertyValueRegexReplacement>k__BackingField;
+    internal ImmutableDictionary`2<string, ISet`1<string>> FilterProperties { get; }
+    internal bool IsFilteredOutWhenMatched { get; }
+    internal Regex PropertyValueRegex { get; internal set; }
+    internal string PropertyValueRegexReplacement { get; internal set; }
+    internal FastFilter(ImmutableDictionary`2<string, ISet`1<string>> filterProperties, Operation filterOperation, Operator filterOperator);
+    [CompilerGeneratedAttribute]
+internal ImmutableDictionary`2<string, ISet`1<string>> get_FilterProperties();
+    [CompilerGeneratedAttribute]
+internal bool get_IsFilteredOutWhenMatched();
+    [CompilerGeneratedAttribute]
+internal Regex get_PropertyValueRegex();
+    [CompilerGeneratedAttribute]
+internal void set_PropertyValueRegex(Regex value);
+    [CompilerGeneratedAttribute]
+internal string get_PropertyValueRegexReplacement();
+    [CompilerGeneratedAttribute]
+internal void set_PropertyValueRegexReplacement(string value);
+    internal String[] ValidForProperties(IEnumerable`1<string> properties);
+    internal bool Evaluate(Func`2<string, object> propertyValueProvider);
+    private string ApplyRegex(string value);
+    private static bool TryGetPropertyValue(string name, Func`2<string, object> propertyValueProvider, String& singleValue, String[]& multiValues);
+    internal static Builder CreateBuilder();
+    [CompilerGeneratedAttribute]
+private string <Evaluate>b__16_0(string value);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Filtering.FilterExpression : object {
+    private Condition condition;
+    private FilterExpression left;
+    private FilterExpression right;
+    private bool areJoinedByAnd;
+    private FilterExpression(FilterExpression left, FilterExpression right, bool areJoinedByAnd);
+    private FilterExpression(Condition condition);
+    private FilterExpression And(FilterExpression filter);
+    private FilterExpression Or(FilterExpression filter);
+    private static void ProcessOperator(Stack`1<FilterExpression> filterStack, Operator op);
+    internal String[] ValidForProperties(IEnumerable`1<string> properties, Func`2<string, TestProperty> propertyProvider);
+    internal static FilterExpression Parse(string filterString, FastFilter& fastFilter);
+    internal bool Evaluate(Func`2<string, object> propertyValueProvider);
+    internal static IEnumerable`1<string> TokenizeFilterExpressionString(string str);
+    [IteratorStateMachineAttribute("Microsoft.VisualStudio.TestPlatform.Common.Filtering.FilterExpression/<<TokenizeFilterExpressionString>g__TokenizeFilterExpressionStringHelper|12_0>d")]
+[CompilerGeneratedAttribute]
+internal static IEnumerable`1<string> <TokenizeFilterExpressionString>g__TokenizeFilterExpressionStringHelper|12_0(string s);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Filtering.FilterExpressionWrapper : object {
+    private FilterExpression filterExpression;
+    internal FastFilter fastFilter;
+    [CompilerGeneratedAttribute]
+private string <FilterString>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FilterOptions <FilterOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ParseError>k__BackingField;
+    private bool UseFastFilter { get; }
+    public string FilterString { get; private set; }
+    public FilterOptions FilterOptions { get; private set; }
+    public string ParseError { get; private set; }
+    public FilterExpressionWrapper(string filterString, FilterOptions options);
+    public FilterExpressionWrapper(string filterString);
+    private bool get_UseFastFilter();
+    [CompilerGeneratedAttribute]
+public string get_FilterString();
+    [CompilerGeneratedAttribute]
+private void set_FilterString(string value);
+    [CompilerGeneratedAttribute]
+public FilterOptions get_FilterOptions();
+    [CompilerGeneratedAttribute]
+private void set_FilterOptions(FilterOptions value);
+    [CompilerGeneratedAttribute]
+public string get_ParseError();
+    [CompilerGeneratedAttribute]
+private void set_ParseError(string value);
+    public String[] ValidForProperties(IEnumerable`1<string> supportedProperties, Func`2<string, TestProperty> propertyProvider);
+    public bool Evaluate(Func`2<string, object> propertyValueProvider);
+}
+internal enum Microsoft.VisualStudio.TestPlatform.Common.Filtering.Operation : Enum {
+    public int value__;
+    public static Operation Equal;
+    public static Operation NotEqual;
+    public static Operation Contains;
+    public static Operation NotContains;
+}
+internal enum Microsoft.VisualStudio.TestPlatform.Common.Filtering.Operator : Enum {
+    public int value__;
+    public static Operator None;
+    public static Operator Or;
+    public static Operator And;
+    public static Operator OpenBrace;
+    public static Operator CloseBrace;
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Filtering.TestCaseFilterExpression : object {
+    private FilterExpressionWrapper filterWrapper;
+    private bool validForMatch;
+    public string TestCaseFilterValue { get; }
+    public TestCaseFilterExpression(FilterExpressionWrapper filterWrapper);
+    public sealed virtual string get_TestCaseFilterValue();
+    public String[] ValidForProperties(IEnumerable`1<string> supportedProperties, Func`2<string, TestProperty> propertyProvider);
+    public sealed virtual bool MatchTestCase(TestCase testCase, Func`2<string, object> propertyValueProvider);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Hosting.TestRuntimeExtensionManager : TestExtensionManager`2<ITestRuntimeProvider, ITestRuntimeCapabilities> {
+    protected TestRuntimeExtensionManager(IEnumerable`1<LazyExtension`2<ITestRuntimeProvider, Dictionary`2<string, object>>> unfilteredTestExtensions, IEnumerable`1<LazyExtension`2<ITestRuntimeProvider, ITestRuntimeCapabilities>> testExtensions, IMessageLogger logger);
+    public static TestRuntimeExtensionManager Create(IMessageLogger messageLogger);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Hosting.TestRuntimeMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <ExtensionUri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FriendlyName>k__BackingField;
+    public string ExtensionUri { get; private set; }
+    public string FriendlyName { get; private set; }
+    public TestRuntimeMetadata(string extension, string friendlyName);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ExtensionUri();
+    [CompilerGeneratedAttribute]
+private void set_ExtensionUri(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_FriendlyName();
+    [CompilerGeneratedAttribute]
+private void set_FriendlyName(string value);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Hosting.TestRuntimeProviderManager : object {
+    private static TestRuntimeProviderManager testHostManager;
+    private TestRuntimeExtensionManager testHostExtensionManager;
+    public static TestRuntimeProviderManager Instance { get; }
+    protected TestRuntimeProviderManager(IMessageLogger sessionLogger);
+    public static TestRuntimeProviderManager get_Instance();
+    public ITestRuntimeProvider GetTestHostManagerByUri(string hostUri);
+    public virtual ITestRuntimeProvider GetTestHostManagerByRunConfiguration(string runConfiguration);
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.IAssemblyProperties {
+    public abstract virtual AssemblyType GetAssemblyType(string filePath);
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.IDataCollectorCapabilities {
+    public string FriendlyName { get; }
+    public abstract virtual string get_FriendlyName();
+}
+internal interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.IRunSettingsProvider {
+    public RunSettings ActiveRunSettings { get; }
+    public abstract virtual RunSettings get_ActiveRunSettings();
+    public abstract virtual void SetActiveRunSettings(RunSettings runSettings);
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ISettingsProviderCapabilities {
+    public string SettingsName { get; }
+    public abstract virtual string get_SettingsName();
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestDiscovererCapabilities {
+    public IEnumerable`1<string> FileExtension { get; }
+    public Uri DefaultExecutorUri { get; }
+    public AssemblyType AssemblyType { get; }
+    public abstract virtual IEnumerable`1<string> get_FileExtension();
+    public abstract virtual Uri get_DefaultExecutorUri();
+    public abstract virtual AssemblyType get_AssemblyType();
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestDiscoveryEventsRegistrar {
+    public abstract virtual void RegisterDiscoveryEvents(IDiscoveryRequest discoveryRequest);
+    public abstract virtual void UnregisterDiscoveryEvents(IDiscoveryRequest discoveryRequest);
+}
+internal interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestExecutorCapabilities {
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestExtensionCapabilities {
+    public string ExtensionUri { get; }
+    public abstract virtual string get_ExtensionUri();
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestLoggerCapabilities {
+    public string FriendlyName { get; }
+    public abstract virtual string get_FriendlyName();
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestRunEventsRegistrar {
+    public abstract virtual void RegisterTestRunEvents(ITestRunRequest testRunRequest);
+    public abstract virtual void UnregisterTestRunEvents(ITestRunRequest testRunRequest);
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.ITestRuntimeCapabilities {
+    public string FriendlyName { get; }
+    public abstract virtual string get_FriendlyName();
+}
+public interface Microsoft.VisualStudio.TestPlatform.Common.Interfaces.IVSExtensionManager {
+    public abstract virtual IEnumerable`1<string> GetUnitTestExtensions();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Logging.InternalTestLoggerEvents : TestLoggerEvents {
+    private JobQueue`1<Action> loggerEventQueue;
+    private bool isDisposed;
+    private bool isBoundsOnLoggerEventQueueEnabled;
+    private TestSessionMessageLogger testSessionMessageLogger;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestRunMessageEventArgs> TestRunMessage;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestRunStartEventArgs> TestRunStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestResultEventArgs> TestResult;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestRunCompleteEventArgs> TestRunComplete;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DiscoveryStartEventArgs> DiscoveryStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestRunMessageEventArgs> DiscoveryMessage;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DiscoveredTestsEventArgs> DiscoveredTests;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DiscoveryCompleteEventArgs> DiscoveryComplete;
+    public InternalTestLoggerEvents(TestSessionMessageLogger testSessionMessageLogger);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestRunMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestRunMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestRunStart(EventHandler`1<TestRunStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestRunStart(EventHandler`1<TestRunStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestResult(EventHandler`1<TestResultEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestResult(EventHandler`1<TestResultEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_TestRunComplete(EventHandler`1<TestRunCompleteEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_TestRunComplete(EventHandler`1<TestRunCompleteEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_DiscoveryStart(EventHandler`1<DiscoveryStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_DiscoveryStart(EventHandler`1<DiscoveryStartEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_DiscoveryMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_DiscoveryMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_DiscoveredTests(EventHandler`1<DiscoveredTestsEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_DiscoveredTests(EventHandler`1<DiscoveredTestsEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void add_DiscoveryComplete(EventHandler`1<DiscoveryCompleteEventArgs> value);
+    [CompilerGeneratedAttribute]
+public virtual void remove_DiscoveryComplete(EventHandler`1<DiscoveryCompleteEventArgs> value);
+    public sealed virtual void Dispose();
+    internal void EnableEvents();
+    internal void RaiseTestRunMessage(TestRunMessageEventArgs args);
+    internal void WaitForEventCompletion();
+    internal void RaiseTestResult(TestResultEventArgs args);
+    internal void RaiseTestRunStart(TestRunStartEventArgs args);
+    internal void RaiseDiscoveryStart(DiscoveryStartEventArgs args);
+    internal void RaiseDiscoveryMessage(TestRunMessageEventArgs args);
+    internal void RaiseDiscoveredTests(DiscoveredTestsEventArgs args);
+    internal void RaiseDiscoveryComplete(DiscoveryCompleteEventArgs args);
+    internal void RaiseTestRunComplete(TestRunCompleteEventArgs args);
+    internal void CompleteTestRun(ITestRunStatistics stats, bool isCanceled, bool isAborted, Exception error, Collection`1<AttachmentSet> attachmentSet, TimeSpan elapsedTime);
+    private void TestRunMessageHandler(object sender, TestRunMessageEventArgs e);
+    private void SafeInvokeAsync(Func`1<MulticastDelegate> eventHandlersFactory, EventArgs args, int size, string traceDisplayName);
+    private void ProcessQueuedJob(Action action);
+    private void CheckDisposed();
+    private int GetMaxNumberOfJobsInQueue();
+    private int GetMaxBytesQueueCanHold();
+    private static bool IsBoundsEnabledOnLoggerEventQueue();
+    private static int FindTestResultSize(TestResultEventArgs args);
+    private int GetSetting(string appSettingKey, int defaultValue);
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseTestRunMessage>b__31_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseTestResult>b__33_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseTestRunStart>b__34_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseDiscoveryStart>b__35_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseDiscoveryMessage>b__36_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseDiscoveredTests>b__37_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseDiscoveryComplete>b__38_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <RaiseTestRunComplete>b__39_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <CompleteTestRun>b__40_0();
+    [CompilerGeneratedAttribute]
+private MulticastDelegate <TestRunMessageHandler>b__41_0();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Logging.TestSessionMessageLogger : object {
+    private static TestSessionMessageLogger instance;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<TestRunMessageEventArgs> TestRunMessage;
+    [CompilerGeneratedAttribute]
+private bool <TreatTestAdapterErrorsAsWarnings>k__BackingField;
+    public static TestSessionMessageLogger Instance { get; public set; }
+    internal bool TreatTestAdapterErrorsAsWarnings { get; internal set; }
+    [CompilerGeneratedAttribute]
+internal void add_TestRunMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    [CompilerGeneratedAttribute]
+internal void remove_TestRunMessage(EventHandler`1<TestRunMessageEventArgs> value);
+    public static TestSessionMessageLogger get_Instance();
+    public static void set_Instance(TestSessionMessageLogger value);
+    [CompilerGeneratedAttribute]
+internal bool get_TreatTestAdapterErrorsAsWarnings();
+    [CompilerGeneratedAttribute]
+internal void set_TreatTestAdapterErrorsAsWarnings(bool value);
+    public sealed virtual void SendMessage(TestMessageLevel testMessageLevel, string message);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.RequestData : object {
+    private IMetricsCollection metricsCollection;
+    private ProtocolConfig protocolConfig;
+    [CompilerGeneratedAttribute]
+private bool <IsTelemetryOptedIn>k__BackingField;
+    public IMetricsCollection MetricsCollection { get; public set; }
+    public ProtocolConfig ProtocolConfig { get; public set; }
+    public bool IsTelemetryOptedIn { get; public set; }
+    public sealed virtual IMetricsCollection get_MetricsCollection();
+    public sealed virtual void set_MetricsCollection(IMetricsCollection value);
+    public sealed virtual ProtocolConfig get_ProtocolConfig();
+    public sealed virtual void set_ProtocolConfig(ProtocolConfig value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsTelemetryOptedIn();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_IsTelemetryOptedIn(bool value);
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.VisualStudio.TestPlatform.Common.Resources.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string CancellationRequested { get; }
+    internal static string DataCollectionMessageFormat { get; }
+    internal static string DataCollectorErrorOnGetVariable { get; }
+    internal static string DataCollectorInitializationError { get; }
+    internal static string DataCollectorMessageFormat { get; }
+    internal static string DataCollectorNotFound { get; }
+    internal static string DataCollectorRequestedDuplicateEnvironmentVariable { get; }
+    internal static string DuplicateExtensionUri { get; }
+    internal static string DuplicateSettingsName { get; }
+    internal static string DuplicateSettingsProvided { get; }
+    internal static string EmptyParenthesis { get; }
+    internal static string FailedToFindInstalledUnitTestExtensions { get; }
+    internal static string FastFilterException { get; }
+    internal static string IgnoredDuplicateConfiguration { get; }
+    internal static string InvalidCondition { get; }
+    internal static string InvalidExtensionUriFormat { get; }
+    internal static string InvalidOperator { get; }
+    internal static string LoggerInitializationError { get; }
+    internal static string LoggerNotFound { get; }
+    internal static string LoggerUriInvalid { get; }
+    internal static string MissingCloseParenthesis { get; }
+    internal static string MissingOpenParenthesis { get; }
+    internal static string MissingOperand { get; }
+    internal static string MissingOperator { get; }
+    internal static string ReportDataCollectorException { get; }
+    internal static string RunSettingsAlreadyLoaded { get; }
+    internal static string RunSettingsParseError { get; }
+    internal static string SettingsNodeInvalidName { get; }
+    internal static string SettingsProviderInitializationError { get; }
+    internal static string SettingsProviderNotFound { get; }
+    internal static string TestCaseFilterFormatException { get; }
+    internal static string VSInstallationNotFound { get; }
+    internal static string WrongDataCollectionContextType { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_CancellationRequested();
+    internal static string get_DataCollectionMessageFormat();
+    internal static string get_DataCollectorErrorOnGetVariable();
+    internal static string get_DataCollectorInitializationError();
+    internal static string get_DataCollectorMessageFormat();
+    internal static string get_DataCollectorNotFound();
+    internal static string get_DataCollectorRequestedDuplicateEnvironmentVariable();
+    internal static string get_DuplicateExtensionUri();
+    internal static string get_DuplicateSettingsName();
+    internal static string get_DuplicateSettingsProvided();
+    internal static string get_EmptyParenthesis();
+    internal static string get_FailedToFindInstalledUnitTestExtensions();
+    internal static string get_FastFilterException();
+    internal static string get_IgnoredDuplicateConfiguration();
+    internal static string get_InvalidCondition();
+    internal static string get_InvalidExtensionUriFormat();
+    internal static string get_InvalidOperator();
+    internal static string get_LoggerInitializationError();
+    internal static string get_LoggerNotFound();
+    internal static string get_LoggerUriInvalid();
+    internal static string get_MissingCloseParenthesis();
+    internal static string get_MissingOpenParenthesis();
+    internal static string get_MissingOperand();
+    internal static string get_MissingOperator();
+    internal static string get_ReportDataCollectorException();
+    internal static string get_RunSettingsAlreadyLoaded();
+    internal static string get_RunSettingsParseError();
+    internal static string get_SettingsNodeInvalidName();
+    internal static string get_SettingsProviderInitializationError();
+    internal static string get_SettingsProviderNotFound();
+    internal static string get_TestCaseFilterFormatException();
+    internal static string get_VSInstallationNotFound();
+    internal static string get_WrongDataCollectionContextType();
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.RunSettings : object {
+    private Dictionary`2<string, LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> settings;
+    private bool isSettingsLoaded;
+    [CompilerGeneratedAttribute]
+private string <SettingsXml>k__BackingField;
+    public string SettingsXml { get; private set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SettingsXml();
+    [CompilerGeneratedAttribute]
+private void set_SettingsXml(string value);
+    public sealed virtual ISettingsProvider GetSettings(string settingsName);
+    public void LoadSettingsXml(string settings);
+    public void InitializeSettingsProviders(string settings);
+    private void ValidateAndSaveSettings(XmlReader reader);
+    private void ReadRunSettings(XmlReader reader);
+    private void LoadSection(XmlReader reader, SettingsProviderExtensionManager settingsExtensionManager);
+    private static LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities> CreateLazyThrower(string message, ISettingsProviderCapabilities metadata, Exception innerException);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.RunSettingsManager : object {
+    private static object lockObject;
+    private static RunSettingsManager runSettingsManagerInstance;
+    [CompilerGeneratedAttribute]
+private RunSettings <ActiveRunSettings>k__BackingField;
+    public RunSettings ActiveRunSettings { get; private set; }
+    public static RunSettingsManager Instance { get; internal set; }
+    private static RunSettingsManager();
+    [CompilerGeneratedAttribute]
+public sealed virtual RunSettings get_ActiveRunSettings();
+    [CompilerGeneratedAttribute]
+private void set_ActiveRunSettings(RunSettings value);
+    public static RunSettingsManager get_Instance();
+    internal static void set_Instance(RunSettingsManager value);
+    public sealed virtual void SetActiveRunSettings(RunSettings runSettings);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.SettingsProvider.SettingsProviderExtensionManager : object {
+    private static SettingsProviderExtensionManager settingsProviderExtensionManager;
+    private static object synclock;
+    private IEnumerable`1<LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> settingsProviders;
+    private Dictionary`2<string, LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> settingsProvidersMap;
+    private IMessageLogger logger;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<LazyExtension`2<ISettingsProvider, Dictionary`2<string, object>>> <UnfilteredSettingsProviders>k__BackingField;
+    public IEnumerable`1<LazyExtension`2<ISettingsProvider, Dictionary`2<string, object>>> UnfilteredSettingsProviders { get; private set; }
+    public Dictionary`2<string, LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> SettingsProvidersMap { get; }
+    protected SettingsProviderExtensionManager(IEnumerable`1<LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> settingsProviders, IEnumerable`1<LazyExtension`2<ISettingsProvider, Dictionary`2<string, object>>> unfilteredSettingsProviders, IMessageLogger logger);
+    private static SettingsProviderExtensionManager();
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<LazyExtension`2<ISettingsProvider, Dictionary`2<string, object>>> get_UnfilteredSettingsProviders();
+    [CompilerGeneratedAttribute]
+private void set_UnfilteredSettingsProviders(IEnumerable`1<LazyExtension`2<ISettingsProvider, Dictionary`2<string, object>>> value);
+    public Dictionary`2<string, LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities>> get_SettingsProvidersMap();
+    public static SettingsProviderExtensionManager Create();
+    public static void Destroy();
+    public static void LoadAndInitializeAllExtensions(bool shouldThrowOnError);
+    internal LazyExtension`2<ISettingsProvider, ISettingsProviderCapabilities> GetSettingsProvider(string settingsName);
+    private void PopulateMap();
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.SettingsProvider.TestSettingsProviderMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <SettingsName>k__BackingField;
+    public string SettingsName { get; private set; }
+    public TestSettingsProviderMetadata(string settingsName);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SettingsName();
+    [CompilerGeneratedAttribute]
+private void set_SettingsName(string value);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Telemetry.MetricsCollection : object {
+    private Dictionary`2<string, object> metricDictionary;
+    public IDictionary`2<string, object> Metrics { get; }
+    public sealed virtual void Add(string metric, object value);
+    public sealed virtual IDictionary`2<string, object> get_Metrics();
+    public void Clear();
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Telemetry.NoOpMetricsCollection : object {
+    public IDictionary`2<string, object> Metrics { get; }
+    public sealed virtual void Add(string message, object value);
+    public sealed virtual IDictionary`2<string, object> get_Metrics();
+}
+public static class Microsoft.VisualStudio.TestPlatform.Common.Telemetry.TelemetryDataConstants : object {
+    public static string ParallelEnabledDuringExecution;
+    public static string TotalTestsRun;
+    public static string TimeTakenInSecForRun;
+    public static string TestSettingsUsed;
+    public static string DisableAppDomain;
+    public static string LegacySettingPrefix;
+    public static string DataCollectorsEnabled;
+    public static string RunState;
+    public static string NumberOfSourcesSentForRun;
+    public static string TargetDevice;
+    public static string TargetFramework;
+    public static string TargetPlatform;
+    public static string MaxCPUcount;
+    public static string TestPlatformVersion;
+    public static string TargetOS;
+    public static string LoggerUsed;
+    public static string CommandLineSwitches;
+    public static string TotalTestsRanByAdapter;
+    public static string TimeTakenToRunTestsByAnAdapter;
+    public static string NumberOfAdapterDiscoveredDuringExecution;
+    public static string NumberOfAdapterUsedToRunTests;
+    public static string TimeTakenByAllAdaptersInSec;
+    public static string TotalTestsDiscovered;
+    public static string ParallelEnabledDuringDiscovery;
+    public static string TimeTakenInSecForDiscovery;
+    public static string TimeTakenToLoadAdaptersInSec;
+    public static string TimeTakenInSecByAllAdapters;
+    public static string TimeTakenToDiscoverTestsByAnAdapter;
+    public static string TotalTestsByAdapter;
+    public static string DiscoveryState;
+    public static string NumberOfSourcesSentForDiscovery;
+    public static string NumberOfAdapterDiscoveredDuringDiscovery;
+    public static string NumberOfAdapterUsedToDiscoverTests;
+    public static string TestDiscoveryCompleteEvent;
+    public static string TestExecutionCompleteEvent;
+    private static TelemetryDataConstants();
+}
+public static class Microsoft.VisualStudio.TestPlatform.Common.TestPlatformConstants : object {
+    public static string TestAdapterEndsWithPattern;
+    public static string TestLoggerEndsWithPattern;
+    public static string DataCollectorEndsWithPattern;
+    public static string RunTimeEndsWithPattern;
+}
+public static class Microsoft.VisualStudio.TestPlatform.Common.TestPlatformDefaults : object {
+    public static string MaxNumberOfEventsLoggerEventQueueCanHold;
+    public static int DefaultMaxNumberOfEventsLoggerEventQueueCanHold;
+    public static string MaxBytesLoggerEventQueueCanHold;
+    public static string EnableBoundsOnLoggerEventQueue;
+    public static int DefaultMaxBytesLoggerEventQueueCanHold;
+    public static bool DefaultEnableBoundsOnLoggerEventQueue;
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Utilities.AssemblyProperties : object {
+    private IFileHelper fileHelper;
+    public AssemblyProperties(IFileHelper fileHelper);
+    public sealed virtual AssemblyType GetAssemblyType(string filePath);
+}
+internal class Microsoft.VisualStudio.TestPlatform.Common.Utilities.AssemblyResolver : object {
+    private HashSet`1<string> searchDirectories;
+    private Dictionary`2<string, Assembly> resolvedAssemblies;
+    private bool isDisposed;
+    private IAssemblyResolver platformAssemblyResolver;
+    private IAssemblyLoadContext platformAssemblyLoadContext;
+    private static String[] SupportedFileExtensions;
+    [SecurityCriticalAttribute]
+public AssemblyResolver(IEnumerable`1<string> directories);
+    private static AssemblyResolver();
+    [SecurityCriticalAttribute]
+internal void AddSearchDirectories(IEnumerable`1<string> directories);
+    private Assembly OnResolve(object sender, AssemblyResolveEventArgs args);
+    private bool RequestedAssemblyNameMatchesFound(AssemblyName requestedName, AssemblyName foundName);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    [SecurityCriticalAttribute]
+protected virtual void Dispose(bool disposing);
+}
+public enum Microsoft.VisualStudio.TestPlatform.Common.Utilities.AssemblyType : Enum {
+    public int value__;
+    public static AssemblyType None;
+    public static AssemblyType Native;
+    public static AssemblyType Managed;
+}
+[ExtensionAttribute]
+public static class Microsoft.VisualStudio.TestPlatform.Common.Utilities.CancellationTokenExtensions : object {
+    [ExtensionAttribute]
+public static void ThrowTestPlatformExceptionIfCancellationRequested(CancellationToken token);
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Utilities.ExceptionUtilities : object {
+    public static string GetExceptionMessage(Exception exception);
+}
+public static class Microsoft.VisualStudio.TestPlatform.Common.Utilities.FakesUtilities : object {
+    private static string ConfiguratorAssemblyQualifiedName;
+    private static string ConfiguratorMethodName;
+    private static string FakesConfiguratorAssembly;
+    public static string GenerateFakesSettingsForRunConfiguration(String[] sources, string runSettingsXml);
+    private static bool IsNetCoreFramework(string runSettingsXml);
+    private static bool TryAddFakesDataCollectorSettings(XmlDocument runSettings, IEnumerable`1<string> sources);
+    private static void EnsureSettingsNode(XmlDocument settings, TestRunSettings settingsNode);
+    private static bool TryGetFakesDataCollectorConfigurator(Func`2& configurator);
+    private static DataCollectorSettings CreateFakesDataCollectorSettings();
+}
+public class Microsoft.VisualStudio.TestPlatform.Common.Utilities.InstallationContext : object {
+    private static string DevenvExe;
+    private static string PrivateAssembliesDirName;
+    private static string PublicAssembliesDirName;
+    private IFileHelper fileHelper;
+    public InstallationContext(IFileHelper fileHelper);
+    public bool TryGetVisualStudioDirectory(String& visualStudioDirectory);
+    public string GetVisualStudioPath(string visualStudioDirectory);
+    public String[] GetVisualStudioCommonLocations(string visualStudioDirectory);
+}
+[ExtensionAttribute]
+internal static class Microsoft.VisualStudio.TestPlatform.Common.Utilities.RunSettingsProviderExtensions : object {
+    public static string EmptyRunSettings;
+    [ExtensionAttribute]
+public static void UpdateRunSettings(IRunSettingsProvider runSettingsProvider, string runsettingsXml);
+    [ExtensionAttribute]
+public static void AddDefaultRunSettings(IRunSettingsProvider runSettingsProvider);
+    public static void UpdateRunSettingsXmlDocumentInnerXml(XmlDocument xmlDocument, string key, string data);
+    [ExtensionAttribute]
+public static void UpdateRunSettingsNode(IRunSettingsProvider runSettingsProvider, string key, string data);
+    [ExtensionAttribute]
+public static void UpdateRunSettingsNodeInnerXml(IRunSettingsProvider runSettingsProvider, string key, string xml);
+    [ExtensionAttribute]
+public static string QueryRunSettingsNode(IRunSettingsProvider runSettingsProvider, string key);
+    internal static XmlNode GetXmlNode(XmlDocument xmlDocument, string key);
+    internal static void UpdateRunSettingsXmlDocument(XmlDocument xmlDocument, string key, string data);
+    private static string AddDefaultRunSettings(string runSettings);
+    private static XmlNode CreateNode(XmlDocument doc, string xPath);
+    [ExtensionAttribute]
+private static XmlDocument GetRunSettingXmlDocument(IRunSettingsProvider runSettingsProvider);
+}
+public static class Microsoft.VisualStudio.TestPlatform.Common.Utilities.RunSettingsUtilities : object {
+    public static RunSettings CreateAndInitializeRunSettings(string settingsXml);
+    public static string GetTestResultsDirectory(RunConfiguration runConfiguration);
+    public static string GetSolutionDirectory(RunConfiguration runConfiguration);
+    public static int GetMaxCpuCount(string settingXml);
+    public static int GetMaxCpuCount(RunConfiguration runConfiguration);
+    public static IEnumerable`1<string> GetTestAdaptersPaths(string runSettings);
+}
+[DataContractAttribute]
+public class Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol.TestExecutionContext : object {
+    [CompilerGeneratedAttribute]
+private long <FrequencyOfRunStatsChangeEvent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <RunStatsChangeEventTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <InIsolation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <KeepAlive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AreTestCaseLevelEventsRequired>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDebug>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TestCaseFilter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FilterOptions <FilterOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDataCollectionEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasTestRun>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RunConfiguration <TestRunConfiguration>k__BackingField;
+    [DataMemberAttribute]
+public long FrequencyOfRunStatsChangeEvent { get; public set; }
+    [DataMemberAttribute]
+public TimeSpan RunStatsChangeEventTimeout { get; public set; }
+    [DataMemberAttribute]
+public bool InIsolation { get; public set; }
+    [DataMemberAttribute]
+public bool KeepAlive { get; public set; }
+    [DataMemberAttribute]
+public bool AreTestCaseLevelEventsRequired { get; public set; }
+    [DataMemberAttribute]
+public bool IsDebug { get; public set; }
+    [DataMemberAttribute]
+public string TestCaseFilter { get; public set; }
+    [DataMemberAttribute]
+public FilterOptions FilterOptions { get; public set; }
+    [IgnoreDataMemberAttribute]
+public bool IsDataCollectionEnabled { get; public set; }
+    [IgnoreDataMemberAttribute]
+public bool HasTestRun { get; public set; }
+    [IgnoreDataMemberAttribute]
+public RunConfiguration TestRunConfiguration { get; public set; }
+    public TestExecutionContext(long frequencyOfRunStatsChangeEvent, TimeSpan runStatsChangeEventTimeout, bool inIsolation, bool keepAlive, bool isDataCollectionEnabled, bool areTestCaseLevelEventsRequired, bool hasTestRun, bool isDebug, string testCaseFilter, FilterOptions filterOptions);
+    [CompilerGeneratedAttribute]
+public long get_FrequencyOfRunStatsChangeEvent();
+    [CompilerGeneratedAttribute]
+public void set_FrequencyOfRunStatsChangeEvent(long value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_RunStatsChangeEventTimeout();
+    [CompilerGeneratedAttribute]
+public void set_RunStatsChangeEventTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_InIsolation();
+    [CompilerGeneratedAttribute]
+public void set_InIsolation(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_KeepAlive();
+    [CompilerGeneratedAttribute]
+public void set_KeepAlive(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AreTestCaseLevelEventsRequired();
+    [CompilerGeneratedAttribute]
+public void set_AreTestCaseLevelEventsRequired(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsDebug();
+    [CompilerGeneratedAttribute]
+public void set_IsDebug(bool value);
+    [CompilerGeneratedAttribute]
+public string get_TestCaseFilter();
+    [CompilerGeneratedAttribute]
+public void set_TestCaseFilter(string value);
+    [CompilerGeneratedAttribute]
+public FilterOptions get_FilterOptions();
+    [CompilerGeneratedAttribute]
+public void set_FilterOptions(FilterOptions value);
+    [CompilerGeneratedAttribute]
+public bool get_IsDataCollectionEnabled();
+    [CompilerGeneratedAttribute]
+public void set_IsDataCollectionEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasTestRun();
+    [CompilerGeneratedAttribute]
+public void set_HasTestRun(bool value);
+    [CompilerGeneratedAttribute]
+public RunConfiguration get_TestRunConfiguration();
+    [CompilerGeneratedAttribute]
+public void set_TestRunConfiguration(RunConfiguration value);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.IParallelOperationManager {
+    public abstract virtual void UpdateParallelLevel(int parallelLevel);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.IParallelProxyDiscoveryManager {
+    public abstract virtual bool HandlePartialDiscoveryComplete(IProxyDiscoveryManager proxyDiscoveryManager, long totalTests, IEnumerable`1<TestCase> lastChunk, bool isAborted);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.IParallelProxyExecutionManager {
+    public abstract virtual bool HandlePartialRunComplete(IProxyExecutionManager proxyExecutionManager, TestRunCompleteEventArgs testRunCompleteArgs, TestRunChangedEventArgs lastChunkArgs, ICollection`1<AttachmentSet> runContextAttachments, ICollection`1<string> executorUris);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.IProxyDiscoveryManager {
+    public abstract virtual void Initialize(bool skipDefaultAdapters);
+    public abstract virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public abstract virtual void Abort();
+    public abstract virtual void Close();
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.IProxyExecutionManager {
+    public bool IsInitialized { get; }
+    public abstract virtual bool get_IsInitialized();
+    public abstract virtual void Initialize(bool skipDefaultAdapters);
+    public abstract virtual int StartTestRun(TestRunCriteria testRunCriteria, ITestRunEventsHandler eventHandler);
+    public abstract virtual void Cancel(ITestRunEventsHandler eventHandler);
+    public abstract virtual void Abort(ITestRunEventsHandler eventHandler);
+    public abstract virtual void Close();
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ITestCaseEventsHandler {
+    public abstract virtual void SendTestCaseStart(TestCase testCase);
+    public abstract virtual void SendTestCaseEnd(TestCase testCase, TestOutcome outcome);
+    public abstract virtual void SendTestResult(TestResult result);
+    public abstract virtual void SendSessionStart();
+    public abstract virtual void SendSessionEnd();
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ITestEngine {
+    public abstract virtual IProxyDiscoveryManager GetDiscoveryManager(IRequestData requestData, ITestRuntimeProvider testHostManager, DiscoveryCriteria discoveryCriteria);
+    public abstract virtual IProxyExecutionManager GetExecutionManager(IRequestData requestData, ITestRuntimeProvider testHostManager, TestRunCriteria testRunCriteria);
+    public abstract virtual ITestExtensionManager GetExtensionManager();
+    public abstract virtual ITestLoggerManager GetLoggerManager(IRequestData requestData);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ITestExtensionManager {
+    public abstract virtual void UseAdditionalExtensions(IEnumerable`1<string> pathToAdditionalExtensions, bool skipExtensionFilters);
+    public abstract virtual void ClearExtensions();
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ITestLoggerManager {
+    public bool LoggersInitialized { get; }
+    public abstract virtual bool get_LoggersInitialized();
+    public abstract virtual void Initialize(string runSettings);
+    public abstract virtual void HandleTestRunMessage(TestRunMessageEventArgs e);
+    public abstract virtual void HandleTestRunStart(TestRunStartEventArgs e);
+    public abstract virtual void HandleTestRunStatsChange(TestRunChangedEventArgs e);
+    public abstract virtual void HandleTestRunComplete(TestRunCompleteEventArgs e);
+    public abstract virtual void HandleDiscoveryMessage(TestRunMessageEventArgs e);
+    public abstract virtual void HandleDiscoveryStart(DiscoveryStartEventArgs e);
+    public abstract virtual void HandleDiscoveredTests(DiscoveredTestsEventArgs e);
+    public abstract virtual void HandleDiscoveryComplete(DiscoveryCompleteEventArgs e);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.TesthostProtocol.IDiscoveryManager {
+    public abstract virtual void Initialize(IEnumerable`1<string> pathToAdditionalExtensions);
+    public abstract virtual void DiscoverTests(DiscoveryCriteria discoveryCriteria, ITestDiscoveryEventsHandler2 eventHandler);
+    public abstract virtual void Abort();
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.TesthostProtocol.IExecutionManager {
+    public abstract virtual void Initialize(IEnumerable`1<string> pathToAdditionalExtensions);
+    public abstract virtual void StartTestRun(Dictionary`2<string, IEnumerable`1<string>> adapterSourceMap, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEvents, ITestRunEventsHandler eventHandler);
+    public abstract virtual void StartTestRun(IEnumerable`1<TestCase> tests, string package, string runSettings, TestExecutionContext testExecutionContext, ITestCaseEventsHandler testCaseEvents, ITestRunEventsHandler eventHandler);
+    public abstract virtual void Cancel(ITestRunEventsHandler testRunEventsHandler);
+    public abstract virtual void Abort(ITestRunEventsHandler testRunEventsHandler);
+}
+public interface Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.TesthostProtocol.ITestHostManagerFactory {
+    public abstract virtual IDiscoveryManager GetDiscoveryManager();
+    public abstract virtual IExecutionManager GetExecutionManager();
+}
