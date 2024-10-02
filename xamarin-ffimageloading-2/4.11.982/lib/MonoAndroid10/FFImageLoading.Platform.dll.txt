@@ -1,0 +1,779 @@
+public class FFImageLoading.Cache.ByteBoundStrongLruCache`1 : object {
+    protected object _monitor;
+    private LRUCache _androidCache;
+    private HashSet`1<string> _keysCache;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EntryRemovedEventArgs`1<TValue>> EntryRemoved;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EntryAddedEventArgs`1<TValue>> EntryAdded;
+    public IEnumerable`1<string> Keys { get; }
+    public IEnumerable`1<TValue> Values { get; }
+    public int CacheSizeInBytes { get; }
+    public ByteBoundStrongLruCache`1(int maxSize);
+    [CompilerGeneratedAttribute]
+public void add_EntryRemoved(EventHandler`1<EntryRemovedEventArgs`1<TValue>> value);
+    [CompilerGeneratedAttribute]
+public void remove_EntryRemoved(EventHandler`1<EntryRemovedEventArgs`1<TValue>> value);
+    [CompilerGeneratedAttribute]
+public void add_EntryAdded(EventHandler`1<EntryAddedEventArgs`1<TValue>> value);
+    [CompilerGeneratedAttribute]
+public void remove_EntryAdded(EventHandler`1<EntryAddedEventArgs`1<TValue>> value);
+    private void AndroidCache_OnEntryRemoved(object sender, EntryRemovedEventArgs`1<Object> e);
+    public TValue Get(string key);
+    public bool TryGetValue(string key, TValue& value);
+    public bool ContainsKey(string key);
+    public void Add(string key, TValue value);
+    public bool Remove(string key);
+    public void Clear();
+    public IEnumerable`1<string> get_Keys();
+    public IEnumerable`1<TValue> get_Values();
+    public int get_CacheSizeInBytes();
+    protected virtual void OnEntryAdded(string key, TValue value);
+    protected virtual void OnEntryRemoved(bool evicted, string key, TValue value);
+    protected virtual int SizeOf(TValue value);
+}
+public class FFImageLoading.Cache.EntryAddedEventArgs`1 : EventArgs {
+    public string Key;
+    public TValue Value;
+    public EntryAddedEventArgs`1(string key, TValue value);
+}
+public class FFImageLoading.Cache.EntryRemovedEventArgs`1 : EventArgs {
+    public bool Evicted;
+    public string Key;
+    public TValue Value;
+    public EntryRemovedEventArgs`1(string key, TValue value, bool evicted);
+}
+public interface FFImageLoading.Cache.IImageCache`1 {
+    public abstract virtual TValue GetBitmapDrawableFromReusableSet(Options options);
+    public abstract virtual void AddToReusableSet(TValue value);
+}
+public class FFImageLoading.Cache.ImageCache : ImageCache`1<SelfDisposingBitmapDrawable> {
+    private static IImageCache`1<SelfDisposingBitmapDrawable> _instance;
+    public static IImageCache`1<SelfDisposingBitmapDrawable> Instance { get; }
+    public ImageCache(int maxCacheSize, IMiniLogger logger, bool verboseLogging);
+    public static IImageCache`1<SelfDisposingBitmapDrawable> get_Instance();
+}
+public class FFImageLoading.Cache.ImageCache`1 : object {
+    private static int BYTES_PER_ARGB_8888_PIXEL;
+    private static int LOW_MEMORY_BYTE_ARRAY_POOL_DIVISOR;
+    private static int BITMAP_POOL_TARGET_SCREENS;
+    private static int MEMORY_CACHE_TARGET_SCREENS;
+    private static int ARRAY_POOL_SIZE_BYTES;
+    private ReuseBitmapDrawableCache`1<TValue> _cache;
+    private ConcurrentDictionary`2<string, ImageInformation> _imageInformations;
+    private IMiniLogger _logger;
+    private object _lock;
+    public ImageCache`1(int maxCacheSize, IMiniLogger logger, bool verboseLogging);
+    public static int GetBitmapSize(BitmapDrawable bmp);
+    public sealed virtual void Clear();
+    public sealed virtual ImageInformation GetInfo(string key);
+    public sealed virtual Tuple`2<TValue, ImageInformation> Get(string key);
+    public sealed virtual void Add(string key, ImageInformation imageInformation, TValue bitmap);
+    public sealed virtual void Remove(string key);
+    private void Remove(string key, bool log);
+    public sealed virtual void RemoveSimilar(string baseKey);
+    public sealed virtual TValue GetBitmapDrawableFromReusableSet(Options options);
+    public sealed virtual void AddToReusableSet(TValue value);
+}
+public class FFImageLoading.Cache.LRUCache : LruCache {
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EntryRemovedEventArgs`1<Object>> OnEntryRemoved;
+    public LRUCache(int maxSize);
+    [CompilerGeneratedAttribute]
+public void add_OnEntryRemoved(EventHandler`1<EntryRemovedEventArgs`1<Object>> value);
+    [CompilerGeneratedAttribute]
+public void remove_OnEntryRemoved(EventHandler`1<EntryRemovedEventArgs`1<Object>> value);
+    protected virtual int SizeOf(Object key, Object value);
+    protected virtual void EntryRemoved(bool evicted, Object key, Object oldValue, Object newValue);
+}
+public class FFImageLoading.Cache.ReuseBitmapDrawableCache`1 : object {
+    private IMiniLogger _log;
+    private bool _verboseLogging;
+    private object _monitor;
+    private bool _reusePoolRefillNeeded;
+    private int _bitmapPoolSize;
+    private long _totalAdded;
+    private long _totalRemoved;
+    private long _totalReuseHits;
+    private long _totalReuseMisses;
+    private long _totalEvictions;
+    private long _totalCacheHits;
+    private long _currentCacheByteCount;
+    private long _currentEvictedByteCount;
+    private long _gcThreshold;
+    private ByteBoundStrongLruCache`1<TValue> _displayed_cache;
+    private ByteBoundStrongLruCache`1<TValue> _reuse_pool;
+    public ReuseBitmapDrawableCache`1(IMiniLogger logger, int memoryCacheSize, int bitmapPoolSize, bool verboseLogging);
+    public TValue GetReusableBitmapDrawable(Options options);
+    private bool CanUseForInBitmap(Bitmap candidate, Options targetOptions);
+    private int GetBytesPerPixel(Config config);
+    private void UpdateByteUsage(Bitmap bitmap, bool decrement, bool causedByEviction);
+    private void OnEntryRemovedFromReusePool(object sender, EntryRemovedEventArgs`1<TValue> e);
+    private void ProcessRemoval(TValue value, bool evicted);
+    private void OnEntryNoLongerDisplayed(object sender, EventArgs args);
+    private void OnEntryDisplayed(object sender, EventArgs args);
+    private void OnEntryAdded(string key, TValue value);
+    private void PromoteReuseEntryToDisplayedCache(TValue value);
+    private void DemoteDisplayedEntryToReusePool(TValue value);
+    public void AddToReusePool(TValue value);
+    public void Add(string key, TValue value);
+    public bool ContainsKey(string key);
+    private bool Remove(string key, bool evicted);
+    public bool Remove(string key);
+    public bool TryGetValue(string key, TValue& value);
+    public void Clear();
+}
+public class FFImageLoading.Cache.SimpleDiskCache : object {
+    private static int BufferSize;
+    private string _cachePath;
+    private ConcurrentDictionary`2<string, byte> _fileWritePendingTasks;
+    private SemaphoreSlim _currentWriteLock;
+    private Task _currentWrite;
+    private ConcurrentDictionary`2<string, CacheEntry> _entries;
+    [CompilerGeneratedAttribute]
+private Configuration <Configuration>k__BackingField;
+    protected Configuration Configuration { get; private set; }
+    protected IMiniLogger Logger { get; }
+    public SimpleDiskCache(string cachePath, Configuration configuration);
+    [CompilerGeneratedAttribute]
+protected Configuration get_Configuration();
+    [CompilerGeneratedAttribute]
+private void set_Configuration(Configuration value);
+    protected IMiniLogger get_Logger();
+    [AsyncStateMachineAttribute("FFImageLoading.Cache.SimpleDiskCache/<AddToSavingQueueIfNotExistsAsync>d__13")]
+public virtual Task AddToSavingQueueIfNotExistsAsync(string key, Byte[] bytes, TimeSpan duration, Action writeFinished);
+    [AsyncStateMachineAttribute("FFImageLoading.Cache.SimpleDiskCache/<RemoveAsync>d__14")]
+public virtual Task RemoveAsync(string key);
+    [AsyncStateMachineAttribute("FFImageLoading.Cache.SimpleDiskCache/<ClearAsync>d__15")]
+public virtual Task ClearAsync();
+    public virtual Task`1<bool> ExistsAsync(string key);
+    [AsyncStateMachineAttribute("FFImageLoading.Cache.SimpleDiskCache/<TryGetStreamAsync>d__17")]
+public virtual Task`1<Stream> TryGetStreamAsync(string key);
+    public virtual Task`1<string> GetFilePathAsync(string key);
+    [AsyncStateMachineAttribute("FFImageLoading.Cache.SimpleDiskCache/<WaitForPendingWriteIfExists>d__19")]
+protected Task WaitForPendingWriteIfExists(string key);
+    protected void InitializeEntries();
+    protected TimeSpan GetDuration(string text);
+    protected virtual void CleanCallback(object state);
+}
+public class FFImageLoading.Cache.StrongCache`1 : object {
+    protected object _monitor;
+    private Hashtable _androidCache;
+    public IEnumerable`1<string> Keys { get; }
+    public TValue Get(string key);
+    public bool TryGetValue(string key, TValue& value);
+    public bool ContainsKey(string key);
+    public void Add(string key, TValue value);
+    public bool Remove(string key);
+    public IEnumerable`1<string> get_Keys();
+    public void Clear();
+}
+[ExtensionAttribute]
+public static class FFImageLoading.ColorExtensions : object {
+    [ExtensionAttribute]
+public static Color ToColor(string hexColor);
+}
+[PreserveAttribute]
+[RegisterAttribute("ffimageloading.cross.MvxCachedImageView")]
+public class FFImageLoading.Cross.MvxCachedImageView : ImageView {
+    protected IScheduledWork _scheduledWork;
+    protected ImageSourceBinding _lastImageSource;
+    protected bool _isDisposed;
+    [CompilerGeneratedAttribute]
+private PropertyChangedEventHandler PropertyChanged;
+    [CompilerGeneratedAttribute]
+private EventHandler IsLoadingChanged;
+    private bool _isLoading;
+    private int _retryCount;
+    private int _retryDelay;
+    private int _loadingDelay;
+    private double _downsampleWidth;
+    private double _downsampleHeight;
+    private bool _downsampleUseDipUnits;
+    private Nullable`1<TimeSpan> _cacheDuration;
+    private LoadingPriority _loadingPriority;
+    private Nullable`1<bool> _bitmapOptimizations;
+    private Nullable`1<bool> _fadeAnimationEnabled;
+    private Nullable`1<bool> _fadeAnimationForCachedImages;
+    private Nullable`1<int> _fadeAnimationDuration;
+    private Nullable`1<bool> _transformPlaceholders;
+    private Nullable`1<CacheType> _cacheType;
+    private List`1<ITransformation> _transformations;
+    private Nullable`1<bool> _invalidateLayoutAfterLoaded;
+    private IDataResolver _customDataResolver;
+    private IDataResolver _customLoadingPlaceholderDataResolver;
+    private IDataResolver _customErrorPlaceholderDataResolver;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<SuccessEventArgs> OnSuccess;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<ErrorEventArgs> OnError;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<FinishEventArgs> OnFinish;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DownloadStartedEventArgs> OnDownloadStarted;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DownloadProgressEventArgs> OnDownloadProgress;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<FileWriteFinishedEventArgs> OnFileWriteFinished;
+    private string _loadingPlaceholderPath;
+    private string _errorPlaceholderPath;
+    private string _imagePath;
+    private string _customCacheKey;
+    private Func`2<CancellationToken, Task`1<Stream>> _imageStream;
+    public bool IsLoading { get; public set; }
+    public int RetryCount { get; public set; }
+    public int RetryDelay { get; public set; }
+    public int LoadingDelay { get; public set; }
+    public double DownsampleWidth { get; public set; }
+    public double DownsampleHeight { get; public set; }
+    public bool DownsampleUseDipUnits { get; public set; }
+    public Nullable`1<TimeSpan> CacheDuration { get; public set; }
+    public LoadingPriority LoadingPriority { get; public set; }
+    public Nullable`1<bool> BitmapOptimizations { get; public set; }
+    public Nullable`1<bool> FadeAnimationEnabled { get; public set; }
+    public Nullable`1<bool> FadeAnimationForCachedImages { get; public set; }
+    public Nullable`1<int> FadeAnimationDuration { get; public set; }
+    public Nullable`1<bool> TransformPlaceholders { get; public set; }
+    public Nullable`1<CacheType> CacheType { get; public set; }
+    public List`1<ITransformation> Transformations { get; public set; }
+    public Nullable`1<bool> InvalidateLayoutAfterLoaded { get; public set; }
+    public IDataResolver CustomDataResolver { get; public set; }
+    public IDataResolver CustomLoadingPlaceholderDataResolver { get; public set; }
+    public IDataResolver CustomErrorPlaceholderDataResolver { get; public set; }
+    public string LoadingPlaceholderImagePath { get; public set; }
+    public string ErrorPlaceholderImagePath { get; public set; }
+    public string ImagePath { get; public set; }
+    public string CustomCacheKey { get; public set; }
+    public Func`2<CancellationToken, Task`1<Stream>> ImageStream { get; public set; }
+    public MvxCachedImageView(Context context);
+    public MvxCachedImageView(Context context, IAttributeSet attrs);
+    public MvxCachedImageView(IntPtr javaReference, JniHandleOwnership transfer);
+    protected void Initialize();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_PropertyChanged(PropertyChangedEventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_PropertyChanged(PropertyChangedEventHandler value);
+    protected virtual void OnPropertyChanged(string propertyName);
+    [CompilerGeneratedAttribute]
+public void add_IsLoadingChanged(EventHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_IsLoadingChanged(EventHandler value);
+    public sealed virtual bool get_IsLoading();
+    public void set_IsLoading(bool value);
+    public sealed virtual int get_RetryCount();
+    public sealed virtual void set_RetryCount(int value);
+    public sealed virtual int get_RetryDelay();
+    public sealed virtual void set_RetryDelay(int value);
+    public sealed virtual int get_LoadingDelay();
+    public sealed virtual void set_LoadingDelay(int value);
+    public sealed virtual double get_DownsampleWidth();
+    public sealed virtual void set_DownsampleWidth(double value);
+    public sealed virtual double get_DownsampleHeight();
+    public sealed virtual void set_DownsampleHeight(double value);
+    public sealed virtual bool get_DownsampleUseDipUnits();
+    public sealed virtual void set_DownsampleUseDipUnits(bool value);
+    public sealed virtual Nullable`1<TimeSpan> get_CacheDuration();
+    public sealed virtual void set_CacheDuration(Nullable`1<TimeSpan> value);
+    public sealed virtual LoadingPriority get_LoadingPriority();
+    public sealed virtual void set_LoadingPriority(LoadingPriority value);
+    public sealed virtual Nullable`1<bool> get_BitmapOptimizations();
+    public sealed virtual void set_BitmapOptimizations(Nullable`1<bool> value);
+    public sealed virtual Nullable`1<bool> get_FadeAnimationEnabled();
+    public sealed virtual void set_FadeAnimationEnabled(Nullable`1<bool> value);
+    public sealed virtual Nullable`1<bool> get_FadeAnimationForCachedImages();
+    public sealed virtual void set_FadeAnimationForCachedImages(Nullable`1<bool> value);
+    public sealed virtual Nullable`1<int> get_FadeAnimationDuration();
+    public sealed virtual void set_FadeAnimationDuration(Nullable`1<int> value);
+    public sealed virtual Nullable`1<bool> get_TransformPlaceholders();
+    public sealed virtual void set_TransformPlaceholders(Nullable`1<bool> value);
+    public sealed virtual Nullable`1<CacheType> get_CacheType();
+    public sealed virtual void set_CacheType(Nullable`1<CacheType> value);
+    public sealed virtual List`1<ITransformation> get_Transformations();
+    public sealed virtual void set_Transformations(List`1<ITransformation> value);
+    public sealed virtual Nullable`1<bool> get_InvalidateLayoutAfterLoaded();
+    public sealed virtual void set_InvalidateLayoutAfterLoaded(Nullable`1<bool> value);
+    public sealed virtual IDataResolver get_CustomDataResolver();
+    public sealed virtual void set_CustomDataResolver(IDataResolver value);
+    public sealed virtual IDataResolver get_CustomLoadingPlaceholderDataResolver();
+    public sealed virtual void set_CustomLoadingPlaceholderDataResolver(IDataResolver value);
+    public sealed virtual IDataResolver get_CustomErrorPlaceholderDataResolver();
+    public sealed virtual void set_CustomErrorPlaceholderDataResolver(IDataResolver value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnSuccess(EventHandler`1<SuccessEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnSuccess(EventHandler`1<SuccessEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnError(EventHandler`1<ErrorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnError(EventHandler`1<ErrorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnFinish(EventHandler`1<FinishEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnFinish(EventHandler`1<FinishEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnDownloadStarted(EventHandler`1<DownloadStartedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnDownloadStarted(EventHandler`1<DownloadStartedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnDownloadProgress(EventHandler`1<DownloadProgressEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnDownloadProgress(EventHandler`1<DownloadProgressEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnFileWriteFinished(EventHandler`1<FileWriteFinishedEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnFileWriteFinished(EventHandler`1<FileWriteFinishedEventArgs> value);
+    public string get_LoadingPlaceholderImagePath();
+    public void set_LoadingPlaceholderImagePath(string value);
+    public string get_ErrorPlaceholderImagePath();
+    public void set_ErrorPlaceholderImagePath(string value);
+    public string get_ImagePath();
+    public void set_ImagePath(string value);
+    public string get_CustomCacheKey();
+    public void set_CustomCacheKey(string value);
+    public Func`2<CancellationToken, Task`1<Stream>> get_ImageStream();
+    public void set_ImageStream(Func`2<CancellationToken, Task`1<Stream>> value);
+    public void Cancel();
+    public void Reload();
+    protected virtual void UpdateImageLoadingTask();
+    protected virtual void SetupOnBeforeImageLoading(TaskParameter imageLoader);
+    protected virtual ImageSourceBinding GetImageSourceBinding(string imagePath, Func`2<CancellationToken, Task`1<Stream>> imageStream);
+    protected virtual void Dispose(bool disposing);
+}
+public class FFImageLoading.DataResolvers.BundleDataResolver : object {
+    protected Context Context { get; }
+    public virtual Task`1<DataResolverResult> Resolve(string identifier, TaskParameter parameters, CancellationToken token);
+    protected Context get_Context();
+}
+public class FFImageLoading.DataResolvers.DataResolverFactory : object {
+    public sealed virtual IDataResolver GetResolver(string identifier, ImageSource source, TaskParameter parameters, Configuration configuration);
+}
+public class FFImageLoading.DataResolvers.FileDataResolver : object {
+    public virtual Task`1<DataResolverResult> Resolve(string identifier, TaskParameter parameters, CancellationToken token);
+}
+public class FFImageLoading.DataResolvers.ResourceDataResolver : object {
+    private static ConcurrentDictionary`2<string, int> _resourceIdentifiersCache;
+    protected Context Context { get; }
+    private static ResourceDataResolver();
+    public virtual Task`1<DataResolverResult> Resolve(string identifier, TaskParameter parameters, CancellationToken token);
+    protected Context get_Context();
+}
+public class FFImageLoading.Decoders.BaseDecoder : object {
+    public Configuration Configuration { get; }
+    public IMiniLogger Logger { get; }
+    protected Context Context { get; }
+    [AsyncStateMachineAttribute("FFImageLoading.Decoders.BaseDecoder/<DecodeAsync>d__0")]
+public sealed virtual Task`1<IDecodedImage`1<Bitmap>> DecodeAsync(Stream imageData, string path, ImageSource source, ImageInformation imageInformation, TaskParameter parameters);
+    public Configuration get_Configuration();
+    public IMiniLogger get_Logger();
+    protected Context get_Context();
+    public static int CalculateInSampleSize(int sourceWidth, int sourceHeight, int reqWidth, int reqHeight, bool allowUpscale);
+    private void AddInBitmapOptions(Options options);
+}
+public class FFImageLoading.Decoders.GifDecoder : object {
+    public Configuration Configuration { get; }
+    public IMiniLogger Logger { get; }
+    [AsyncStateMachineAttribute("FFImageLoading.Decoders.GifDecoder/<DecodeAsync>d__0")]
+public sealed virtual Task`1<IDecodedImage`1<Bitmap>> DecodeAsync(Stream stream, string path, ImageSource source, ImageInformation imageInformation, TaskParameter parameters);
+    public Configuration get_Configuration();
+    public IMiniLogger get_Logger();
+}
+[ExtensionAttribute]
+public static class FFImageLoading.DrawableExtensions : object {
+    [ExtensionAttribute]
+public static bool IsValidAndHasValidBitmap(BitmapDrawable drawable);
+    [ExtensionAttribute]
+public static bool IsValidAndHasValidBitmap(ISelfDisposingBitmapDrawable drawable);
+    [ExtensionAttribute]
+public static bool IsValidAndHasValidBitmap(SelfDisposingBitmapDrawable drawable);
+    [AsyncStateMachineAttribute("FFImageLoading.DrawableExtensions/<AsPngStreamAsync>d__3")]
+[ExtensionAttribute]
+public static Task`1<Stream> AsPngStreamAsync(BitmapDrawable drawable);
+    [AsyncStateMachineAttribute("FFImageLoading.DrawableExtensions/<AsJpegStreamAsync>d__4")]
+[ExtensionAttribute]
+public static Task`1<Stream> AsJpegStreamAsync(BitmapDrawable drawable, int quality);
+}
+public class FFImageLoading.Drawables.FFAnimatedDrawable : SelfDisposingBitmapDrawable {
+    [CompilerGeneratedAttribute]
+private IAnimatedImage`1[] <AnimatedImages>k__BackingField;
+    public IAnimatedImage`1[] AnimatedImages { get; private set; }
+    public FFAnimatedDrawable(Resources resources, Stream stream);
+    public FFAnimatedDrawable(Resources resources, string filePath);
+    public FFAnimatedDrawable(Resources resources, Bitmap bitmap);
+    public FFAnimatedDrawable(IntPtr handle, JniHandleOwnership transfer);
+    internal FFAnimatedDrawable(Resources resources, Bitmap bitmap, IAnimatedImage`1[] animatedImages);
+    [CompilerGeneratedAttribute]
+public sealed virtual IAnimatedImage`1[] get_AnimatedImages();
+    [CompilerGeneratedAttribute]
+private void set_AnimatedImages(IAnimatedImage`1[] value);
+    private sealed virtual override Bitmap FFImageLoading.Drawables.ISelfDisposingBitmapDrawable.get_Bitmap();
+}
+public class FFImageLoading.Drawables.FFBitmapDrawable : SelfDisposingBitmapDrawable {
+    private WeakReference`1<ISelfDisposingBitmapDrawable> _baseDrawable;
+    private BitmapDrawable _placeholder;
+    private long _startTimeMillis;
+    private int _alpha;
+    private float _fadeDuration;
+    private bool _placeholderInitialized;
+    private Rect _orgRect;
+    [CompilerGeneratedAttribute]
+private bool <IsFadeAnimationRunning>k__BackingField;
+    public bool IsFadeAnimationRunning { get; private set; }
+    public int FadeDuration { get; }
+    public FFBitmapDrawable(Resources res, Bitmap bitmap, SelfDisposingBitmapDrawable baseDrawable);
+    public FFBitmapDrawable(Resources res, Bitmap bitmap);
+    public FFBitmapDrawable(Resources resources);
+    public FFBitmapDrawable(Resources resources, Stream stream);
+    public FFBitmapDrawable(Resources resources, string filePath);
+    public FFBitmapDrawable(Bitmap bitmap);
+    public FFBitmapDrawable(IntPtr handle, JniHandleOwnership transfer);
+    public void SetPlaceholder(SelfDisposingBitmapDrawable drawable, int animationDuration);
+    public virtual void SetIsDisplayed(bool isDisplayed);
+    [CompilerGeneratedAttribute]
+public bool get_IsFadeAnimationRunning();
+    [CompilerGeneratedAttribute]
+private void set_IsFadeAnimationRunning(bool value);
+    public int get_FadeDuration();
+    protected virtual void OnBoundsChange(Rect bounds);
+    public virtual void Draw(Canvas canvas);
+    public virtual void SetAlpha(int alpha);
+    public virtual void SetColorFilter(Color color, Mode mode);
+}
+public interface FFImageLoading.Drawables.ISelfDisposingAnimatedBitmapDrawable {
+    public IAnimatedImage`1[] AnimatedImages { get; }
+    public abstract virtual IAnimatedImage`1[] get_AnimatedImages();
+}
+public interface FFImageLoading.Drawables.ISelfDisposingBitmapDrawable {
+    public string InCacheKey { get; public set; }
+    public bool IsRetained { get; }
+    public bool HasValidBitmap { get; }
+    public IntPtr Handle { get; }
+    public Bitmap Bitmap { get; }
+    public abstract virtual string get_InCacheKey();
+    public abstract virtual void set_InCacheKey(string value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_NoLongerDisplayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_NoLongerDisplayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Displayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Displayed(EventHandler value);
+    public abstract virtual void SetNoLongerDisplayed();
+    public abstract virtual void SetIsDisplayed(bool isDisplayed);
+    public abstract virtual void SetIsCached(bool isCached);
+    public abstract virtual void SetIsRetained(bool isRetained);
+    public abstract virtual bool get_IsRetained();
+    public abstract virtual bool get_HasValidBitmap();
+    public abstract virtual IntPtr get_Handle();
+    public abstract virtual Bitmap get_Bitmap();
+}
+public class FFImageLoading.Drawables.SelfDisposingBitmapDrawable : BitmapDrawable {
+    protected object _monitor;
+    private int _cacheRefCount;
+    private int _displayRefCount;
+    private int _retainRefCount;
+    private bool _isBitmapDisposed;
+    [CompilerGeneratedAttribute]
+private string <InCacheKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventHandler NoLongerDisplayed;
+    [CompilerGeneratedAttribute]
+private EventHandler Displayed;
+    [CompilerGeneratedAttribute]
+private int <SizeInBytes>k__BackingField;
+    public string InCacheKey { get; public set; }
+    public int SizeInBytes { get; private set; }
+    public bool IsRetained { get; }
+    public bool HasValidBitmap { get; }
+    [ObsoleteAttribute]
+public SelfDisposingBitmapDrawable(Resources resources);
+    public SelfDisposingBitmapDrawable(Resources resources, Stream stream);
+    public SelfDisposingBitmapDrawable(Resources resources, string filePath);
+    [ObsoleteAttribute]
+public SelfDisposingBitmapDrawable(Bitmap bitmap);
+    public SelfDisposingBitmapDrawable(Resources resources, Bitmap bitmap);
+    public SelfDisposingBitmapDrawable(IntPtr handle, JniHandleOwnership transfer);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_InCacheKey();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_InCacheKey(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_NoLongerDisplayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_NoLongerDisplayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Displayed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Displayed(EventHandler value);
+    private void UpdateSizeInBytes();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_SizeInBytes();
+    [CompilerGeneratedAttribute]
+private void set_SizeInBytes(int value);
+    public sealed virtual void SetNoLongerDisplayed();
+    public virtual void SetIsDisplayed(bool isDisplayed);
+    public sealed virtual void SetIsCached(bool isCached);
+    public sealed virtual void SetIsRetained(bool isRetained);
+    public sealed virtual bool get_IsRetained();
+    protected virtual void OnFreeResources();
+    private void CheckState();
+    public virtual bool get_HasValidBitmap();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void JavaFinalize();
+    private sealed virtual override Bitmap FFImageLoading.Drawables.ISelfDisposingBitmapDrawable.get_Bitmap();
+}
+[ExtensionAttribute]
+public static class FFImageLoading.Extensions.ExifExtensions : object {
+    [ExtensionAttribute]
+public static Bitmap ToRotatedBitmap(Bitmap sourceBitmap, ExifOrientation orientation);
+}
+[ExtensionAttribute]
+public static class FFImageLoading.Extensions.UnitsExtensions : object {
+    [ExtensionAttribute]
+public static int DpToPixels(int dp);
+    [ExtensionAttribute]
+public static int DpToPixels(double dp);
+    [ExtensionAttribute]
+public static double PixelsToDp(int px);
+    [ExtensionAttribute]
+public static double PixelsToDp(double px);
+}
+public class FFImageLoading.Helpers.MainThreadDispatcher : object {
+    private static Handler _handler;
+    private static MainThreadDispatcher();
+    public void Post(Action action);
+    public sealed virtual Task PostAsync(Action action);
+    public sealed virtual Task PostAsync(Func`1<Task> action);
+}
+public class FFImageLoading.Helpers.MD5Helper : object {
+    public sealed virtual string MD5(Stream stream);
+    public sealed virtual string MD5(string input);
+}
+internal class FFImageLoading.Helpers.MiniLogger : object {
+    public sealed virtual void Debug(string message);
+    public sealed virtual void Error(string errorMessage);
+    public sealed virtual void Error(string errorMessage, Exception ex);
+}
+internal static class FFImageLoading.Helpers.Utils : object {
+    public static bool HasFroyo();
+    public static bool HasGingerbread();
+    public static bool HasHoneycomb();
+    public static bool HasHoneycombMr1();
+    public static bool HasJellyBean();
+    public static bool HasKitKat();
+}
+internal class FFImageLoading.HighResolutionTimer`1 : object {
+    private static float _tickFrequency;
+    private Func`3<HighResolutionTimer`1<TImageContainer>, Bitmap, Task> _action;
+    [CompilerGeneratedAttribute]
+private ISelfDisposingAnimatedBitmapDrawable <AnimatedDrawable>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <DelayOffset>k__BackingField;
+    public ISelfDisposingAnimatedBitmapDrawable AnimatedDrawable { get; private set; }
+    public bool Enabled { get; private set; }
+    public int DelayOffset { get; public set; }
+    public HighResolutionTimer`1(ISelfDisposingAnimatedBitmapDrawable animatedDrawable, Func`3<HighResolutionTimer`1<TImageContainer>, Bitmap, Task> action);
+    private static HighResolutionTimer`1();
+    [CompilerGeneratedAttribute]
+public ISelfDisposingAnimatedBitmapDrawable get_AnimatedDrawable();
+    [CompilerGeneratedAttribute]
+private void set_AnimatedDrawable(ISelfDisposingAnimatedBitmapDrawable value);
+    [CompilerGeneratedAttribute]
+public bool get_Enabled();
+    [CompilerGeneratedAttribute]
+private void set_Enabled(bool value);
+    [CompilerGeneratedAttribute]
+public int get_DelayOffset();
+    [CompilerGeneratedAttribute]
+public void set_DelayOffset(int value);
+    public void Start();
+    public void Stop();
+    [AsyncStateMachineAttribute("FFImageLoading.HighResolutionTimer`1/<ExecuteTimer>d__17")]
+private void ExecuteTimer();
+}
+public interface FFImageLoading.IByteSizeAware {
+    public int SizeInBytes { get; }
+    public abstract virtual int get_SizeInBytes();
+}
+[PreserveAttribute]
+public class FFImageLoading.ImageService : ImageServiceBase`1<SelfDisposingBitmapDrawable> {
+    private DisplayMetrics _metrics;
+    private static ConditionalWeakTable`2<object, IImageLoaderTask> _viewsReferences;
+    private static IImageService _instance;
+    [CompilerGeneratedAttribute]
+private static bool <EnableMockImageService>k__BackingField;
+    public static IImageService Instance { get; }
+    public static bool EnableMockImageService { get; public set; }
+    protected IMemoryCache`1<SelfDisposingBitmapDrawable> MemoryCache { get; }
+    private static ImageService();
+    public static IImageService get_Instance();
+    [CompilerGeneratedAttribute]
+public static bool get_EnableMockImageService();
+    [CompilerGeneratedAttribute]
+public static void set_EnableMockImageService(bool value);
+    protected virtual IMemoryCache`1<SelfDisposingBitmapDrawable> get_MemoryCache();
+    protected virtual IMD5Helper CreatePlatformMD5HelperInstance(Configuration configuration);
+    protected virtual IMiniLogger CreatePlatformLoggerInstance(Configuration configuration);
+    protected virtual IPlatformPerformance CreatePlatformPerformanceInstance(Configuration configuration);
+    protected virtual IMainThreadDispatcher CreateMainThreadDispatcherInstance(Configuration configuration);
+    protected virtual IDataResolverFactory CreateDataResolverFactoryInstance(Configuration configuration);
+    protected virtual IDiskCache CreatePlatformDiskCacheInstance(Configuration configuration);
+    internal static IImageLoaderTask CreateTask(TaskParameter parameters, ITarget`2<SelfDisposingBitmapDrawable, TImageView> target);
+    internal static IImageLoaderTask CreateTask(TaskParameter parameters);
+    protected virtual void SetTaskForTarget(IImageLoaderTask currentTask);
+    public virtual void CancelWorkForView(object view);
+    public virtual int DpToPixels(double dp);
+    public virtual double PixelsToDp(double px);
+}
+internal static class FFImageLoading.IO.FileStore : object {
+    private static int DefaultBufferSize;
+    public static Stream GetInputStream(string path, bool asynchronous);
+    public static Stream GetOutputStream(string path, bool asynchronous);
+    public static bool Exists(string path);
+    [AsyncStateMachineAttribute("FFImageLoading.IO.FileStore/<ReadBytesAsync>d__4")]
+public static Task`1<Byte[]> ReadBytesAsync(string path, CancellationToken token);
+    [AsyncStateMachineAttribute("FFImageLoading.IO.FileStore/<WriteBytesAsync>d__5")]
+public static Task WriteBytesAsync(string path, Byte[] data, CancellationToken token);
+}
+public class FFImageLoading.PlatformImageLoaderTask`1 : ImageLoaderTask`3<Bitmap, SelfDisposingBitmapDrawable, TImageView> {
+    private static Color _placeholderHelperColor;
+    protected Context Context { get; }
+    public PlatformImageLoaderTask`1(ITarget`2<SelfDisposingBitmapDrawable, TImageView> target, TaskParameter parameters, IImageService imageService);
+    private static PlatformImageLoaderTask`1();
+    protected Context get_Context();
+    [AsyncStateMachineAttribute("FFImageLoading.PlatformImageLoaderTask`1/<SetTargetAsync>d__4")]
+protected virtual Task SetTargetAsync(SelfDisposingBitmapDrawable image, bool animated);
+    protected virtual void BeforeLoading(SelfDisposingBitmapDrawable image, bool fromMemoryCache);
+    protected virtual void AfterLoading(SelfDisposingBitmapDrawable image, bool fromMemoryCache);
+    protected virtual int DpiToPixels(int size);
+    protected virtual IDecoder`1<Bitmap> ResolveDecoder(ImageType type);
+    [AsyncStateMachineAttribute("FFImageLoading.PlatformImageLoaderTask`1/<TransformAsync>d__9")]
+protected virtual Task`1<Bitmap> TransformAsync(Bitmap bitmap, IList`1<ITransformation> transformations, string path, ImageSource source, bool isPlaceholder);
+    protected virtual Task`1<SelfDisposingBitmapDrawable> GenerateImageFromDecoderContainerAsync(IDecodedImage`1<Bitmap> decoded, ImageInformation imageInformation, bool isPlaceholder);
+}
+public class FFImageLoading.PlatformPerformance : object {
+    private Runtime _runtime;
+    private ActivityManager _activityManager;
+    private MemoryInfo _memoryInfo;
+    public sealed virtual int GetCurrentManagedThreadId();
+    public sealed virtual int GetCurrentSystemThreadId();
+    public sealed virtual string GetMemoryInfo();
+}
+public class FFImageLoading.Targets.BitmapTarget : Target`2<SelfDisposingBitmapDrawable, ISelfDisposingBitmapDrawable> {
+    private WeakReference`1<SelfDisposingBitmapDrawable> _drawableWeakReference;
+    public SelfDisposingBitmapDrawable BitmapDrawable { get; }
+    public virtual void Set(IImageLoaderTask task, SelfDisposingBitmapDrawable image, bool animated);
+    public SelfDisposingBitmapDrawable get_BitmapDrawable();
+}
+public class FFImageLoading.Targets.ImageViewTarget : ViewTarget`1<ImageView> {
+    private static ConditionalWeakTable`2<ImageView, HighResolutionTimer`1<ISelfDisposingAnimatedBitmapDrawable>> _runningAnimations;
+    public ImageViewTarget(ImageView control);
+    private static ImageViewTarget();
+    private static void PlayAnimation(ImageView control, ISelfDisposingAnimatedBitmapDrawable drawable);
+    private static void StopAnimation(ImageView imageView);
+    private static void Set(ImageView control, SelfDisposingBitmapDrawable drawable);
+    public virtual void SetAsEmpty(IImageLoaderTask task);
+    public virtual void Set(IImageLoaderTask task, SelfDisposingBitmapDrawable image, bool animated);
+}
+public abstract class FFImageLoading.Targets.ViewTarget`1 : Target`2<SelfDisposingBitmapDrawable, TView> {
+    protected WeakReference`1<TView> _controlWeakReference;
+    public bool IsValid { get; }
+    public TView Control { get; }
+    protected ViewTarget`1(TView control);
+    public virtual bool get_IsValid();
+    protected static void UpdateDrawableDisplayedState(Drawable drawable, bool isDisplayed);
+    protected bool IsLayoutNeeded(IImageLoaderTask task, Drawable oldImage, Drawable newImage);
+    public virtual TView get_Control();
+}
+[ExtensionAttribute]
+public static class FFImageLoading.TaskParameterExtensions : object {
+    [AsyncStateMachineAttribute("FFImageLoading.TaskParameterExtensions/<InvalidateAsync>d__0")]
+[ExtensionAttribute]
+public static Task InvalidateAsync(TaskParameter parameters, CacheType cacheType);
+    [ExtensionAttribute]
+public static IImageLoaderTask Preload(TaskParameter parameters);
+    [ExtensionAttribute]
+public static Task PreloadAsync(TaskParameter parameters);
+    [ExtensionAttribute]
+public static IImageLoaderTask DownloadOnly(TaskParameter parameters);
+    [AsyncStateMachineAttribute("FFImageLoading.TaskParameterExtensions/<DownloadOnlyAsync>d__4")]
+[ExtensionAttribute]
+public static Task DownloadOnlyAsync(TaskParameter parameters);
+}
+[ExtensionAttribute]
+public static class FFImageLoading.TaskParameterPlatformExtensions : object {
+    [AsyncStateMachineAttribute("FFImageLoading.TaskParameterPlatformExtensions/<AsPNGStreamAsync>d__0")]
+[ExtensionAttribute]
+public static Task`1<Stream> AsPNGStreamAsync(TaskParameter parameters);
+    [AsyncStateMachineAttribute("FFImageLoading.TaskParameterPlatformExtensions/<AsJPGStreamAsync>d__1")]
+[ExtensionAttribute]
+public static Task`1<Stream> AsJPGStreamAsync(TaskParameter parameters, int quality);
+    [ExtensionAttribute]
+public static Task`1<SelfDisposingBitmapDrawable> AsBitmapDrawableAsync(TaskParameter parameters);
+    [ExtensionAttribute]
+public static IScheduledWork Into(TaskParameter parameters, ImageView imageView);
+    [ExtensionAttribute]
+public static Task`1<IScheduledWork> IntoAsync(TaskParameter parameters, ImageView imageView);
+    [ExtensionAttribute]
+public static IScheduledWork Into(TaskParameter parameters, ITarget`2<SelfDisposingBitmapDrawable, TImageView> target);
+    [ExtensionAttribute]
+public static Task`1<IScheduledWork> IntoAsync(TaskParameter parameters, ITarget`2<SelfDisposingBitmapDrawable, TImageView> target);
+    [ExtensionAttribute]
+private static Task`1<IScheduledWork> IntoAsync(TaskParameter parameters, Action`1<TaskParameter> into);
+}
+public abstract class FFImageLoading.Transformations.TransformationBase : object {
+    public string Key { get; }
+    public abstract virtual string get_Key();
+    public sealed virtual IBitmap Transform(IBitmap bitmapHolder, string path, ImageSource source, bool isPlaceholder, string key);
+    protected virtual Bitmap Transform(Bitmap sourceBitmap, string path, ImageSource source, bool isPlaceholder, string key);
+}
+public enum FFImageLoading.Views.AlignMode : Enum {
+    public int value__;
+    public static AlignMode None;
+    public static AlignMode TopCenter;
+    public static AlignMode BottomLeft;
+    public static AlignMode BottomCenter;
+    public static AlignMode BottomRight;
+}
+[PreserveAttribute]
+[RegisterAttribute("ffimageloading.views.ImageViewAsync")]
+[ObsoleteAttribute("You can now use Android's ImageView")]
+public class FFImageLoading.Views.ImageViewAsync : ImageView {
+    private bool _customFit;
+    private bool _scaleToFit;
+    private AlignMode _bottomAlign;
+    public bool ScaleToFit { get; public set; }
+    public AlignMode AlignMode { get; public set; }
+    public ImageViewAsync(IntPtr javaReference, JniHandleOwnership transfer);
+    public ImageViewAsync(Context context);
+    public ImageViewAsync(Context context, IAttributeSet attrs);
+    public ImageViewAsync(Context context, IAttributeSet attrs, int defStyle);
+    public void CancelLoading();
+    public bool get_ScaleToFit();
+    public void set_ScaleToFit(bool value);
+    public AlignMode get_AlignMode();
+    public void set_AlignMode(AlignMode value);
+    protected virtual void OnMeasure(int widthMeasureSpec, int heightMeasureSpec);
+    protected virtual bool SetFrame(int l, int t, int r, int b);
+}
+public class FFImageLoading.Work.BitmapHolder : object {
+    [CompilerGeneratedAttribute]
+private Bitmap <NativeBitmap>k__BackingField;
+    public int Width { get; }
+    public int Height { get; }
+    internal Bitmap NativeBitmap { get; private set; }
+    public BitmapHolder(Bitmap bitmap);
+    public sealed virtual int get_Width();
+    public sealed virtual int get_Height();
+    [CompilerGeneratedAttribute]
+internal Bitmap get_NativeBitmap();
+    [CompilerGeneratedAttribute]
+private void set_NativeBitmap(Bitmap value);
+}
+[ExtensionAttribute]
+public static class FFImageLoading.Work.IBitmapExtensions : object {
+    [ExtensionAttribute]
+public static Bitmap ToNative(IBitmap bitmap);
+}

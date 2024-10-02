@@ -1,0 +1,1571 @@
+internal class Xamarin.UITest.Shared.Android.Adb.ActivityManagerIntentArguments : Parameters {
+    public ActivityManagerIntentArguments AddAction(string action);
+    public ActivityManagerIntentArguments AddComponent(string component);
+    public ActivityManagerIntentArguments AddData(string key, string value);
+    private ActivityManagerIntentArguments Add(string arg);
+}
+internal class Xamarin.UITest.Shared.Android.Adb.AdbArguments : object {
+    private PackageManagerCommandOptions _pmCommandOptions;
+    private ShellCommandOptions _shellCommandOptions;
+    private string _deviceSerial;
+    public AdbArguments(string deviceSerial);
+    public string Install(string appPath, int sdkLevel);
+    public string Shell(ShellCommandOptions args);
+    public string PackageManagerList(PackageManagerCommandOptions args);
+    public string EnableMockLocation(string packageName);
+    public string EnableManageExternalStorage(string packageName);
+    public string GetSDKVersionFromProperty();
+    public string PortForward(int port);
+    public string ActivityManagerInstrument(string packageName, ActivityManagerIntentArguments args, string option);
+    public string ShellConcatinate(string path, string runAsUser);
+    public string ShellList(string path, bool longFormat, string runAsUser);
+    private string UseRunAsIfNeeded(string cmd, string runas);
+    public string ShellKillProcess(string pid);
+    public string ShellProcessStatus();
+    public string Devices();
+    public IEnumerable`1<string> Md5(string packageName, int sdkLevel);
+    public string ShellMonkey(Nullable`1<int> port);
+    public string InputServiceInformation();
+    public string CurrentWindowInformation();
+    public string ActivityManagerStart(ActivityManagerIntentArguments args);
+    public string Uninstall(string packageName);
+    private string Shell(string command);
+    private string PrependSerialNumber(string command);
+}
+public class Xamarin.UITest.Shared.Android.Adb.AdbProcessRunner : object {
+    private IProcessRunner _processRunner;
+    private IAndroidSdkTools _sdkTools;
+    public AdbProcessRunner(IProcessRunner processRunner, IAndroidSdkTools sdkTools);
+    public string Run(string adbArguments, Int32[] noExceptionsOnExitCodes);
+}
+internal class Xamarin.UITest.Shared.Android.Adb.PackageManagerCommandOptions : Parameters {
+    public PackageManagerCommandOptions Packages(PackagesOption[] options);
+}
+internal enum Xamarin.UITest.Shared.Android.Adb.PackagesOption : Enum {
+    public int value__;
+    public static PackagesOption SeeAssociatedFiles;
+    public static PackagesOption ShowEnabledOnly;
+}
+[ExtensionAttribute]
+internal static class Xamarin.UITest.Shared.Android.Adb.PackagesOptionExtensions : object {
+    [ExtensionAttribute]
+public static string ToParameter(PackagesOption option);
+}
+internal class Xamarin.UITest.Shared.Android.Adb.Parameters : object {
+    protected IList`1<string> _arguments;
+    public virtual string ToString();
+}
+internal class Xamarin.UITest.Shared.Android.Adb.ShellCommandOptions : Parameters {
+    public ShellCommandOptions DumpSystem(String[] filters);
+    public ShellCommandOptions PropertByName(string propName);
+}
+public class Xamarin.UITest.Shared.Android.AndroidAppLifeCycle : object {
+    private IExecutor _executor;
+    private string _deviceSerial;
+    private ArtifactFolder _artifactFolder;
+    private string _launchableActivity;
+    private bool _clearAppData;
+    private HttpApplicationStarter _applicationStarter;
+    public AndroidAppLifeCycle(IExecutor executor, string deviceSerial, ArtifactFolder artifactFolder, string launchableActivity, bool clearAppData);
+    public AndroidAppLifeCycle(HttpClient httpClient, IExecutor executor, string deviceSerial, ArtifactFolder artifactFolder, string launchableActivity, bool clearAppData);
+    public void EnsureInstalled(ApkFile appApkFile, ApkFile testServerApkFile);
+    public void LaunchApp(ApkFile appApkFile, ApkFile testServerApkFile, int testServerPort);
+    public void LaunchApp(string appPackageName, ApkFile testServerApkFile, int testServerPort);
+    public void EnsureInstalled(string appPackageName, ApkFile testServerApkFile);
+    private void UninstallApps(ApkFile[] apkFiles);
+    private void InstallApps(ApkFile[] apkFiles);
+}
+public class Xamarin.UITest.Shared.Android.AndroidTestServerFactory : object {
+    private IExecutor _executor;
+    public AndroidTestServerFactory(IExecutor executor);
+    public ApkFile BuildTestServer(ApkFile appApkFile, KeyStore keyStore, ArtifactFolder artifactFolder, Assembly sharedAssembly);
+    public ApkFile BuildTestServer(string packageName, KeyStore keyStore, ArtifactFolder artifactFolder, Assembly sharedAssembly);
+    public ApkFile BuildTestServerWithSi(string appPackageName, FileInfo signingInfoFile, ArtifactFolder artifactFolder, Action`1<ApkFile> optionalValidation, Assembly sharedAssembly);
+    public ApkFile BuildTestServerWithSi(ApkFile appApkFile, FileInfo signingInfoFile, ArtifactFolder artifactFolder, Assembly sharedAssembly);
+    private ApkFile BuildTestServerApkFile(Assembly sharedAssembly, string appPackageName, ArtifactFolder artifactFolder);
+    private void validateApk(ApkFile apkFile, string errorMessage);
+}
+public class Xamarin.UITest.Shared.Android.AndroidXmltreeParser : object {
+    public XDocument GetXml(string input);
+    private static XName GetXName(Match match, Dictionary`2<string, XNamespace> namespaces, string line, string input);
+}
+public class Xamarin.UITest.Shared.Android.ApkFile : object {
+    private string _path;
+    private IExecutor _executor;
+    private HashHelper _hashHelper;
+    private Lazy`1<AaptDumpResult> _aaptDump;
+    public string ApkPath { get; }
+    public string PackageName { get; }
+    public List`1<string> Permissions { get; }
+    public ApkFile(string path, IExecutor executor);
+    public sealed virtual string get_ApkPath();
+    public String[] GetFingerprints(ArtifactFolder artifactFolder);
+    public void ExtractSignatureBlockFile(string path);
+    public void ExtractSigningInfo(string path);
+    private bool IsSigningInfo(string name);
+    public ApkFile InjectSigningInfo(FileInfo signingInfoFile, string path);
+    public sealed virtual string get_PackageName();
+    public List`1<string> get_Permissions();
+    private AaptDumpResult GetAaptDump();
+    public bool HasInternetPermission();
+    public void EnsureInternetPermission();
+    public bool IsMissingDotNetAssemblies();
+    public void EnsureDotNetAssembliesAreBundled();
+    public string GetMd5Hash();
+    private void ExtractEntry(ZipFile zipFile, ZipEntry entry, string targetPath);
+    public Byte[] GetFileBytes(string fileName);
+    public void AddFile(string fileName, Byte[] fileBytes);
+    [CompilerGeneratedAttribute]
+private bool <ExtractSigningInfo>b__9_0(ZipEntry x);
+    [CompilerGeneratedAttribute]
+private bool <InjectSigningInfo>b__11_0(ZipEntry x);
+}
+public class Xamarin.UITest.Shared.Android.ApkSigner : object {
+    private HashHelper _hashHelper;
+    private IExecutor _executor;
+    public ApkSigner(IExecutor executor);
+    public sealed virtual ApkFile ResignApk(ArtifactFolder artifactsFolder, string apkFilePath, Credentials credentials);
+    public sealed virtual void SignApk(ApkFile apkFile, string targetApkPath, Credentials credentials);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAaptPackage : object {
+    private FileInfo _androidManifestFile;
+    private string _targetPath;
+    public CommandAaptPackage(FileInfo androidManifestFile, string targetPath);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAaptRemove : object {
+    private FileInfo _apkFile;
+    private String[] _paths;
+    public CommandAaptRemove(FileInfo apkFile, String[] paths);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbClearAppData : object {
+    private AdbArguments _adbArguments;
+    private string _apkFilePackageName;
+    private string _testServerApkPackageName;
+    public CommandAdbClearAppData(string deviceSerial, string apkFilePackageName, string testServerApkPackageName);
+    public sealed virtual void Execute(AdbProcessRunner processRunner);
+    private void ClearData(AdbProcessRunner processRunner);
+    private bool CalabashSuccessful(string report);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbInstallPackage : object {
+    private AdbArguments _adbArguments;
+    private IApkFileInformation _apkFile;
+    private string _deviceSerial;
+    public CommandAdbInstallPackage(IApkFileInformation apkFile);
+    public CommandAdbInstallPackage(string deviceSerial, IApkFileInformation apkFile);
+    public sealed virtual void Execute(AdbProcessRunner processRunner, IExecutor executor);
+    internal void ExecuteInner(Func`2<string, string> adbShell, int deviceSdkVersion);
+    [CompilerGeneratedAttribute]
+private bool <ExecuteInner>b__6_1(string s);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbInstrument : object {
+    private AdbArguments _adbArguments;
+    private string _appPackageName;
+    private string _testServerPackageName;
+    private int _testServerPort;
+    private string _launchableActivity;
+    public CommandAdbInstrument(string deviceSerial, ApkFile appApkFile, ApkFile testServerApkFile, int testServerPort, string launchableActivity);
+    public CommandAdbInstrument(ApkFile appApkFile, ApkFile testServerApkFile, int testServerPort, string launchableActivity);
+    public CommandAdbInstrument(string deviceSerial, string appPackageName, string testServerPackageName, int testServerPort, string launchableActivity);
+    public CommandAdbInstrument(string appPackageName, string testServerPackageName, int testServerPort, string launchableActivity);
+    public sealed virtual void Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbPortForward : object {
+    private AdbArguments _adbArguments;
+    private int _testServerPort;
+    public CommandAdbPortForward(int testServerPort);
+    public CommandAdbPortForward(string deviceSerial, int testServerPort);
+    public sealed virtual void Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbStartMonkey : object {
+    private AdbArguments _adbArguments;
+    private Random _random;
+    public CommandAdbStartMonkey(string deviceSerial);
+    public sealed virtual int Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTool);
+    private void KillExistingMonkeyProcess(IProcessRunner processRunner, string adbPath);
+    private void KillOnHost(IProcessRunner processRunner, string adbPath);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbUninstallPackage : object {
+    private AdbArguments _adbArguments;
+    private ApkFile _apkFile;
+    public CommandAdbUninstallPackage(ApkFile apkFile);
+    public CommandAdbUninstallPackage(string deviceSerial, ApkFile apkFile);
+    public sealed virtual void Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandAdbWakeUp : object {
+    private AdbArguments _adbArguments;
+    private ApkFile _testServerApkFile;
+    public CommandAdbWakeUp(string deviceSerial, ApkFile testServerApkFile);
+    public CommandAdbWakeUp(ApkFile testServerApkFile);
+    public sealed virtual void Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandApkSignerSign : object {
+    private string _sourceApkFilePath;
+    private string _targetApkFilePath;
+    private string _keyStoreLocation;
+    private string _storePassword;
+    private string _keyAlias;
+    private string _keyPassword;
+    public CommandApkSignerSign(string sourceApkFilePath, string targetApkFilePath, string keyStoreLocation, string storePassword, string keyAlias, string keyPassword);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools sdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandApkSignerVerify : object {
+    private string _apkFilePath;
+    public CommandApkSignerVerify(string apkFilePath);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools sdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandCheckZipAlign : object {
+    private ApkFile _apkFile;
+    public CommandCheckZipAlign(ApkFile apkFile);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandGenerateDevKeyStore : object {
+    private string _keyStorePath;
+    private string _keyAlias;
+    private string _storePassword;
+    private string _keyPassword;
+    public CommandGenerateDevKeyStore(string keyStorePath, string keyAlias, string storePassword, string keyPassword);
+    public sealed virtual void Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+}
+[ObsoleteAttribute("No support for jarsigner anymore, use CommandApkSignerSign instead")]
+public class Xamarin.UITest.Shared.Android.Commands.CommandJarSignerSign : object {
+    private string _sourceApkFilePath;
+    private string _targetApkFilePath;
+    private string _keyStoreLocation;
+    private string _storePassword;
+    private string _keyAlias;
+    private string _keyPassword;
+    private string _signingAlgorithm;
+    public CommandJarSignerSign(string sourceApkFilePath, string targetApkFilePath, string keyStoreLocation, string storePassword, string keyAlias, string keyPassword, string signingAlgorithm);
+    public sealed virtual void Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+}
+[ObsoleteAttribute("No support for jarsigner anymore, use CommandApkSignerVerify instead")]
+public class Xamarin.UITest.Shared.Android.Commands.CommandJarSignerVerify : object {
+    private string _apkFilePath;
+    public CommandJarSignerVerify(string apkFilePath);
+    public sealed virtual void Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandJavaRunJar : object {
+    private string _jarPath;
+    private string _args;
+    public CommandJavaRunJar(string jarPath, string args);
+    public sealed virtual void Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+}
+[ObsoleteAttribute("Apksigner doesn't need to unsign apk before resigning it with a different keystore")]
+public class Xamarin.UITest.Shared.Android.Commands.CommandUnsignApk : object {
+    private string _sourceApkPath;
+    private string _targetApkPath;
+    public CommandUnsignApk(string sourceApkPath, string targetApkPath);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools, IExecutor executor);
+    private bool IsSigningFile(string fileName);
+}
+public class Xamarin.UITest.Shared.Android.Commands.CommandZipAlign : object {
+    private string _sourceApkPath;
+    private string _targetApkPath;
+    public CommandZipAlign(string sourceApkPath, string targetApkPath);
+    public sealed virtual void Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+}
+public class Xamarin.UITest.Shared.Android.DefaultAndroidFactory : object {
+    public sealed virtual IProcessRunner BuildProcessRunner();
+    public sealed virtual IExecutor BuildExecutor(IProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.HttpApplicationStarter : object {
+    private static string ReadyEndpoint;
+    private static string ExpectedReadyResult;
+    private static string PingEndpoint;
+    private static string ExpectedPingResult;
+    private static string StartApplicationEndpoint;
+    private static string ExpectedOutcome;
+    private HttpClient httpClient;
+    public HttpApplicationStarter(HttpClient httpClient);
+    public void Execute(string intentJson);
+}
+public interface Xamarin.UITest.Shared.Android.IAndroidFactory {
+    public abstract virtual IProcessRunner BuildProcessRunner();
+    public abstract virtual IExecutor BuildExecutor(IProcessRunner processRunner);
+}
+public interface Xamarin.UITest.Shared.Android.IApkFileInformation {
+    public string PackageName { get; }
+    public string ApkPath { get; }
+    public abstract virtual string get_PackageName();
+    public abstract virtual string get_ApkPath();
+}
+public interface Xamarin.UITest.Shared.Android.ISigner {
+    public abstract virtual void SignApk(ApkFile apkFile, string targetApkPath, Credentials credentials);
+    public abstract virtual ApkFile ResignApk(ArtifactFolder artifactFolder, string apkFilePath, Credentials credentials);
+}
+public class Xamarin.UITest.Shared.Android.KeyStore : object {
+    private IExecutor _executor;
+    private ISigner _signer;
+    private Credentials _credentials;
+    [CompilerGeneratedAttribute]
+private String[] <Fingerprints>k__BackingField;
+    [CompilerGeneratedAttribute]
+private KeyType <KeyType>k__BackingField;
+    public String[] Fingerprints { get; public set; }
+    public KeyType KeyType { get; }
+    public KeyStore(IExecutor executor, FileInfo keyStoreFile, string keyAlias, string storePassword, string keyPassword);
+    [CompilerGeneratedAttribute]
+public String[] get_Fingerprints();
+    [CompilerGeneratedAttribute]
+public void set_Fingerprints(String[] value);
+    [CompilerGeneratedAttribute]
+public KeyType get_KeyType();
+    public virtual string ToString();
+    public void SignApk(ApkFile sourceApkFile, string targetApkFilePath);
+    public ApkFile ResignApk(ArtifactFolder artifactFolder, string apkFilePath);
+}
+public class Xamarin.UITest.Shared.Android.KeyType : object {
+    public static KeyType RSA;
+    public static KeyType DSA;
+    public static KeyType EC;
+    private static KeyType[] _knownTypes;
+    private string _signingPostfix;
+    private KeyType(string signingPostFix);
+    private static KeyType();
+    public bool SameType(string sigAlgo);
+    public string SigningAlgorithmWithMaxCompatability();
+    public static KeyType FromSigningAlgorithm(string sigAlgo);
+}
+public class Xamarin.UITest.Shared.Android.Queries.AaptDumpResult : object {
+    [CompilerGeneratedAttribute]
+private string <PackageName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <Permissions>k__BackingField;
+    public string PackageName { get; }
+    public List`1<string> Permissions { get; }
+    public bool IsValid { get; }
+    public AaptDumpResult(string packageName, List`1<string> permissions);
+    [CompilerGeneratedAttribute]
+public string get_PackageName();
+    [CompilerGeneratedAttribute]
+public List`1<string> get_Permissions();
+    public bool get_IsValid();
+}
+public class Xamarin.UITest.Shared.Android.Queries.InstalledPackage : object {
+    private string _package;
+    private string _apkPath;
+    public string Package { get; }
+    public string ApkPath { get; }
+    public InstalledPackage(string package, string apkPath);
+    public string get_Package();
+    public string get_ApkPath();
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAaptDumpBadging : object {
+    private static Regex PackageNameRegex;
+    private static Regex PermissionsRegex;
+    private ApkFile _apkFile;
+    public QueryAaptDumpBadging(ApkFile apkFile);
+    private static QueryAaptDumpBadging();
+    public sealed virtual AaptDumpResult Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+    private AaptDumpResult GetAaptDumpResult(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+    public static string ExtractPackageName(ProcessResult processResult);
+    public static List`1<string> ExtractPermissions(ProcessResult processResult);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAaptDumpXmltreeManifest : object {
+    private ApkFile _apkFile;
+    public QueryAaptDumpXmltreeManifest(ApkFile apkFile);
+    public sealed virtual AaptDumpResult Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+    private AaptDumpResult GetAaptDumpResult(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+    public static string ExtractPackageName(XDocument document);
+    public static List`1<string> ExtractPermissions(XDocument document);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAaptListFiles : object {
+    private string _apkFilePath;
+    public QueryAaptListFiles(string apkFilePath);
+    public sealed virtual String[] Execute(IProcessRunner processRunner, IAndroidSdkTools androidSdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbDevices : object {
+    private static Regex _incombatibleAdbRegex;
+    private static Regex _deviceRegex;
+    private static QueryAdbDevices();
+    public sealed virtual String[] Execute(AdbProcessRunner processRunner, IAndroidSdkTools sdkTools);
+    private String[] ValidateAndFormatDevicesOutput(string adbOutput);
+    private String[] ExtractDeviceSerials(String[] deviceLines);
+    private void CheckForAdbVersionError(string adbOutput, IAndroidSdkTools sdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbInstalledPackageLsLong : object {
+    private AdbArguments _adbArguments;
+    private InstalledPackage _package;
+    public QueryAdbInstalledPackageLsLong(string deviceSerial, InstalledPackage package);
+    public sealed virtual string Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbInstalledPackageMd5 : object {
+    private IEnumerable`1<string> _md5Arguments;
+    public QueryAdbInstalledPackageMd5(string deviceSerial, InstalledPackage package, int sdkLevel);
+    public sealed virtual string Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbInstalledPackageNames : object {
+    private AdbArguments _adbArguments;
+    public QueryAdbInstalledPackageNames(string deviceSerial);
+    public sealed virtual String[] Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbInstalledPackages : object {
+    private AdbArguments _adbArguments;
+    private PackageManagerCommandOptions _packageManagerArgs;
+    public QueryAdbInstalledPackages(string deviceSerial);
+    public sealed virtual InstalledPackage[] Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbKeyboardShown : object {
+    private AdbArguments _adbArguments;
+    public QueryAdbKeyboardShown(string deviceSerial);
+    public sealed virtual bool Execute(AdbProcessRunner processRunner);
+    private String[] DumpSys(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbKeyguardEnabled : object {
+    private AdbArguments _adbArguments;
+    public QueryAdbKeyguardEnabled(string deviceSerial);
+    public sealed virtual bool Execute(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryAdbSdkVersion : object {
+    private AdbArguments _adbArguements;
+    public QueryAdbSdkVersion(string deviceSerial);
+    public sealed virtual int Execute(AdbProcessRunner processRunner, IExecutor executor);
+    private string GetSdkVersion(AdbProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryExtractFingerprints : object {
+    private static Regex FingerprintsRegex;
+    private string _content;
+    public QueryExtractFingerprints(string content);
+    private static QueryExtractFingerprints();
+    public sealed virtual String[] Execute();
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryInstalledTokenMatchPrevious : object {
+    private string _token;
+    public QueryInstalledTokenMatchPrevious(string token);
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryKeyStoreFingerprints : object {
+    private string _keyStorePath;
+    private string _alias;
+    private string _password;
+    public QueryKeyStoreFingerprints(string keyStorePath, string alias, string password);
+    public sealed virtual String[] Execute(IExecutor executor, IProcessRunner processRunner, IJdkTools jdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryKeyStoreKeyType : object {
+    private static Regex regex;
+    private string _keyStorePath;
+    private string _alias;
+    private string _password;
+    public QueryKeyStoreKeyType(string keyStorePath, string alias, string password);
+    private static QueryKeyStoreKeyType();
+    public sealed virtual KeyType Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+    public static KeyType ExtractKeyType(ProcessResult processResult);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryKeyStoreMd5Fingerprints : object {
+    private static Regex FingerprintRegex;
+    private string _keyStorePath;
+    private string _alias;
+    private string _password;
+    public QueryKeyStoreMd5Fingerprints(string keyStorePath, string alias, string password);
+    private static QueryKeyStoreMd5Fingerprints();
+    public sealed virtual String[] Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+    public static String[] ExtractMd5Fingerprints(ProcessResult processResult);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryRsaFileFingerprints : object {
+    private string _rsaFilePath;
+    public QueryRsaFileFingerprints(string rsaFilePath);
+    public sealed virtual String[] Execute(IExecutor executor, IProcessRunner processRunner, IJdkTools jdkTools);
+}
+public class Xamarin.UITest.Shared.Android.Queries.QueryRsaFileMd5Fingerprints : object {
+    private static Regex FingerprintRegex;
+    private string _rsaFilePath;
+    public QueryRsaFileMd5Fingerprints(string rsaFilePath);
+    private static QueryRsaFileMd5Fingerprints();
+    public sealed virtual String[] Execute(IProcessRunner processRunner, IJdkTools jdkTools);
+    public static String[] ExtractMd5Fingerprints(ProcessResult processResult);
+}
+public class Xamarin.UITest.Shared.Android.TokenStorage : object {
+    private IExecutor _executor;
+    private ArtifactFolder _artifactFolder;
+    public TokenStorage(IExecutor executor, ArtifactFolder artifactFolder);
+    public bool HasMatchingTokens(string deviceSerial, ApkFile[] apkFiles);
+    public void SaveTokens(string deviceSerial, ApkFile[] apkFiles);
+    private IToken GetTokenSnapshot(string deviceSerial, InstalledPackage package);
+}
+public static class Xamarin.UITest.Shared.Android.UITestReplSharedSdkLocation : object {
+    private static string UITestAdbPathEnvVar;
+    public static bool SharedSdkPathIsSet();
+    public static string GetSharedSdkPathAndReset();
+    public static void SetSharedSdkPath(string path);
+}
+public class Xamarin.UITest.Shared.Artifacts.ArtifactCleaner : object {
+    private static int CleanUpIntervalDays;
+    private static int ExpireDays;
+    public static void PotentialCleanUp();
+}
+public class Xamarin.UITest.Shared.Artifacts.ArtifactFolder : object {
+    private string _fullPath;
+    private DateTime _createdUtc;
+    private HashHelper _hashHelper;
+    public string FullPath { get; }
+    private string RootArtifactFolder { get; }
+    public ArtifactFolder(Object[] dependencies);
+    private string CalculateFolderIdentifier(Object[] dependencies);
+    private FileInfo[] GetRelevantLoadedAssemblies();
+    public DirectoryInfo GetOutputFolder();
+    private string CreateArtifactFolder(string identifier);
+    public string get_FullPath();
+    public string CreateArtifact(string artifactName, Action`1<string> createAction);
+    public bool HasArtifact(string artifactName);
+    public string GetArtifactPath(string artifactName);
+    private string GetArtifactWorkPath(string artifactName);
+    private string get_RootArtifactFolder();
+    public string CreateArtifactFolder(string artifactFolderName, Action`1<string> createAction, String[] requiredFiles);
+    private bool HasRequiredFiles(string artifactPath, String[] requiredFiles);
+    private void DeleteIncompleteArtifactFolder(string artifactPath);
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.FixtureChunker : object {
+    public string Name { get; }
+    public sealed virtual string get_Name();
+    public sealed virtual List`1<TestChunk> GetChunks(List`1<TestMethod> testMethods);
+    private static string GetExcludeReason(TestMethod[] testMethods);
+}
+public interface Xamarin.UITest.Shared.AssemblyAnalysis.ITestChunker {
+    public string Name { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual List`1<TestChunk> GetChunks(List`1<TestMethod> testMethods);
+}
+public interface Xamarin.UITest.Shared.AssemblyAnalysis.ITestFinder {
+    public abstract virtual TestMethod[] Find(string assemblyFile, String[] fixtures, String[] includedCategories, String[] excludedCategories);
+}
+public enum Xamarin.UITest.Shared.AssemblyAnalysis.NUnitVersion : Enum {
+    public int value__;
+    public static NUnitVersion V2;
+    public static NUnitVersion V3;
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.TestChunk : object {
+    [CompilerGeneratedAttribute]
+private string <AssemblyFileName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TestTarget>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ExcludeReason>k__BackingField;
+    public string AssemblyFileName { get; private set; }
+    public string TestTarget { get; private set; }
+    public string ExcludeReason { get; private set; }
+    public TestChunk(string assemblyFileName, string testTarget, string excludeReason);
+    [CompilerGeneratedAttribute]
+private void set_AssemblyFileName(string value);
+    [CompilerGeneratedAttribute]
+public string get_AssemblyFileName();
+    [CompilerGeneratedAttribute]
+private void set_TestTarget(string value);
+    [CompilerGeneratedAttribute]
+public string get_TestTarget();
+    [CompilerGeneratedAttribute]
+private void set_ExcludeReason(string value);
+    [CompilerGeneratedAttribute]
+public string get_ExcludeReason();
+    public bool IsExcluded();
+    public virtual string ToString();
+    public sealed virtual bool Equals(TestChunk other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(TestChunk left, TestChunk right);
+    public static bool op_Inequality(TestChunk left, TestChunk right);
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.TestFinderResult : object {
+    private Dictionary`2<string, Dictionary`2<string, TestChunk[]>> _result;
+    public TestFinderResult(Dictionary`2<string, Dictionary`2<string, TestChunk[]>> result);
+    private TestChunk[] Chunks(string chunker);
+    public bool AllExcluded(string chunker);
+    public Dictionary`2<string, TestChunk[]> ExcludeTestByExcludeReason(string chunker);
+    public Dictionary`2<string, Dictionary`2<string, List`1<string>>> AsTestTargets();
+    public Dictionary`2<string, Dictionary`2<string, String[]>> AsExcludedTestTargets();
+    public Dictionary`2<string, Dictionary`2<string, List`1<string>>> AsExcludedTestTargetsWithReason();
+    public String[] IncludedTestTargets(List`1<string> requestedFixtures);
+    private List`1<string> FixtureNames(string key);
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.TestMethod : object {
+    [CompilerGeneratedAttribute]
+private string <FullName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MethodName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AssemblyFileName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ExcludeReason>k__BackingField;
+    public string FullName { get; }
+    public string TypeName { get; }
+    public string MethodName { get; }
+    public string AssemblyFileName { get; }
+    public string ExcludeReason { get; }
+    public bool IsExcluded { get; }
+    public TestMethod(string typeName, string methodName, string fullName, string assemblyFileName, string excludeReason);
+    [CompilerGeneratedAttribute]
+public string get_FullName();
+    [CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+public string get_MethodName();
+    [CompilerGeneratedAttribute]
+public string get_AssemblyFileName();
+    [CompilerGeneratedAttribute]
+public string get_ExcludeReason();
+    public bool get_IsExcluded();
+    public virtual string ToString();
+    public sealed virtual bool Equals(TestMethod other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.TestMethodChunker : object {
+    public string Name { get; }
+    public sealed virtual string get_Name();
+    public sealed virtual List`1<TestChunk> GetChunks(List`1<TestMethod> testMethods);
+}
+public class Xamarin.UITest.Shared.AssemblyAnalysis.TypeNameConverter : object {
+    private Assembly Assembly;
+    public TypeNameConverter(Assembly assembly);
+    public IEnumerable`1<string> ConvertTypeNamesToFullNames(IEnumerable`1<string> typeNames);
+}
+public class Xamarin.UITest.Shared.Dependencies.AndroidSdkDependencies : object {
+    private string _source;
+    [CompilerGeneratedAttribute]
+private string <ZipAlignPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AaptPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AdbPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AndroidJarPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ApkSignerPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DirectoryInfo <AndroidSdkDirectory>k__BackingField;
+    public string ZipAlignPath { get; private set; }
+    public string AaptPath { get; private set; }
+    public string AdbPath { get; private set; }
+    public string AndroidJarPath { get; private set; }
+    public string ApkSignerPath { get; private set; }
+    public DirectoryInfo AndroidSdkDirectory { get; private set; }
+    public bool IsSatisfied { get; }
+    public AndroidSdkDependencies(DirectoryInfo androidSdkDirectory, string zipAlignPath, string aaptPath, string adbPath, string androidJarPath, string apkSignerPath, string source);
+    [CompilerGeneratedAttribute]
+public string get_ZipAlignPath();
+    [CompilerGeneratedAttribute]
+private void set_ZipAlignPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AaptPath();
+    [CompilerGeneratedAttribute]
+private void set_AaptPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AdbPath();
+    [CompilerGeneratedAttribute]
+private void set_AdbPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AndroidJarPath();
+    [CompilerGeneratedAttribute]
+private void set_AndroidJarPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_ApkSignerPath();
+    [CompilerGeneratedAttribute]
+private void set_ApkSignerPath(string value);
+    [CompilerGeneratedAttribute]
+public DirectoryInfo get_AndroidSdkDirectory();
+    [CompilerGeneratedAttribute]
+private void set_AndroidSdkDirectory(DirectoryInfo value);
+    public bool get_IsSatisfied();
+    public virtual string ToString();
+}
+public class Xamarin.UITest.Shared.Dependencies.AndroidSdkFinder : object {
+    private RegistryReader _registryReader;
+    public AndroidSdkTools GetTools();
+    private AndroidSdkDependencies ResolveDependencies(PotentialLocation location);
+}
+public class Xamarin.UITest.Shared.Dependencies.AndroidSdkTools : object {
+    private static Regex ZigAlignPattern;
+    private static Regex AaptPattern;
+    private static Regex AdbPattern;
+    private static Regex AndroidJarPattern;
+    private static Regex ApkSignerPattern;
+    private AndroidSdkDependencies _dependencies;
+    public AndroidSdkTools(AndroidSdkDependencies dependencies);
+    private static AndroidSdkTools();
+    public static AndroidSdkDependencies BuildAndroidSdkDependencies(PotentialLocation potentialLocation);
+    private static string GetPath(ILookup`2<Regex, WalkerFileMatch> matchLookup, Regex pattern);
+    public sealed virtual string GetAaptPath();
+    public sealed virtual string GetAndroidJarPath();
+    public sealed virtual string GetZipAlignPath();
+    public sealed virtual string GetAdbPath();
+    public string GetSdkPath();
+    public sealed virtual string GetApkSignerPath();
+}
+public class Xamarin.UITest.Shared.Dependencies.DirectoryWalker : object {
+    private int _maxDepth;
+    public DirectoryWalker(int maxDepth);
+    public IEnumerable`1<WalkerFileMatch> GetMatches(string topLevelPath, Regex[] patterns);
+    [IteratorStateMachineAttribute("Xamarin.UITest.Shared.Dependencies.DirectoryWalker/<RecursiveSearch>d__3")]
+private IEnumerable`1<WalkerFileMatch> RecursiveSearch(string topLevelPath, string currentPathRelative, int maxDepth, Regex[] patterns);
+}
+public interface Xamarin.UITest.Shared.Dependencies.IAndroidSdkTools {
+    public abstract virtual string GetAdbPath();
+    public abstract virtual string GetAaptPath();
+    public abstract virtual string GetAndroidJarPath();
+    public abstract virtual string GetZipAlignPath();
+    public abstract virtual string GetApkSignerPath();
+}
+public interface Xamarin.UITest.Shared.Dependencies.IJdkTools {
+    public abstract virtual string GetJarSignerPath();
+    public abstract virtual string GetKeyToolPath();
+    public abstract virtual string GetJavaPath();
+    public abstract virtual bool AreValid();
+}
+public class Xamarin.UITest.Shared.Dependencies.JdkFinder : object {
+    private DirectoryInfo _directory;
+    private RegistryReader _registryReader;
+    private PotentialLocation[] GetStandardInstallationPathPotentials();
+    private PotentialLocation[] GetUnixStandardInstallationPathPotentials();
+    private bool IsJDKDirectory(PotentialLocation location);
+    public JdkTools GetTools();
+}
+public class Xamarin.UITest.Shared.Dependencies.JdkTools : object {
+    private DirectoryInfo _jdkDirectory;
+    public JdkTools(DirectoryInfo jdkDirectory);
+    public sealed virtual string GetJarSignerPath();
+    public sealed virtual string GetKeyToolPath();
+    public sealed virtual string GetJavaPath();
+    public sealed virtual bool AreValid();
+}
+public static class Xamarin.UITest.Shared.Dependencies.NUnitVersions : object {
+    public static string RecommendedNUnitString { get; }
+    public static string get_RecommendedNUnitString();
+    public static bool IsSupported(Version nunitVersion);
+}
+public class Xamarin.UITest.Shared.Dependencies.PotentialLocation : object {
+    private string _path;
+    private string _source;
+    public string Path { get; }
+    public string Source { get; }
+    public PotentialLocation(string path, string source);
+    public string get_Path();
+    public string get_Source();
+    public virtual string ToString();
+}
+public class Xamarin.UITest.Shared.Dependencies.RegistryReader : object {
+    public PotentialLocation[] ReadPotentialJdkPaths();
+    public PotentialLocation[] ReadPotentialAndroidSdkPaths();
+    private string ReadAndroidSdkKey(string prefix);
+    private string ReadJdkKey(string prefix);
+}
+public class Xamarin.UITest.Shared.Dependencies.VersionSelector : object {
+    public string PickLatest(string pattern, String[] inputs);
+    public string PickLatest(String[] inputs);
+    private Int32[] ExtractDigitGroups(IEnumerable`1<Group> groups);
+}
+public class Xamarin.UITest.Shared.Dependencies.WalkerFileMatch : object {
+    [CompilerGeneratedAttribute]
+private string <RelativePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AbsolutePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Regex <Pattern>k__BackingField;
+    public string RelativePath { get; private set; }
+    public string AbsolutePath { get; private set; }
+    public Regex Pattern { get; private set; }
+    public WalkerFileMatch(string relativePath, string absolutePath, Regex pattern);
+    [CompilerGeneratedAttribute]
+public string get_RelativePath();
+    [CompilerGeneratedAttribute]
+private void set_RelativePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_AbsolutePath();
+    [CompilerGeneratedAttribute]
+private void set_AbsolutePath(string value);
+    [CompilerGeneratedAttribute]
+public Regex get_Pattern();
+    [CompilerGeneratedAttribute]
+private void set_Pattern(Regex value);
+}
+public class Xamarin.UITest.Shared.Execution.Executor : object {
+    private IResolver _resolver;
+    public Executor(IResolver resolver);
+    public sealed virtual TResult Execute(IQuery`1<TResult> query);
+    public sealed virtual TResult Execute(IQuery`2<TResult, TDep1> query);
+    public sealed virtual TResult Execute(IQuery`3<TResult, TDep1, TDep2> query);
+    public sealed virtual TResult Execute(IQuery`4<TResult, TDep1, TDep2, TDep3> query);
+    public sealed virtual TResult Execute(IQuery`5<TResult, TDep1, TDep2, TDep3, TDep4> query);
+    private TResult WrapQuery(Func`1<TResult> queryFunc);
+    public sealed virtual void Execute(ICommand command);
+    public sealed virtual void Execute(ICommand`1<TDep1> command);
+    public sealed virtual void Execute(ICommand`2<TDep1, TDep2> command);
+    public sealed virtual void Execute(ICommand`3<TDep1, TDep2, TDep3> command);
+    public sealed virtual void Execute(ICommand`4<TDep1, TDep2, TDep3, TDep4> command);
+}
+public interface Xamarin.UITest.Shared.Execution.ICommand {
+    public abstract virtual void Execute();
+}
+public interface Xamarin.UITest.Shared.Execution.ICommand`1 {
+    public abstract virtual void Execute(TDep1 dep1);
+}
+public interface Xamarin.UITest.Shared.Execution.ICommand`2 {
+    public abstract virtual void Execute(TDep1 dep1, TDep2 dep2);
+}
+public interface Xamarin.UITest.Shared.Execution.ICommand`3 {
+    public abstract virtual void Execute(TDep1 dep1, TDep2 dep2, TDep3 dep3);
+}
+public interface Xamarin.UITest.Shared.Execution.ICommand`4 {
+    public abstract virtual void Execute(TDep1 dep1, TDep2 dep2, TDep3 dep3, TDep4 dep4);
+}
+public interface Xamarin.UITest.Shared.Execution.IExecutor {
+    public abstract virtual TResult Execute(IQuery`1<TResult> query);
+    public abstract virtual TResult Execute(IQuery`2<TResult, TDep1> query);
+    public abstract virtual TResult Execute(IQuery`3<TResult, TDep1, TDep2> query);
+    public abstract virtual TResult Execute(IQuery`4<TResult, TDep1, TDep2, TDep3> query);
+    public abstract virtual TResult Execute(IQuery`5<TResult, TDep1, TDep2, TDep3, TDep4> query);
+    public abstract virtual void Execute(ICommand command);
+    public abstract virtual void Execute(ICommand`1<TDep1> command);
+    public abstract virtual void Execute(ICommand`2<TDep1, TDep2> command);
+    public abstract virtual void Execute(ICommand`3<TDep1, TDep2, TDep3> command);
+    public abstract virtual void Execute(ICommand`4<TDep1, TDep2, TDep3, TDep4> command);
+}
+public interface Xamarin.UITest.Shared.Execution.IQuery`1 {
+    public abstract virtual TReturn Execute();
+}
+public interface Xamarin.UITest.Shared.Execution.IQuery`2 {
+    public abstract virtual TReturn Execute(TDep1 dep1);
+}
+public interface Xamarin.UITest.Shared.Execution.IQuery`3 {
+    public abstract virtual TReturn Execute(TDep1 dep1, TDep2 dep2);
+}
+public interface Xamarin.UITest.Shared.Execution.IQuery`4 {
+    public abstract virtual TReturn Execute(TDep1 dep1, TDep2 dep2, TDep3 dep3);
+}
+public interface Xamarin.UITest.Shared.Execution.IQuery`5 {
+    public abstract virtual TReturn Execute(TDep1 dep1, TDep2 dep2, TDep3 dep3, TDep4 dep4);
+}
+public interface Xamarin.UITest.Shared.Execution.IResolver {
+    public abstract virtual T Resolve();
+}
+public class Xamarin.UITest.Shared.Execution.SimpleContainer : object {
+    private Dictionary`2<Type, object> _objects;
+    public void Register(T instance);
+    public sealed virtual T Resolve();
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.DictionaryExtensions : object {
+    [ExtensionAttribute]
+public static string TryGetString(IDictionary`2<TK, TV> dictionary, TK key, string defaultValue);
+    [ExtensionAttribute]
+public static bool TryGetBool(IDictionary`2<TK, TV> dictionary, TK key, bool defaultValue);
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.FileInfoExtensions : object {
+    [ExtensionAttribute]
+public static bool IsInDirectory(FileInfo file, DirectoryInfo directory);
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.ObjectExtensions : object {
+    [ExtensionAttribute]
+public static string Stringify(object info);
+    [ExtensionAttribute]
+private static string InternalStringify(object info, int depth);
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.StringExtensions : object {
+    [ExtensionAttribute]
+public static bool IsNullOrWhiteSpace(string str);
+    [ExtensionAttribute]
+public static bool StartsWithIgnoreCase(string str, string value);
+    [ExtensionAttribute]
+public static bool EndsWithIgnoreCase(string str, string value);
+    [ExtensionAttribute]
+public static string EscapeSingleQuotes(string str);
+    [ExtensionAttribute]
+public static string EscapeBackslashes(string str);
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.TypeExtension : object {
+    [ExtensionAttribute]
+public static bool IsAnonymousType(Type type);
+}
+[ExtensionAttribute]
+public static class Xamarin.UITest.Shared.Extensions.UriExtensions : object {
+    [ExtensionAttribute]
+public static Uri Combine(Uri uri, string path, string queryString);
+}
+public class Xamarin.UITest.Shared.Hashes.HashHelper : object {
+    public string GetSha1Hash(DirectoryInfo directoryInfo);
+    public string GetSha1Hash(Byte[] bytes);
+    public string GetSha1Hash(string str);
+    public string GetSha1Hash(String[] strs);
+    public string GetSha1Hash(FileInfo fileInfo);
+    public string GetSha1Hash(FileInfo[] fileInfos);
+    public string GetSha256Hash(FileInfo fileInfo);
+    public string GetMd5Hash(FileInfo fileInfo);
+    public string GetCombinedSha1Hash(Object[] objects);
+    public string GetStackTraceHash();
+}
+public class Xamarin.UITest.Shared.Http.BinaryResult : object {
+    private FileInfo _file;
+    private Dictionary`2<string, string> _headers;
+    private int _statusCode;
+    public Dictionary`2<string, string> Headers { get; }
+    public FileInfo File { get; }
+    public int StatusCode { get; }
+    public BinaryResult(int statusCode, FileInfo file, Dictionary`2<string, string> headers);
+    public Dictionary`2<string, string> get_Headers();
+    public FileInfo get_File();
+    public int get_StatusCode();
+}
+public class Xamarin.UITest.Shared.Http.ByteCountingStream : Stream {
+    private long _length;
+    [CompilerGeneratedAttribute]
+private long <Position>k__BackingField;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    [CompilerGeneratedAttribute]
+public virtual long get_Position();
+    [CompilerGeneratedAttribute]
+public virtual void set_Position(long value);
+}
+public class Xamarin.UITest.Shared.Http.ConsoleUploadProgressReporter : object {
+    private long _lastReportedPercentage;
+    public sealed virtual void UploadStart(string fileName);
+    public sealed virtual void UploadProgress(string fileName, long current, long total);
+    public sealed virtual void UploadError(string fileName);
+    public sealed virtual void UploadComplete(string fileName);
+    private string GetMessage(string fileName, long percentage);
+}
+public enum Xamarin.UITest.Shared.Http.ExceptionPolicy : Enum {
+    public int value__;
+    public static ExceptionPolicy Throw;
+    public static ExceptionPolicy CatchServerHttpErrors;
+}
+public class Xamarin.UITest.Shared.Http.FormFile : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ContentType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FilePath>k__BackingField;
+    public string Name { get; public set; }
+    public string ContentType { get; public set; }
+    public string FilePath { get; public set; }
+    public FormFile(FileInfo fileInfo, string contentType);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_ContentType();
+    [CompilerGeneratedAttribute]
+public void set_ContentType(string value);
+    [CompilerGeneratedAttribute]
+public string get_FilePath();
+    [CompilerGeneratedAttribute]
+public void set_FilePath(string value);
+}
+public class Xamarin.UITest.Shared.Http.HttpClient : object {
+    private static HttpClient _HttpClient;
+    private static TimeSpan _DefaultHttpTimeout;
+    private Uri _baseUri;
+    private Dictionary`2<string, string> _extraHeaders;
+    private JsonTranslator _jsonTranslator;
+    private MultipartFormDataClient _formDataClient;
+    public HttpClient(Uri baseUri, Dictionary`2<string, string> extraHeaders);
+    private static HttpClient();
+    public HttpResult Get(string endpoint, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult Delete(string endpoint, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    private HttpResult Request(string method, string endpoint, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult PostUntilExpectedResultReceived(string endpoint, string arguments, string expectedContent, int retries);
+    public HttpResult Post(string endpoint, object arguments, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult Post(string endpoint, string arguments, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult Put(string endpoint, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult Put(string endpoint, Byte[] data, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public HttpResult SendData(string endpoint, string method, HttpContent content, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    public BinaryResult GetBinaryFile(string endpoint, string fileName, string queryString, ExceptionPolicy exceptionPolicy);
+    public HttpResult PostMultipartWithRetry(string endpoint, Dictionary`2<string, object> parameters, IUploadProgressReporter progressReporter, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut, int numberOfRetries);
+    public HttpResult PostMultipart(string endpoint, Dictionary`2<string, object> parameters, IUploadProgressReporter progressReporter, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    private HttpResult HandleHttpError(string method, HttpResponseMessage response, ExceptionPolicy exceptionPolicy);
+    private HttpResult HandleHttpError(string method, Exception exception, ExceptionPolicy exceptionPolicy);
+    private HttpRequestMessage CreateHttpRequest(string endpoint, string method, HttpContent content);
+    private bool ShouldRetryOnWebExceptionStatus(Exception ex, IList`1<WebExceptionStatus> status);
+}
+public class Xamarin.UITest.Shared.Http.HttpResult : object {
+    private int _statusCode;
+    private string _contents;
+    public int StatusCode { get; }
+    public string Contents { get; }
+    public HttpResult(int statusCode, string contents);
+    public int get_StatusCode();
+    public string get_Contents();
+    public virtual string ToString();
+}
+public interface Xamarin.UITest.Shared.Http.IUploadProgressReporter {
+    public abstract virtual void UploadStart(string fileName);
+    public abstract virtual void UploadComplete(string fileName);
+    public abstract virtual void UploadProgress(string fileName, long current, long total);
+    public abstract virtual void UploadError(string fileName);
+}
+internal class Xamarin.UITest.Shared.Http.MultipartFormDataClient : object {
+    private Uri _baseUri;
+    private Dictionary`2<string, string> _extraHeaders;
+    private JsonTranslator _jsonTranslator;
+    internal MultipartFormDataClient(Uri baseUri, Dictionary`2<string, string> extraHeaders);
+    internal HttpResult PostMultipartWithRetry(string endpoint, Dictionary`2<string, object> parameters, IUploadProgressReporter progressReporter, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut, int numberOfRetries);
+    internal HttpResult PostMultipart(string endpoint, Dictionary`2<string, object> parameters, IUploadProgressReporter progressReporter, ExceptionPolicy exceptionPolicy, Nullable`1<TimeSpan> timeOut);
+    private long GetContentLength(Dictionary`2<string, object> parameters, string boundary);
+    private HttpResult GetResponseViaRequest(HttpWebRequest request);
+    private HttpResult GetResponseAsResult(HttpWebResponse response);
+    private void WriteToStream(Dictionary`2<string, object> parameters, Stream stream, Byte[] boundaryBytes, Byte[] trailerBytes, IUploadProgressReporter progressReporter);
+    private Byte[] GetBoundaryBytes(string boundary);
+    private Byte[] GetTrailerBytes(string boundary);
+    private void WriteValue(string name, string value, Stream requestStream);
+    private void WriteFile(FormFile file, string name, Stream requestStream, IUploadProgressReporter progressReporter);
+}
+public class Xamarin.UITest.Shared.iOS.DefaultiOSFactory : object {
+    public sealed virtual IProcessRunner BuildProcessRunner();
+    public sealed virtual IExecutor BuildExecutor(IProcessRunner processRunner);
+}
+public interface Xamarin.UITest.Shared.iOS.IiOSFactory {
+    public abstract virtual IProcessRunner BuildProcessRunner();
+    public abstract virtual IExecutor BuildExecutor(IProcessRunner processRunner);
+}
+public class Xamarin.UITest.Shared.iOS.iOS7SimulatorAppLocator : object {
+    private string _simulatorRootPath;
+    public iOS7SimulatorAppLocator(string simulatorRootPath);
+    public sealed virtual SimAppInfo GetInstalledApp(string deviceId, string appIdentifier);
+    private string GetAppsRootPath(string deviceId);
+}
+public class Xamarin.UITest.Shared.iOS.iOS8AndiOS9SimulatorAppLocator : object {
+    private string _simulatorRootPath;
+    public iOS8AndiOS9SimulatorAppLocator(string simulatorRootPath);
+    public sealed virtual SimAppInfo GetInstalledApp(string deviceId, string appIdentifier);
+    private SimAppDataInfo GetDataFolder(string deviceId, string appIdentifier);
+    private IEnumerable`1<string> EnumerateDirectories(string dir);
+    private string GetAppsRootPath(string deviceId);
+    private string GetDataRootPath(string deviceId);
+}
+public class Xamarin.UITest.Shared.iOS.iOSResolution : object {
+    private int _height;
+    private int _width;
+    public int Height { get; }
+    public int Width { get; }
+    public iOSResolution(int width, int height);
+    public int get_Height();
+    public int get_Width();
+}
+public interface Xamarin.UITest.Shared.iOS.ISimulatorAppLocator {
+    public abstract virtual SimAppInfo GetInstalledApp(string deviceId, string appIdentifier);
+}
+public class Xamarin.UITest.Shared.iOS.Lipo : object {
+    private List`1<string> _appExecutableArches;
+    private ProcessRunner _processRunner;
+    private string _appBundlePath;
+    private List`1<string> AppExecutableArches { get; }
+    public Lipo(string appBundlePath);
+    private List`1<string> get_AppExecutableArches();
+    public string GetAppBundlePath();
+    public String[] GetLipoOutput(string command);
+    public string GetExecutableName();
+    public string GetExecutablePath();
+    public List`1<string> GetAppExecutableArches();
+    public bool HasArch(string arch);
+    public bool HasArchX86_64();
+    public bool HasArchI386();
+    public bool IsSimulatorBinary();
+    public bool HasSingleSimulatorArch();
+}
+public static class Xamarin.UITest.Shared.iOS.PListHelper : object {
+    public static string ReadPListValueFromFile(string plistPath, string key);
+    public static string ReadPListValueFromString(string plistContents, string key);
+    public static void SetOrAddPListValueInFile(string plistPath, string key, string type, string value);
+}
+public class Xamarin.UITest.Shared.iOS.Queries.DeviceInfo : object {
+    private static Regex _versionRegex;
+    private string _uuid;
+    private string _buildVersion;
+    public DeviceInfo(string uuid, string buildVersion);
+    private static DeviceInfo();
+    public string GetUUID();
+    public int GetiOSMajorVersion();
+}
+public class Xamarin.UITest.Shared.iOS.Queries.QueryConnectediOSDevices : object {
+    private string _targetDeviceIdentifier;
+    public QueryConnectediOSDevices(string targetDeviceIdentifier);
+    public sealed virtual DeviceInfo[] Execute();
+}
+public class Xamarin.UITest.Shared.iOS.SimAppDataInfo : object {
+    private string _appIdentifier;
+    private string _path;
+    public string AppIdentifier { get; }
+    public string DataPath { get; }
+    public SimAppDataInfo(string appIdentifier, string path);
+    public string get_AppIdentifier();
+    public string get_DataPath();
+}
+public class Xamarin.UITest.Shared.iOS.SimAppInfo : object {
+    private string _appIdentifier;
+    private string _appBundlePath;
+    private string _appPath;
+    private string _dataPath;
+    public string AppPath { get; }
+    public string AppIdentifier { get; }
+    public string AppBundlePath { get; }
+    public string DataPath { get; }
+    public SimAppInfo(string appIdentifier, string appBundlePath, string appPath, string dataPath);
+    public string get_AppPath();
+    public string get_AppIdentifier();
+    public string get_AppBundlePath();
+    public string get_DataPath();
+}
+public enum Xamarin.UITest.Shared.Json.IndentFormat : Enum {
+    public int value__;
+    public static IndentFormat None;
+    public static IndentFormat Normal;
+    public static IndentFormat AlignArrows;
+}
+public class Xamarin.UITest.Shared.Json.JsonCaseConverter : object {
+    private static Regex SnakeCaseRegex;
+    private static JsonCaseConverter();
+    public string ConvertedCaseJObject(string json);
+    private object MapToken(JToken token);
+    [CompilerGeneratedAttribute]
+private object <MapToken>b__2_1(JToken x);
+}
+internal class Xamarin.UITest.Shared.Json.JsonLine : object {
+    private int _indentation;
+    private StringToken[] _tokens;
+    public int Indentation { get; }
+    public StringToken[] Tokens { get; }
+    public JsonLine(StringToken[] tokens, int indendation);
+    public bool ContainsPropertyName();
+    public string GetPropertyName();
+    public int get_Indentation();
+    public StringToken[] get_Tokens();
+}
+public class Xamarin.UITest.Shared.Json.JsonPrettyPrinter : object {
+    public static void PrettyPrintObj(object obj, bool colorized, IndentFormat indentFormat);
+    public static void PrettyPrintJson(string json, bool colorized, IndentFormat indentFormat);
+    private static JsonLine[] AggregateLines(IEnumerable`1<StringToken> tokens);
+    public string PrintObject(object obj);
+    public string PrintJson(string json);
+    [IteratorStateMachineAttribute("Xamarin.UITest.Shared.Json.JsonPrettyPrinter/<PrintToken>d__5")]
+private static IEnumerable`1<StringToken> PrintToken(JToken token);
+}
+public class Xamarin.UITest.Shared.Json.JsonTranslator : object {
+    public T Deserialize(string json);
+    public T[] DeserializeArray(JArray jArray);
+    public T[] DeserializeArray(string json);
+    private T ConvertToSimpleType(JToken jToken);
+    private bool AllowedConversion(JTokenType jsonType, Type targetType);
+    private bool ConversionToTargetTypeExists(Type sourceType, Type targetType);
+    public string Serialize(object obj);
+    [CompilerGeneratedAttribute]
+private T <DeserializeArray>b__1_0(JToken c);
+}
+public class Xamarin.UITest.Shared.Json.StringToken : object {
+    [CompilerGeneratedAttribute]
+private bool <NewLine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <IndentChange>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ConsoleColor> <Color>k__BackingField;
+    public bool NewLine { get; private set; }
+    public int IndentChange { get; private set; }
+    public string Value { get; private set; }
+    public Nullable`1<ConsoleColor> Color { get; private set; }
+    public StringToken(string value, bool newLine, Nullable`1<ConsoleColor> color, int indentChange);
+    [CompilerGeneratedAttribute]
+public bool get_NewLine();
+    [CompilerGeneratedAttribute]
+private void set_NewLine(bool value);
+    [CompilerGeneratedAttribute]
+public int get_IndentChange();
+    [CompilerGeneratedAttribute]
+private void set_IndentChange(int value);
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    [CompilerGeneratedAttribute]
+private void set_Value(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<ConsoleColor> get_Color();
+    [CompilerGeneratedAttribute]
+private void set_Color(Nullable`1<ConsoleColor> value);
+}
+public class Xamarin.UITest.Shared.Logging.ConsoleLogConsumer : object {
+    private bool _debug;
+    private bool _includeTimestamp;
+    public ConsoleLogConsumer(bool debug, bool includeTimestamp);
+    public sealed virtual void Consume(LogEntry logEntry);
+}
+public class Xamarin.UITest.Shared.Logging.FileLogConsumer : object {
+    private string _path;
+    public string LogPath { get; }
+    public FileLogConsumer(string directory);
+    public string get_LogPath();
+    public sealed virtual void Consume(LogEntry logEntry);
+}
+public interface Xamarin.UITest.Shared.Logging.ILogConsumer {
+    public abstract virtual void Consume(LogEntry logEntry);
+}
+public interface Xamarin.UITest.Shared.Logging.ILogger {
+    public abstract virtual IDisposable OpenScope(string message);
+    public abstract virtual void Info(string message, object info);
+    public abstract virtual void Debug(string message, object info);
+}
+public interface Xamarin.UITest.Shared.Logging.IScopedLogConsumer {
+    public abstract virtual void ScopeOpened(LogScope scope);
+    public abstract virtual void ScopeClosed();
+}
+public class Xamarin.UITest.Shared.Logging.LambdaDisposable : object {
+    private Action _disposeAction;
+    private bool _disposed;
+    public LambdaDisposable(Action disposeAction);
+    public sealed virtual void Dispose();
+}
+public static class Xamarin.UITest.Shared.Logging.Log : object {
+    private static ILogger _logger;
+    private static bool _initialized;
+    private static Log();
+    public static void Initialize(ILogger logger);
+    public static IDisposable ReplaceLoggerTemporarily(ILogger logger);
+    public static void VerifyInitialized();
+    public static void Info(string message, object info);
+    public static void Debug(string message, object info);
+}
+public class Xamarin.UITest.Shared.Logging.LogEntry : object {
+    private string _message;
+    private long _offset;
+    private LogLevel _level;
+    private DateTimeOffset _when;
+    public string Message { get; }
+    public LogLevel LogLevel { get; }
+    public long Offset { get; }
+    public DateTimeOffset When { get; }
+    public string LogTimestamp { get; }
+    public LogEntry(string message, LogLevel level, long offset);
+    public string get_Message();
+    public LogLevel get_LogLevel();
+    public long get_Offset();
+    public DateTimeOffset get_When();
+    public string get_LogTimestamp();
+}
+public class Xamarin.UITest.Shared.Logging.LoggerFacade : object {
+    private Stopwatch _stopwatch;
+    private ILogConsumer[] _logConsumers;
+    public LoggerFacade(ILogConsumer[] logConsumers);
+    public sealed virtual IDisposable OpenScope(string message);
+    public sealed virtual void Info(string message, object info);
+    public sealed virtual void Debug(string message, object info);
+    private void RegisterEntry(LogEntry logEntry);
+    private string BuildMessage(string message, object info);
+}
+public enum Xamarin.UITest.Shared.Logging.LogLevel : Enum {
+    public int value__;
+    public static LogLevel Debug;
+    public static LogLevel Info;
+}
+public class Xamarin.UITest.Shared.Logging.LogScope : object {
+    private string _message;
+    private long _startOffset;
+    private long _endOffset;
+    private List`1<LogEntry> _entries;
+    private List`1<LogScope> _scopes;
+    public string Message { get; }
+    public long StartOffset { get; }
+    public long EndOffset { get; }
+    public LogScope(string message, long offset);
+    public void AddScope(LogScope scope);
+    public void AddEntry(LogEntry logEntry);
+    public void Complete(long offset);
+    public string get_Message();
+    public long get_StartOffset();
+    public long get_EndOffset();
+}
+public class Xamarin.UITest.Shared.Logging.MemoryLogConsumer : object {
+    private List`1<LogEntry> _entries;
+    public String[] Messages { get; }
+    public sealed virtual void Consume(LogEntry logEntry);
+    public String[] get_Messages();
+}
+public class Xamarin.UITest.Shared.Logging.RecordingLogConsumer : object {
+    private Stack`1<LogScope> _scopeStack;
+    private LogScope _currentScope;
+    public sealed virtual void ScopeOpened(LogScope scope);
+    public sealed virtual void ScopeClosed();
+    public sealed virtual void Consume(LogEntry entry);
+}
+public class Xamarin.UITest.Shared.Logging.TraceSourceLogConsumer : object {
+    public static string AppDomainTraceSourceKey;
+    public static TraceSource TraceSource { get; public set; }
+    public static TraceSource get_TraceSource();
+    public static void set_TraceSource(TraceSource value);
+    public sealed virtual void Consume(LogEntry logEntry);
+}
+[AttributeUsageAttribute("64")]
+public class Xamarin.UITest.Shared.NoDelegationAttribute : Attribute {
+}
+public class Xamarin.UITest.Shared.NUnitXml.NUnitXmlCombiner : object {
+    public XDocument Combine(XDocument doc1, XDocument doc2);
+    private void CombineTestResultsAttribute(XDocument targetDoc, XDocument otherDoc, string attributeName);
+    private int GetTestResultsAttribute(XDocument doc, string attributeName);
+    private void AddTestResultsAttribute(XDocument doc, string attributeName, int value);
+}
+public class Xamarin.UITest.Shared.NUnitXml.Transformations.AppendToTestNameTransformation : object {
+    private string _textToAppend;
+    public AppendToTestNameTransformation(string textToAppend);
+    public void Apply(XDocument xdoc);
+}
+public class Xamarin.UITest.Shared.NUnitXml.Transformations.RemoveEmptySuitesTransformation : object {
+    public void Apply(XDocument xdoc);
+}
+public class Xamarin.UITest.Shared.NUnitXml.Transformations.RemoveIgnoredTransformation : object {
+    public void Apply(XDocument xdoc);
+}
+public enum Xamarin.UITest.Shared.Processes.CheckExitCode : Enum {
+    public int value__;
+    public static CheckExitCode FailIfNotSuccess;
+    public static CheckExitCode AllowAnything;
+}
+public interface Xamarin.UITest.Shared.Processes.IPlatform {
+    public bool IsWindows { get; }
+    public bool IsOSXOrUnix { get; }
+    public bool IsUnix { get; }
+    public bool IsOSX { get; }
+    public abstract virtual bool get_IsWindows();
+    public abstract virtual bool get_IsOSXOrUnix();
+    public abstract virtual bool get_IsUnix();
+    public abstract virtual bool get_IsOSX();
+}
+public interface Xamarin.UITest.Shared.Processes.IProcessRunner {
+    public abstract virtual ProcessResult Run(string path, string arguments, IEnumerable`1<int> noExceptionOnExitCodes);
+    public abstract virtual ProcessResult RunCommand(string command, string arguments, CheckExitCode checkExitCode);
+    public abstract virtual RunningProcess StartProcess(string path, string arguments, Predicate`1<string> dropFilter, int maxNumberOfLines);
+}
+public class Xamarin.UITest.Shared.Processes.Platform : object {
+    private static Platform _platform;
+    private static object _platformLock;
+    private Nullable`1<bool> _isUnix;
+    private Nullable`1<bool> _isOSX;
+    private Nullable`1<bool> _isWindows;
+    public static Platform Instance { get; }
+    public bool IsWindows { get; }
+    public bool IsOSXOrUnix { get; }
+    public bool IsUnix { get; }
+    public bool IsOSX { get; }
+    private static Platform();
+    public static Platform get_Instance();
+    private static int uname(IntPtr buf);
+    public sealed virtual bool get_IsWindows();
+    public sealed virtual bool get_IsOSXOrUnix();
+    public sealed virtual bool get_IsUnix();
+    public sealed virtual bool get_IsOSX();
+}
+public class Xamarin.UITest.Shared.Processes.ProcessInfo : object {
+    private int _pid;
+    private string _commandLine;
+    private string _user;
+    public int Pid { get; }
+    public string CommandLine { get; }
+    public string User { get; }
+    internal ProcessInfo(int pid, string commandLine, string user);
+    internal ProcessInfo(int pid, string commandLine);
+    public int get_Pid();
+    public string get_CommandLine();
+    public string get_User();
+}
+public class Xamarin.UITest.Shared.Processes.ProcessLister : object {
+    private IProcessRunner _processRunner;
+    private IPlatform _platform;
+    public ProcessLister(IProcessRunner processRunner);
+    public ProcessLister(IProcessRunner processRunner, IPlatform platform);
+    public ProcessInfo[] GetProcessInfos();
+}
+public class Xamarin.UITest.Shared.Processes.ProcessOutput : object {
+    private string _data;
+    private long _offsetMilliseconds;
+    public long OffsetMilliseconds { get; }
+    public string Data { get; }
+    public ProcessOutput(string data, long offsetMilliseconds);
+    public long get_OffsetMilliseconds();
+    public string get_Data();
+}
+public class Xamarin.UITest.Shared.Processes.ProcessResult : object {
+    private ProcessOutput[] _processOutput;
+    private int _exitCode;
+    private long _elapsedMilliseconds;
+    private bool _hasExited;
+    public string Output { get; }
+    public int ExitCode { get; }
+    public long ElapsedMilliseconds { get; }
+    public bool HasExited { get; }
+    public ProcessResult(ProcessOutput[] processOutput, int exitCode, long elapsedMilliseconds, bool hasExited);
+    public string get_Output();
+    public int get_ExitCode();
+    public long get_ElapsedMilliseconds();
+    public bool get_HasExited();
+    public virtual string ToString();
+}
+public class Xamarin.UITest.Shared.Processes.ProcessRunner : object {
+    private static int ThreadStillRunningExitCode;
+    public sealed virtual ProcessResult Run(string path, string arguments, IEnumerable`1<int> noExceptionOnExitCodes);
+    internal static bool ExitCodeIsUnexpected(int exitCode, IEnumerable`1<int> noExceptionOnExitCodes);
+    public ProcessResult RunMonoConsoleApp(string path, string arguments);
+    public sealed virtual ProcessResult RunCommand(string command, string arguments, CheckExitCode checkExitCode);
+    public sealed virtual RunningProcess StartProcess(string path, string arguments, Predicate`1<string> dropFilter, int maxNumberOfLines);
+    internal static string FindCommand(string path);
+    private ProcessResult RunProcessWaitForExit(string path, string arguments);
+    [AsyncStateMachineAttribute("Xamarin.UITest.Shared.Processes.ProcessRunner/<ReadOutput>d__8")]
+private static Task ReadOutput(StreamReader reader, List`1<ProcessOutput> processOutput, object processOutputLock, Stopwatch stopwatch);
+}
+public class Xamarin.UITest.Shared.Processes.RunningProcess : object {
+    private Process _process;
+    private MaxCapacityQueue`1<ProcessOutput> _processOutput;
+    private object _processsOutputLock;
+    private Stopwatch _stopwatch;
+    public RunningProcess(string path, string arguments, Predicate`1<string> dropFilter, int maxNumberOfLines);
+    public ProcessResult WaitForExit();
+    public void Kill();
+    public ProcessResult GetOutput(bool removeEmptyLines);
+    public ProcessResult GetOutputAndFlush(bool removeEmptyLines);
+}
+public class Xamarin.UITest.Shared.Processes.UnixProcessKiller : object {
+    private IProcessRunner _processRunner;
+    public UnixProcessKiller(IProcessRunner processRunner);
+    public bool Kill(int pid, string signal);
+    private bool KillInternal(int pid, string signal);
+    private bool WaitForProcessToDisappear(int pid);
+}
+public class Xamarin.UITest.Shared.Queries.QuoteUnescapedString : object {
+    protected string _unescapedString;
+    public string UnescapedString { get; }
+    public QuoteUnescapedString(string unescapedString);
+    public bool IsNullOrWhiteSpace();
+    public string get_UnescapedString();
+}
+public class Xamarin.UITest.Shared.Queries.SingleQuoteEscapedString : QuoteUnescapedString {
+    public SingleQuoteEscapedString(string unescapedString);
+    public virtual string ToString();
+}
+public class Xamarin.UITest.Shared.Queries.XPathSingleQuoteWorkAroundString : QuoteUnescapedString {
+    public XPathSingleQuoteWorkAroundString(string unescapedString);
+    public virtual string ToString();
+}
+public class Xamarin.UITest.Shared.Resources.ResourceLoader : object {
+    public Stream GetEmbeddedResourceStream(Assembly assembly, string resourcePostfix);
+    public Byte[] GetEmbeddedResourceBytes(Assembly assembly, string resourcePostfix);
+    public string GetEmbeddedResourceSha1Hash(Assembly assembly, string resourcePostfix);
+    public string GetEmbeddedResourceString(Assembly assembly, string resourcePostfix);
+}
+public class Xamarin.UITest.Shared.Screenshots.HttpScreenshotTaker : object {
+    private HttpClient _httpClient;
+    private int _counter;
+    public HttpScreenshotTaker(HttpClient httpClient);
+    public sealed virtual FileInfo Screenshot(string title);
+}
+public interface Xamarin.UITest.Shared.Screenshots.IScreenshotTaker {
+    public abstract virtual FileInfo Screenshot(string title);
+}
+public class Xamarin.UITest.Shared.Screenshots.NullScreenshotTaker : object {
+    public sealed virtual FileInfo Screenshot(string title);
+}
+public class Xamarin.UITest.Shared.TestCloud.AddLogEntryRequest : object {
+    public string LogLevel;
+    public string Message;
+    public long Offset;
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryVstsCIRun : object {
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudAppPath : object {
+    public sealed virtual string Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudCorrelationId : object {
+    public sealed virtual string Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudDeviceEndpoint : object {
+    public sealed virtual string Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudDeviceWebServiceEndpoint : object {
+    public sealed virtual string Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudPlatformAndroid : object {
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudPlatformiOS : object {
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudRun : object {
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.Queries.QueryXamarinTestCloudSampleData : object {
+    public sealed virtual bool Execute();
+}
+public class Xamarin.UITest.Shared.TestCloud.ReflectionScreenshotTaker : object {
+    private object _screenshotInstance;
+    private MethodInfo _screenshotMethod;
+    private HashHelper _hashHelper;
+    public ReflectionScreenshotTaker(string screenshotTypeName);
+    public sealed virtual FileInfo Screenshot(string title);
+    private Type FindScreenshotType(string screenshotTypeName);
+}
+public class Xamarin.UITest.Shared.TestCloud.ReflectionTestNotRunInvoker : object {
+    public void Inconclusive(string message, Object[] args);
+    private static Type FindAssertType(string frameworkTypeName, string assemblyName);
+}
+public class Xamarin.UITest.Shared.TestCloud.ScreenshotRequest : object {
+    public string Title;
+    public string StepHash;
+}
+public static class Xamarin.UITest.Shared.TestCloud.TestCloudNunitExtensionManager : object {
+    private static string CLIENT_ASSEMBLY;
+    private static bool _isUsingExtensionClient;
+    private static TestCloudNunitExtensionManager();
+    public static ReflectionScreenshotTaker CreateScreenshotTaker();
+}
+public class Xamarin.UITest.Shared.TestCloud.TestCloudPlatformChecker : object {
+    public static void PerformAndroidCheck();
+    public static void PerformiOSCheck();
+}
+public static class Xamarin.UITest.Shared.Tokens : object {
+    public static string FullLogFile;
+    public static string TestCloudIgnorePlatform;
+    public static string StartScenario;
+    public static string Screenshot;
+    public static string AddLogEntry;
+}
+public class Xamarin.UITest.Shared.WaitForHelper : object {
+    private TimeSpan _defaultTimeout;
+    public WaitForHelper(TimeSpan defaultTimeout);
+    [NoDelegationAttribute]
+public bool WaitForOrElapsed(Func`1<bool> predicate, Nullable`1<TimeSpan> timeout, Nullable`1<TimeSpan> retryFrequency, Nullable`1<TimeSpan> postTimeout);
+    public void WaitFor(Func`1<bool> predicate, string timeoutMessage, Nullable`1<TimeSpan> timeout, Nullable`1<TimeSpan> retryFrequency, Nullable`1<TimeSpan> postTimeout);
+    [NoDelegationAttribute]
+public void ExecuteAndWait(Action action, TimeSpan waitTime);
+    [NoDelegationAttribute]
+public T[] WaitForAny(Func`1<T[]> query, string timeoutMessage, Nullable`1<TimeSpan> timeout, Nullable`1<TimeSpan> retryFrequency, Nullable`1<TimeSpan> postTimeout);
+    [NoDelegationAttribute]
+public T[] WaitForAnyOrDefault(Func`1<T[]> query, T[] defaultValue, Nullable`1<TimeSpan> timeout, Nullable`1<TimeSpan> retryFrequency, Nullable`1<TimeSpan> postTimeout);
+    [NoDelegationAttribute]
+public T[] WaitForStableResultOrElapsed(Func`1<T[]> query, T[] currentResult, Nullable`1<TimeSpan> retryTimeout, Nullable`1<TimeSpan> elapsedTimeout);
+}
+public class Xamarin.UITest.Shared.Zip.ByteArrayDataSource : object {
+    private MemoryStream _memoryStream;
+    public ByteArrayDataSource(Byte[] fileBytes);
+    public sealed virtual Stream GetSource();
+    public sealed virtual void Dispose();
+}
+public static class Xamarin.UITest.Shared.Zip.ZipHelper : object {
+    public static void Unzip(string zipFile, string target);
+    public static void Unzip(Stream zipArchiveStream, string unzipPath);
+    public static void Unzip(FileInfo zipArchiveFile, string unzipPath);
+}

@@ -1,0 +1,2657 @@
+public static class ICSharpCode.SharpZipLib.BZip2.BZip2 : object {
+    public static void Decompress(Stream inStream, Stream outStream, bool isStreamOwner);
+    public static void Compress(Stream inStream, Stream outStream, bool isStreamOwner, int level);
+}
+internal static class ICSharpCode.SharpZipLib.BZip2.BZip2Constants : object {
+    public static Int32[] RandomNumbers;
+    public static int BaseBlockSize;
+    public static int MaximumAlphaSize;
+    public static int MaximumCodeLength;
+    public static int RunA;
+    public static int RunB;
+    public static int GroupCount;
+    public static int GroupSize;
+    public static int NumberOfIterations;
+    public static int MaximumSelectors;
+    public static int OvershootBytes;
+    private static BZip2Constants();
+}
+public class ICSharpCode.SharpZipLib.BZip2.BZip2Exception : SharpZipBaseException {
+    public BZip2Exception(string message);
+    public BZip2Exception(string message, Exception innerException);
+    protected BZip2Exception(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.BZip2.BZip2InputStream : Stream {
+    private static int START_BLOCK_STATE;
+    private static int RAND_PART_A_STATE;
+    private static int RAND_PART_B_STATE;
+    private static int RAND_PART_C_STATE;
+    private static int NO_RAND_PART_A_STATE;
+    private static int NO_RAND_PART_B_STATE;
+    private static int NO_RAND_PART_C_STATE;
+    private int last;
+    private int origPtr;
+    private int blockSize100k;
+    private bool blockRandomised;
+    private int bsBuff;
+    private int bsLive;
+    private IChecksum mCrc;
+    private Boolean[] inUse;
+    private int nInUse;
+    private Byte[] seqToUnseq;
+    private Byte[] unseqToSeq;
+    private Byte[] selector;
+    private Byte[] selectorMtf;
+    private Int32[] tt;
+    private Byte[] ll8;
+    private Int32[] unzftab;
+    private Int32[][] limit;
+    private Int32[][] baseArray;
+    private Int32[][] perm;
+    private Int32[] minLens;
+    private Stream baseStream;
+    private bool streamEnd;
+    private int currentChar;
+    private int currentState;
+    private int storedBlockCRC;
+    private int storedCombinedCRC;
+    private int computedBlockCRC;
+    private UInt32 computedCombinedCRC;
+    private int count;
+    private int chPrev;
+    private int ch2;
+    private int tPos;
+    private int rNToGo;
+    private int rTPos;
+    private int i2;
+    private int j2;
+    private byte z;
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public BZip2InputStream(Stream stream);
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    public virtual int ReadByte();
+    private void MakeMaps();
+    private void Initialize();
+    private void InitBlock();
+    private void EndBlock();
+    private void Complete();
+    private void FillBuffer();
+    private int BsR(int n);
+    private char BsGetUChar();
+    private int BsGetIntVS(int numBits);
+    private int BsGetInt32();
+    private void RecvDecodingTables();
+    private void GetAndMoveToFrontDecode();
+    private void SetupBlock();
+    private void SetupRandPartA();
+    private void SetupNoRandPartA();
+    private void SetupRandPartB();
+    private void SetupRandPartC();
+    private void SetupNoRandPartB();
+    private void SetupNoRandPartC();
+    private void SetDecompressStructureSizes(int newSize100k);
+    private static void CompressedStreamEOF();
+    private static void BlockOverrun();
+    private static void BadBlockHeader();
+    private static void CrcError();
+    private static void HbCreateDecodeTables(Int32[] limit, Int32[] baseArray, Int32[] perm, Char[] length, int minLen, int maxLen, int alphaSize);
+}
+public class ICSharpCode.SharpZipLib.BZip2.BZip2OutputStream : Stream {
+    private static int SETMASK;
+    private static int CLEARMASK;
+    private static int GREATER_ICOST;
+    private static int LESSER_ICOST;
+    private static int SMALL_THRESH;
+    private static int DEPTH_THRESH;
+    private static int QSORT_STACK_SIZE;
+    private Int32[] increments;
+    private int last;
+    private int origPtr;
+    private int blockSize100k;
+    private bool blockRandomised;
+    private int bytesOut;
+    private int bsBuff;
+    private int bsLive;
+    private IChecksum mCrc;
+    private Boolean[] inUse;
+    private int nInUse;
+    private Char[] seqToUnseq;
+    private Char[] unseqToSeq;
+    private Char[] selector;
+    private Char[] selectorMtf;
+    private Byte[] block;
+    private Int32[] quadrant;
+    private Int32[] zptr;
+    private Int16[] szptr;
+    private Int32[] ftab;
+    private int nMTF;
+    private Int32[] mtfFreq;
+    private int workFactor;
+    private int workDone;
+    private int workLimit;
+    private bool firstAttempt;
+    private int nBlocksRandomised;
+    private int currentChar;
+    private int runLength;
+    private UInt32 blockCRC;
+    private UInt32 combinedCRC;
+    private int allowableBlockSize;
+    private Stream baseStream;
+    private bool disposed_;
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int BytesWritten { get; }
+    public BZip2OutputStream(Stream stream);
+    public BZip2OutputStream(Stream stream, int blockSize);
+    protected virtual override void Finalize();
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    private void MakeMaps();
+    private void WriteRun();
+    public int get_BytesWritten();
+    protected virtual void Dispose(bool disposing);
+    public virtual void Flush();
+    private void Initialize();
+    private void InitBlock();
+    private void EndBlock();
+    private void EndCompression();
+    private void BsFinishedWithStream();
+    private void BsW(int n, int v);
+    private void BsPutUChar(int c);
+    private void BsPutint(int u);
+    private void BsPutIntVS(int numBits, int c);
+    private void SendMTFValues();
+    private void MoveToFrontCodeAndSend();
+    private void SimpleSort(int lo, int hi, int d);
+    private void Vswap(int p1, int p2, int n);
+    private void QSort3(int loSt, int hiSt, int dSt);
+    private void MainSort();
+    private void RandomiseBlock();
+    private void DoReversibleTransformation();
+    private bool FullGtU(int i1, int i2);
+    private void AllocateCompressStructures();
+    private void GenerateMTFValues();
+    private static void Panic();
+    private static void HbMakeCodeLengths(Char[] len, Int32[] freq, int alphaSize, int maxLen);
+    private static void HbAssignCodes(Int32[] code, Char[] length, int minLen, int maxLen, int alphaSize);
+    private static byte Med3(byte a, byte b, byte c);
+}
+public class ICSharpCode.SharpZipLib.Checksum.Adler32 : object {
+    private static UInt32 BASE;
+    private UInt32 checkValue;
+    public long Value { get; }
+    private static Adler32();
+    public sealed virtual void Reset();
+    public sealed virtual long get_Value();
+    public sealed virtual void Update(int bval);
+    public sealed virtual void Update(Byte[] buffer);
+    public sealed virtual void Update(ArraySegment`1<byte> segment);
+}
+public class ICSharpCode.SharpZipLib.Checksum.BZip2Crc : object {
+    private static UInt32 crcInit;
+    private static UInt32[] crcTable;
+    private UInt32 checkValue;
+    public long Value { get; }
+    private static BZip2Crc();
+    public sealed virtual void Reset();
+    public sealed virtual long get_Value();
+    public sealed virtual void Update(int bval);
+    public sealed virtual void Update(Byte[] buffer);
+    public sealed virtual void Update(ArraySegment`1<byte> segment);
+    private void Update(Byte[] data, int offset, int count);
+    private void SlowUpdateLoop(Byte[] data, int offset, int end);
+}
+public class ICSharpCode.SharpZipLib.Checksum.Crc32 : object {
+    private static UInt32 crcInit;
+    private static UInt32 crcXor;
+    private static UInt32[] crcTable;
+    private UInt32 checkValue;
+    public long Value { get; }
+    private static Crc32();
+    internal static UInt32 ComputeCrc32(UInt32 oldCrc, byte bval);
+    public sealed virtual void Reset();
+    public sealed virtual long get_Value();
+    public sealed virtual void Update(int bval);
+    public sealed virtual void Update(Byte[] buffer);
+    public sealed virtual void Update(ArraySegment`1<byte> segment);
+    private void Update(Byte[] data, int offset, int count);
+    private void SlowUpdateLoop(Byte[] data, int offset, int end);
+}
+internal static class ICSharpCode.SharpZipLib.Checksum.CrcUtilities : object {
+    internal static int SlicingDegree;
+    internal static UInt32[] GenerateSlicingLookupTable(UInt32 polynomial, bool isReversed);
+    internal static UInt32 UpdateDataForNormalPoly(Byte[] input, int offset, UInt32[] crcTable, UInt32 checkValue);
+    internal static UInt32 UpdateDataForReversedPoly(Byte[] input, int offset, UInt32[] crcTable, UInt32 checkValue);
+    private static UInt32 UpdateDataCommon(Byte[] input, int offset, UInt32[] crcTable, byte x1, byte x2, byte x3, byte x4);
+}
+public interface ICSharpCode.SharpZipLib.Checksum.IChecksum {
+    public long Value { get; }
+    public abstract virtual void Reset();
+    public abstract virtual long get_Value();
+    public abstract virtual void Update(int bval);
+    public abstract virtual void Update(Byte[] buffer);
+    public abstract virtual void Update(ArraySegment`1<byte> segment);
+}
+public class ICSharpCode.SharpZipLib.Core.CompletedFileHandler : MulticastDelegate {
+    public CompletedFileHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, ScanEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, ScanEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ICSharpCode.SharpZipLib.Core.DirectoryEventArgs : ScanEventArgs {
+    private bool hasMatchingFiles_;
+    public bool HasMatchingFiles { get; }
+    public DirectoryEventArgs(string name, bool hasMatchingFiles);
+    public bool get_HasMatchingFiles();
+}
+public class ICSharpCode.SharpZipLib.Core.DirectoryFailureHandler : MulticastDelegate {
+    public DirectoryFailureHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, ScanFailureEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, ScanFailureEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal static class ICSharpCode.SharpZipLib.Core.Empty : object {
+    public static T[] Array();
+}
+public class ICSharpCode.SharpZipLib.Core.ExtendedPathFilter : PathFilter {
+    private long minSize_;
+    private long maxSize_;
+    private DateTime minDate_;
+    private DateTime maxDate_;
+    public long MinSize { get; public set; }
+    public long MaxSize { get; public set; }
+    public DateTime MinDate { get; public set; }
+    public DateTime MaxDate { get; public set; }
+    public ExtendedPathFilter(string filter, long minSize, long maxSize);
+    public ExtendedPathFilter(string filter, DateTime minDate, DateTime maxDate);
+    public ExtendedPathFilter(string filter, long minSize, long maxSize, DateTime minDate, DateTime maxDate);
+    public virtual bool IsMatch(string name);
+    public long get_MinSize();
+    public void set_MinSize(long value);
+    public long get_MaxSize();
+    public void set_MaxSize(long value);
+    public DateTime get_MinDate();
+    public void set_MinDate(DateTime value);
+    public DateTime get_MaxDate();
+    public void set_MaxDate(DateTime value);
+}
+public class ICSharpCode.SharpZipLib.Core.FileFailureHandler : MulticastDelegate {
+    public FileFailureHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, ScanFailureEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, ScanFailureEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ICSharpCode.SharpZipLib.Core.FileSystemScanner : object {
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DirectoryEventArgs> ProcessDirectory;
+    public ProcessFileHandler ProcessFile;
+    public CompletedFileHandler CompletedFile;
+    public DirectoryFailureHandler DirectoryFailure;
+    public FileFailureHandler FileFailure;
+    private IScanFilter fileFilter_;
+    private IScanFilter directoryFilter_;
+    private bool alive_;
+    public FileSystemScanner(string filter);
+    public FileSystemScanner(string fileFilter, string directoryFilter);
+    public FileSystemScanner(IScanFilter fileFilter);
+    public FileSystemScanner(IScanFilter fileFilter, IScanFilter directoryFilter);
+    [CompilerGeneratedAttribute]
+public void add_ProcessDirectory(EventHandler`1<DirectoryEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_ProcessDirectory(EventHandler`1<DirectoryEventArgs> value);
+    private bool OnDirectoryFailure(string directory, Exception e);
+    private bool OnFileFailure(string file, Exception e);
+    private void OnProcessFile(string file);
+    private void OnCompleteFile(string file);
+    private void OnProcessDirectory(string directory, bool hasMatchingFiles);
+    public void Scan(string directory, bool recurse);
+    private void ScanDir(string directory, bool recurse);
+}
+public interface ICSharpCode.SharpZipLib.Core.INameTransform {
+    public abstract virtual string TransformFile(string name);
+    public abstract virtual string TransformDirectory(string name);
+}
+public class ICSharpCode.SharpZipLib.Core.InvalidNameException : SharpZipBaseException {
+    public InvalidNameException(string message);
+    public InvalidNameException(string message, Exception innerException);
+    protected InvalidNameException(SerializationInfo info, StreamingContext context);
+}
+public interface ICSharpCode.SharpZipLib.Core.IScanFilter {
+    public abstract virtual bool IsMatch(string name);
+}
+[ObsoleteAttribute("Use ExtendedPathFilter instead")]
+public class ICSharpCode.SharpZipLib.Core.NameAndSizeFilter : PathFilter {
+    private long minSize_;
+    private long maxSize_;
+    public long MinSize { get; public set; }
+    public long MaxSize { get; public set; }
+    public NameAndSizeFilter(string filter, long minSize, long maxSize);
+    public virtual bool IsMatch(string name);
+    public long get_MinSize();
+    public void set_MinSize(long value);
+    public long get_MaxSize();
+    public void set_MaxSize(long value);
+}
+public class ICSharpCode.SharpZipLib.Core.NameFilter : object {
+    private string filter_;
+    private List`1<Regex> inclusions_;
+    private List`1<Regex> exclusions_;
+    public NameFilter(string filter);
+    public static bool IsValidExpression(string expression);
+    public static bool IsValidFilterExpression(string toTest);
+    public static String[] SplitQuoted(string original);
+    public virtual string ToString();
+    public bool IsIncluded(string name);
+    public bool IsExcluded(string name);
+    public sealed virtual bool IsMatch(string name);
+    private void Compile();
+}
+public class ICSharpCode.SharpZipLib.Core.PathFilter : object {
+    private NameFilter nameFilter_;
+    public PathFilter(string filter);
+    public virtual bool IsMatch(string name);
+}
+public static class ICSharpCode.SharpZipLib.Core.PathUtils : object {
+    public static string DropPathRoot(string path);
+    public static string GetTempFileName(string original);
+}
+public class ICSharpCode.SharpZipLib.Core.ProcessFileHandler : MulticastDelegate {
+    public ProcessFileHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, ScanEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, ScanEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ICSharpCode.SharpZipLib.Core.ProgressEventArgs : EventArgs {
+    private string name_;
+    private long processed_;
+    private long target_;
+    private bool continueRunning_;
+    public string Name { get; }
+    public bool ContinueRunning { get; public set; }
+    public float PercentComplete { get; }
+    public long Processed { get; }
+    public long Target { get; }
+    public ProgressEventArgs(string name, long processed, long target);
+    public string get_Name();
+    public bool get_ContinueRunning();
+    public void set_ContinueRunning(bool value);
+    public float get_PercentComplete();
+    public long get_Processed();
+    public long get_Target();
+}
+public class ICSharpCode.SharpZipLib.Core.ProgressHandler : MulticastDelegate {
+    public ProgressHandler(object object, IntPtr method);
+    public virtual void Invoke(object sender, ProgressEventArgs e);
+    public virtual IAsyncResult BeginInvoke(object sender, ProgressEventArgs e, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ICSharpCode.SharpZipLib.Core.ScanEventArgs : EventArgs {
+    private string name_;
+    private bool continueRunning_;
+    public string Name { get; }
+    public bool ContinueRunning { get; public set; }
+    public ScanEventArgs(string name);
+    public string get_Name();
+    public bool get_ContinueRunning();
+    public void set_ContinueRunning(bool value);
+}
+public class ICSharpCode.SharpZipLib.Core.ScanFailureEventArgs : EventArgs {
+    private string name_;
+    private Exception exception_;
+    private bool continueRunning_;
+    public string Name { get; }
+    public Exception Exception { get; }
+    public bool ContinueRunning { get; public set; }
+    public ScanFailureEventArgs(string name, Exception e);
+    public string get_Name();
+    public Exception get_Exception();
+    public bool get_ContinueRunning();
+    public void set_ContinueRunning(bool value);
+}
+public class ICSharpCode.SharpZipLib.Core.StreamUtils : object {
+    public static void ReadFully(Stream stream, Byte[] buffer);
+    public static void ReadFully(Stream stream, Byte[] buffer, int offset, int count);
+    public static int ReadRequestedBytes(Stream stream, Byte[] buffer, int offset, int count);
+    public static void Copy(Stream source, Stream destination, Byte[] buffer);
+    public static void Copy(Stream source, Stream destination, Byte[] buffer, ProgressHandler progressHandler, TimeSpan updateInterval, object sender, string name);
+    public static void Copy(Stream source, Stream destination, Byte[] buffer, ProgressHandler progressHandler, TimeSpan updateInterval, object sender, string name, long fixedTarget);
+}
+public abstract class ICSharpCode.SharpZipLib.Encryption.PkzipClassic : SymmetricAlgorithm {
+    public static Byte[] GenerateKeys(Byte[] seed);
+}
+internal class ICSharpCode.SharpZipLib.Encryption.PkzipClassicCryptoBase : object {
+    private UInt32[] keys;
+    protected byte TransformByte();
+    protected void SetKeys(Byte[] keyData);
+    protected void UpdateKeys(byte ch);
+    protected void Reset();
+}
+internal class ICSharpCode.SharpZipLib.Encryption.PkzipClassicDecryptCryptoTransform : PkzipClassicCryptoBase {
+    public bool CanReuseTransform { get; }
+    public int InputBlockSize { get; }
+    public int OutputBlockSize { get; }
+    public bool CanTransformMultipleBlocks { get; }
+    internal PkzipClassicDecryptCryptoTransform(Byte[] keyBlock);
+    public sealed virtual Byte[] TransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    public sealed virtual int TransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    public sealed virtual bool get_CanReuseTransform();
+    public sealed virtual int get_InputBlockSize();
+    public sealed virtual int get_OutputBlockSize();
+    public sealed virtual bool get_CanTransformMultipleBlocks();
+    public sealed virtual void Dispose();
+}
+internal class ICSharpCode.SharpZipLib.Encryption.PkzipClassicEncryptCryptoTransform : PkzipClassicCryptoBase {
+    public bool CanReuseTransform { get; }
+    public int InputBlockSize { get; }
+    public int OutputBlockSize { get; }
+    public bool CanTransformMultipleBlocks { get; }
+    internal PkzipClassicEncryptCryptoTransform(Byte[] keyBlock);
+    public sealed virtual Byte[] TransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    public sealed virtual int TransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    public sealed virtual bool get_CanReuseTransform();
+    public sealed virtual int get_InputBlockSize();
+    public sealed virtual int get_OutputBlockSize();
+    public sealed virtual bool get_CanTransformMultipleBlocks();
+    public sealed virtual void Dispose();
+}
+public class ICSharpCode.SharpZipLib.Encryption.PkzipClassicManaged : PkzipClassic {
+    private Byte[] key_;
+    public int BlockSize { get; public set; }
+    public KeySizes[] LegalKeySizes { get; }
+    public KeySizes[] LegalBlockSizes { get; }
+    public Byte[] Key { get; public set; }
+    public virtual int get_BlockSize();
+    public virtual void set_BlockSize(int value);
+    public virtual KeySizes[] get_LegalKeySizes();
+    public virtual void GenerateIV();
+    public virtual KeySizes[] get_LegalBlockSizes();
+    public virtual Byte[] get_Key();
+    public virtual void set_Key(Byte[] value);
+    public virtual void GenerateKey();
+    public virtual ICryptoTransform CreateEncryptor(Byte[] rgbKey, Byte[] rgbIV);
+    public virtual ICryptoTransform CreateDecryptor(Byte[] rgbKey, Byte[] rgbIV);
+}
+internal class ICSharpCode.SharpZipLib.Encryption.ZipAESStream : CryptoStream {
+    private static int AUTH_CODE_LENGTH;
+    private static int CRYPTO_BLOCK_SIZE;
+    private static int BLOCK_AND_AUTH;
+    private Stream _stream;
+    private ZipAESTransform _transform;
+    private Byte[] _slideBuffer;
+    private int _slideBufStartPos;
+    private int _slideBufFreePos;
+    private Byte[] _transformBuffer;
+    private int _transformBufferFreePos;
+    private int _transformBufferStartPos;
+    private bool HasBufferedData { get; }
+    public ZipAESStream(Stream stream, ZipAESTransform transform, CryptoStreamMode mode);
+    private bool get_HasBufferedData();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    private int ReadAndTransform(Byte[] buffer, int offset, int count);
+    private int ReadBufferedData(Byte[] buffer, int offset, int count);
+    private int TransformAndBufferBlock(Byte[] buffer, int offset, int count, int blockSize);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+internal class ICSharpCode.SharpZipLib.Encryption.ZipAESTransform : object {
+    private static int PWD_VER_LENGTH;
+    private static int KEY_ROUNDS;
+    private static int ENCRYPT_BLOCK;
+    private int _blockSize;
+    private ICryptoTransform _encryptor;
+    private Byte[] _counterNonce;
+    private Byte[] _encryptBuffer;
+    private int _encrPos;
+    private Byte[] _pwdVerifier;
+    private IncrementalHash _hmacsha1;
+    private Byte[] _authCode;
+    private bool _writeMode;
+    public Byte[] PwdVerifier { get; }
+    public int InputBlockSize { get; }
+    public int OutputBlockSize { get; }
+    public bool CanTransformMultipleBlocks { get; }
+    public bool CanReuseTransform { get; }
+    public ZipAESTransform(string key, Byte[] saltBytes, int blockSize, bool writeMode);
+    public sealed virtual int TransformBlock(Byte[] inputBuffer, int inputOffset, int inputCount, Byte[] outputBuffer, int outputOffset);
+    public Byte[] get_PwdVerifier();
+    public Byte[] GetAuthCode();
+    public sealed virtual Byte[] TransformFinalBlock(Byte[] inputBuffer, int inputOffset, int inputCount);
+    public sealed virtual int get_InputBlockSize();
+    public sealed virtual int get_OutputBlockSize();
+    public sealed virtual bool get_CanTransformMultipleBlocks();
+    public sealed virtual bool get_CanReuseTransform();
+    public sealed virtual void Dispose();
+}
+public static class ICSharpCode.SharpZipLib.GZip.GZip : object {
+    public static void Decompress(Stream inStream, Stream outStream, bool isStreamOwner);
+    public static void Compress(Stream inStream, Stream outStream, bool isStreamOwner, int bufferSize, int level);
+}
+public class ICSharpCode.SharpZipLib.GZip.GZipConstants : object {
+    public static byte ID1;
+    public static byte ID2;
+    public static byte CompressionMethodDeflate;
+    public static Encoding Encoding { get; }
+    public static Encoding get_Encoding();
+}
+public class ICSharpCode.SharpZipLib.GZip.GZipException : SharpZipBaseException {
+    public GZipException(string message);
+    public GZipException(string message, Exception innerException);
+    protected GZipException(SerializationInfo info, StreamingContext context);
+}
+[FlagsAttribute]
+public enum ICSharpCode.SharpZipLib.GZip.GZipFlags : Enum {
+    public byte value__;
+    public static GZipFlags FTEXT;
+    public static GZipFlags FHCRC;
+    public static GZipFlags FEXTRA;
+    public static GZipFlags FNAME;
+    public static GZipFlags FCOMMENT;
+}
+public class ICSharpCode.SharpZipLib.GZip.GZipInputStream : InflaterInputStream {
+    protected Crc32 crc;
+    private bool readGZIPHeader;
+    private bool completedLastBlock;
+    private string fileName;
+    public GZipInputStream(Stream baseInputStream);
+    public GZipInputStream(Stream baseInputStream, int size);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public string GetFilename();
+    private bool ReadHeader();
+    private void ReadFooter();
+}
+public class ICSharpCode.SharpZipLib.GZip.GZipOutputStream : DeflaterOutputStream {
+    protected Crc32 crc;
+    private OutputState state_;
+    private string fileName;
+    private GZipFlags flags;
+    public string FileName { get; public set; }
+    public GZipOutputStream(Stream baseOutputStream);
+    public GZipOutputStream(Stream baseOutputStream, int size);
+    public void SetLevel(int level);
+    public int GetLevel();
+    public string get_FileName();
+    public void set_FileName(string value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    public virtual void Flush();
+    public virtual void Finish();
+    private static string CleanFilename(string path);
+    private void WriteHeader();
+}
+public class ICSharpCode.SharpZipLib.Lzw.LzwConstants : object {
+    public static int MAGIC;
+    public static int MAX_BITS;
+    public static int BIT_MASK;
+    public static int EXTENDED_MASK;
+    public static int RESERVED_MASK;
+    public static int BLOCK_MODE_MASK;
+    public static int HDR_SIZE;
+    public static int INIT_BITS;
+}
+public class ICSharpCode.SharpZipLib.Lzw.LzwException : SharpZipBaseException {
+    public LzwException(string message);
+    public LzwException(string message, Exception innerException);
+    protected LzwException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.Lzw.LzwInputStream : Stream {
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    private Stream baseInputStream;
+    private bool isClosed;
+    private Byte[] one;
+    private bool headerParsed;
+    private static int TBL_CLEAR;
+    private static int TBL_FIRST;
+    private Int32[] tabPrefix;
+    private Byte[] tabSuffix;
+    private Int32[] zeros;
+    private Byte[] stack;
+    private bool blockMode;
+    private int nBits;
+    private int maxBits;
+    private int maxMaxCode;
+    private int maxCode;
+    private int bitMask;
+    private int oldCode;
+    private byte finChar;
+    private int stackP;
+    private int freeEnt;
+    private Byte[] data;
+    private int bitPos;
+    private int end;
+    private int got;
+    private bool eof;
+    private static int EXTRA;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public LzwInputStream(Stream baseInputStream);
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    private int ResetBuf(int bitPosition);
+    private void Fill();
+    private void ParseHeader();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    protected virtual void Dispose(bool disposing);
+}
+public class ICSharpCode.SharpZipLib.SharpZipBaseException : Exception {
+    public SharpZipBaseException(string message);
+    public SharpZipBaseException(string message, Exception innerException);
+    protected SharpZipBaseException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.StreamDecodingException : SharpZipBaseException {
+    private static string GenericMessage;
+    public StreamDecodingException(string message);
+    public StreamDecodingException(string message, Exception innerException);
+    protected StreamDecodingException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.StreamUnsupportedException : StreamDecodingException {
+    private static string GenericMessage;
+    public StreamUnsupportedException(string message);
+    public StreamUnsupportedException(string message, Exception innerException);
+    protected StreamUnsupportedException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.Tar.InvalidHeaderException : TarException {
+    public InvalidHeaderException(string message);
+    public InvalidHeaderException(string message, Exception exception);
+    protected InvalidHeaderException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.Tar.ProgressMessageHandler : MulticastDelegate {
+    public ProgressMessageHandler(object object, IntPtr method);
+    public virtual void Invoke(TarArchive archive, TarEntry entry, string message);
+    public virtual IAsyncResult BeginInvoke(TarArchive archive, TarEntry entry, string message, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class ICSharpCode.SharpZipLib.Tar.TarArchive : object {
+    [CompilerGeneratedAttribute]
+private ProgressMessageHandler ProgressMessageEvent;
+    private bool keepOldFiles;
+    private bool asciiTranslate;
+    private int userId;
+    private string userName;
+    private int groupId;
+    private string groupName;
+    private string rootPath;
+    private string pathPrefix;
+    private bool applyUserInfoOverrides;
+    private TarInputStream tarIn;
+    private TarOutputStream tarOut;
+    private bool isDisposed;
+    public bool AsciiTranslate { get; public set; }
+    public string PathPrefix { get; public set; }
+    public string RootPath { get; public set; }
+    public bool ApplyUserInfoOverrides { get; public set; }
+    public int UserId { get; }
+    public string UserName { get; }
+    public int GroupId { get; }
+    public string GroupName { get; }
+    public int RecordSize { get; }
+    unknown bool IsStreamOwner {public set; }
+    protected TarArchive(TarInputStream stream);
+    protected TarArchive(TarOutputStream stream);
+    [CompilerGeneratedAttribute]
+public void add_ProgressMessageEvent(ProgressMessageHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_ProgressMessageEvent(ProgressMessageHandler value);
+    protected virtual void OnProgressMessageEvent(TarEntry entry, string message);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static TarArchive CreateInputTarArchive(Stream inputStream);
+    public static TarArchive CreateInputTarArchive(Stream inputStream, Encoding nameEncoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static TarArchive CreateInputTarArchive(Stream inputStream, int blockFactor);
+    public static TarArchive CreateInputTarArchive(Stream inputStream, int blockFactor, Encoding nameEncoding);
+    public static TarArchive CreateOutputTarArchive(Stream outputStream, Encoding nameEncoding);
+    public static TarArchive CreateOutputTarArchive(Stream outputStream);
+    public static TarArchive CreateOutputTarArchive(Stream outputStream, int blockFactor);
+    public static TarArchive CreateOutputTarArchive(Stream outputStream, int blockFactor, Encoding nameEncoding);
+    public void SetKeepOldFiles(bool keepExistingFiles);
+    public bool get_AsciiTranslate();
+    public void set_AsciiTranslate(bool value);
+    [ObsoleteAttribute("Use the AsciiTranslate property")]
+public void SetAsciiTranslation(bool translateAsciiFiles);
+    public string get_PathPrefix();
+    public void set_PathPrefix(string value);
+    public string get_RootPath();
+    public void set_RootPath(string value);
+    public void SetUserInfo(int userId, string userName, int groupId, string groupName);
+    public bool get_ApplyUserInfoOverrides();
+    public void set_ApplyUserInfoOverrides(bool value);
+    public int get_UserId();
+    public string get_UserName();
+    public int get_GroupId();
+    public string get_GroupName();
+    public int get_RecordSize();
+    public void set_IsStreamOwner(bool value);
+    [ObsoleteAttribute("Use Close instead")]
+public void CloseArchive();
+    public void ListContents();
+    public void ExtractContents(string destinationDirectory);
+    public void ExtractContents(string destinationDirectory, bool allowParentTraversal);
+    private void ExtractEntry(string destDir, TarEntry entry, bool allowParentTraversal);
+    private void ExtractAndTranslateEntry(string destFile, Stream outputStream);
+    public void WriteEntry(TarEntry sourceEntry, bool recurse);
+    private void WriteEntryCore(TarEntry sourceEntry, bool recurse);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    public virtual void Close();
+    protected virtual override void Finalize();
+    private static void EnsureDirectoryExists(string directoryName);
+    private static bool IsBinary(string filename);
+}
+public class ICSharpCode.SharpZipLib.Tar.TarBuffer : object {
+    public static int BlockSize;
+    public static int DefaultBlockFactor;
+    public static int DefaultRecordSize;
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    private Stream inputStream;
+    private Stream outputStream;
+    private Byte[] recordBuffer;
+    private int currentBlockIndex;
+    private int currentRecordIndex;
+    private int recordSize;
+    private int blockFactor;
+    public int RecordSize { get; }
+    public int BlockFactor { get; }
+    public int CurrentBlock { get; }
+    public bool IsStreamOwner { get; public set; }
+    public int CurrentRecord { get; }
+    public int get_RecordSize();
+    [ObsoleteAttribute("Use RecordSize property instead")]
+public int GetRecordSize();
+    public int get_BlockFactor();
+    [ObsoleteAttribute("Use BlockFactor property instead")]
+public int GetBlockFactor();
+    public static TarBuffer CreateInputTarBuffer(Stream inputStream);
+    public static TarBuffer CreateInputTarBuffer(Stream inputStream, int blockFactor);
+    public static TarBuffer CreateOutputTarBuffer(Stream outputStream);
+    public static TarBuffer CreateOutputTarBuffer(Stream outputStream, int blockFactor);
+    private void Initialize(int archiveBlockFactor);
+    [ObsoleteAttribute("Use IsEndOfArchiveBlock instead")]
+public bool IsEOFBlock(Byte[] block);
+    public static bool IsEndOfArchiveBlock(Byte[] block);
+    public void SkipBlock();
+    public Byte[] ReadBlock();
+    private bool ReadRecord();
+    public int get_CurrentBlock();
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    [ObsoleteAttribute("Use CurrentBlock property instead")]
+public int GetCurrentBlockNum();
+    public int get_CurrentRecord();
+    [ObsoleteAttribute("Use CurrentRecord property instead")]
+public int GetCurrentRecordNum();
+    public void WriteBlock(Byte[] block);
+    public void WriteBlock(Byte[] buffer, int offset);
+    private void WriteRecord();
+    private void WriteFinalRecord();
+    public void Close();
+}
+public class ICSharpCode.SharpZipLib.Tar.TarEntry : object {
+    private string file;
+    private TarHeader header;
+    public TarHeader TarHeader { get; }
+    public string Name { get; public set; }
+    public int UserId { get; public set; }
+    public int GroupId { get; public set; }
+    public string UserName { get; public set; }
+    public string GroupName { get; public set; }
+    public DateTime ModTime { get; public set; }
+    public string File { get; }
+    public long Size { get; public set; }
+    public bool IsDirectory { get; }
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public TarEntry(Byte[] headerBuffer);
+    public TarEntry(Byte[] headerBuffer, Encoding nameEncoding);
+    public TarEntry(TarHeader header);
+    public object Clone();
+    public static TarEntry CreateTarEntry(string name);
+    public static TarEntry CreateEntryFromFile(string fileName);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public bool IsDescendent(TarEntry toTest);
+    public TarHeader get_TarHeader();
+    public string get_Name();
+    public void set_Name(string value);
+    public int get_UserId();
+    public void set_UserId(int value);
+    public int get_GroupId();
+    public void set_GroupId(int value);
+    public string get_UserName();
+    public void set_UserName(string value);
+    public string get_GroupName();
+    public void set_GroupName(string value);
+    public void SetIds(int userId, int groupId);
+    public void SetNames(string userName, string groupName);
+    public DateTime get_ModTime();
+    public void set_ModTime(DateTime value);
+    public string get_File();
+    public long get_Size();
+    public void set_Size(long value);
+    public bool get_IsDirectory();
+    public void GetFileTarHeader(TarHeader header, string file);
+    public TarEntry[] GetDirectoryEntries();
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public void WriteEntryHeader(Byte[] outBuffer);
+    public void WriteEntryHeader(Byte[] outBuffer, Encoding nameEncoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static void AdjustEntryName(Byte[] buffer, string newName);
+    public static void AdjustEntryName(Byte[] buffer, string newName, Encoding nameEncoding);
+    public static void NameTarHeader(TarHeader header, string name);
+}
+public class ICSharpCode.SharpZipLib.Tar.TarException : SharpZipBaseException {
+    public TarException(string message);
+    public TarException(string message, Exception innerException);
+    protected TarException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.Tar.TarExtendedHeaderReader : object {
+    private static byte LENGTH;
+    private static byte KEY;
+    private static byte VALUE;
+    private static byte END;
+    private Dictionary`2<string, string> headers;
+    private String[] headerParts;
+    private int bbIndex;
+    private Byte[] byteBuffer;
+    private Char[] charBuffer;
+    private StringBuilder sb;
+    private Decoder decoder;
+    private int state;
+    private static Byte[] StateNext;
+    public Dictionary`2<string, string> Headers { get; }
+    private static TarExtendedHeaderReader();
+    public void Read(Byte[] buffer, int length);
+    private void Flush();
+    private void ResetBuffers();
+    public Dictionary`2<string, string> get_Headers();
+}
+public class ICSharpCode.SharpZipLib.Tar.TarHeader : object {
+    public static int NAMELEN;
+    public static int MODELEN;
+    public static int UIDLEN;
+    public static int GIDLEN;
+    public static int CHKSUMLEN;
+    public static int CHKSUMOFS;
+    public static int SIZELEN;
+    public static int MAGICLEN;
+    public static int VERSIONLEN;
+    public static int MODTIMELEN;
+    public static int UNAMELEN;
+    public static int GNAMELEN;
+    public static int DEVLEN;
+    public static int PREFIXLEN;
+    public static byte LF_OLDNORM;
+    public static byte LF_NORMAL;
+    public static byte LF_LINK;
+    public static byte LF_SYMLINK;
+    public static byte LF_CHR;
+    public static byte LF_BLK;
+    public static byte LF_DIR;
+    public static byte LF_FIFO;
+    public static byte LF_CONTIG;
+    public static byte LF_GHDR;
+    public static byte LF_XHDR;
+    public static byte LF_ACL;
+    public static byte LF_GNU_DUMPDIR;
+    public static byte LF_EXTATTR;
+    public static byte LF_META;
+    public static byte LF_GNU_LONGLINK;
+    public static byte LF_GNU_LONGNAME;
+    public static byte LF_GNU_MULTIVOL;
+    public static byte LF_GNU_NAMES;
+    public static byte LF_GNU_SPARSE;
+    public static byte LF_GNU_VOLHDR;
+    public static string TMAGIC;
+    public static string GNU_TMAGIC;
+    private static long timeConversionFactor;
+    private static DateTime dateTime1970;
+    private string name;
+    private int mode;
+    private int userId;
+    private int groupId;
+    private long size;
+    private DateTime modTime;
+    private int checksum;
+    private bool isChecksumValid;
+    private byte typeFlag;
+    private string linkName;
+    private string magic;
+    private string version;
+    private string userName;
+    private string groupName;
+    private int devMajor;
+    private int devMinor;
+    internal static int userIdAsSet;
+    internal static int groupIdAsSet;
+    internal static string userNameAsSet;
+    internal static string groupNameAsSet;
+    internal static int defaultUserId;
+    internal static int defaultGroupId;
+    internal static string defaultGroupName;
+    internal static string defaultUser;
+    public string Name { get; public set; }
+    public int Mode { get; public set; }
+    public int UserId { get; public set; }
+    public int GroupId { get; public set; }
+    public long Size { get; public set; }
+    public DateTime ModTime { get; public set; }
+    public int Checksum { get; }
+    public bool IsChecksumValid { get; }
+    public byte TypeFlag { get; public set; }
+    public string LinkName { get; public set; }
+    public string Magic { get; public set; }
+    public string Version { get; public set; }
+    public string UserName { get; public set; }
+    public string GroupName { get; public set; }
+    public int DevMajor { get; public set; }
+    public int DevMinor { get; public set; }
+    private static TarHeader();
+    public string get_Name();
+    public void set_Name(string value);
+    [ObsoleteAttribute("Use the Name property instead", "True")]
+public string GetName();
+    public int get_Mode();
+    public void set_Mode(int value);
+    public int get_UserId();
+    public void set_UserId(int value);
+    public int get_GroupId();
+    public void set_GroupId(int value);
+    public long get_Size();
+    public void set_Size(long value);
+    public DateTime get_ModTime();
+    public void set_ModTime(DateTime value);
+    public int get_Checksum();
+    public bool get_IsChecksumValid();
+    public byte get_TypeFlag();
+    public void set_TypeFlag(byte value);
+    public string get_LinkName();
+    public void set_LinkName(string value);
+    public string get_Magic();
+    public void set_Magic(string value);
+    public string get_Version();
+    public void set_Version(string value);
+    public string get_UserName();
+    public void set_UserName(string value);
+    public string get_GroupName();
+    public void set_GroupName(string value);
+    public int get_DevMajor();
+    public void set_DevMajor(int value);
+    public int get_DevMinor();
+    public void set_DevMinor(int value);
+    public object Clone();
+    public void ParseBuffer(Byte[] header, Encoding nameEncoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public void ParseBuffer(Byte[] header);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public void WriteHeader(Byte[] outBuffer);
+    public void WriteHeader(Byte[] outBuffer, Encoding nameEncoding);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    internal static void SetValueDefaults(int userId, string userName, int groupId, string groupName);
+    internal static void RestoreSetValues();
+    private static long ParseBinaryOrOctal(Byte[] header, int offset, int length);
+    public static long ParseOctal(Byte[] header, int offset, int length);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static StringBuilder ParseName(Byte[] header, int offset, int length);
+    public static StringBuilder ParseName(Byte[] header, int offset, int length, Encoding encoding);
+    public static int GetNameBytes(StringBuilder name, int nameOffset, Byte[] buffer, int bufferOffset, int length);
+    public static int GetNameBytes(string name, int nameOffset, Byte[] buffer, int bufferOffset, int length);
+    public static int GetNameBytes(string name, int nameOffset, Byte[] buffer, int bufferOffset, int length, Encoding encoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static int GetNameBytes(StringBuilder name, Byte[] buffer, int offset, int length);
+    public static int GetNameBytes(StringBuilder name, Byte[] buffer, int offset, int length, Encoding encoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static int GetNameBytes(string name, Byte[] buffer, int offset, int length);
+    public static int GetNameBytes(string name, Byte[] buffer, int offset, int length, Encoding encoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public static int GetAsciiBytes(string toAdd, int nameOffset, Byte[] buffer, int bufferOffset, int length);
+    public static int GetAsciiBytes(string toAdd, int nameOffset, Byte[] buffer, int bufferOffset, int length, Encoding encoding);
+    public static int GetOctalBytes(long value, Byte[] buffer, int offset, int length);
+    private static int GetBinaryOrOctalBytes(long value, Byte[] buffer, int offset, int length);
+    private static void GetCheckSumOctalBytes(long value, Byte[] buffer, int offset, int length);
+    private static int ComputeCheckSum(Byte[] buffer);
+    private static int MakeCheckSum(Byte[] buffer);
+    private static int GetCTime(DateTime dateTime);
+    private static DateTime GetDateTimeFromCTime(long ticks);
+}
+public class ICSharpCode.SharpZipLib.Tar.TarInputStream : Stream {
+    protected bool hasHitEOF;
+    protected long entrySize;
+    protected long entryOffset;
+    protected Byte[] readBuffer;
+    protected TarBuffer tarBuffer;
+    private TarEntry currentEntry;
+    protected IEntryFactory entryFactory;
+    private Stream inputStream;
+    private Encoding encoding;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int RecordSize { get; }
+    public long Available { get; }
+    public bool IsMarkSupported { get; }
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public TarInputStream(Stream inputStream);
+    public TarInputStream(Stream inputStream, Encoding nameEncoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public TarInputStream(Stream inputStream, int blockFactor);
+    public TarInputStream(Stream inputStream, int blockFactor, Encoding nameEncoding);
+    public bool get_IsStreamOwner();
+    public void set_IsStreamOwner(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    public void SetEntryFactory(IEntryFactory factory);
+    public int get_RecordSize();
+    [ObsoleteAttribute("Use RecordSize property instead")]
+public int GetRecordSize();
+    public long get_Available();
+    public void Skip(long skipCount);
+    public bool get_IsMarkSupported();
+    public void Mark(int markLimit);
+    public void Reset();
+    public TarEntry GetNextEntry();
+    public void CopyEntryContents(Stream outputStream);
+    private void SkipToNextEntry();
+}
+public class ICSharpCode.SharpZipLib.Tar.TarOutputStream : Stream {
+    private long currBytes;
+    private int assemblyBufferLength;
+    private bool isClosed;
+    protected long currSize;
+    protected Byte[] blockBuffer;
+    protected Byte[] assemblyBuffer;
+    protected TarBuffer buffer;
+    protected Stream outputStream;
+    protected Encoding nameEncoding;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int RecordSize { get; }
+    private bool IsEntryOpen { get; }
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public TarOutputStream(Stream outputStream);
+    public TarOutputStream(Stream outputStream, Encoding nameEncoding);
+    [ObsoleteAttribute("No Encoding for Name field is specified, any non-ASCII bytes will be discarded")]
+public TarOutputStream(Stream outputStream, int blockFactor);
+    public TarOutputStream(Stream outputStream, int blockFactor, Encoding nameEncoding);
+    public bool get_IsStreamOwner();
+    public void set_IsStreamOwner(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Flush();
+    public void Finish();
+    protected virtual void Dispose(bool disposing);
+    public int get_RecordSize();
+    [ObsoleteAttribute("Use RecordSize property instead")]
+public int GetRecordSize();
+    private bool get_IsEntryOpen();
+    public void PutNextEntry(TarEntry entry);
+    public void CloseEntry();
+    public virtual void WriteByte(byte value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    private void WriteEofBlock();
+}
+public class ICSharpCode.SharpZipLib.UnexpectedEndOfStreamException : StreamDecodingException {
+    private static string GenericMessage;
+    public UnexpectedEndOfStreamException(string message);
+    public UnexpectedEndOfStreamException(string message, Exception innerException);
+    protected UnexpectedEndOfStreamException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.ValueOutOfRangeException : StreamDecodingException {
+    public ValueOutOfRangeException(string nameOfValue);
+    public ValueOutOfRangeException(string nameOfValue, long value, long maxValue, long minValue);
+    public ValueOutOfRangeException(string nameOfValue, string value, string maxValue, string minValue);
+    private ValueOutOfRangeException(string message, Exception innerException);
+    protected ValueOutOfRangeException(SerializationInfo info, StreamingContext context);
+}
+public abstract class ICSharpCode.SharpZipLib.Zip.BaseArchiveStorage : object {
+    private FileUpdateMode updateMode_;
+    public FileUpdateMode UpdateMode { get; }
+    protected BaseArchiveStorage(FileUpdateMode updateMode);
+    public abstract virtual Stream GetTemporaryOutput();
+    public abstract virtual Stream ConvertTemporaryToFinal();
+    public abstract virtual Stream MakeTemporaryCopy(Stream stream);
+    public abstract virtual Stream OpenForDirectUpdate(Stream stream);
+    public abstract virtual void Dispose();
+    public sealed virtual FileUpdateMode get_UpdateMode();
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Deflater : object {
+    public static int BEST_COMPRESSION;
+    public static int BEST_SPEED;
+    public static int DEFAULT_COMPRESSION;
+    public static int NO_COMPRESSION;
+    public static int DEFLATED;
+    private static int IS_SETDICT;
+    private static int IS_FLUSHING;
+    private static int IS_FINISHING;
+    private static int INIT_STATE;
+    private static int SETDICT_STATE;
+    private static int BUSY_STATE;
+    private static int FLUSHING_STATE;
+    private static int FINISHING_STATE;
+    private static int FINISHED_STATE;
+    private static int CLOSED_STATE;
+    private int level;
+    private bool noZlibHeaderOrFooter;
+    private int state;
+    private long totalOut;
+    private DeflaterPending pending;
+    private DeflaterEngine engine;
+    public int Adler { get; }
+    public long TotalIn { get; }
+    public long TotalOut { get; }
+    public bool IsFinished { get; }
+    public bool IsNeedingInput { get; }
+    public Deflater(int level);
+    public Deflater(int level, bool noZlibHeaderOrFooter);
+    public void Reset();
+    public int get_Adler();
+    public long get_TotalIn();
+    public long get_TotalOut();
+    public void Flush();
+    public void Finish();
+    public bool get_IsFinished();
+    public bool get_IsNeedingInput();
+    public void SetInput(Byte[] input);
+    public void SetInput(Byte[] input, int offset, int count);
+    public void SetLevel(int level);
+    public int GetLevel();
+    public void SetStrategy(DeflateStrategy strategy);
+    public int Deflate(Byte[] output);
+    public int Deflate(Byte[] output, int offset, int length);
+    public void SetDictionary(Byte[] dictionary);
+    public void SetDictionary(Byte[] dictionary, int index, int count);
+}
+public static class ICSharpCode.SharpZipLib.Zip.Compression.DeflaterConstants : object {
+    public static bool DEBUGGING;
+    public static int STORED_BLOCK;
+    public static int STATIC_TREES;
+    public static int DYN_TREES;
+    public static int PRESET_DICT;
+    public static int DEFAULT_MEM_LEVEL;
+    public static int MAX_MATCH;
+    public static int MIN_MATCH;
+    public static int MAX_WBITS;
+    public static int WSIZE;
+    public static int WMASK;
+    public static int HASH_BITS;
+    public static int HASH_SIZE;
+    public static int HASH_MASK;
+    public static int HASH_SHIFT;
+    public static int MIN_LOOKAHEAD;
+    public static int MAX_DIST;
+    public static int PENDING_BUF_SIZE;
+    public static int MAX_BLOCK_SIZE;
+    public static int DEFLATE_STORED;
+    public static int DEFLATE_FAST;
+    public static int DEFLATE_SLOW;
+    public static Int32[] GOOD_LENGTH;
+    public static Int32[] MAX_LAZY;
+    public static Int32[] NICE_LENGTH;
+    public static Int32[] MAX_CHAIN;
+    public static Int32[] COMPR_FUNC;
+    private static DeflaterConstants();
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.DeflaterEngine : object {
+    private static int TooFar;
+    private int ins_h;
+    private Int16[] head;
+    private Int16[] prev;
+    private int matchStart;
+    private int matchLen;
+    private bool prevAvailable;
+    private int blockStart;
+    private int strstart;
+    private int lookahead;
+    private Byte[] window;
+    private DeflateStrategy strategy;
+    private int max_chain;
+    private int max_lazy;
+    private int niceLength;
+    private int goodLength;
+    private int compressionFunction;
+    private Byte[] inputBuf;
+    private long totalIn;
+    private int inputOff;
+    private int inputEnd;
+    private DeflaterPending pending;
+    private DeflaterHuffman huffman;
+    private Adler32 adler;
+    public int Adler { get; }
+    public long TotalIn { get; }
+    public DeflateStrategy Strategy { get; public set; }
+    public DeflaterEngine(DeflaterPending pending);
+    public DeflaterEngine(DeflaterPending pending, bool noAdlerCalculation);
+    public bool Deflate(bool flush, bool finish);
+    public void SetInput(Byte[] buffer, int offset, int count);
+    public bool NeedsInput();
+    public void SetDictionary(Byte[] buffer, int offset, int length);
+    public void Reset();
+    public void ResetAdler();
+    public int get_Adler();
+    public long get_TotalIn();
+    public DeflateStrategy get_Strategy();
+    public void set_Strategy(DeflateStrategy value);
+    public void SetLevel(int level);
+    public void FillWindow();
+    private void UpdateHash();
+    private int InsertString();
+    private void SlideWindow();
+    private bool FindLongestMatch(int curMatch);
+    private bool DeflateStored(bool flush, bool finish);
+    private bool DeflateFast(bool flush, bool finish);
+    private bool DeflateSlow(bool flush, bool finish);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.DeflaterHuffman : object {
+    private static int BUFSIZE;
+    private static int LITERAL_NUM;
+    private static int DIST_NUM;
+    private static int BITLEN_NUM;
+    private static int REP_3_6;
+    private static int REP_3_10;
+    private static int REP_11_138;
+    private static int EOF_SYMBOL;
+    private static Int32[] BL_ORDER;
+    private static Byte[] bit4Reverse;
+    private static Int16[] staticLCodes;
+    private static Byte[] staticLLength;
+    private static Int16[] staticDCodes;
+    private static Byte[] staticDLength;
+    public DeflaterPending pending;
+    private Tree literalTree;
+    private Tree distTree;
+    private Tree blTree;
+    private Int16[] d_buf;
+    private Byte[] l_buf;
+    private int last_lit;
+    private int extra_bits;
+    private static DeflaterHuffman();
+    public DeflaterHuffman(DeflaterPending pending);
+    public void Reset();
+    public void SendAllTrees(int blTreeCodes);
+    public void CompressBlock();
+    public void FlushStoredBlock(Byte[] stored, int storedOffset, int storedLength, bool lastBlock);
+    public void FlushBlock(Byte[] stored, int storedOffset, int storedLength, bool lastBlock);
+    public bool IsFull();
+    public bool TallyLit(int literal);
+    public bool TallyDist(int distance, int length);
+    public static short BitReverse(int toReverse);
+    private static int Lcode(int length);
+    private static int Dcode(int distance);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.DeflaterPending : PendingBuffer {
+}
+public enum ICSharpCode.SharpZipLib.Zip.Compression.DeflateStrategy : Enum {
+    public int value__;
+    public static DeflateStrategy Default;
+    public static DeflateStrategy Filtered;
+    public static DeflateStrategy HuffmanOnly;
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Inflater : object {
+    private static Int32[] CPLENS;
+    private static Int32[] CPLEXT;
+    private static Int32[] CPDIST;
+    private static Int32[] CPDEXT;
+    private static int DECODE_HEADER;
+    private static int DECODE_DICT;
+    private static int DECODE_BLOCKS;
+    private static int DECODE_STORED_LEN1;
+    private static int DECODE_STORED_LEN2;
+    private static int DECODE_STORED;
+    private static int DECODE_DYN_HEADER;
+    private static int DECODE_HUFFMAN;
+    private static int DECODE_HUFFMAN_LENBITS;
+    private static int DECODE_HUFFMAN_DIST;
+    private static int DECODE_HUFFMAN_DISTBITS;
+    private static int DECODE_CHKSUM;
+    private static int FINISHED;
+    private int mode;
+    private int readAdler;
+    private int neededBits;
+    private int repLength;
+    private int repDist;
+    private int uncomprLen;
+    private bool isLastBlock;
+    private long totalOut;
+    private long totalIn;
+    private bool noHeader;
+    private StreamManipulator input;
+    private OutputWindow outputWindow;
+    private InflaterDynHeader dynHeader;
+    private InflaterHuffmanTree litlenTree;
+    private InflaterHuffmanTree distTree;
+    private Adler32 adler;
+    public bool IsNeedingInput { get; }
+    public bool IsNeedingDictionary { get; }
+    public bool IsFinished { get; }
+    public int Adler { get; }
+    public long TotalOut { get; }
+    public long TotalIn { get; }
+    public int RemainingInput { get; }
+    public Inflater(bool noHeader);
+    private static Inflater();
+    public void Reset();
+    private bool DecodeHeader();
+    private bool DecodeDict();
+    private bool DecodeHuffman();
+    private bool DecodeChksum();
+    private bool Decode();
+    public void SetDictionary(Byte[] buffer);
+    public void SetDictionary(Byte[] buffer, int index, int count);
+    public void SetInput(Byte[] buffer);
+    public void SetInput(Byte[] buffer, int index, int count);
+    public int Inflate(Byte[] buffer);
+    public int Inflate(Byte[] buffer, int offset, int count);
+    public bool get_IsNeedingInput();
+    public bool get_IsNeedingDictionary();
+    public bool get_IsFinished();
+    public int get_Adler();
+    public long get_TotalOut();
+    public long get_TotalIn();
+    public int get_RemainingInput();
+}
+internal class ICSharpCode.SharpZipLib.Zip.Compression.InflaterDynHeader : object {
+    private static int LITLEN_MAX;
+    private static int DIST_MAX;
+    private static int CODELEN_MAX;
+    private static int META_MAX;
+    private static Int32[] MetaCodeLengthIndex;
+    private StreamManipulator input;
+    private IEnumerator`1<bool> state;
+    private IEnumerable`1<bool> stateMachine;
+    private Byte[] codeLengths;
+    private InflaterHuffmanTree litLenTree;
+    private InflaterHuffmanTree distTree;
+    private int litLenCodeCount;
+    private int distanceCodeCount;
+    private int metaCodeCount;
+    public InflaterHuffmanTree LiteralLengthTree { get; }
+    public InflaterHuffmanTree DistanceTree { get; }
+    public InflaterDynHeader(StreamManipulator input);
+    private static InflaterDynHeader();
+    public bool AttemptRead();
+    [IteratorStateMachineAttribute("ICSharpCode.SharpZipLib.Zip.Compression.InflaterDynHeader/<CreateStateMachine>d__7")]
+private IEnumerable`1<bool> CreateStateMachine();
+    public InflaterHuffmanTree get_LiteralLengthTree();
+    public InflaterHuffmanTree get_DistanceTree();
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.InflaterHuffmanTree : object {
+    private static int MAX_BITLEN;
+    private Int16[] tree;
+    public static InflaterHuffmanTree defLitLenTree;
+    public static InflaterHuffmanTree defDistTree;
+    private static InflaterHuffmanTree();
+    public InflaterHuffmanTree(IList`1<byte> codeLengths);
+    private void BuildTree(IList`1<byte> codeLengths);
+    public int GetSymbol(StreamManipulator input);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.PendingBuffer : object {
+    private Byte[] buffer;
+    private int start;
+    private int end;
+    private UInt32 bits;
+    private int bitCount;
+    public int BitCount { get; }
+    public bool IsFlushed { get; }
+    public PendingBuffer(int bufferSize);
+    public void Reset();
+    public void WriteByte(int value);
+    public void WriteShort(int value);
+    public void WriteInt(int value);
+    public void WriteBlock(Byte[] block, int offset, int length);
+    public int get_BitCount();
+    public void AlignToByte();
+    public void WriteBits(int b, int count);
+    public void WriteShortMSB(int s);
+    public bool get_IsFlushed();
+    public int Flush(Byte[] output, int offset, int length);
+    public Byte[] ToByteArray();
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Streams.DeflaterOutputStream : Stream {
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    protected ICryptoTransform cryptoTransform_;
+    protected Byte[] AESAuthCode;
+    private Byte[] buffer_;
+    protected Deflater deflater_;
+    protected Stream baseOutputStream_;
+    private bool isClosed_;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanPatchEntries { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public DeflaterOutputStream(Stream baseOutputStream);
+    public DeflaterOutputStream(Stream baseOutputStream, Deflater deflater);
+    public DeflaterOutputStream(Stream baseOutputStream, Deflater deflater, int bufferSize);
+    public virtual void Finish();
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    public bool get_CanPatchEntries();
+    protected void EncryptBlock(Byte[] buffer, int offset, int length);
+    protected void Deflate();
+    private void Deflate(bool flushing);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Flush();
+    protected virtual void Dispose(bool disposing);
+    protected void GetAuthCodeIfAES();
+    public virtual void WriteByte(byte value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Streams.InflaterInputBuffer : object {
+    private int rawLength;
+    private Byte[] rawData;
+    private int clearTextLength;
+    private Byte[] clearText;
+    private Byte[] internalClearText;
+    private int available;
+    private ICryptoTransform cryptoTransform;
+    private Stream inputStream;
+    public int RawLength { get; }
+    public Byte[] RawData { get; }
+    public int ClearTextLength { get; }
+    public Byte[] ClearText { get; }
+    public int Available { get; public set; }
+    unknown ICryptoTransform CryptoTransform {public set; }
+    public InflaterInputBuffer(Stream stream);
+    public InflaterInputBuffer(Stream stream, int bufferSize);
+    public int get_RawLength();
+    public Byte[] get_RawData();
+    public int get_ClearTextLength();
+    public Byte[] get_ClearText();
+    public int get_Available();
+    public void set_Available(int value);
+    public void SetInflaterInput(Inflater inflater);
+    public void Fill();
+    public int ReadRawBuffer(Byte[] buffer);
+    public int ReadRawBuffer(Byte[] outBuffer, int offset, int length);
+    public int ReadClearTextBuffer(Byte[] outBuffer, int offset, int length);
+    public byte ReadLeByte();
+    public int ReadLeShort();
+    public int ReadLeInt();
+    public long ReadLeLong();
+    public void set_CryptoTransform(ICryptoTransform value);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Streams.InflaterInputStream : Stream {
+    [CompilerGeneratedAttribute]
+private bool <IsStreamOwner>k__BackingField;
+    protected Inflater inf;
+    protected InflaterInputBuffer inputBuffer;
+    private Stream baseInputStream;
+    protected long csize;
+    private bool isClosed;
+    public bool IsStreamOwner { get; public set; }
+    public int Available { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public InflaterInputStream(Stream baseInputStream);
+    public InflaterInputStream(Stream baseInputStream, Inflater inf);
+    public InflaterInputStream(Stream baseInputStream, Inflater inflater, int bufferSize);
+    [CompilerGeneratedAttribute]
+public bool get_IsStreamOwner();
+    [CompilerGeneratedAttribute]
+public void set_IsStreamOwner(bool value);
+    public long Skip(long count);
+    protected void StopDecrypting();
+    public virtual int get_Available();
+    protected void Fill();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void WriteByte(byte value);
+    protected virtual void Dispose(bool disposing);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Streams.OutputWindow : object {
+    private static int WindowSize;
+    private static int WindowMask;
+    private Byte[] window;
+    private int windowEnd;
+    private int windowFilled;
+    public void Write(int value);
+    private void SlowRepeat(int repStart, int length, int distance);
+    public void Repeat(int length, int distance);
+    public int CopyStored(StreamManipulator input, int length);
+    public void CopyDict(Byte[] dictionary, int offset, int length);
+    public int GetFreeSpace();
+    public int GetAvailable();
+    public int CopyOutput(Byte[] output, int offset, int len);
+    public void Reset();
+}
+public class ICSharpCode.SharpZipLib.Zip.Compression.Streams.StreamManipulator : object {
+    private Byte[] window_;
+    private int windowStart_;
+    private int windowEnd_;
+    private UInt32 buffer_;
+    private int bitsInBuffer_;
+    public int AvailableBits { get; }
+    public int AvailableBytes { get; }
+    public bool IsNeedingInput { get; }
+    public int PeekBits(int bitCount);
+    public bool TryGetBits(int bitCount, Int32& output, int outputOffset);
+    public bool TryGetBits(int bitCount, Byte[]& array, int index);
+    public void DropBits(int bitCount);
+    public int GetBits(int bitCount);
+    public int get_AvailableBits();
+    public int get_AvailableBytes();
+    public void SkipToByteBoundary();
+    public bool get_IsNeedingInput();
+    public int CopyBytes(Byte[] output, int offset, int length);
+    public void Reset();
+    public void SetInput(Byte[] buffer, int offset, int count);
+}
+public enum ICSharpCode.SharpZipLib.Zip.CompressionMethod : Enum {
+    public int value__;
+    public static CompressionMethod Stored;
+    public static CompressionMethod Deflated;
+    public static CompressionMethod Deflate64;
+    public static CompressionMethod BZip2;
+    public static CompressionMethod LZMA;
+    public static CompressionMethod PPMd;
+    public static CompressionMethod WinZipAES;
+}
+public class ICSharpCode.SharpZipLib.Zip.DescriptorData : object {
+    private long size;
+    private long compressedSize;
+    private long crc;
+    public long CompressedSize { get; public set; }
+    public long Size { get; public set; }
+    public long Crc { get; public set; }
+    public long get_CompressedSize();
+    public void set_CompressedSize(long value);
+    public long get_Size();
+    public void set_Size(long value);
+    public long get_Crc();
+    public void set_Crc(long value);
+}
+public class ICSharpCode.SharpZipLib.Zip.DiskArchiveStorage : BaseArchiveStorage {
+    private Stream temporaryStream_;
+    private string fileName_;
+    private string temporaryName_;
+    public DiskArchiveStorage(ZipFile file, FileUpdateMode updateMode);
+    public DiskArchiveStorage(ZipFile file);
+    public virtual Stream GetTemporaryOutput();
+    public virtual Stream ConvertTemporaryToFinal();
+    public virtual Stream MakeTemporaryCopy(Stream stream);
+    public virtual Stream OpenForDirectUpdate(Stream stream);
+    public virtual void Dispose();
+}
+public class ICSharpCode.SharpZipLib.Zip.DynamicDiskDataSource : object {
+    public sealed virtual Stream GetSource(ZipEntry entry, string name);
+}
+public enum ICSharpCode.SharpZipLib.Zip.EncryptionAlgorithm : Enum {
+    public int value__;
+    public static EncryptionAlgorithm None;
+    public static EncryptionAlgorithm PkzipClassic;
+    public static EncryptionAlgorithm Des;
+    public static EncryptionAlgorithm RC2;
+    public static EncryptionAlgorithm TripleDes168;
+    public static EncryptionAlgorithm TripleDes112;
+    public static EncryptionAlgorithm Aes128;
+    public static EncryptionAlgorithm Aes192;
+    public static EncryptionAlgorithm Aes256;
+    public static EncryptionAlgorithm RC2Corrected;
+    public static EncryptionAlgorithm Blowfish;
+    public static EncryptionAlgorithm Twofish;
+    public static EncryptionAlgorithm RC4;
+    public static EncryptionAlgorithm Unknown;
+}
+internal class ICSharpCode.SharpZipLib.Zip.EntryPatchData : object {
+    private long sizePatchOffset_;
+    private long crcPatchOffset_;
+    public long SizePatchOffset { get; public set; }
+    public long CrcPatchOffset { get; public set; }
+    public long get_SizePatchOffset();
+    public void set_SizePatchOffset(long value);
+    public long get_CrcPatchOffset();
+    public void set_CrcPatchOffset(long value);
+}
+public class ICSharpCode.SharpZipLib.Zip.ExtendedUnixData : object {
+    private Flags _flags;
+    private DateTime _modificationTime;
+    private DateTime _lastAccessTime;
+    private DateTime _createTime;
+    public short TagID { get; }
+    public DateTime ModificationTime { get; public set; }
+    public DateTime AccessTime { get; public set; }
+    public DateTime CreateTime { get; public set; }
+    public Flags Include { get; public set; }
+    public sealed virtual short get_TagID();
+    public sealed virtual void SetData(Byte[] data, int index, int count);
+    public sealed virtual Byte[] GetData();
+    public static bool IsValidValue(DateTime value);
+    public DateTime get_ModificationTime();
+    public void set_ModificationTime(DateTime value);
+    public DateTime get_AccessTime();
+    public void set_AccessTime(DateTime value);
+    public DateTime get_CreateTime();
+    public void set_CreateTime(DateTime value);
+    public Flags get_Include();
+    public void set_Include(Flags value);
+}
+public class ICSharpCode.SharpZipLib.Zip.FastZip : object {
+    [CompilerGeneratedAttribute]
+private ZipEncryptionMethod <EntryEncryptionMethod>k__BackingField;
+    private bool continueRunning_;
+    private Byte[] buffer_;
+    private ZipOutputStream outputStream_;
+    private ZipFile zipFile_;
+    private string sourceDirectory_;
+    private NameFilter fileFilter_;
+    private NameFilter directoryFilter_;
+    private Overwrite overwrite_;
+    private ConfirmOverwriteDelegate confirmDelegate_;
+    private bool restoreDateTimeOnExtract_;
+    private bool restoreAttributesOnExtract_;
+    private bool createEmptyDirectories_;
+    private FastZipEvents events_;
+    private IEntryFactory entryFactory_;
+    private INameTransform extractNameTransform_;
+    private UseZip64 useZip64_;
+    private CompressionLevel compressionLevel_;
+    private string password_;
+    public bool CreateEmptyDirectories { get; public set; }
+    public string Password { get; public set; }
+    public ZipEncryptionMethod EntryEncryptionMethod { get; public set; }
+    public INameTransform NameTransform { get; public set; }
+    public IEntryFactory EntryFactory { get; public set; }
+    public UseZip64 UseZip64 { get; public set; }
+    public bool RestoreDateTimeOnExtract { get; public set; }
+    public bool RestoreAttributesOnExtract { get; public set; }
+    public CompressionLevel CompressionLevel { get; public set; }
+    public FastZip(TimeSetting timeSetting);
+    public FastZip(DateTime time);
+    public FastZip(FastZipEvents events);
+    public bool get_CreateEmptyDirectories();
+    public void set_CreateEmptyDirectories(bool value);
+    public string get_Password();
+    public void set_Password(string value);
+    [CompilerGeneratedAttribute]
+public ZipEncryptionMethod get_EntryEncryptionMethod();
+    [CompilerGeneratedAttribute]
+public void set_EntryEncryptionMethod(ZipEncryptionMethod value);
+    public INameTransform get_NameTransform();
+    public void set_NameTransform(INameTransform value);
+    public IEntryFactory get_EntryFactory();
+    public void set_EntryFactory(IEntryFactory value);
+    public UseZip64 get_UseZip64();
+    public void set_UseZip64(UseZip64 value);
+    public bool get_RestoreDateTimeOnExtract();
+    public void set_RestoreDateTimeOnExtract(bool value);
+    public bool get_RestoreAttributesOnExtract();
+    public void set_RestoreAttributesOnExtract(bool value);
+    public CompressionLevel get_CompressionLevel();
+    public void set_CompressionLevel(CompressionLevel value);
+    public void CreateZip(string zipFileName, string sourceDirectory, bool recurse, string fileFilter, string directoryFilter);
+    public void CreateZip(string zipFileName, string sourceDirectory, bool recurse, string fileFilter);
+    public void CreateZip(Stream outputStream, string sourceDirectory, bool recurse, string fileFilter, string directoryFilter);
+    public void CreateZip(Stream outputStream, string sourceDirectory, bool recurse, string fileFilter, string directoryFilter, bool leaveOpen);
+    public void CreateZip(string zipFileName, string sourceDirectory, bool recurse, IScanFilter fileFilter, IScanFilter directoryFilter);
+    public void CreateZip(Stream outputStream, string sourceDirectory, bool recurse, IScanFilter fileFilter, IScanFilter directoryFilter, bool leaveOpen);
+    private void CreateZip(Stream outputStream, string sourceDirectory, bool recurse, FileSystemScanner scanner, bool leaveOpen);
+    public void ExtractZip(string zipFileName, string targetDirectory, string fileFilter);
+    public void ExtractZip(string zipFileName, string targetDirectory, Overwrite overwrite, ConfirmOverwriteDelegate confirmDelegate, string fileFilter, string directoryFilter, bool restoreDateTime, bool allowParentTraversal);
+    public void ExtractZip(Stream inputStream, string targetDirectory, Overwrite overwrite, ConfirmOverwriteDelegate confirmDelegate, string fileFilter, string directoryFilter, bool restoreDateTime, bool isStreamOwner, bool allowParentTraversal);
+    private void ProcessDirectory(object sender, DirectoryEventArgs e);
+    private void ProcessFile(object sender, ScanEventArgs e);
+    private void ConfigureEntryEncryption(ZipEntry entry);
+    private void AddFileContents(string name, Stream stream);
+    private void ExtractFileEntry(ZipEntry entry, string targetName);
+    private void ExtractEntry(ZipEntry entry);
+    private static int MakeExternalAttributes(FileInfo info);
+    private static bool NameIsValid(string name);
+}
+public class ICSharpCode.SharpZipLib.Zip.FastZipEvents : object {
+    [CompilerGeneratedAttribute]
+private EventHandler`1<DirectoryEventArgs> ProcessDirectory;
+    public ProcessFileHandler ProcessFile;
+    public ProgressHandler Progress;
+    public CompletedFileHandler CompletedFile;
+    public DirectoryFailureHandler DirectoryFailure;
+    public FileFailureHandler FileFailure;
+    private TimeSpan progressInterval_;
+    public TimeSpan ProgressInterval { get; public set; }
+    [CompilerGeneratedAttribute]
+public void add_ProcessDirectory(EventHandler`1<DirectoryEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_ProcessDirectory(EventHandler`1<DirectoryEventArgs> value);
+    public bool OnDirectoryFailure(string directory, Exception e);
+    public bool OnFileFailure(string file, Exception e);
+    public bool OnProcessFile(string file);
+    public bool OnCompletedFile(string file);
+    public bool OnProcessDirectory(string directory, bool hasMatchingFiles);
+    public TimeSpan get_ProgressInterval();
+    public void set_ProgressInterval(TimeSpan value);
+}
+public enum ICSharpCode.SharpZipLib.Zip.FileUpdateMode : Enum {
+    public int value__;
+    public static FileUpdateMode Safe;
+    public static FileUpdateMode Direct;
+}
+[FlagsAttribute]
+public enum ICSharpCode.SharpZipLib.Zip.GeneralBitFlags : Enum {
+    public int value__;
+    public static GeneralBitFlags Encrypted;
+    public static GeneralBitFlags Method;
+    public static GeneralBitFlags Descriptor;
+    public static GeneralBitFlags ReservedPKware4;
+    public static GeneralBitFlags Patched;
+    public static GeneralBitFlags StrongEncryption;
+    public static GeneralBitFlags Unused7;
+    public static GeneralBitFlags Unused8;
+    public static GeneralBitFlags Unused9;
+    public static GeneralBitFlags Unused10;
+    public static GeneralBitFlags UnicodeText;
+    public static GeneralBitFlags EnhancedCompress;
+    public static GeneralBitFlags HeaderMasked;
+    public static GeneralBitFlags ReservedPkware14;
+    public static GeneralBitFlags ReservedPkware15;
+}
+public enum ICSharpCode.SharpZipLib.Zip.HostSystemID : Enum {
+    public int value__;
+    public static HostSystemID Msdos;
+    public static HostSystemID Amiga;
+    public static HostSystemID OpenVms;
+    public static HostSystemID Unix;
+    public static HostSystemID VMCms;
+    public static HostSystemID AtariST;
+    public static HostSystemID OS2;
+    public static HostSystemID Macintosh;
+    public static HostSystemID ZSystem;
+    public static HostSystemID Cpm;
+    public static HostSystemID WindowsNT;
+    public static HostSystemID MVS;
+    public static HostSystemID Vse;
+    public static HostSystemID AcornRisc;
+    public static HostSystemID Vfat;
+    public static HostSystemID AlternateMvs;
+    public static HostSystemID BeOS;
+    public static HostSystemID Tandem;
+    public static HostSystemID OS400;
+    public static HostSystemID OSX;
+    public static HostSystemID WinZipAES;
+}
+public interface ICSharpCode.SharpZipLib.Zip.IArchiveStorage {
+    public FileUpdateMode UpdateMode { get; }
+    public abstract virtual FileUpdateMode get_UpdateMode();
+    public abstract virtual Stream GetTemporaryOutput();
+    public abstract virtual Stream ConvertTemporaryToFinal();
+    public abstract virtual Stream MakeTemporaryCopy(Stream stream);
+    public abstract virtual Stream OpenForDirectUpdate(Stream stream);
+    public abstract virtual void Dispose();
+}
+public interface ICSharpCode.SharpZipLib.Zip.IDynamicDataSource {
+    public abstract virtual Stream GetSource(ZipEntry entry, string name);
+}
+public interface ICSharpCode.SharpZipLib.Zip.IEntryFactory {
+    public INameTransform NameTransform { get; public set; }
+    public TimeSetting Setting { get; }
+    public DateTime FixedDateTime { get; }
+    public abstract virtual ZipEntry MakeFileEntry(string fileName);
+    public abstract virtual ZipEntry MakeFileEntry(string fileName, bool useFileSystem);
+    public abstract virtual ZipEntry MakeFileEntry(string fileName, string entryName, bool useFileSystem);
+    public abstract virtual ZipEntry MakeDirectoryEntry(string directoryName);
+    public abstract virtual ZipEntry MakeDirectoryEntry(string directoryName, bool useFileSystem);
+    public abstract virtual INameTransform get_NameTransform();
+    public abstract virtual void set_NameTransform(INameTransform value);
+    public abstract virtual TimeSetting get_Setting();
+    public abstract virtual DateTime get_FixedDateTime();
+}
+public interface ICSharpCode.SharpZipLib.Zip.IStaticDataSource {
+    public abstract virtual Stream GetSource();
+}
+public interface ICSharpCode.SharpZipLib.Zip.ITaggedData {
+    public short TagID { get; }
+    public abstract virtual short get_TagID();
+    public abstract virtual void SetData(Byte[] data, int offset, int count);
+    public abstract virtual Byte[] GetData();
+}
+internal interface ICSharpCode.SharpZipLib.Zip.ITaggedDataFactory {
+    public abstract virtual ITaggedData Create(short tag, Byte[] data, int offset, int count);
+}
+public class ICSharpCode.SharpZipLib.Zip.KeysRequiredEventArgs : EventArgs {
+    private string fileName;
+    private Byte[] key;
+    public string FileName { get; }
+    public Byte[] Key { get; public set; }
+    public KeysRequiredEventArgs(string name);
+    public KeysRequiredEventArgs(string name, Byte[] keyValue);
+    public string get_FileName();
+    public Byte[] get_Key();
+    public void set_Key(Byte[] value);
+}
+public class ICSharpCode.SharpZipLib.Zip.MemoryArchiveStorage : BaseArchiveStorage {
+    private MemoryStream temporaryStream_;
+    private MemoryStream finalStream_;
+    public MemoryStream FinalStream { get; }
+    public MemoryArchiveStorage(FileUpdateMode updateMode);
+    public MemoryStream get_FinalStream();
+    public virtual Stream GetTemporaryOutput();
+    public virtual Stream ConvertTemporaryToFinal();
+    public virtual Stream MakeTemporaryCopy(Stream stream);
+    public virtual Stream OpenForDirectUpdate(Stream stream);
+    public virtual void Dispose();
+}
+public class ICSharpCode.SharpZipLib.Zip.NTTaggedData : object {
+    private DateTime _lastAccessTime;
+    private DateTime _lastModificationTime;
+    private DateTime _createTime;
+    public short TagID { get; }
+    public DateTime LastModificationTime { get; public set; }
+    public DateTime CreateTime { get; public set; }
+    public DateTime LastAccessTime { get; public set; }
+    public sealed virtual short get_TagID();
+    public sealed virtual void SetData(Byte[] data, int index, int count);
+    public sealed virtual Byte[] GetData();
+    public static bool IsValidValue(DateTime value);
+    public DateTime get_LastModificationTime();
+    public void set_LastModificationTime(DateTime value);
+    public DateTime get_CreateTime();
+    public void set_CreateTime(DateTime value);
+    public DateTime get_LastAccessTime();
+    public void set_LastAccessTime(DateTime value);
+}
+public class ICSharpCode.SharpZipLib.Zip.PathTransformer : object {
+    public sealed virtual string TransformDirectory(string name);
+    public sealed virtual string TransformFile(string name);
+}
+public class ICSharpCode.SharpZipLib.Zip.RawTaggedData : object {
+    private short _tag;
+    private Byte[] _data;
+    public short TagID { get; public set; }
+    public Byte[] Data { get; public set; }
+    public RawTaggedData(short tag);
+    public sealed virtual short get_TagID();
+    public void set_TagID(short value);
+    public sealed virtual void SetData(Byte[] data, int offset, int count);
+    public sealed virtual Byte[] GetData();
+    public Byte[] get_Data();
+    public void set_Data(Byte[] value);
+}
+public class ICSharpCode.SharpZipLib.Zip.StaticDiskDataSource : object {
+    private string fileName_;
+    public StaticDiskDataSource(string fileName);
+    public sealed virtual Stream GetSource();
+}
+public enum ICSharpCode.SharpZipLib.Zip.TestOperation : Enum {
+    public int value__;
+    public static TestOperation Initialising;
+    public static TestOperation EntryHeader;
+    public static TestOperation EntryData;
+    public static TestOperation EntryComplete;
+    public static TestOperation MiscellaneousTests;
+    public static TestOperation Complete;
+}
+public class ICSharpCode.SharpZipLib.Zip.TestStatus : object {
+    private ZipFile file_;
+    private ZipEntry entry_;
+    private bool entryValid_;
+    private int errorCount_;
+    private long bytesTested_;
+    private TestOperation operation_;
+    public TestOperation Operation { get; }
+    public ZipFile File { get; }
+    public ZipEntry Entry { get; }
+    public int ErrorCount { get; }
+    public long BytesTested { get; }
+    public bool EntryValid { get; }
+    public TestStatus(ZipFile file);
+    public TestOperation get_Operation();
+    public ZipFile get_File();
+    public ZipEntry get_Entry();
+    public int get_ErrorCount();
+    public long get_BytesTested();
+    public bool get_EntryValid();
+    internal void AddError();
+    internal void SetOperation(TestOperation operation);
+    internal void SetEntry(ZipEntry entry);
+    internal void SetBytesTested(long value);
+}
+public enum ICSharpCode.SharpZipLib.Zip.TestStrategy : Enum {
+    public int value__;
+    public static TestStrategy FindFirstError;
+    public static TestStrategy FindAllErrors;
+}
+public enum ICSharpCode.SharpZipLib.Zip.UseZip64 : Enum {
+    public int value__;
+    public static UseZip64 Off;
+    public static UseZip64 On;
+    public static UseZip64 Dynamic;
+}
+public class ICSharpCode.SharpZipLib.Zip.WindowsNameTransform : object {
+    private static int MaxPath;
+    private string _baseDirectory;
+    private bool _trimIncomingPaths;
+    private char _replacementChar;
+    private bool _allowParentTraversal;
+    private static Char[] InvalidEntryChars;
+    public string BaseDirectory { get; public set; }
+    public bool AllowParentTraversal { get; public set; }
+    public bool TrimIncomingPaths { get; public set; }
+    public char Replacement { get; public set; }
+    public WindowsNameTransform(string baseDirectory, bool allowParentTraversal);
+    private static WindowsNameTransform();
+    public string get_BaseDirectory();
+    public void set_BaseDirectory(string value);
+    public bool get_AllowParentTraversal();
+    public void set_AllowParentTraversal(bool value);
+    public bool get_TrimIncomingPaths();
+    public void set_TrimIncomingPaths(bool value);
+    public sealed virtual string TransformDirectory(string name);
+    public sealed virtual string TransformFile(string name);
+    public static bool IsValidName(string name);
+    public static string MakeValidName(string name, char replacement);
+    public char get_Replacement();
+    public void set_Replacement(char value);
+}
+public static class ICSharpCode.SharpZipLib.Zip.ZipConstants : object {
+    public static int VersionMadeBy;
+    [ObsoleteAttribute("Use VersionMadeBy instead")]
+public static int VERSION_MADE_BY;
+    public static int VersionStrongEncryption;
+    [ObsoleteAttribute("Use VersionStrongEncryption instead")]
+public static int VERSION_STRONG_ENCRYPTION;
+    public static int VERSION_AES;
+    public static int VersionZip64;
+    public static int VersionBZip2;
+    public static int LocalHeaderBaseSize;
+    [ObsoleteAttribute("Use LocalHeaderBaseSize instead")]
+public static int LOCHDR;
+    public static int Zip64DataDescriptorSize;
+    public static int DataDescriptorSize;
+    [ObsoleteAttribute("Use DataDescriptorSize instead")]
+public static int EXTHDR;
+    public static int CentralHeaderBaseSize;
+    [ObsoleteAttribute("Use CentralHeaderBaseSize instead")]
+public static int CENHDR;
+    public static int EndOfCentralRecordBaseSize;
+    [ObsoleteAttribute("Use EndOfCentralRecordBaseSize instead")]
+public static int ENDHDR;
+    public static int CryptoHeaderSize;
+    [ObsoleteAttribute("Use CryptoHeaderSize instead")]
+public static int CRYPTO_HEADER_SIZE;
+    public static int Zip64EndOfCentralDirectoryLocatorSize;
+    public static int LocalHeaderSignature;
+    [ObsoleteAttribute("Use LocalHeaderSignature instead")]
+public static int LOCSIG;
+    public static int SpanningSignature;
+    [ObsoleteAttribute("Use SpanningSignature instead")]
+public static int SPANNINGSIG;
+    public static int SpanningTempSignature;
+    [ObsoleteAttribute("Use SpanningTempSignature instead")]
+public static int SPANTEMPSIG;
+    public static int DataDescriptorSignature;
+    [ObsoleteAttribute("Use DataDescriptorSignature instead")]
+public static int EXTSIG;
+    [ObsoleteAttribute("Use CentralHeaderSignature instead")]
+public static int CENSIG;
+    public static int CentralHeaderSignature;
+    public static int Zip64CentralFileHeaderSignature;
+    [ObsoleteAttribute("Use Zip64CentralFileHeaderSignature instead")]
+public static int CENSIG64;
+    public static int Zip64CentralDirLocatorSignature;
+    public static int ArchiveExtraDataSignature;
+    public static int CentralHeaderDigitalSignature;
+    [ObsoleteAttribute("Use CentralHeaderDigitalSignaure instead")]
+public static int CENDIGITALSIG;
+    public static int EndOfCentralDirectorySignature;
+    [ObsoleteAttribute("Use EndOfCentralDirectorySignature instead")]
+public static int ENDSIG;
+    [ObsoleteAttribute("Use ZipStrings instead")]
+public static int DefaultCodePage { get; public set; }
+    public static int get_DefaultCodePage();
+    public static void set_DefaultCodePage(int value);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToString instead")]
+public static string ConvertToString(Byte[] data, int count);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToString instead")]
+public static string ConvertToString(Byte[] data);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToStringExt instead")]
+public static string ConvertToStringExt(int flags, Byte[] data, int count);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToStringExt instead")]
+public static string ConvertToStringExt(int flags, Byte[] data);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToArray instead")]
+public static Byte[] ConvertToArray(string str);
+    [ObsoleteAttribute("Use ZipStrings.ConvertToArray instead")]
+public static Byte[] ConvertToArray(int flags, string str);
+}
+public enum ICSharpCode.SharpZipLib.Zip.ZipEncryptionMethod : Enum {
+    public int value__;
+    public static ZipEncryptionMethod None;
+    public static ZipEncryptionMethod ZipCrypto;
+    public static ZipEncryptionMethod AES128;
+    public static ZipEncryptionMethod AES256;
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipEntry : object {
+    private Known known;
+    private int externalFileAttributes;
+    private ushort versionMadeBy;
+    private string name;
+    private ulong size;
+    private ulong compressedSize;
+    private ushort versionToExtract;
+    private UInt32 crc;
+    private DateTime dateTime;
+    private CompressionMethod method;
+    private Byte[] extra;
+    private string comment;
+    private int flags;
+    private long zipFileIndex;
+    private long offset;
+    private bool forceZip64_;
+    private byte cryptoCheckValue_;
+    private int _aesVer;
+    private int _aesEncryptionStrength;
+    public bool HasCrc { get; }
+    public bool IsCrypted { get; public set; }
+    public bool IsUnicodeText { get; public set; }
+    internal byte CryptoCheckValue { get; internal set; }
+    public int Flags { get; public set; }
+    public long ZipFileIndex { get; public set; }
+    public long Offset { get; public set; }
+    public int ExternalFileAttributes { get; public set; }
+    public int VersionMadeBy { get; }
+    public bool IsDOSEntry { get; }
+    public int HostSystem { get; public set; }
+    public int Version { get; }
+    public bool CanDecompress { get; }
+    public bool LocalHeaderRequiresZip64 { get; }
+    public bool CentralHeaderRequiresZip64 { get; }
+    public long DosTime { get; public set; }
+    public DateTime DateTime { get; public set; }
+    public string Name { get; internal set; }
+    public long Size { get; public set; }
+    public long CompressedSize { get; public set; }
+    public long Crc { get; public set; }
+    public CompressionMethod CompressionMethod { get; public set; }
+    internal CompressionMethod CompressionMethodForHeader { get; }
+    public Byte[] ExtraData { get; public set; }
+    public int AESKeySize { get; public set; }
+    internal byte AESEncryptionStrength { get; }
+    internal int AESSaltLen { get; }
+    internal int AESOverheadSize { get; }
+    internal int EncryptionOverheadSize { get; }
+    public string Comment { get; public set; }
+    public bool IsDirectory { get; }
+    public bool IsFile { get; }
+    public ZipEntry(string name);
+    internal ZipEntry(string name, int versionRequiredToExtract);
+    internal ZipEntry(string name, int versionRequiredToExtract, int madeByInfo, CompressionMethod method);
+    [ObsoleteAttribute("Use Clone instead")]
+public ZipEntry(ZipEntry entry);
+    public bool get_HasCrc();
+    public bool get_IsCrypted();
+    public void set_IsCrypted(bool value);
+    public bool get_IsUnicodeText();
+    public void set_IsUnicodeText(bool value);
+    internal byte get_CryptoCheckValue();
+    internal void set_CryptoCheckValue(byte value);
+    public int get_Flags();
+    public void set_Flags(int value);
+    public long get_ZipFileIndex();
+    public void set_ZipFileIndex(long value);
+    public long get_Offset();
+    public void set_Offset(long value);
+    public int get_ExternalFileAttributes();
+    public void set_ExternalFileAttributes(int value);
+    public int get_VersionMadeBy();
+    public bool get_IsDOSEntry();
+    private bool HasDosAttributes(int attributes);
+    public int get_HostSystem();
+    public void set_HostSystem(int value);
+    public int get_Version();
+    public bool get_CanDecompress();
+    public void ForceZip64();
+    public bool IsZip64Forced();
+    public bool get_LocalHeaderRequiresZip64();
+    public bool get_CentralHeaderRequiresZip64();
+    public long get_DosTime();
+    public void set_DosTime(long value);
+    public DateTime get_DateTime();
+    public void set_DateTime(DateTime value);
+    public string get_Name();
+    internal void set_Name(string value);
+    public long get_Size();
+    public void set_Size(long value);
+    public long get_CompressedSize();
+    public void set_CompressedSize(long value);
+    public long get_Crc();
+    public void set_Crc(long value);
+    public CompressionMethod get_CompressionMethod();
+    public void set_CompressionMethod(CompressionMethod value);
+    internal CompressionMethod get_CompressionMethodForHeader();
+    public Byte[] get_ExtraData();
+    public void set_ExtraData(Byte[] value);
+    public int get_AESKeySize();
+    public void set_AESKeySize(int value);
+    internal byte get_AESEncryptionStrength();
+    internal int get_AESSaltLen();
+    internal int get_AESOverheadSize();
+    internal int get_EncryptionOverheadSize();
+    internal void ProcessExtraData(bool localHeader);
+    private static Nullable`1<DateTime> GetDateTime(ZipExtraData extraData);
+    private void ProcessAESExtraData(ZipExtraData extraData);
+    public string get_Comment();
+    public void set_Comment(string value);
+    public bool get_IsDirectory();
+    public bool get_IsFile();
+    public bool IsCompressionMethodSupported();
+    public object Clone();
+    public virtual string ToString();
+    public static bool IsCompressionMethodSupported(CompressionMethod method);
+    public static string CleanName(string name);
+}
+[ExtensionAttribute]
+public static class ICSharpCode.SharpZipLib.Zip.ZipEntryExtensions : object {
+    [ExtensionAttribute]
+public static bool HasFlag(ZipEntry entry, GeneralBitFlags flag);
+    [ExtensionAttribute]
+public static void SetFlag(ZipEntry entry, GeneralBitFlags flag, bool enabled);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipEntryFactory : object {
+    private INameTransform nameTransform_;
+    private DateTime fixedDateTime_;
+    private TimeSetting timeSetting_;
+    private bool isUnicodeText_;
+    private int getAttributes_;
+    private int setAttributes_;
+    public INameTransform NameTransform { get; public set; }
+    public TimeSetting Setting { get; public set; }
+    public DateTime FixedDateTime { get; public set; }
+    public int GetAttributes { get; public set; }
+    public int SetAttributes { get; public set; }
+    public bool IsUnicodeText { get; public set; }
+    public ZipEntryFactory(TimeSetting timeSetting);
+    public ZipEntryFactory(DateTime time);
+    public sealed virtual INameTransform get_NameTransform();
+    public sealed virtual void set_NameTransform(INameTransform value);
+    public sealed virtual TimeSetting get_Setting();
+    public void set_Setting(TimeSetting value);
+    public sealed virtual DateTime get_FixedDateTime();
+    public void set_FixedDateTime(DateTime value);
+    public int get_GetAttributes();
+    public void set_GetAttributes(int value);
+    public int get_SetAttributes();
+    public void set_SetAttributes(int value);
+    public bool get_IsUnicodeText();
+    public void set_IsUnicodeText(bool value);
+    public sealed virtual ZipEntry MakeFileEntry(string fileName);
+    public sealed virtual ZipEntry MakeFileEntry(string fileName, bool useFileSystem);
+    public sealed virtual ZipEntry MakeFileEntry(string fileName, string entryName, bool useFileSystem);
+    public sealed virtual ZipEntry MakeDirectoryEntry(string directoryName);
+    public sealed virtual ZipEntry MakeDirectoryEntry(string directoryName, bool useFileSystem);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipException : SharpZipBaseException {
+    public ZipException(string message);
+    public ZipException(string message, Exception innerException);
+    protected ZipException(SerializationInfo info, StreamingContext context);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipExtraData : object {
+    private int _index;
+    private int _readValueStart;
+    private int _readValueLength;
+    private MemoryStream _newEntry;
+    private Byte[] _data;
+    public int Length { get; }
+    public int ValueLength { get; }
+    public int CurrentReadIndex { get; }
+    public int UnreadCount { get; }
+    public ZipExtraData(Byte[] data);
+    public Byte[] GetEntryData();
+    public void Clear();
+    public int get_Length();
+    public Stream GetStreamForTag(int tag);
+    public T GetData();
+    public int get_ValueLength();
+    public int get_CurrentReadIndex();
+    public int get_UnreadCount();
+    public bool Find(int headerID);
+    public void AddEntry(ITaggedData taggedData);
+    public void AddEntry(int headerID, Byte[] fieldData);
+    public void StartNewEntry();
+    public void AddNewEntry(int headerID);
+    public void AddData(byte data);
+    public void AddData(Byte[] data);
+    public void AddLeShort(int toAdd);
+    public void AddLeInt(int toAdd);
+    public void AddLeLong(long toAdd);
+    public bool Delete(int headerID);
+    public long ReadLong();
+    public int ReadInt();
+    public int ReadShort();
+    public int ReadByte();
+    public void Skip(int amount);
+    private void ReadCheck(int length);
+    private int ReadShortInternal();
+    private void SetShort(Int32& index, int source);
+    public sealed virtual void Dispose();
+}
+[DefaultMemberAttribute("EntryByIndex")]
+public class ICSharpCode.SharpZipLib.Zip.ZipFile : object {
+    public KeysRequiredEventHandler KeysRequired;
+    private static int DefaultBufferSize;
+    private bool isDisposed_;
+    private string name_;
+    private string comment_;
+    private string rawPassword_;
+    private Stream baseStream_;
+    private bool isStreamOwner;
+    private long offsetOfFirstEntry;
+    private ZipEntry[] entries_;
+    private Byte[] key;
+    private bool isNewArchive_;
+    private UseZip64 useZip64_;
+    private List`1<ZipUpdate> updates_;
+    private long updateCount_;
+    private Dictionary`2<string, int> updateIndex_;
+    private IArchiveStorage archiveStorage_;
+    private IDynamicDataSource updateDataSource_;
+    private bool contentsEdited_;
+    private int bufferSize_;
+    private Byte[] copyBuffer_;
+    private ZipString newComment_;
+    private bool commentEdited_;
+    private IEntryFactory updateEntryFactory_;
+    private Byte[] Key { get; private set; }
+    unknown string Password {public set; }
+    private bool HaveKeys { get; }
+    public bool IsStreamOwner { get; public set; }
+    public bool IsEmbeddedArchive { get; }
+    public bool IsNewArchive { get; }
+    public string ZipFileComment { get; }
+    public string Name { get; }
+    [ObsoleteAttribute("Use the Count property instead")]
+public int Size { get; }
+    public long Count { get; }
+    public ZipEntry EntryByIndex { get; }
+    public INameTransform NameTransform { get; public set; }
+    public IEntryFactory EntryFactory { get; public set; }
+    public int BufferSize { get; public set; }
+    public bool IsUpdating { get; }
+    public UseZip64 UseZip64 { get; public set; }
+    public ZipFile(string name);
+    public ZipFile(FileStream file);
+    public ZipFile(FileStream file, bool leaveOpen);
+    public ZipFile(Stream stream);
+    public ZipFile(Stream stream, bool leaveOpen);
+    private void OnKeysRequired(string fileName);
+    private Byte[] get_Key();
+    private void set_Key(Byte[] value);
+    public void set_Password(string value);
+    private bool get_HaveKeys();
+    protected virtual override void Finalize();
+    public void Close();
+    public static ZipFile Create(string fileName);
+    public static ZipFile Create(Stream outStream);
+    public bool get_IsStreamOwner();
+    public void set_IsStreamOwner(bool value);
+    public bool get_IsEmbeddedArchive();
+    public bool get_IsNewArchive();
+    public string get_ZipFileComment();
+    public string get_Name();
+    public int get_Size();
+    public long get_Count();
+    public ZipEntry get_EntryByIndex(int index);
+    public sealed virtual IEnumerator GetEnumerator();
+    public int FindEntry(string name, bool ignoreCase);
+    public ZipEntry GetEntry(string name);
+    public Stream GetInputStream(ZipEntry entry);
+    public Stream GetInputStream(long entryIndex);
+    public bool TestArchive(bool testData);
+    public bool TestArchive(bool testData, TestStrategy strategy, ZipTestResultHandler resultHandler);
+    private long TestLocalHeader(ZipEntry entry, HeaderTest tests);
+    public INameTransform get_NameTransform();
+    public void set_NameTransform(INameTransform value);
+    public IEntryFactory get_EntryFactory();
+    public void set_EntryFactory(IEntryFactory value);
+    public int get_BufferSize();
+    public void set_BufferSize(int value);
+    public bool get_IsUpdating();
+    public UseZip64 get_UseZip64();
+    public void set_UseZip64(UseZip64 value);
+    public void BeginUpdate(IArchiveStorage archiveStorage, IDynamicDataSource dataSource);
+    public void BeginUpdate(IArchiveStorage archiveStorage);
+    public void BeginUpdate();
+    public void CommitUpdate();
+    public void AbortUpdate();
+    public void SetComment(string comment);
+    private void AddUpdate(ZipUpdate update);
+    public void Add(string fileName, CompressionMethod compressionMethod, bool useUnicodeText);
+    public void Add(string fileName, CompressionMethod compressionMethod);
+    public void Add(string fileName);
+    public void Add(string fileName, string entryName);
+    public void Add(IStaticDataSource dataSource, string entryName);
+    public void Add(IStaticDataSource dataSource, string entryName, CompressionMethod compressionMethod);
+    public void Add(IStaticDataSource dataSource, string entryName, CompressionMethod compressionMethod, bool useUnicodeText);
+    public void Add(ZipEntry entry);
+    public void Add(IStaticDataSource dataSource, ZipEntry entry);
+    public void AddDirectory(string directoryName);
+    private static void CheckSupportedCompressionMethod(CompressionMethod compressionMethod);
+    public bool Delete(string fileName);
+    public void Delete(ZipEntry entry);
+    private void WriteLEShort(int value);
+    private void WriteLEUshort(ushort value);
+    private void WriteLEInt(int value);
+    private void WriteLEUint(UInt32 value);
+    private void WriteLeLong(long value);
+    private void WriteLEUlong(ulong value);
+    private void WriteLocalEntryHeader(ZipUpdate update);
+    private int WriteCentralDirectoryHeader(ZipEntry entry);
+    private void PostUpdateCleanup();
+    private string GetTransformedFileName(string name);
+    private string GetTransformedDirectoryName(string name);
+    private Byte[] GetBuffer();
+    private void CopyDescriptorBytes(ZipUpdate update, Stream dest, Stream source);
+    private void CopyBytes(ZipUpdate update, Stream destination, Stream source, long bytesToCopy, bool updateCrc);
+    private static int GetDescriptorSize(ZipUpdate update, bool includingSignature);
+    private void CopyDescriptorBytesDirect(ZipUpdate update, Stream stream, Int64& destinationPosition, long sourcePosition);
+    private void CopyEntryDataDirect(ZipUpdate update, Stream stream, bool updateCrc, Int64& destinationPosition, Int64& sourcePosition);
+    private int FindExistingUpdate(ZipEntry entry);
+    private int FindExistingUpdate(string fileName, bool isEntryName);
+    private Stream GetOutputStream(ZipEntry entry);
+    private void AddEntry(ZipFile workFile, ZipUpdate update);
+    private void ModifyEntry(ZipFile workFile, ZipUpdate update);
+    private void CopyEntryDirect(ZipFile workFile, ZipUpdate update, Int64& destinationPosition);
+    private void CopyEntry(ZipFile workFile, ZipUpdate update);
+    private void Reopen(Stream source);
+    private void Reopen();
+    private void UpdateCommentOnly();
+    private void RunUpdates();
+    private void CheckUpdating();
+    private sealed virtual override void System.IDisposable.Dispose();
+    private void DisposeInternal(bool disposing);
+    protected virtual void Dispose(bool disposing);
+    private ushort ReadLEUshort();
+    private UInt32 ReadLEUint();
+    private ulong ReadLEUlong();
+    private long LocateBlockWithSignature(int signature, long endLocation, int minimumBlockSize, int maximumVariableData);
+    private void ReadEntries();
+    private long LocateEntry(ZipEntry entry);
+    private Stream CreateAndInitDecryptionStream(Stream baseStream, ZipEntry entry);
+    private Stream CreateAndInitEncryptionStream(Stream baseStream, ZipEntry entry);
+    private static void CheckClassicPassword(CryptoStream classicCryptoStream, ZipEntry entry);
+    private static void WriteEncryptionHeader(Stream stream, long crcValue);
+}
+internal class ICSharpCode.SharpZipLib.Zip.ZipHelperStream : Stream {
+    private bool isOwner_;
+    private Stream stream_;
+    public bool IsStreamOwner { get; public set; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanTimeout { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public bool CanWrite { get; }
+    public ZipHelperStream(string name);
+    public ZipHelperStream(Stream stream);
+    public bool get_IsStreamOwner();
+    public void set_IsStreamOwner(bool value);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanTimeout();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual bool get_CanWrite();
+    public virtual void Flush();
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+    private void WriteLocalHeader(ZipEntry entry, EntryPatchData patchData);
+    public long LocateBlockWithSignature(int signature, long endLocation, int minimumBlockSize, int maximumVariableData);
+    public void WriteZip64EndOfCentralDirectory(long noOfEntries, long sizeEntries, long centralDirOffset);
+    public void WriteEndOfCentralDirectory(long noOfEntries, long sizeEntries, long startOfCentralDirectory, Byte[] comment);
+    public int ReadLEShort();
+    public int ReadLEInt();
+    public long ReadLELong();
+    public void WriteLEShort(int value);
+    public void WriteLEUshort(ushort value);
+    public void WriteLEInt(int value);
+    public void WriteLEUint(UInt32 value);
+    public void WriteLELong(long value);
+    public void WriteLEUlong(ulong value);
+    public int WriteDataDescriptor(ZipEntry entry);
+    public void ReadDataDescriptor(bool zip64, DescriptorData data);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipInputStream : InflaterInputStream {
+    private ReadDataHandler internalReader;
+    private Crc32 crc;
+    private ZipEntry entry;
+    private long size;
+    private CompressionMethod method;
+    private int flags;
+    private string password;
+    public string Password { get; public set; }
+    public bool CanDecompressEntry { get; }
+    public int Available { get; }
+    public long Length { get; }
+    public ZipInputStream(Stream baseInputStream);
+    public ZipInputStream(Stream baseInputStream, int bufferSize);
+    public string get_Password();
+    public void set_Password(string value);
+    public bool get_CanDecompressEntry();
+    private static bool IsEntryCompressionMethodSupported(ZipEntry entry);
+    public ZipEntry GetNextEntry();
+    private void ReadDataDescriptor();
+    private void CompleteCloseEntry(bool testCrc);
+    public void CloseEntry();
+    public virtual int get_Available();
+    public virtual long get_Length();
+    public virtual int ReadByte();
+    private int ReadingNotAvailable(Byte[] destination, int offset, int count);
+    private int ReadingNotSupported(Byte[] destination, int offset, int count);
+    private int StoredDescriptorEntry(Byte[] destination, int offset, int count);
+    private int InitialRead(Byte[] destination, int offset, int count);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    private int BodyRead(Byte[] buffer, int offset, int count);
+    protected virtual void Dispose(bool disposing);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipNameTransform : object {
+    private string trimPrefix_;
+    private static Char[] InvalidEntryChars;
+    private static Char[] InvalidEntryCharsRelaxed;
+    public string TrimPrefix { get; public set; }
+    public ZipNameTransform(string trimPrefix);
+    private static ZipNameTransform();
+    public sealed virtual string TransformDirectory(string name);
+    public sealed virtual string TransformFile(string name);
+    public string get_TrimPrefix();
+    public void set_TrimPrefix(string value);
+    private static string MakeValidName(string name, char replacement);
+    public static bool IsValidName(string name, bool relaxed);
+    public static bool IsValidName(string name);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipOutputStream : DeflaterOutputStream {
+    [CompilerGeneratedAttribute]
+private INameTransform <NameTransform>k__BackingField;
+    private List`1<ZipEntry> entries;
+    private Crc32 crc;
+    private ZipEntry curEntry;
+    private int defaultCompressionLevel;
+    private CompressionMethod curMethod;
+    private long size;
+    private long offset;
+    private Byte[] zipComment;
+    private bool patchEntryHeader;
+    private long crcPatchPos;
+    private long sizePatchPos;
+    private UseZip64 useZip64_;
+    private string password;
+    private static RandomNumberGenerator _aesRnd;
+    public bool IsFinished { get; }
+    public UseZip64 UseZip64 { get; public set; }
+    public INameTransform NameTransform { get; public set; }
+    public string Password { get; public set; }
+    public ZipOutputStream(Stream baseOutputStream);
+    public ZipOutputStream(Stream baseOutputStream, int bufferSize);
+    private static ZipOutputStream();
+    public bool get_IsFinished();
+    public void SetComment(string comment);
+    public void SetLevel(int level);
+    public int GetLevel();
+    public UseZip64 get_UseZip64();
+    public void set_UseZip64(UseZip64 value);
+    [CompilerGeneratedAttribute]
+public INameTransform get_NameTransform();
+    [CompilerGeneratedAttribute]
+public void set_NameTransform(INameTransform value);
+    public string get_Password();
+    public void set_Password(string value);
+    private void WriteLeShort(int value);
+    private void WriteLeInt(int value);
+    private void WriteLeLong(long value);
+    private void TransformEntryName(ZipEntry entry);
+    public void PutNextEntry(ZipEntry entry);
+    public void CloseEntry();
+    private void InitializePassword(string password);
+    private void InitializeAESPassword(ZipEntry entry, string rawPassword, Byte[]& salt, Byte[]& pwdVerifier);
+    private void WriteEncryptionHeader(long crcValue);
+    private static void AddExtraDataAES(ZipEntry entry, ZipExtraData extraData);
+    private void WriteAESHeader(ZipEntry entry);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    private void CopyAndEncrypt(Byte[] buffer, int offset, int count);
+    public virtual void Finish();
+    public virtual void Flush();
+}
+public static class ICSharpCode.SharpZipLib.Zip.ZipStrings : object {
+    private static int codePage;
+    private static int AutomaticCodePage;
+    private static int FallbackCodePage;
+    [CompilerGeneratedAttribute]
+private static int <SystemDefaultCodePage>k__BackingField;
+    public static int CodePage { get; public set; }
+    public static int SystemDefaultCodePage { get; }
+    public static bool UseUnicode { get; public set; }
+    private static ZipStrings();
+    public static int get_CodePage();
+    public static void set_CodePage(int value);
+    [CompilerGeneratedAttribute]
+public static int get_SystemDefaultCodePage();
+    public static bool get_UseUnicode();
+    public static void set_UseUnicode(bool value);
+    public static string ConvertToString(Byte[] data, int count);
+    public static string ConvertToString(Byte[] data);
+    private static Encoding EncodingFromFlag(int flags);
+    public static string ConvertToStringExt(int flags, Byte[] data, int count);
+    public static string ConvertToStringExt(int flags, Byte[] data);
+    public static Byte[] ConvertToArray(string str);
+    public static Byte[] ConvertToArray(int flags, string str);
+}
+public class ICSharpCode.SharpZipLib.Zip.ZipTestResultHandler : MulticastDelegate {
+    public ZipTestResultHandler(object object, IntPtr method);
+    public virtual void Invoke(TestStatus status, string message);
+    public virtual IAsyncResult BeginInvoke(TestStatus status, string message, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}

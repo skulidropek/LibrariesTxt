@@ -1,0 +1,772 @@
+public enum Xamarin.Build.Download.ArchiveKind : Enum {
+    public int value__;
+    public static ArchiveKind Unknown;
+    public static ArchiveKind Zip;
+    public static ArchiveKind Tgz;
+    public static ArchiveKind Uncompressed;
+}
+public abstract class Xamarin.Build.Download.AsyncTask : Task {
+    private CancellationTokenSource tcs;
+    private Queue logMessageQueue;
+    private Queue warningMessageQueue;
+    private Queue errorMessageQueue;
+    private ManualResetEvent logDataAvailable;
+    private ManualResetEvent errorDataAvailable;
+    private ManualResetEvent warningDataAvailable;
+    private ManualResetEvent taskCancelled;
+    private ManualResetEvent completed;
+    private bool isRunning;
+    private object _eventlock;
+    private int UIThreadId;
+    [CompilerGeneratedAttribute]
+private bool <YieldDuringExecution>k__BackingField;
+    public CancellationToken Token { get; }
+    public bool YieldDuringExecution { get; public set; }
+    [ObsoleteAttribute("Do not use the Log.LogXXXX from within your Async task as it will Lock the Visual Studio UI. Use the this.LogXXXX methods instead.")]
+private TaskLoggingHelper Log { get; }
+    public CancellationToken get_Token();
+    [CompilerGeneratedAttribute]
+public bool get_YieldDuringExecution();
+    [CompilerGeneratedAttribute]
+public void set_YieldDuringExecution(bool value);
+    private TaskLoggingHelper get_Log();
+    public sealed virtual void Cancel();
+    public void Complete();
+    public void LogDebugTaskItems(string message, String[] items);
+    public void LogDebugTaskItems(string message, ITaskItem[] items);
+    protected void LogMessage(string message, Object[] messageArgs);
+    protected void LogDebugMessage(string message, Object[] messageArgs);
+    protected void LogMessage(string message, MessageImportance importance);
+    public sealed virtual void LogCodedError(string code, string message, Object[] messageArgs);
+    protected void LogError(string code, string message);
+    public sealed virtual void LogErrorFromException(Exception exception);
+    protected void LogWarning(string message, Object[] messageArgs);
+    protected void LogWarning(string message);
+    public virtual bool Execute();
+    private void LogMessages();
+    private void LogErrors();
+    private void LogWarnings();
+    protected void WaitForCompletion();
+}
+public class Xamarin.Build.Download.Crc64 : HashAlgorithm {
+    private static UInt64[] Table;
+    private ulong crc;
+    private ulong length;
+    private static Crc64();
+    public virtual void Initialize();
+    protected virtual void HashCore(Byte[] array, int ibStart, int cbSize);
+    protected virtual Byte[] HashFinal();
+}
+public class Xamarin.Build.Download.DownloadUtils : object {
+    [CompilerGeneratedAttribute]
+private ILogger <Log>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheDir>k__BackingField;
+    private static Regex idRegex;
+    public ILogger Log { get; private set; }
+    public string CacheDir { get; private set; }
+    public DownloadUtils(ILogger logger, string cacheDir);
+    private static DownloadUtils();
+    [CompilerGeneratedAttribute]
+public ILogger get_Log();
+    [CompilerGeneratedAttribute]
+private void set_Log(ILogger value);
+    [CompilerGeneratedAttribute]
+public string get_CacheDir();
+    [CompilerGeneratedAttribute]
+private void set_CacheDir(string value);
+    public IEnumerable`1<XamarinBuildDownload> ParseDownloadItems(ITaskItem[] items, bool allowUnsecureUrls);
+    public List`1<PartialZipDownload> ParsePartialZipDownloadItems(ITaskItem[] items, bool allowUnsecureUrls);
+    public bool EnsureSecureUrl(ITaskItem item, string url, bool allowUnsecureUrls);
+    public static string GetCacheDir(string overrideCacheDir);
+    public bool IsAlreadyDownloaded(XamarinBuildDownload xbd);
+    public bool IsAlreadyDownloaded(string cacheDirectory, PartialZipDownload partialZipDownload);
+    public static bool ValidateId(string id);
+    public ArchiveKind GetKind(string urlMetadata, string kindMetadata);
+    public static Stream ObtainExclusiveFileLock(string file, CancellationToken cancelToken, TimeSpan timeout, ILogger log);
+    public static string Crc64(string s);
+    public static string HashBytes(Byte[] bytes);
+    public static string ToHexString(Byte[] hash);
+    private static char GetHexValue(int i);
+    public static string HashSha256(string value);
+    public static string HashSha256(Byte[] value);
+    public static string HashSha256(Stream value);
+}
+public static class Xamarin.Build.Download.ErrorCodes : object {
+    public static string DownloadFailed;
+    public static string ExtractionFailed;
+    public static string DownloadedFileMissing;
+    public static string DirectoryCreateFailed;
+    public static string DirectoryDeleteFailed;
+    public static string ExclusiveLockTimeout;
+    public static string PartialDownloadFailed;
+    public static string UnknownArchiveType;
+    public static string XbdInvalidItemId;
+    public static string XbdInvalidUrl;
+    public static string XbdInvalidToFile;
+    public static string XbdInvalidRange;
+    public static string XbdInvalidRangeStart;
+    public static string XbdInvalidRangeEnd;
+    public static string XbdUnsecureUrl;
+    public static string XbdUnsupportedItemGroup;
+}
+public interface Xamarin.Build.Download.ILogger {
+    public abstract virtual void LogCodedError(string code, string message, Object[] messageArgs);
+    public abstract virtual void LogErrorFromException(Exception exception);
+}
+[ExtensionAttribute]
+internal static class Xamarin.Build.Download.MSBuildExtensions : object {
+    [ExtensionAttribute]
+public static void LogDebugMessage(TaskLoggingHelper log, string message, Object[] messageArgs);
+    [ExtensionAttribute]
+public static void LogCodedError(TaskLoggingHelper log, string code, string message, Object[] messageArgs);
+}
+public class Xamarin.Build.Download.PartialZipDownload : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ToFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <RangeStart>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <RangeEnd>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Sha256>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CustomErrorMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CustomErrorCode>k__BackingField;
+    public string Id { get; public set; }
+    public string ToFile { get; public set; }
+    public string Url { get; public set; }
+    public long RangeStart { get; public set; }
+    public long RangeEnd { get; public set; }
+    public string Sha256 { get; public set; }
+    public string CustomErrorMessage { get; public set; }
+    public string CustomErrorCode { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_ToFile();
+    [CompilerGeneratedAttribute]
+public void set_ToFile(string value);
+    [CompilerGeneratedAttribute]
+public string get_Url();
+    [CompilerGeneratedAttribute]
+public void set_Url(string value);
+    [CompilerGeneratedAttribute]
+public long get_RangeStart();
+    [CompilerGeneratedAttribute]
+public void set_RangeStart(long value);
+    [CompilerGeneratedAttribute]
+public long get_RangeEnd();
+    [CompilerGeneratedAttribute]
+public void set_RangeEnd(long value);
+    [CompilerGeneratedAttribute]
+public string get_Sha256();
+    [CompilerGeneratedAttribute]
+public void set_Sha256(string value);
+    [CompilerGeneratedAttribute]
+public string get_CustomErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_CustomErrorMessage(string value);
+    [CompilerGeneratedAttribute]
+public string get_CustomErrorCode();
+    [CompilerGeneratedAttribute]
+public void set_CustomErrorCode(string value);
+}
+internal static class Xamarin.Build.Download.Platform : object {
+    [CompilerGeneratedAttribute]
+private static bool <IsMac>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <IsX11>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static bool <IsWindows>k__BackingField;
+    public static bool IsMac { get; private set; }
+    public static bool IsX11 { get; private set; }
+    public static bool IsWindows { get; private set; }
+    private static Platform();
+    [CompilerGeneratedAttribute]
+public static bool get_IsMac();
+    [CompilerGeneratedAttribute]
+private static void set_IsMac(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_IsX11();
+    [CompilerGeneratedAttribute]
+private static void set_IsX11(bool value);
+    [CompilerGeneratedAttribute]
+public static bool get_IsWindows();
+    [CompilerGeneratedAttribute]
+private static void set_IsWindows(bool value);
+    private static bool IsRunningOnMac();
+    private static int uname(IntPtr buf);
+}
+public static class Xamarin.Build.Download.VS7ZipLocator : object {
+    private static string VS_2017_RELATIVE_PATH_TO_7Z;
+    private static string VS_2019_RELATIVE_PATH_TO_7Z;
+    public static string Locate7Zip(string vsInstallRoot);
+    private static string FindNew(string vsInstallRoot);
+    private static string FindInVs(string vsYear, string relativePathTo7z);
+    private static string FindLegacy();
+}
+public class Xamarin.Build.Download.XamarinBuildCastAssemblyResources : Task {
+    private static string identityKey;
+    private static string logicalNameKey;
+    private static string optimizeKey;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <RestoreAssemblyResources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <BundleResources>k__BackingField;
+    [RequiredAttribute]
+public ITaskItem[] RestoreAssemblyResources { get; public set; }
+    [OutputAttribute]
+public ITaskItem[] BundleResources { get; public set; }
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_RestoreAssemblyResources();
+    [CompilerGeneratedAttribute]
+public void set_RestoreAssemblyResources(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_BundleResources();
+    [CompilerGeneratedAttribute]
+public void set_BundleResources(ITaskItem[] value);
+    public virtual bool Execute();
+}
+public class Xamarin.Build.Download.XamarinBuildDownload : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ArchiveKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Url>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Sha256>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ToFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ExclusiveLockTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CustomErrorMessage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CustomErrorCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DestinationDir>k__BackingField;
+    public string Id { get; public set; }
+    public ArchiveKind Kind { get; public set; }
+    public string Url { get; public set; }
+    public string Sha256 { get; public set; }
+    public string ToFile { get; public set; }
+    public int ExclusiveLockTimeout { get; public set; }
+    public string CustomErrorMessage { get; public set; }
+    public string CustomErrorCode { get; public set; }
+    public string CacheFile { get; public set; }
+    public string DestinationDir { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public ArchiveKind get_Kind();
+    [CompilerGeneratedAttribute]
+public void set_Kind(ArchiveKind value);
+    [CompilerGeneratedAttribute]
+public string get_Url();
+    [CompilerGeneratedAttribute]
+public void set_Url(string value);
+    [CompilerGeneratedAttribute]
+public string get_Sha256();
+    [CompilerGeneratedAttribute]
+public void set_Sha256(string value);
+    [CompilerGeneratedAttribute]
+public string get_ToFile();
+    [CompilerGeneratedAttribute]
+public void set_ToFile(string value);
+    [CompilerGeneratedAttribute]
+public int get_ExclusiveLockTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ExclusiveLockTimeout(int value);
+    [CompilerGeneratedAttribute]
+public string get_CustomErrorMessage();
+    [CompilerGeneratedAttribute]
+public void set_CustomErrorMessage(string value);
+    [CompilerGeneratedAttribute]
+public string get_CustomErrorCode();
+    [CompilerGeneratedAttribute]
+public void set_CustomErrorCode(string value);
+    [CompilerGeneratedAttribute]
+public string get_CacheFile();
+    [CompilerGeneratedAttribute]
+public void set_CacheFile(string value);
+    [CompilerGeneratedAttribute]
+public string get_DestinationDir();
+    [CompilerGeneratedAttribute]
+public void set_DestinationDir(string value);
+}
+public class Xamarin.Build.Download.XamarinBuildGetArchivesToDownload : Task {
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <Archives>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <PartialZipDownloads>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <ArchivesToDownload>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DestinationBase>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowUnsecureUrls>k__BackingField;
+    private DownloadUtils downloadUtils;
+    public ITaskItem[] Archives { get; private set; }
+    public ITaskItem[] PartialZipDownloads { get; private set; }
+    [OutputAttribute]
+public ITaskItem[] ArchivesToDownload { get; private set; }
+    public string DestinationBase { get; public set; }
+    public string CacheDirectory { get; public set; }
+    public bool AllowUnsecureUrls { get; public set; }
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_Archives();
+    [CompilerGeneratedAttribute]
+private void set_Archives(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_PartialZipDownloads();
+    [CompilerGeneratedAttribute]
+private void set_PartialZipDownloads(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_ArchivesToDownload();
+    [CompilerGeneratedAttribute]
+private void set_ArchivesToDownload(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public string get_DestinationBase();
+    [CompilerGeneratedAttribute]
+public void set_DestinationBase(string value);
+    [CompilerGeneratedAttribute]
+public string get_CacheDirectory();
+    [CompilerGeneratedAttribute]
+public void set_CacheDirectory(string value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowUnsecureUrls();
+    [CompilerGeneratedAttribute]
+public void set_AllowUnsecureUrls(bool value);
+    public virtual bool Execute();
+    public sealed virtual void LogCodedError(string code, string message, Object[] messageArgs);
+    public sealed virtual void LogErrorFromException(Exception exception);
+}
+public class Xamarin.Build.Download.XamarinDownloadArchives : AsyncTask {
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <Archives>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DestinationBase>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <User7ZipPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowUnsecureUrls>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <VsInstallRoot>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsAndroid>k__BackingField;
+    private DownloadUtils downloadUtils;
+    public ITaskItem[] Archives { get; private set; }
+    public string DestinationBase { get; public set; }
+    public string CacheDirectory { get; public set; }
+    public string User7ZipPath { get; public set; }
+    public bool AllowUnsecureUrls { get; public set; }
+    public string VsInstallRoot { get; public set; }
+    public bool IsAndroid { get; public set; }
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_Archives();
+    [CompilerGeneratedAttribute]
+private void set_Archives(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public string get_DestinationBase();
+    [CompilerGeneratedAttribute]
+public void set_DestinationBase(string value);
+    [CompilerGeneratedAttribute]
+public string get_CacheDirectory();
+    [CompilerGeneratedAttribute]
+public void set_CacheDirectory(string value);
+    [CompilerGeneratedAttribute]
+public string get_User7ZipPath();
+    [CompilerGeneratedAttribute]
+public void set_User7ZipPath(string value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowUnsecureUrls();
+    [CompilerGeneratedAttribute]
+public void set_AllowUnsecureUrls(bool value);
+    [CompilerGeneratedAttribute]
+public string get_VsInstallRoot();
+    [CompilerGeneratedAttribute]
+public void set_VsInstallRoot(string value);
+    [CompilerGeneratedAttribute]
+public bool get_IsAndroid();
+    [CompilerGeneratedAttribute]
+public void set_IsAndroid(bool value);
+    public virtual bool Execute();
+    private bool IsValidDownload(string cachedHashFile, string fileToHash, string expectedHash);
+    private string ThisOrThat(string strOne, string strTwo);
+    private string ThisOrThat(string strOne, Func`1<string> strTwoFunc);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadArchives/<MakeSureLibraryIsInPlace>d__33")]
+private Task`1<bool> MakeSureLibraryIsInPlace(XamarinBuildDownload xbd, CancellationToken token);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadArchives/<ExtractArchive>d__34")]
+private Task`1<bool> ExtractArchive(XamarinBuildDownload xbd, string flagFile, CancellationToken token);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadArchives/<ExtractTarOnWindows>d__35")]
+private Task`1<int> ExtractTarOnWindows(XamarinBuildDownload xbd, StringWriter output, CancellationToken token);
+    private ProcessStartInfo CreateExtractionArgs(string file, string contentDir, ArchiveKind kind, string vsInstallRoot, bool ignoreTarSymLinks);
+    private static ProcessArgumentBuilder Build7ZipExtractionArgs(string file, string contentDir, string user7ZipPath, bool ignoreTarSymLinks, string vsInstallRoot);
+    private static string Get7ZipPath(string user7ZipPath, string vsInstallRoot);
+    private static ProcessArgumentBuilder BuildZipExtractionArgs(string file, string contentDir);
+    private static ProcessArgumentBuilder BuildTgzExtractionArgs(string file, string contentDir);
+    private static string GetTarFileName(XamarinBuildDownload xbd);
+    public static string Sha256HashFile(string filename);
+    public static string HashFile(string filename, HashAlgorithm hashAlg);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadArchives/<<Execute>b__29_0>d")]
+[CompilerGeneratedAttribute]
+private Task <Execute>b__29_0();
+}
+public class Xamarin.Build.Download.XamarinDownloadPartialZips : AsyncTask {
+    [CompilerGeneratedAttribute]
+private ITaskItem[] <Parts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DestinationBase>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowUnsecureUrls>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsAndroid>k__BackingField;
+    private HttpClient http;
+    public ITaskItem[] Parts { get; private set; }
+    public string DestinationBase { get; public set; }
+    public string CacheDirectory { get; public set; }
+    public bool AllowUnsecureUrls { get; public set; }
+    public bool IsAndroid { get; public set; }
+    [CompilerGeneratedAttribute]
+public ITaskItem[] get_Parts();
+    [CompilerGeneratedAttribute]
+private void set_Parts(ITaskItem[] value);
+    [CompilerGeneratedAttribute]
+public string get_DestinationBase();
+    [CompilerGeneratedAttribute]
+public void set_DestinationBase(string value);
+    [CompilerGeneratedAttribute]
+public string get_CacheDirectory();
+    [CompilerGeneratedAttribute]
+public void set_CacheDirectory(string value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowUnsecureUrls();
+    [CompilerGeneratedAttribute]
+public void set_AllowUnsecureUrls(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsAndroid();
+    [CompilerGeneratedAttribute]
+public void set_IsAndroid(bool value);
+    public virtual bool Execute();
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadPartialZips/<DownloadAll>d__22")]
+private Task DownloadAll(string cacheDirectory, List`1<PartialZipDownload> parts);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadPartialZips/<Download>d__23")]
+private Task Download(string cacheDirectory, string url, List`1<PartialZipDownload> parts);
+    private string GetOutputPath(string cacheDirectory, PartialZipDownload part);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadPartialZips/<ExtractPartAndValidate>d__25")]
+private Task`1<bool> ExtractPartAndValidate(PartialZipDownload part, Stream partInputStream, string cacheDirectory);
+    private string ThisOrThat(string strOne, string strTwo);
+    private string ThisOrThat(string strOne, Func`1<string> strTwoFunc);
+    [AsyncStateMachineAttribute("Xamarin.Build.Download.XamarinDownloadPartialZips/<<Execute>b__21_0>d")]
+[CompilerGeneratedAttribute]
+private Task <Execute>b__21_0();
+}
+public static class Xamarin.Components.Ide.Activation.ProcessUtils : object {
+    [AsyncStateMachineAttribute("Xamarin.Components.Ide.Activation.ProcessUtils/<StartProcess>d__0")]
+public static Task`1<int> StartProcess(ProcessStartInfo psi, TextWriter stdout, TextWriter stderr, CancellationToken cancellationToken);
+    private static void KillProcess(Process p);
+    private static Task WaitForExitAsync(Process process);
+    [AsyncStateMachineAttribute("Xamarin.Components.Ide.Activation.ProcessUtils/<ReadStreamAsync>d__3")]
+private static Task ReadStreamAsync(StreamReader stream, TextWriter destination);
+}
+public interface Xamarin.MacDev.IPValueObject {
+    public object Value { get; public set; }
+    public abstract virtual object get_Value();
+    public abstract virtual void set_Value(object value);
+    public abstract virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+[DefaultMemberAttribute("Item")]
+public class Xamarin.MacDev.PArray : PObjectContainer {
+    private List`1<PObject> list;
+    public int Count { get; }
+    public PObject Item { get; public set; }
+    public PObjectType Type { get; }
+    public virtual int get_Count();
+    public PObject get_Item(int i);
+    public void set_Item(int i, PObject value);
+    public virtual PObject Clone();
+    protected virtual bool Reload(ReadWriteContext ctx);
+    public void Add(PObject obj);
+    public void Insert(int index, PObject obj);
+    public void Replace(PObject oldObj, PObject newObject);
+    public void Remove(PObject obj);
+    public void Clear();
+    public virtual string ToString();
+    public void AssignStringList(string strList);
+    public String[] ToStringArray();
+    public string ToStringList();
+    public sealed virtual IEnumerator`1<PObject> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual PObjectType get_Type();
+}
+public class Xamarin.MacDev.PBoolean : PValueObject`1<bool> {
+    public PObjectType Type { get; }
+    public PBoolean(bool value);
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+public class Xamarin.MacDev.PData : PValueObject`1<Byte[]> {
+    private static Byte[] Empty;
+    public PObjectType Type { get; }
+    public PData(Byte[] value);
+    private static PData();
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+public class Xamarin.MacDev.PDate : PValueObject`1<DateTime> {
+    public PObjectType Type { get; }
+    public PDate(DateTime value);
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+[DefaultMemberAttribute("Item")]
+public class Xamarin.MacDev.PDictionary : PObjectContainer {
+    private static Byte[] BeginMarkerBytes;
+    private static Byte[] EndMarkerBytes;
+    private Dictionary`2<string, PObject> dict;
+    private List`1<string> order;
+    public PObject Item { get; public set; }
+    public int Count { get; }
+    public PObjectType Type { get; }
+    private static PDictionary();
+    public PObject get_Item(string key);
+    public void set_Item(string key, PObject value);
+    public void Add(string key, PObject value);
+    public void InsertAfter(string keyBefore, string key, PObject value);
+    public virtual int get_Count();
+    [IteratorStateMachineAttribute("Xamarin.MacDev.PDictionary/<GetEnumerator>d__11")]
+public sealed virtual IEnumerator`1<KeyValuePair`2<string, PObject>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual PObject Clone();
+    public bool ContainsKey(string name);
+    public bool Remove(string key);
+    public void Clear();
+    public bool ChangeKey(PObject obj, string newKey);
+    public bool ChangeKey(PObject obj, string newKey, PObject newValue);
+    public string GetKey(PObject obj);
+    public T Get(string key);
+    public bool TryGetValue(string key, T& value);
+    private static int IndexOf(Byte[] haystack, int startIndex, Byte[] needle);
+    public static PDictionary FromByteArray(Byte[] array, int startIndex, int length, Boolean& isBinary);
+    public static PDictionary FromByteArray(Byte[] array, Boolean& isBinary);
+    public static PDictionary FromBinaryXml(Byte[] array);
+    [ObsoleteAttribute("Use FromFile")]
+public static PDictionary Load(string fileName);
+    public static PDictionary FromFile(string fileName);
+    public static Task`1<PDictionary> FromFileAsync(string fileName);
+    public static PDictionary FromFile(string fileName, Boolean& isBinary);
+    public static PDictionary FromBinaryXml(string fileName);
+    protected virtual bool Reload(ReadWriteContext ctx);
+    public virtual string ToString();
+    public void SetString(string key, string value);
+    public PString GetString(string key);
+    public PArray GetArray(string key);
+    public virtual PObjectType get_Type();
+}
+public class Xamarin.MacDev.PNumber : PValueObject`1<int> {
+    public PObjectType Type { get; }
+    public PNumber(int value);
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+public abstract class Xamarin.MacDev.PObject : object {
+    private PObjectContainer parent;
+    [CompilerGeneratedAttribute]
+private bool <SuppressChangeEvents>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventHandler Changed;
+    public PObjectContainer Parent { get; public set; }
+    public string Key { get; }
+    public PObjectType Type { get; }
+    protected bool SuppressChangeEvents { get; protected set; }
+    public static PObject Create(PObjectType type);
+    public static IEnumerable`1<KeyValuePair`2<string, PObject>> ToEnumerable(PObject obj);
+    public PObjectContainer get_Parent();
+    public void set_Parent(PObjectContainer value);
+    public abstract virtual PObject Clone();
+    public void Replace(PObject newObject);
+    public string get_Key();
+    public void Remove();
+    public abstract virtual PObjectType get_Type();
+    public static PObject op_Implicit(string value);
+    public static PObject op_Implicit(int value);
+    public static PObject op_Implicit(double value);
+    public static PObject op_Implicit(bool value);
+    public static PObject op_Implicit(DateTime value);
+    public static PObject op_Implicit(Byte[] value);
+    protected virtual void OnChanged(EventArgs e);
+    [CompilerGeneratedAttribute]
+protected bool get_SuppressChangeEvents();
+    [CompilerGeneratedAttribute]
+protected void set_SuppressChangeEvents(bool value);
+    [CompilerGeneratedAttribute]
+public void add_Changed(EventHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_Changed(EventHandler value);
+    public Byte[] ToByteArray(bool binary);
+    public string ToXml();
+    public static PObject FromByteArray(Byte[] array, int startIndex, int length, Boolean& isBinary);
+    public static PObject FromByteArray(Byte[] array, Boolean& isBinary);
+    public static PObject FromString(string str);
+    public static PObject FromStream(Stream stream);
+}
+public abstract class Xamarin.MacDev.PObjectContainer : PObject {
+    [CompilerGeneratedAttribute]
+private EventHandler`1<PObjectContainerEventArgs> CollectionChanged;
+    public int Count { get; }
+    public abstract virtual int get_Count();
+    public bool Reload(string fileName);
+    protected abstract virtual bool Reload(ReadWriteContext ctx);
+    public Task SaveAsync(string filename, bool atomic, bool binary);
+    public void Save(string filename, bool atomic, bool binary);
+    private static string GetTempFileName(string filename);
+    protected void OnChildAdded(string key, PObject child);
+    internal void OnCollectionChanged(string key, PObject child);
+    protected void OnChildRemoved(string key, PObject child);
+    protected void OnChildReplaced(string key, PObject oldChild, PObject newChild);
+    protected void OnCleared();
+    protected void OnCollectionChanged(PObjectContainerAction action, string key, PObject oldChild, PObject newChild);
+    [CompilerGeneratedAttribute]
+public void add_CollectionChanged(EventHandler`1<PObjectContainerEventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_CollectionChanged(EventHandler`1<PObjectContainerEventArgs> value);
+}
+public enum Xamarin.MacDev.PObjectContainerAction : Enum {
+    public int value__;
+    public static PObjectContainerAction Added;
+    public static PObjectContainerAction Changed;
+    public static PObjectContainerAction Removed;
+    public static PObjectContainerAction Replaced;
+    public static PObjectContainerAction Cleared;
+}
+public class Xamarin.MacDev.PObjectContainerEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+private PObjectContainerAction <Action>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PObject <OldItem>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PObject <NewItem>k__BackingField;
+    public PObjectContainerAction Action { get; private set; }
+    public string Key { get; private set; }
+    public PObject OldItem { get; private set; }
+    public PObject NewItem { get; private set; }
+    internal PObjectContainerEventArgs(PObjectContainerAction action, string key, PObject oldItem, PObject newItem);
+    [CompilerGeneratedAttribute]
+public PObjectContainerAction get_Action();
+    [CompilerGeneratedAttribute]
+private void set_Action(PObjectContainerAction value);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+private void set_Key(string value);
+    [CompilerGeneratedAttribute]
+public PObject get_OldItem();
+    [CompilerGeneratedAttribute]
+private void set_OldItem(PObject value);
+    [CompilerGeneratedAttribute]
+public PObject get_NewItem();
+    [CompilerGeneratedAttribute]
+private void set_NewItem(PObject value);
+}
+public enum Xamarin.MacDev.PObjectType : Enum {
+    public int value__;
+    public static PObjectType Dictionary;
+    public static PObjectType Array;
+    public static PObjectType Real;
+    public static PObjectType Number;
+    public static PObjectType Boolean;
+    public static PObjectType Data;
+    public static PObjectType String;
+    public static PObjectType Date;
+}
+public class Xamarin.MacDev.PReal : PValueObject`1<double> {
+    public PObjectType Type { get; }
+    public PReal(double value);
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+internal class Xamarin.MacDev.ProcessArgumentBuilder : object {
+    private HashSet`1<string> hash;
+    private StringBuilder builder;
+    [CompilerGeneratedAttribute]
+private string <ProcessPath>k__BackingField;
+    public string ProcessPath { get; private set; }
+    public int Length { get; }
+    public ProcessArgumentBuilder(string processPath);
+    [CompilerGeneratedAttribute]
+public string get_ProcessPath();
+    [CompilerGeneratedAttribute]
+private void set_ProcessPath(string value);
+    public int get_Length();
+    public void Add(string argument);
+    public void Add(String[] args);
+    public void AddQuotedFormat(string argumentFormat, Object[] values);
+    public void AddQuotedFormat(string argumentFormat, object val0);
+    private static void AppendQuoted(StringBuilder quoted, string text);
+    public void AddQuoted(string argument);
+    public void AddQuoted(String[] args);
+    public bool Contains(string argument);
+    public static string Quote(string text);
+    public virtual string ToString();
+    private static string GetArgument(StringBuilder builder, string buf, int startIndex, Int32& endIndex, Exception& ex);
+    private static bool TryParse(string commandline, String[]& argv, Exception& ex);
+    public static bool TryParse(string commandline, String[]& argv);
+    public static String[] Parse(string commandline);
+}
+public abstract class Xamarin.MacDev.PropertyListFormat : object {
+    public static PropertyListFormat Xml;
+    public static PropertyListFormat Binary;
+    private static PropertyListFormat();
+    public static ReadWriteContext CreateReadContext(Stream input);
+    public static ReadWriteContext CreateReadContext(Byte[] array, int startIndex, int length);
+    public static ReadWriteContext CreateReadContext(Byte[] array);
+    public abstract virtual ReadWriteContext StartReading(Stream input);
+    public abstract virtual ReadWriteContext StartWriting(Stream output);
+    public ReadWriteContext StartReading(Byte[] array, int startIndex, int length);
+    public ReadWriteContext StartReading(Byte[] array);
+}
+public class Xamarin.MacDev.PString : PValueObject`1<string> {
+    public PObjectType Type { get; }
+    public PString(string value);
+    public virtual PObject Clone();
+    public virtual PObjectType get_Type();
+    public virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}
+public abstract class Xamarin.MacDev.PValueObject`1 : PObject {
+    private T val;
+    public T Value { get; public set; }
+    private object Xamarin.MacDev.IPValueObject.Value { get; private set; }
+    protected PValueObject`1(T value);
+    public T get_Value();
+    public void set_Value(T value);
+    private sealed virtual override object Xamarin.MacDev.IPValueObject.get_Value();
+    private sealed virtual override void Xamarin.MacDev.IPValueObject.set_Value(object value);
+    public static T op_Implicit(PValueObject`1<T> pObj);
+    public abstract virtual bool TrySetValueFromString(string text, IFormatProvider formatProvider);
+}

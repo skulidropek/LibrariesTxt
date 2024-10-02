@@ -1,0 +1,1176 @@
+internal class org.apache.jute.BinaryInputArchive : object {
+    public static string UNREASONBLE_LENGTH;
+    private BigEndianBinaryReader reader;
+    private BinaryInputArchive(BigEndianBinaryReader reader);
+    public static BinaryInputArchive getArchive(BigEndianBinaryReader reader);
+    public sealed virtual bool readBool(string tag);
+    public sealed virtual int readInt(string tag);
+    public sealed virtual long readLong(string tag);
+    public sealed virtual string readString(string tag);
+    public sealed virtual Byte[] readBuffer(string tag);
+    private void checkLength(int len);
+    public sealed virtual void readRecord(Record r, string tag);
+    public sealed virtual Index startVector(string tag);
+}
+internal class org.apache.jute.BinaryOutputArchive : object {
+    private BigEndianBinaryWriter writer;
+    private BinaryOutputArchive(BigEndianBinaryWriter writer);
+    public static BinaryOutputArchive getArchive(BigEndianBinaryWriter writer);
+    public sealed virtual void writeBool(bool b, string tag);
+    public sealed virtual void writeInt(int i, string tag);
+    public sealed virtual void writeLong(long l, string tag);
+    public sealed virtual void writeString(string s, string tag);
+    public sealed virtual void writeBuffer(Byte[] barr, string tag);
+    public sealed virtual void writeRecord(Record r, string tag);
+    public sealed virtual void startVector(List`1<T> v, string tag);
+    public sealed virtual void endVector(List`1<T> v, string tag);
+}
+internal interface org.apache.jute.Index {
+    public abstract virtual bool done();
+    public abstract virtual void incr();
+}
+internal interface org.apache.jute.InputArchive {
+    public abstract virtual bool readBool(string tag);
+    public abstract virtual int readInt(string tag);
+    public abstract virtual long readLong(string tag);
+    public abstract virtual string readString(string tag);
+    public abstract virtual Byte[] readBuffer(string tag);
+    public abstract virtual void readRecord(Record r, string tag);
+    public abstract virtual Index startVector(string tag);
+}
+internal interface org.apache.jute.OutputArchive {
+    public abstract virtual void writeBool(bool b, string tag);
+    public abstract virtual void writeInt(int i, string tag);
+    public abstract virtual void writeLong(long l, string tag);
+    public abstract virtual void writeString(string s, string tag);
+    public abstract virtual void writeBuffer(Byte[] buf, string tag);
+    public abstract virtual void writeRecord(Record r, string tag);
+    public abstract virtual void startVector(List`1<T> v, string tag);
+    public abstract virtual void endVector(List`1<T> v, string tag);
+}
+internal interface org.apache.jute.Record {
+    public abstract virtual void serialize(OutputArchive archive, string tag);
+    public abstract virtual void deserialize(InputArchive archive, string tag);
+}
+internal class org.apache.utils.BigEndianBinaryReader : object {
+    private Byte[] byteBuffer;
+    private Stream stream;
+    public BigEndianBinaryReader(Stream stream);
+    public bool ReadBoolean();
+    public int ReadInt32();
+    public long ReadInt64();
+    public Byte[] ReadBytesOrThrow(int count);
+    private void ReadInternal(Byte[] data, int size);
+}
+internal class org.apache.utils.BigEndianBinaryWriter : object {
+    private Byte[] buffer;
+    private Stream stream;
+    internal BigEndianBinaryWriter(Stream stream);
+    internal void Write(bool value);
+    internal void Write(int value);
+    internal void Write(long value);
+    internal void Write(Byte[] value);
+    private void WriteInternal(Byte[] bytes, int length);
+}
+internal static class org.apache.utils.BigEndianBitConverter : object {
+    public static bool ToBoolean(Byte[] value, int startIndex);
+    public static int ToInt32(Byte[] value, int startIndex);
+    public static long ToInt64(Byte[] value, int startIndex);
+    private static void CheckByteArgument(Byte[] value, int startIndex, int bytesRequired);
+    private static long CheckedFromBytes(Byte[] value, int startIndex, int bytesToConvert);
+    private static long FromBytes(Byte[] buffer, int startIndex, int bytesToConvert);
+    private static void CopyBytes(long value, int bytes, Byte[] buffer, int index);
+    private static void CopyBytesImpl(long value, int bytes, Byte[] buffer, int index);
+    public static void CopyBytes(bool value, Byte[] buffer, int index);
+    public static void CopyBytes(int value, Byte[] buffer, int index);
+    public static void CopyBytes(long value, Byte[] buffer, int index);
+}
+internal class org.apache.utils.ByteBuffer : object {
+    public MemoryStream Stream;
+    private Mode mode;
+    public ByteBuffer(MemoryStream stream);
+    public static ByteBuffer allocate(int capacity);
+    public void flip();
+    public void clear();
+    public int limit();
+    public int remaining();
+    public bool hasRemaining();
+}
+internal static class org.apache.utils.EnumUtil`1 : object {
+    public static T DefinedCast(object enumValue);
+    public static IEnumerable`1<T> GetValues();
+}
+public interface org.apache.utils.ILogConsumer {
+    public abstract virtual void Log(TraceLevel severity, string className, string message, Exception exception);
+}
+internal interface org.apache.utils.ILogProducer {
+    public abstract virtual void debugFormat(string format, Object[] args);
+    public abstract virtual void debug(object message, Exception e);
+    public abstract virtual void warn(object message, Exception e);
+    public abstract virtual void info(object message, Exception e);
+    public abstract virtual void error(object message, Exception e);
+    public abstract virtual bool isDebugEnabled();
+}
+internal class org.apache.utils.LogWriter : object {
+    private static String[] TRACE_TABLE;
+    private NonBlockingFileWriter logFileWriter;
+    public string FileName;
+    public bool LogToFile { get; public set; }
+    public bool LogToTrace { get; public set; }
+    private static LogWriter();
+    public void Log(TraceLevel traceLevel, string className, string message, Exception exception);
+    public bool get_LogToFile();
+    public void set_LogToFile(bool value);
+    public bool get_LogToTrace();
+    public void set_LogToTrace(bool value);
+    private static string PrintDate();
+    private static string PrintException(Exception exception);
+    private static string PrintException_Helper(Exception exception, int level, bool includeStackTrace);
+    private static string PrintOneException(Exception exception, int level, bool includeStackTrace);
+}
+internal class org.apache.utils.NonBlockingFileWriter : object {
+    private StreamWriterWrapper logOutput;
+    private VolatileBool isEnabled;
+    private VolatileInt pendingMessages;
+    private ConcurrentQueue`1<string> logQueue;
+    internal bool IsDisposed { get; }
+    internal bool IsEmpty { get; }
+    internal bool HasFailed { get; }
+    internal bool ThrowWrite { get; internal set; }
+    public bool IsEnabled { get; public set; }
+    public NonBlockingFileWriter(string filename);
+    internal bool get_IsDisposed();
+    internal bool get_IsEmpty();
+    internal bool get_HasFailed();
+    internal bool get_ThrowWrite();
+    internal void set_ThrowWrite(bool value);
+    public void Write(string str);
+    public bool get_IsEnabled();
+    public void set_IsEnabled(bool value);
+    [AsyncStateMachineAttribute("org.apache.utils.NonBlockingFileWriter/<startLogTask>d__18")]
+[DebuggerStepThroughAttribute]
+private void startLogTask();
+}
+public class org.apache.utils.SignalTask : object {
+    private VolatileReference`1<TaskCompletionSource`1<bool>> tcs;
+    public Task Task { get; }
+    public Task get_Task();
+    public void Reset();
+    public void TrySet();
+    public void Set();
+}
+[ExtensionAttribute]
+internal static class org.apache.utils.SocketEx : object {
+    [ExtensionAttribute]
+public static void read(Socket socket, ByteBuffer byteBuffer);
+    [ExtensionAttribute]
+public static void write(Socket socket, ByteBuffer byteBuffer);
+}
+internal static class org.apache.utils.TimeHelper : object {
+    private static Stopwatch stopwatch;
+    public static long ElapsedMiliseconds { get; }
+    public static long ElapsedNanoseconds { get; }
+    private static TimeHelper();
+    public static long get_ElapsedMiliseconds();
+    public static long get_ElapsedNanoseconds();
+}
+internal static class org.apache.utils.TraceWriter : object {
+    public static bool LogToTrace;
+    private static TraceWriter();
+    public static void Write(string msg, TraceLevel traceLevel);
+}
+internal class org.apache.utils.TypeLogger`1 : object {
+    public static ILogProducer Instance;
+    private static string className;
+    private static TypeLogger`1();
+    public sealed virtual void debugFormat(string format, Object[] args);
+    public sealed virtual void debug(object message, Exception e);
+    public sealed virtual void warn(object message, Exception e);
+    public sealed virtual void info(object message, Exception e);
+    public sealed virtual void error(object message, Exception e);
+    public sealed virtual bool isDebugEnabled();
+    private static void log(TraceLevel traceLevel, object message, Exception e);
+}
+internal class org.apache.utils.ZooKeeperLogger : object {
+    internal static ZooKeeperLogger Instance;
+    internal ILogConsumer CustomLogConsumer;
+    internal TraceLevel LogLevel;
+    private LogWriter logWriter;
+    internal bool LogToFile { get; internal set; }
+    internal bool LogToTrace { get; internal set; }
+    internal string LogFileName { get; }
+    private static ZooKeeperLogger();
+    internal bool get_LogToFile();
+    internal void set_LogToFile(bool value);
+    internal bool get_LogToTrace();
+    internal void set_LogToTrace(bool value);
+    internal string get_LogFileName();
+    internal void Log(TraceLevel sev, string className, string message, Exception exception);
+}
+public class org.apache.zookeeper.ACLResult : NodeResult {
+    public List`1<ACL> Acls;
+    internal ACLResult(List`1<ACL> acls, Stat stat);
+}
+public class org.apache.zookeeper.ChildrenResult : NodeResult {
+    public List`1<string> Children;
+    internal ChildrenResult(List`1<string> children, Stat stat);
+}
+internal class org.apache.zookeeper.client.ConnectStringParser : object {
+    private static int DEFAULT_PORT;
+    private string chrootPath;
+    private List`1<HostAndPort> serverAddresses;
+    private static Char[] splitter;
+    public ConnectStringParser(string connectString);
+    private static ConnectStringParser();
+    public string getChrootPath();
+    public List`1<HostAndPort> getServerAddresses();
+}
+internal class org.apache.zookeeper.client.DnsResolver : object {
+    private static int DNS_TIMEOUT;
+    private ILogProducer log;
+    public DnsResolver(ILogProducer log);
+    private static void IgnoreTask(Task task);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.client.DnsResolver/<Resolve>d__4")]
+[DebuggerStepThroughAttribute]
+private Task`1<IEnumerable`1<ResolvedEndPoint>> Resolve(HostAndPort hostAndPort);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.client.DnsResolver/<Resolve>d__5")]
+[DebuggerStepThroughAttribute]
+public sealed virtual Task`1<IEnumerable`1<ResolvedEndPoint>> Resolve(IEnumerable`1<HostAndPort> unresolvedHosts);
+}
+internal class org.apache.zookeeper.client.DynamicHostProvider : object {
+    private List`1<HostAndPort> m_UnresolvedEndPoints;
+    private List`1<ResolvedEndPoint> m_ResolvedEndPoints;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private ResolvedEndPoint <LastIP>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <CurrentIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <FirstDnsTry>k__BackingField;
+    private Task`1<List`1<ResolvedEndPoint>> m_ResolvingTask;
+    private ILogProducer m_Log;
+    private IDnsResolver m_DnsResolver;
+    internal ResolvedEndPoint LastIP { get; private set; }
+    internal int CurrentIndex { get; private set; }
+    internal bool ResolvingInBackground { get; }
+    internal bool FirstDnsTry { get; private set; }
+    public DynamicHostProvider(List`1<HostAndPort> serverAddresses, IDnsResolver dnsResolver, ILogProducer log);
+    [CompilerGeneratedAttribute]
+internal ResolvedEndPoint get_LastIP();
+    [CompilerGeneratedAttribute]
+private void set_LastIP(ResolvedEndPoint value);
+    [CompilerGeneratedAttribute]
+internal int get_CurrentIndex();
+    [CompilerGeneratedAttribute]
+private void set_CurrentIndex(int value);
+    internal bool get_ResolvingInBackground();
+    [CompilerGeneratedAttribute]
+internal bool get_FirstDnsTry();
+    [CompilerGeneratedAttribute]
+private void set_FirstDnsTry(bool value);
+    public sealed virtual int size();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.client.DynamicHostProvider/<next>d__21")]
+[DebuggerStepThroughAttribute]
+public sealed virtual Task`1<ResolvedEndPoint> next(int spinDelay);
+    public sealed virtual void onConnected();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.client.DynamicHostProvider/<ResolveAtLeastOneAndShuffle>d__23")]
+[DebuggerStepThroughAttribute]
+private Task`1<List`1<ResolvedEndPoint>> ResolveAtLeastOneAndShuffle(IEnumerable`1<HostAndPort> unresolvedEndPoints, int spinDelay);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.client.DynamicHostProvider/<ResolveAndShuffle>d__24")]
+[DebuggerStepThroughAttribute]
+private Task`1<List`1<ResolvedEndPoint>> ResolveAndShuffle(IEnumerable`1<HostAndPort> unresolvedEndPoints);
+}
+internal class org.apache.zookeeper.client.HostAndPort : object {
+    public string Host;
+    public int Port;
+    public HostAndPort(string host, int port);
+    public virtual string ToString();
+    public sealed virtual bool Equals(HostAndPort other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(HostAndPort left, HostAndPort right);
+    public static bool op_Inequality(HostAndPort left, HostAndPort right);
+}
+internal interface org.apache.zookeeper.client.HostProvider {
+    public abstract virtual int size();
+    public abstract virtual Task`1<ResolvedEndPoint> next(int spinDelay);
+    public abstract virtual void onConnected();
+}
+internal interface org.apache.zookeeper.client.IDnsResolver {
+    public abstract virtual Task`1<IEnumerable`1<ResolvedEndPoint>> Resolve(IEnumerable`1<HostAndPort> unresolvedHosts);
+}
+internal class org.apache.zookeeper.client.ResolvedEndPoint : IPEndPoint {
+    private string host;
+    public ResolvedEndPoint(IPAddress ip, HostAndPort hostAndPort);
+    public ResolvedEndPoint(IPAddress ip, int port);
+    public virtual string ToString();
+    public sealed virtual bool Equals(ResolvedEndPoint other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(ResolvedEndPoint left, ResolvedEndPoint right);
+    public static bool op_Inequality(ResolvedEndPoint left, ResolvedEndPoint right);
+}
+internal class org.apache.zookeeper.ClientCnxn : object {
+    private static ILogProducer LOG;
+    private static int SET_WATCHES_MAX_LENGTH;
+    private List`1<AuthData> authInfo;
+    internal LinkedList`1<Packet> pendingQueue;
+    internal LinkedList`1<Packet> outgoingQueue;
+    private VolatileInt negotiatedSessionTimeout;
+    private int readTimeout;
+    private int sessionTimeout;
+    private ZooKeeper zooKeeper;
+    private ClientWatchManager watcher;
+    private long sessionId;
+    private Byte[] sessionPasswd;
+    private bool readOnly;
+    public string chrootPath;
+    private Task sendTask;
+    private Task eventTask;
+    private Timer timer;
+    private VolatileBool closing;
+    private HostProvider hostProvider;
+    internal VolatileBool seenRwServerBefore;
+    private static WatcherSetEventPair eventOfDeath;
+    private AwaitableSignal waitingEventsSignal;
+    private ConcurrentQueue`1<WatcherSetEventPair> waitingEvents;
+    private VolatileInt sessionState;
+    private VolatileLong lastZxid;
+    public static int packetLen;
+    private long lastPingSentNs;
+    private ClientCnxnSocketNIO clientCnxnSocket;
+    private Random r;
+    private bool isFirstConnect;
+    private ResolvedEndPoint rwServerAddress;
+    private static int minPingRwTimeout;
+    private static int maxPingRwTimeout;
+    private int pingRwTimeout;
+    private static string RETRY_CONN_MSG;
+    private int isDisposed;
+    private int xid;
+    private VolatileInt state;
+    private int connectTimeout { get; }
+    internal ClientCnxn(string chrootPath, HostProvider hostProvider, int sessionTimeout, ZooKeeper zooKeeper, ClientWatchManager watcher, long sessionId, Byte[] sessionPasswd, bool canBeReadOnly);
+    private static ClientCnxn();
+    private int get_connectTimeout();
+    public long getSessionId();
+    public Byte[] getSessionPasswd();
+    public int getSessionTimeout();
+    public virtual string ToString();
+    public void start();
+    private void queueEvent(WatchedEvent event);
+    private void queueEventOfDeath();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<startEventTask>d__37")]
+[DebuggerStepThroughAttribute]
+private Task startEventTask();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<processEvent>d__38")]
+[DebuggerStepThroughAttribute]
+private static Task processEvent(WatcherSetEventPair event);
+    private static void finishPacket(Packet p);
+    private void conLossPacket(Packet p);
+    internal void readResponse(ByteBuffer incomingBuffer);
+    internal void primeConnection();
+    private List`1<string> prependChroot(List`1<string> paths);
+    private void sendPing();
+    private void startConnect(ResolvedEndPoint addr);
+    private static void logStartConnect(ResolvedEndPoint addr);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<startSendTask>d__61")]
+[DebuggerStepThroughAttribute]
+private Task startSendTask();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<pingRwServer>d__62")]
+[DebuggerStepThroughAttribute]
+private Task pingRwServer();
+    private void cleanup();
+    internal void onConnected(int _negotiatedSessionTimeout, long _sessionId, Byte[] _sessionPasswd, bool isRO);
+    private void close();
+    private void disconnect();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<closeAsync>d__68")]
+[DebuggerStepThroughAttribute]
+internal Task closeAsync();
+    public int getXid();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ClientCnxn/<submitRequest>d__72")]
+[DebuggerStepThroughAttribute]
+public Task`1<ReplyHeader> submitRequest(RequestHeader h, Record request, Record response, WatchRegistration watchRegistration);
+    internal Packet queuePacket(RequestHeader h, ReplyHeader rep, Record request, Record response, string clientPath, string serverPath, WatchRegistration watchRegistration);
+    public void addAuthInfo(string scheme, Byte[] auth);
+    internal States getState();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__28_0(object <p0>);
+}
+internal abstract class org.apache.zookeeper.ClientCnxnSocket : object {
+    private static ILogProducer LOG;
+    protected ByteBuffer lenBuffer;
+    protected ByteBuffer incomingBuffer;
+    private ByteBuffer messageBuffer;
+    protected long sentCount;
+    protected long recvCount;
+    private long lastHeard;
+    private long lastSend;
+    private long now;
+    protected ClientCnxn clientCnxn;
+    protected internal long sessionId;
+    protected ClientCnxnSocket(ClientCnxn cnxn);
+    private static ClientCnxnSocket();
+    internal void introduce(long sessionid);
+    internal void updateNow();
+    internal int getIdleRecv();
+    internal int getIdleSend();
+    internal long getSentCount();
+    internal long getRecvCount();
+    internal void updateLastHeard();
+    internal void updateLastSend();
+    internal void updateLastSendAndHeard();
+    protected void readLength();
+    internal void readConnectResult();
+    internal abstract virtual bool isConnected();
+    internal abstract virtual void connect(IPEndPoint ipEndPoint);
+    internal abstract virtual EndPoint getRemoteSocketAddress();
+    internal abstract virtual EndPoint getLocalSocketAddress();
+    internal abstract virtual void cleanup();
+    internal abstract virtual void wakeupCnxn();
+    internal abstract virtual void enableReadWriteOnly();
+    internal abstract virtual void doTransport();
+    internal virtual void close();
+}
+internal class org.apache.zookeeper.ClientCnxnSocketNIO : ClientCnxnSocket {
+    private static ILogProducer LOG;
+    private bool initialized;
+    private Socket socket;
+    internal AwaitableSignal somethingIsPending;
+    private VolatileBool readEnabled;
+    private VolatileBool writeEnabled;
+    private VolatileReference`1<SocketContext> _socketAsyncEventArgsWrapper;
+    private bool Writable { get; }
+    private bool Readable { get; }
+    internal ClientCnxnSocketNIO(ClientCnxn cnxn);
+    private static ClientCnxnSocketNIO();
+    internal virtual bool isConnected();
+    private void doIO();
+    private LinkedListNode`1<Packet> findSendablePacket();
+    internal virtual void cleanup();
+    private static Socket createSock(AddressFamily addressFamily);
+    private void registerAndConnect(Socket sock, EndPoint addr);
+    internal virtual void connect(IPEndPoint addr);
+    internal virtual EndPoint getRemoteSocketAddress();
+    internal virtual EndPoint getLocalSocketAddress();
+    internal virtual void wakeupCnxn();
+    internal virtual void doTransport();
+    private void enableWrite();
+    private void disableWrite();
+    private void enableRead();
+    internal virtual void enableReadWriteOnly();
+    private bool get_Writable();
+    private bool get_Readable();
+}
+internal interface org.apache.zookeeper.ClientWatchManager {
+    public abstract virtual HashSet`1<Watcher> materialize(KeeperState state, EventType type, string path);
+}
+public static class org.apache.zookeeper.common.PathUtils : object {
+    public static void validatePath(string path, bool isSequential);
+    public static void validatePath(string path);
+}
+public class org.apache.zookeeper.CreateMode : object {
+    public static CreateMode PERSISTENT;
+    public static CreateMode PERSISTENT_SEQUENTIAL;
+    public static CreateMode EPHEMERAL;
+    public static CreateMode EPHEMERAL_SEQUENTIAL;
+    private static ILogProducer LOG;
+    private bool ephemeral;
+    private bool sequential;
+    private int flag;
+    private CreateMode(int flag, bool ephemeral, bool sequential);
+    private static CreateMode();
+    public bool isEphemeral();
+    public bool isSequential();
+    internal int toFlag();
+    internal static CreateMode fromFlag(int flag);
+}
+public class org.apache.zookeeper.data.ACL : object {
+    private int perms;
+    private Id id;
+    public ACL(int perms, Id id);
+    public int getPerms();
+    internal void setPerms(int m_);
+    public Id getId();
+    internal void setId(Id m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+public class org.apache.zookeeper.data.Id : object {
+    private string scheme;
+    private string id;
+    public Id(string scheme, string id);
+    public string getScheme();
+    internal void setScheme(string m_);
+    public string getId();
+    internal void setId(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+public class org.apache.zookeeper.data.Stat : object {
+    private long czxid;
+    private long mzxid;
+    private long ctime;
+    private long mtime;
+    private int version;
+    private int cversion;
+    private int aversion;
+    private long ephemeralOwner;
+    private int dataLength;
+    private int numChildren;
+    private long pzxid;
+    public Stat(long czxid, long mzxid, long ctime, long mtime, int version, int cversion, int aversion, long ephemeralOwner, int dataLength, int numChildren, long pzxid);
+    public long getCzxid();
+    internal void setCzxid(long m_);
+    public long getMzxid();
+    internal void setMzxid(long m_);
+    public long getCtime();
+    internal void setCtime(long m_);
+    public long getMtime();
+    internal void setMtime(long m_);
+    public int getVersion();
+    internal void setVersion(int m_);
+    public int getCversion();
+    internal void setCversion(int m_);
+    public int getAversion();
+    internal void setAversion(int m_);
+    public long getEphemeralOwner();
+    internal void setEphemeralOwner(long m_);
+    public int getDataLength();
+    internal void setDataLength(int m_);
+    public int getNumChildren();
+    internal void setNumChildren(int m_);
+    public long getPzxid();
+    internal void setPzxid(long m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+public class org.apache.zookeeper.DataResult : NodeResult {
+    public Byte[] Data;
+    internal DataResult(Byte[] data, Stat stat);
+}
+public abstract class org.apache.zookeeper.KeeperException : Exception {
+    private List`1<OpResult> results;
+    private Code code;
+    private string path;
+    private KeeperException(Code code);
+    private KeeperException(Code code, string path);
+    public static KeeperException create(int code, string path);
+    public Code getCode();
+    public string getPath();
+    internal void setMultiResults(List`1<OpResult> res);
+    public List`1<OpResult> getResults();
+}
+[ExtensionAttribute]
+internal static class org.apache.zookeeper.MiscEx : object {
+    [ExtensionAttribute]
+public static TValue remove(IDictionary`2<TKey, TValue> dictionary, TKey key);
+    [ExtensionAttribute]
+public static bool isAlive(States state);
+    [ExtensionAttribute]
+public static bool isConnected(States state);
+    [ExtensionAttribute]
+public static int size(ICollection collection);
+    [ExtensionAttribute]
+public static void addAll(HashSet`1<T> hashSet, HashSet`1<T> another);
+    [ExtensionAttribute]
+public static Byte[] UTF8getBytes(string str);
+    [ExtensionAttribute]
+public static string UTF8bytesToString(Byte[] buffer);
+    [ExtensionAttribute]
+public static string ToHexString(long num);
+    [ExtensionAttribute]
+public static string ToHexString(byte num);
+    [ExtensionAttribute]
+public static string ToCommaDelimited(IEnumerable`1<T> enumerable);
+}
+internal class org.apache.zookeeper.MultiResponse : object {
+    private List`1<OpResult> results;
+    public void add(OpResult x);
+    public sealed virtual IEnumerator`1<OpResult> GetEnumerator();
+    public sealed virtual void serialize(OutputArchive archive, string tag);
+    public sealed virtual void deserialize(InputArchive archive, string tag);
+    public List`1<OpResult> getResultList();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+internal class org.apache.zookeeper.MultiTransactionRecord : object {
+    private List`1<Op> ops;
+    public MultiTransactionRecord(IEnumerable`1<Op> o);
+    public sealed virtual IEnumerator`1<Op> GetEnumerator();
+    internal void add(Op op);
+    public sealed virtual void serialize(OutputArchive archive, string tag);
+    public sealed virtual void deserialize(InputArchive archive, string tag);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public abstract class org.apache.zookeeper.NodeResult : object {
+    public Stat Stat;
+    internal NodeResult(Stat stat);
+}
+public abstract class org.apache.zookeeper.Op : object {
+    private string path;
+    private int type;
+    private Op(OpCode type, string path);
+    internal static Op create(string path, Byte[] data, List`1<ACL> acl, int flags);
+    public static Op create(string path, Byte[] data, List`1<ACL> acl, CreateMode createMode);
+    public static Op delete(string path, int version);
+    public static Op setData(string path, Byte[] data, int version);
+    public static Op check(string path, int version);
+    public int get_Type();
+    public string getPath();
+    internal abstract virtual Record toRequestRecord();
+    public abstract virtual Op withChroot(string addRootPrefix);
+    internal virtual void validate();
+}
+public abstract class org.apache.zookeeper.OpResult : object {
+    private int type;
+    private OpResult(OpCode type);
+    internal int get_Type();
+}
+internal class org.apache.zookeeper.proto.AuthPacket : object {
+    private int type;
+    private string scheme;
+    private Byte[] auth;
+    public AuthPacket(int type, string scheme, Byte[] auth);
+    public int get_Type();
+    internal void set_Type(int m_);
+    public string getScheme();
+    internal void setScheme(string m_);
+    public Byte[] getAuth();
+    internal void setAuth(Byte[] m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.CheckVersionRequest : object {
+    private string path;
+    private int version;
+    public CheckVersionRequest(string path, int version);
+    public string getPath();
+    internal void setPath(string m_);
+    public int getVersion();
+    internal void setVersion(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ConnectRequest : object {
+    private int protocolVersion;
+    private long lastZxidSeen;
+    private int timeOut;
+    private long sessionId;
+    private Byte[] passwd;
+    public ConnectRequest(int protocolVersion, long lastZxidSeen, int timeOut, long sessionId, Byte[] passwd);
+    public int getProtocolVersion();
+    internal void setProtocolVersion(int m_);
+    public long getLastZxidSeen();
+    internal void setLastZxidSeen(long m_);
+    public int getTimeOut();
+    internal void setTimeOut(int m_);
+    public long getSessionId();
+    internal void setSessionId(long m_);
+    public Byte[] getPasswd();
+    internal void setPasswd(Byte[] m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ConnectResponse : object {
+    private int protocolVersion;
+    private int timeOut;
+    private long sessionId;
+    private Byte[] passwd;
+    public ConnectResponse(int protocolVersion, int timeOut, long sessionId, Byte[] passwd);
+    public int getProtocolVersion();
+    internal void setProtocolVersion(int m_);
+    public int getTimeOut();
+    internal void setTimeOut(int m_);
+    public long getSessionId();
+    internal void setSessionId(long m_);
+    public Byte[] getPasswd();
+    internal void setPasswd(Byte[] m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.CreateRequest : object {
+    private string path;
+    private Byte[] data;
+    private List`1<ACL> acl;
+    private int flags;
+    public CreateRequest(string path, Byte[] data, List`1<ACL> acl, int flags);
+    public string getPath();
+    internal void setPath(string m_);
+    public Byte[] getData();
+    internal void setData(Byte[] m_);
+    public List`1<ACL> getAcl();
+    internal void setAcl(List`1<ACL> m_);
+    public int getFlags();
+    internal void setFlags(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.CreateResponse : object {
+    private string path;
+    public CreateResponse(string path);
+    public string getPath();
+    internal void setPath(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.DeleteRequest : object {
+    private string path;
+    private int version;
+    public DeleteRequest(string path, int version);
+    public string getPath();
+    internal void setPath(string m_);
+    public int getVersion();
+    internal void setVersion(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ErrorResponse : object {
+    private int err;
+    public ErrorResponse(int err);
+    public int getErr();
+    internal void setErr(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ExistsRequest : object {
+    private string path;
+    private bool watch;
+    public ExistsRequest(string path, bool watch);
+    public string getPath();
+    internal void setPath(string m_);
+    public bool getWatch();
+    internal void setWatch(bool m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ExistsResponse : object {
+    private Stat stat;
+    public ExistsResponse(Stat stat);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetACLRequest : object {
+    private string path;
+    public GetACLRequest(string path);
+    public string getPath();
+    internal void setPath(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetACLResponse : object {
+    private List`1<ACL> acl;
+    private Stat stat;
+    public GetACLResponse(List`1<ACL> acl, Stat stat);
+    public List`1<ACL> getAcl();
+    internal void setAcl(List`1<ACL> m_);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetChildren2Request : object {
+    private string path;
+    private bool watch;
+    public GetChildren2Request(string path, bool watch);
+    public string getPath();
+    internal void setPath(string m_);
+    public bool getWatch();
+    internal void setWatch(bool m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetChildren2Response : object {
+    private List`1<string> children;
+    private Stat stat;
+    public GetChildren2Response(List`1<string> children, Stat stat);
+    public List`1<string> getChildren();
+    internal void setChildren(List`1<string> m_);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetDataRequest : object {
+    private string path;
+    private bool watch;
+    public GetDataRequest(string path, bool watch);
+    public string getPath();
+    internal void setPath(string m_);
+    public bool getWatch();
+    internal void setWatch(bool m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.GetDataResponse : object {
+    private Byte[] data;
+    private Stat stat;
+    public GetDataResponse(Byte[] data, Stat stat);
+    public Byte[] getData();
+    internal void setData(Byte[] m_);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.MultiHeader : object {
+    private int type;
+    private bool done;
+    private int err;
+    public MultiHeader(int type, bool done, int err);
+    public int get_Type();
+    internal void set_Type(int m_);
+    public bool getDone();
+    internal void setDone(bool m_);
+    public int getErr();
+    internal void setErr(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.ReplyHeader : object {
+    private int xid;
+    private long zxid;
+    private int err;
+    public ReplyHeader(int xid, long zxid, int err);
+    public int getXid();
+    internal void setXid(int m_);
+    public long getZxid();
+    internal void setZxid(long m_);
+    public int getErr();
+    internal void setErr(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.RequestHeader : object {
+    private int xid;
+    private int type;
+    public RequestHeader(int xid, int type);
+    public int getXid();
+    internal void setXid(int m_);
+    public int get_Type();
+    internal void set_Type(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetACLRequest : object {
+    private string path;
+    private List`1<ACL> acl;
+    private int version;
+    public SetACLRequest(string path, List`1<ACL> acl, int version);
+    public string getPath();
+    internal void setPath(string m_);
+    public List`1<ACL> getAcl();
+    internal void setAcl(List`1<ACL> m_);
+    public int getVersion();
+    internal void setVersion(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetACLResponse : object {
+    private Stat stat;
+    public SetACLResponse(Stat stat);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetDataRequest : object {
+    private string path;
+    private Byte[] data;
+    private int version;
+    public SetDataRequest(string path, Byte[] data, int version);
+    public string getPath();
+    internal void setPath(string m_);
+    public Byte[] getData();
+    internal void setData(Byte[] m_);
+    public int getVersion();
+    internal void setVersion(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetDataResponse : object {
+    private Stat stat;
+    public SetDataResponse(Stat stat);
+    public Stat getStat();
+    internal void setStat(Stat m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetMaxChildrenRequest : object {
+    private string path;
+    private int max;
+    public SetMaxChildrenRequest(string path, int max);
+    public string getPath();
+    internal void setPath(string m_);
+    public int getMax();
+    internal void setMax(int m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SetWatches : object {
+    private long relativeZxid;
+    private List`1<string> dataWatches;
+    private List`1<string> existWatches;
+    private List`1<string> childWatches;
+    public SetWatches(long relativeZxid, List`1<string> dataWatches, List`1<string> existWatches, List`1<string> childWatches);
+    public long getRelativeZxid();
+    internal void setRelativeZxid(long m_);
+    public List`1<string> getDataWatches();
+    internal void setDataWatches(List`1<string> m_);
+    public List`1<string> getExistWatches();
+    internal void setExistWatches(List`1<string> m_);
+    public List`1<string> getChildWatches();
+    internal void setChildWatches(List`1<string> m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SyncRequest : object {
+    private string path;
+    public SyncRequest(string path);
+    public string getPath();
+    internal void setPath(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.SyncResponse : object {
+    private string path;
+    public SyncResponse(string path);
+    public string getPath();
+    internal void setPath(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+internal class org.apache.zookeeper.proto.WatcherEvent : object {
+    private int type;
+    private int state;
+    private string path;
+    public WatcherEvent(int type, int state, string path);
+    public int get_Type();
+    internal void set_Type(int m_);
+    public int getState();
+    internal void setState(int m_);
+    public string getPath();
+    internal void setPath(string m_);
+    private sealed virtual override void org.apache.jute.Record.serialize(OutputArchive a_, string tag);
+    private sealed virtual override void org.apache.jute.Record.deserialize(InputArchive a_, string tag);
+}
+public static class org.apache.zookeeper.Quotas : object {
+    public static string procZookeeper;
+    public static string quotaZookeeper;
+    public static string limitNode;
+    public static string statNode;
+    public static string quotaPath(string path);
+    public static string statPath(string path);
+}
+public class org.apache.zookeeper.StatsTrack : object {
+    private static string countStr;
+    private static string byteStr;
+    public int Count;
+    public long Bytes;
+    public StatsTrack(string stats);
+    public virtual string ToString();
+}
+public class org.apache.zookeeper.Transaction : object {
+    private ZooKeeper zk;
+    private List`1<Op> ops;
+    internal Transaction(ZooKeeper zk);
+    public Transaction create(string path, Byte[] data, List`1<ACL> acl, CreateMode createMode);
+    public Transaction delete(string path, int version);
+    public Transaction check(string path, int version);
+    public Transaction setData(string path, Byte[] data, int version);
+    public Task`1<List`1<OpResult>> commitAsync();
+}
+public class org.apache.zookeeper.WatchedEvent : object {
+    private KeeperState keeperState;
+    private EventType eventType;
+    private string path;
+    internal WatchedEvent(EventType eventType, KeeperState keeperState, string path);
+    internal WatchedEvent(WatcherEvent eventMessage);
+    public KeeperState getState();
+    public EventType get_Type();
+    public string getPath();
+    public virtual string ToString();
+    internal WatcherEvent getWrapper();
+}
+public abstract class org.apache.zookeeper.Watcher : object {
+    internal static Task CompletedTask;
+    private static Watcher();
+    public abstract virtual Task process(WatchedEvent event);
+}
+internal class org.apache.zookeeper.WatcherDelegate : Watcher {
+    private Func`2<WatchedEvent, Task> processor;
+    public WatcherDelegate(Func`2<WatchedEvent, Task> processor);
+    public virtual Task process(WatchedEvent event);
+}
+public class org.apache.zookeeper.ZKUtil : object {
+    private static ILogProducer LOG;
+    private static ZKUtil();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZKUtil/<deleteRecursiveAsync>d__2")]
+[DebuggerStepThroughAttribute]
+public static Task deleteRecursiveAsync(ZooKeeper zk, string pathRoot);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZKUtil/<listSubTreeBFS>d__3")]
+[DebuggerStepThroughAttribute]
+public static Task`1<List`1<string>> listSubTreeBFS(ZooKeeper zk, string pathRoot);
+}
+public static class org.apache.zookeeper.ZooDefs : object {
+}
+public class org.apache.zookeeper.ZooKeeper : object {
+    private static Byte[] NO_PASSWORD;
+    private static ILogProducer LOG;
+    private ZKWatchManager watchManager;
+    internal ClientCnxn cnxn;
+    private int userDefinedSessionTimeout;
+    internal SignalTask connectedSignal;
+    public static bool LogToFile { get; public set; }
+    public static bool LogToTrace { get; public set; }
+    public static string LogFileName { get; }
+    public static TraceLevel LogLevel { get; public set; }
+    public static ILogConsumer CustomLogConsumer { get; public set; }
+    public ZooKeeper(string connectstring, int sessionTimeout, Watcher watcher, bool canBeReadOnly);
+    public ZooKeeper(string connectString, int sessionTimeout, Watcher watcher, long sessionId, Byte[] sessionPasswd, bool canBeReadOnly);
+    private static ZooKeeper();
+    internal List`1<string> getDataWatches();
+    internal List`1<string> getExistWatches();
+    internal List`1<string> getChildWatches();
+    public long getSessionId();
+    public Byte[] getSessionPasswd();
+    public int getSessionTimeout();
+    public void addAuthInfo(string scheme, Byte[] auth);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<closeAsync>d__21")]
+[DebuggerStepThroughAttribute]
+public Task closeAsync();
+    private string prependChroot(string clientPath);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<createAsync>d__23")]
+[DebuggerStepThroughAttribute]
+public Task`1<string> createAsync(string path, Byte[] data, List`1<ACL> acl, CreateMode createMode);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<deleteAsync>d__24")]
+[DebuggerStepThroughAttribute]
+public Task deleteAsync(string path, int version);
+    public Task`1<List`1<OpResult>> multiAsync(List`1<Op> ops);
+    private List`1<OpResult> validatePath(List`1<Op> ops);
+    private MultiTransactionRecord generateMultiTransaction(List`1<Op> ops);
+    private Op withRootPrefix(Op op);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<multiInternal>d__29")]
+[DebuggerStepThroughAttribute]
+private Task`1<List`1<OpResult>> multiInternal(MultiTransactionRecord request);
+    public Transaction transaction();
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<existsAsync>d__31")]
+[DebuggerStepThroughAttribute]
+public Task`1<Stat> existsAsync(string path, Watcher watcher);
+    public Task`1<Stat> existsAsync(string path, bool watch);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<getDataAsync>d__33")]
+[DebuggerStepThroughAttribute]
+public Task`1<DataResult> getDataAsync(string path, Watcher watcher);
+    public Task`1<DataResult> getDataAsync(string path, bool watch);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<setDataAsync>d__35")]
+[DebuggerStepThroughAttribute]
+public Task`1<Stat> setDataAsync(string path, Byte[] data, int version);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<getACLAsync>d__36")]
+[DebuggerStepThroughAttribute]
+public Task`1<ACLResult> getACLAsync(string path);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<setACLAsync>d__37")]
+[DebuggerStepThroughAttribute]
+public Task`1<Stat> setACLAsync(string path, List`1<ACL> acl, int aclVersion);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<getChildrenAsync>d__38")]
+[DebuggerStepThroughAttribute]
+public Task`1<ChildrenResult> getChildrenAsync(string path, Watcher watcher);
+    public Task`1<ChildrenResult> getChildrenAsync(string path, bool watch);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<sync>d__40")]
+[DebuggerStepThroughAttribute]
+public Task sync(string path);
+    public States getState();
+    public virtual string ToString();
+    public static bool get_LogToFile();
+    public static void set_LogToFile(bool value);
+    public static bool get_LogToTrace();
+    public static void set_LogToTrace(bool value);
+    public static string get_LogFileName();
+    public static TraceLevel get_LogLevel();
+    public static void set_LogLevel(TraceLevel value);
+    public static ILogConsumer get_CustomLogConsumer();
+    public static void set_CustomLogConsumer(ILogConsumer value);
+    public static Task Using(string connectstring, int sessionTimeout, Watcher watcher, long sessionId, Byte[] sessionPasswd, Func`2<ZooKeeper, Task> zkMethod, bool canBeReadOnly);
+    public static Task`1<T> Using(string connectstring, int sessionTimeout, Watcher watcher, long sessionId, Byte[] sessionPasswd, Func`2<ZooKeeper, Task`1<T>> zkMethod, bool canBeReadOnly);
+    public static Task Using(string connectstring, int sessionTimeout, Watcher watcher, Func`2<ZooKeeper, Task> zkMethod, bool canBeReadOnly);
+    public static Task`1<T> Using(string connectstring, int sessionTimeout, Watcher watcher, Func`2<ZooKeeper, Task`1<T>> zkMethod, bool canBeReadOnly);
+    private static Task Using(ZooKeeper zooKeeper, Func`2<ZooKeeper, Task> zkMethod);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<Using>d__62`1")]
+[DebuggerStepThroughAttribute]
+private static Task`1<T> Using(ZooKeeper zk, Func`2<ZooKeeper, Task`1<T>> zkMethod);
+    [AsyncStateMachineAttribute("org.apache.zookeeper.ZooKeeper/<TryOperation>d__63`1")]
+[DebuggerStepThroughAttribute]
+private static Task`1<T> TryOperation(ZooKeeper zk, Func`2<ZooKeeper, Task`1<T>> zkMethod);
+}
+internal class ZooKeeperNetEx.utils.AwaitableSignal : object {
+    private static Action s_sentinel;
+    private ThreadLocal`1<bool> _stackDiveOccured;
+    private VolatileReference`1<Action> _continuation;
+    public bool IsCompleted { get; }
+    private static AwaitableSignal();
+    public AwaitableSignal GetAwaiter();
+    public bool get_IsCompleted();
+    public sealed virtual void OnCompleted(Action continuation);
+    public void TrySignal();
+    public void GetResult();
+    public void Reset();
+    private void RunContinuation(Action action);
+}
+internal class ZooKeeperNetEx.utils.SocketContext : object {
+    private SocketAsyncEventArgs _socketAsyncEventArgs;
+    private AwaitableSignal _awaitableSignal;
+    private Socket _socket;
+    private VolatileInt _state;
+    private VolatileInt _disposed;
+    private static Byte[] Buffer;
+    private static int IDLE;
+    private static int PENDING;
+    public EndPoint RemoteEndPoint { get; }
+    private SocketContext(AwaitableSignal awaitableSignal, Socket socket, EndPoint remoteEndPoint);
+    private static SocketContext();
+    public static SocketContext StartConnectAsync(AwaitableSignal awaitableSignal, Socket socket, EndPoint remoteEndPoint);
+    public void StartReceiveAsync();
+    private void StartSocketAction(Func`2<SocketAsyncEventArgs, bool> socketAction);
+    private void Complete();
+    public EndPoint get_RemoteEndPoint();
+    public SocketAsyncOperation GetResult();
+    private void ThrowIfDisposed();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__9_0(object <p0>, SocketAsyncEventArgs <p1>);
+}
+internal class ZooKeeperNetEx.utils.VolatileBool : object {
+    private bool m_Value;
+    public bool Value { get; public set; }
+    public VolatileBool(bool value);
+    public bool get_Value();
+    public void set_Value(bool value);
+}
+internal class ZooKeeperNetEx.utils.VolatileInt : object {
+    private int m_Value;
+    public int Value { get; public set; }
+    public VolatileInt(int value);
+    public int get_Value();
+    public void set_Value(int value);
+    public bool TrySetValue(int preconditionValue, int newValue);
+    public void SetValue(int preconditionValue, int newValue);
+    public int Increment();
+    public int Decrement();
+}
+internal class ZooKeeperNetEx.utils.VolatileLong : object {
+    private long m_Value;
+    public long Value { get; public set; }
+    public VolatileLong(long value);
+    public long get_Value();
+    public void set_Value(long value);
+}
+internal class ZooKeeperNetEx.utils.VolatileReference`1 : object {
+    private T m_Value;
+    public T Value { get; public set; }
+    public VolatileReference`1(T value);
+    public T get_Value();
+    public void set_Value(T value);
+    public T CompareExchange(T newValue, T preconditionValue);
+}
