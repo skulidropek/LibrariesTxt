@@ -1,0 +1,1332 @@
+public abstract class JetBrains.Platform.RdFramework.ExternalProcess.ConfiguredProtocolExternalProcess`1 : SimpleProtocolExternalProcess`1<TModel> {
+    [NotNullAttribute]
+private string myProcessFileName;
+    [NotNullAttribute]
+private string myParentProcessPidEnvironmentVariable;
+    [NotNullAttribute]
+private FileSystemPath myLogFolder;
+    protected ConfiguredProtocolExternalProcess`1(Lifetime lifetime, string processFileName, string parentProcessPidEnvironmentVariable, FileSystemPath logFolder, ILogger logger, IShellLocks shellLocks, IProcessStartInfoPatcher processInfoPatcher, JetProcessRuntimeRequest request);
+    protected virtual ProcessStartInfo GetProcessStartInfo(int port);
+}
+public abstract class JetBrains.Platform.RdFramework.ExternalProcess.ProtocolConnection`1 : object {
+    public Lifetime Lifetime;
+    public int ProcessId;
+    public IProtocol Protocol;
+    public TModel ProtocolModel;
+    public StartupOutputWriter StartupOutputWriter;
+    public ISignal`1<int> ProcessUnexpectedExited;
+    public bool IsActive { get; }
+    protected ProtocolConnection`1(Lifetime lifetime, TModel protocolModel, IProtocol protocol, StartupOutputWriter startupOutputWriter, int processId, ISignal`1<int> processUnexpectedExited);
+    public bool get_IsActive();
+    public void Queue(Action action);
+    public void Execute(Action action);
+    public T Execute(Func`1<T> action);
+    private void CheckActive();
+    public virtual string ToString();
+}
+public enum JetBrains.Platform.RdFramework.ExternalProcess.ProtocolConnectionError : Enum {
+    public int value__;
+    public static ProtocolConnectionError Startup;
+    public static ProtocolConnectionError Connection;
+}
+public class JetBrains.Platform.RdFramework.ExternalProcess.ProtocolConnectionException : Exception {
+    [NotNullAttribute]
+public StartupOutputWriter StartupOutputWriter;
+    [CompilerGeneratedAttribute]
+private ProtocolConnectionError <Error>k__BackingField;
+    public ProtocolConnectionError Error { get; }
+    public ProtocolConnectionException(string message, StartupOutputWriter startupOutputWriter, ProtocolConnectionError error);
+    [CompilerGeneratedAttribute]
+public ProtocolConnectionError get_Error();
+}
+public abstract class JetBrains.Platform.RdFramework.ExternalProcess.ProtocolEndPoint`2 : MarshalByRefObject {
+    [NotNullAttribute]
+private string myParentProcessPidEnvVariable;
+    [NotNullAttribute]
+protected ILogger Logger;
+    [CanBeNullAttribute]
+private LifetimeDefinition myLifetimeDefinition;
+    [CompilerGeneratedAttribute]
+private TProtocolModel <ProtocolModel>k__BackingField;
+    protected string ProtocolName { get; }
+    protected TProtocolModel ProtocolModel { get; private set; }
+    [PublicAPIAttribute]
+protected ProtocolEndPoint`2(string parentProcessPidEnvVariable);
+    protected abstract virtual string get_ProtocolName();
+    [CompilerGeneratedAttribute]
+protected TProtocolModel get_ProtocolModel();
+    [CompilerGeneratedAttribute]
+private void set_ProtocolModel(TProtocolModel value);
+    public void Start(string portValue, string logPath);
+    protected abstract virtual TDispatcher InitDispatcher(Lifetime lifetime, ILogger logger);
+    protected abstract virtual void InitLogger(Lifetime lifetime, string path);
+    protected abstract virtual TProtocolModel InitModel(Lifetime lifetime, Protocol protocol);
+    protected abstract virtual void Run(Lifetime lifetime, TDispatcher dispatcher);
+    protected virtual void OnDispatcherStarted(Lifetime lifetime, TProtocolModel protocolModel);
+    protected void Terminate();
+    protected virtual override void Finalize();
+}
+public abstract class JetBrains.Platform.RdFramework.ExternalProcess.ProtocolExternalProcess`2 : object {
+    [CompilerGeneratedAttribute]
+private IInteractionContext <Context>k__BackingField;
+    private Lifetime myLifetime;
+    private ILogger myLogger;
+    private IShellLocks myLocks;
+    private IProcessStartInfoPatcher myProcessInfoPatcher;
+    private JetProcessRuntimeRequest myRequest;
+    private Signal`1<int> myProcessUnexpectedExited;
+    private int myProcessId;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ModelConnectionTimeout>k__BackingField;
+    public IInteractionContext Context { get; }
+    protected ILogger Logger { get; }
+    protected string Name { get; }
+    protected bool SupportsReconnect { get; }
+    public TimeSpan ModelConnectionTimeout { get; public set; }
+    protected ProtocolExternalProcess`2(Lifetime lifetime, ILogger logger, IShellLocks locks, IProcessStartInfoPatcher processInfoPatcher, JetProcessRuntimeRequest request, IInteractionContext interactionContext);
+    [CompilerGeneratedAttribute]
+public IInteractionContext get_Context();
+    protected ILogger get_Logger();
+    protected abstract virtual string get_Name();
+    protected virtual bool get_SupportsReconnect();
+    protected abstract virtual TModel CreateModel(Lifetime lifetime, IProtocol protocol);
+    protected abstract virtual TConnection CreateConnection(Lifetime lifetime, TModel model, IProtocol protocol, StartupOutputWriter outputWriter, int processId, Signal`1<int> processUnexpectedExited);
+    protected abstract virtual ProcessStartInfo GetProcessStartInfo(Lifetime lifetime, int port);
+    protected virtual IDictionary`2<string, string> GetAdditionalProcessEnvVars();
+    protected abstract virtual bool Shutdown(TModel model);
+    protected virtual void ProcessOutput(string outputLine, bool isStdErr);
+    protected virtual IExternalProcess CreateProcess(IProtocol protocol, LifetimeDefinition processLifetimeDefinition, StartupOutputWriter outputWriter);
+    protected virtual int GetPortFor(IProtocol protocol);
+    protected ProcessStartInfo GetProcessStartInfo(Lifetime lifetime, IProtocol protocol);
+    public TConnection Run();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ModelConnectionTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ModelConnectionTimeout(TimeSpan value);
+    public Task`1<TConnection> RunAsync(bool saveStandardOutput);
+    protected virtual IScheduler StartScheduler(Lifetime processLifetime);
+    protected virtual IProtocol CreateProtocol(Lifetime processLifetime);
+    private void DoShutdown(TModel model, IExternalProcess process);
+    private void KillProcessIfAlive(IExternalProcess process);
+    private void InvokeOrQueue(Action action);
+    private string GetProcessPrefix();
+    private void Log(string message);
+}
+public abstract class JetBrains.Platform.RdFramework.ExternalProcess.SimpleProtocolExternalProcess`1 : object {
+    private Lifetime myExternalLifetime;
+    [NotNullAttribute]
+private IShellLocks myShellLocks;
+    [NotNullAttribute]
+private ILogger myLogger;
+    [NotNullAttribute]
+private LifetimeDefinition myPrivateLifetimeDefinition;
+    private int myProcessId;
+    [CanBeNullAttribute]
+private TModel myProtocolModel;
+    [CanBeNullAttribute]
+protected IProcessStartInfoPatcher ProcessInfoPatcher;
+    [NotNullAttribute]
+protected JetProcessRuntimeRequest Request;
+    [CompilerGeneratedAttribute]
+private IProperty`1<bool> <IsConnected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISimpleSignal <OnProcessTerminated>k__BackingField;
+    protected string Name { get; }
+    private string DiagnosticName { get; }
+    public IProperty`1<bool> IsConnected { get; }
+    public ISimpleSignal OnProcessTerminated { get; }
+    protected SimpleProtocolExternalProcess`1(Lifetime lifetime, ILogger logger, IShellLocks shellLocks, IProcessStartInfoPatcher processInfoPatcher, JetProcessRuntimeRequest request);
+    protected abstract virtual string get_Name();
+    private string get_DiagnosticName();
+    [CompilerGeneratedAttribute]
+public IProperty`1<bool> get_IsConnected();
+    [CompilerGeneratedAttribute]
+public ISimpleSignal get_OnProcessTerminated();
+    public void RunAsync(Action`2<Lifetime, TModel> onInitialized, Action onFailed);
+    private void ShutdownGracefullyAsync(Process process);
+    protected virtual void OnStart();
+    protected abstract virtual void OnShutdownRequested(Lifetime remainingLifetime, TModel protocolModel);
+    private void Terminate(Process process);
+    protected abstract virtual void CreateModel(Lifetime processLifetime, IProtocol protocol, Action`1<TModel> onInitialized);
+    protected abstract virtual ProcessStartInfo GetProcessStartInfo(int port);
+    private IProtocol CreateProtocol(Lifetime processLifetime);
+    private ProcessStartInfo SetupProcessStartInfo(IProtocol protocol);
+    protected virtual JetProcessStartInfo DoPatch(ProcessStartInfo processStartInfo);
+    private void OnOutput(object sender, DataReceivedEventArgs dataReceivedEventArgs);
+    private void OnProcessExited(object sender, EventArgs e);
+    protected virtual void ProcessOutput(string data);
+    private static Process SetupProcess(ProcessStartInfo processStartInfo, DataReceivedEventHandler onOutput, EventHandler onExited);
+    [CompilerGeneratedAttribute]
+private void <OnProcessExited>b__30_0();
+}
+public class JetBrains.Platform.RdFramework.ExternalProcess.StartupOutputWriter : object {
+    private StringBuilder myOutput;
+    private bool myShouldWrite;
+    public void Write(string line);
+    public void Stop();
+    public string GetContent();
+}
+public class JetBrains.Platform.RdFramework.ExternalProcess.Util.ProtocolEndPointUtil : object {
+    public static void InitLogger(string path, Lifetime lifetime, LoggingLevel level);
+}
+public interface JetBrains.Platform.RdFramework.Impl.IRdStartUpSerializerRegistrar {
+    public abstract virtual void Register(ISerializers serializers);
+}
+public class JetBrains.Platform.RdFramework.Impl.PriorityRdDispatcher : object {
+    private IShellLocks myShellLocks;
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    public PriorityRdDispatcher(IShellLocks shellLocks);
+    public sealed virtual void Queue(Action action);
+    public sealed virtual bool get_IsActive();
+    public sealed virtual bool get_OutOfOrderExecution();
+}
+[ShellComponentAttribute("18")]
+public class JetBrains.Platform.RdFramework.Impl.ProtocolComponent : Protocol {
+    public static Nullable`1<bool> OurIsBackend;
+    public Nullable`1<bool> IsBackend { get; }
+    public ProtocolComponent(string name, ISerializers serializers, IIdentities identities, IScheduler scheduler, IWire wire, Lifetime lifetime, IEnumerable`1<IRdStartUpSerializerRegistrar> registrars);
+    public ProtocolComponent(IShellLocks locks, ITypesRegistrar typesCatalog, Lifetime lifetime, IEnumerable`1<IRdStartUpSerializerRegistrar> registrars);
+    private static IWire GetWire(IWire wire, ISerializers serializers, IEnumerable`1<IRdStartUpSerializerRegistrar> registrars);
+    private static void Register(IEnumerable`1<IRdStartUpSerializerRegistrar> registrars, ISerializers serializers);
+    public virtual Nullable`1<bool> get_IsBackend();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.Impl.RdDispatcher : object {
+    private static string FlushAllId;
+    private ILogger myLogger;
+    private object myLock;
+    private BlockingCollection`1<Action> myRequests;
+    private bool myHasRequest;
+    private IShellLocks myShellLocks;
+    private int myRunWhileRequests;
+    private Action modreq(System.Runtime.CompilerServices.IsVolatile) myAction;
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    public RdDispatcher(IShellLocks shellLocks);
+    public void RunWhile(Func`1<bool> condition, bool pumpJetDispatcher);
+    public void AssertNotRunningWhile();
+    [CanBeNullAttribute]
+public string TryGetActionName(string id);
+    private static string ExtractNameFromAction(object action);
+    private void FlushAll();
+    private void Repost();
+    public sealed virtual void Queue(Action action);
+    public virtual bool get_IsActive();
+    public sealed virtual bool get_OutOfOrderExecution();
+}
+public class JetBrains.Platform.RdFramework.Impl.RdUnguardedDispatcher : object {
+    private ITaskHost myTaskHost;
+    private IShellLocks myShellLocks;
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    public RdUnguardedDispatcher(IShellLocks shellLocks);
+    public sealed virtual void Queue(Action action);
+    public sealed virtual bool get_IsActive();
+    public sealed virtual bool get_OutOfOrderExecution();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.Impl.ShellRdDispatcher : RdDispatcher {
+    [NotNullAttribute]
+private IShellLocks myShellLocks;
+    [CompilerGeneratedAttribute]
+private IScheduler <UnguardedScheduler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IScheduler <PriorityGuardedScheduler>k__BackingField;
+    private LifetimedList`1<IScheduler> mySchedulers;
+    [NotNullAttribute]
+public IScheduler UnguardedScheduler { get; }
+    public IScheduler PriorityGuardedScheduler { get; }
+    public bool IsActive { get; }
+    public ShellRdDispatcher(IShellLocks shellLocks);
+    [CompilerGeneratedAttribute]
+public IScheduler get_UnguardedScheduler();
+    [CompilerGeneratedAttribute]
+public IScheduler get_PriorityGuardedScheduler();
+    public virtual bool get_IsActive();
+    [ObsoleteAttribute]
+public void AllowScheduler(Lifetime lifetime, IScheduler scheduler);
+    public sealed virtual void OnTermination(Lifetime lifetime);
+    private bool HasActive();
+    public virtual string ToString();
+}
+public class JetBrains.Platform.RdFramework.Impl.SimpleInpaceExecutingScheduler : object {
+    private ILogger myLogger;
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    public SimpleInpaceExecutingScheduler(ILogger logger);
+    public sealed virtual void Queue(Action action);
+    public sealed virtual bool get_IsActive();
+    public sealed virtual bool get_OutOfOrderExecution();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.Platform.RdFramework.Impl.ZoneMarker : object {
+}
+public class JetBrains.Platform.RdFramework.InProcessWire : WireBase {
+    private TimeSpan myDelay;
+    [NotNullAttribute]
+private Task myLastTask;
+    private object myLocker;
+    private Lifetime myLifetime;
+    [CompilerGeneratedAttribute]
+private InProcessWire <Counterpart>k__BackingField;
+    [CanBeNullAttribute]
+public InProcessWire Counterpart { get; private set; }
+    [NotNullAttribute]
+public Task Pending { get; }
+    public InProcessWire(Lifetime lifetime, IScheduler scheduler, TimeSpan delay);
+    [CompilerGeneratedAttribute]
+public InProcessWire get_Counterpart();
+    [CompilerGeneratedAttribute]
+private void set_Counterpart(InProcessWire value);
+    public Task get_Pending();
+    public static void SetCounterpart(InProcessWire x, InProcessWire y);
+    protected virtual void SendPkg(Cookie pkg);
+}
+public static class JetBrains.Platform.RdFramework.Intrinsics.KeyPathComponentsSerializer : object {
+    public static CtxReadDelegate`1<KeyPathComponents> ReadDelegate;
+    public static CtxWriteDelegate`1<KeyPathComponents> WriteDelegate;
+    private static KeyPathComponentsSerializer();
+}
+[ZoneDefinitionAttribute]
+public interface JetBrains.Platform.RdFramework.IRdFrameworkZone {
+}
+public class JetBrains.Platform.RdFramework.LocalProtocolStub : ProtocolComponent {
+    public Nullable`1<bool> IsBackend { get; }
+    public LocalProtocolStub(IShellLocks locks, Lifetime lifetime);
+    public LocalProtocolStub(Lifetime lifetime, IShellLocks locks, ISerializers serializers);
+    public LocalProtocolStub(IShellLocks locks);
+    public virtual Nullable`1<bool> get_IsBackend();
+}
+internal class JetBrains.Platform.RdFramework.LocalWireStub : object {
+    [CompilerGeneratedAttribute]
+private ProtocolContexts <Contexts>k__BackingField;
+    public bool IsStub { get; }
+    public ProtocolContexts Contexts { get; public set; }
+    public sealed virtual bool get_IsStub();
+    public sealed virtual IRdWireable TryGetById(RdId rdId);
+    [CompilerGeneratedAttribute]
+public sealed virtual ProtocolContexts get_Contexts();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Contexts(ProtocolContexts value);
+    public sealed virtual void Send(RdId id, TContext context, Action`2<TContext, UnsafeWriter> writer);
+    public sealed virtual void Advise(Lifetime lifetime, IRdWireable reactive);
+}
+public class JetBrains.Platform.RdFramework.RdVerification.InProcessWireEmulation : object {
+    private InProcessWire myInProcessWire;
+    public static TimeSpan DefaultWireDelay;
+    public static TimeSpan WireDelayInDelayEmulationMode;
+    public IWire Frontend { get; }
+    public IWire Backend { get; }
+    public InProcessWireEmulation(Lifetime lifetime, IScheduler scheduler, Nullable`1<TimeSpan> delayOverride);
+    private static InProcessWireEmulation();
+    public IWire get_Frontend();
+    public IWire get_Backend();
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.RdVerification.InProcessWireEmulation/<WaitPendingOperationsAsync>d__8")]
+[NotNullAttribute]
+public Task WaitPendingOperationsAsync();
+}
+public interface JetBrains.Platform.RdFramework.RdVerification.IProtocolSide {
+    public Nullable`1<bool> IsBackend { get; }
+    public abstract virtual Nullable`1<bool> get_IsBackend();
+}
+[DerivedComponentsInstantiationRequirementAttribute("1")]
+public interface JetBrains.Platform.RdFramework.RdVerification.IRdBlackListProvider {
+    public abstract virtual bool IsBlackListed(Type type);
+}
+[DerivedComponentsInstantiationRequirementAttribute("1")]
+public interface JetBrains.Platform.RdFramework.RdVerification.IRdConfigurator {
+    public abstract virtual void OnCreated(ReflectionSerializersFacade instance);
+}
+public interface JetBrains.Platform.RdFramework.RdVerification.IRdShell {
+    public ReflectionSerializersFacade RdReflection { get; }
+    public IProtocol Protocol { get; }
+    public abstract virtual ReflectionSerializersFacade get_RdReflection();
+    public abstract virtual IProtocol get_Protocol();
+}
+public interface JetBrains.Platform.RdFramework.RdVerification.IRdTypesCatalogProvider {
+    [NotNullAttribute]
+public IPartCatalogFilter Filter { get; }
+    public abstract virtual IPartCatalogFilter get_Filter();
+}
+[ShellComponentAttribute("16")]
+[DerivedComponentsInstantiationRequirementAttribute("0")]
+public class JetBrains.Platform.RdFramework.RdVerification.LocalProtocolEmulationWithLocalBridgeSupport : LocalProtocolEmulation {
+    protected LocalProtocolEmulationWithLocalBridgeSupport(OperationMode mode);
+    public LocalProtocolEmulationWithLocalBridgeSupport(Lifetime lifetime, RdDispatcher scheduler, ISettingsStore settings, IEnumerable`1<IRdBlackListProvider> maybeBlackListProviders, ShellPartCatalogSet productCatalogs, IEnumerable`1<IRdTypesCatalogProvider> partCatalogTypeProviders, IEnumerable`1<IRdConfigurator> configurators, IShellLocks locks, ILogger logger);
+    private static OperationMode LoadCurrentOperationMode(ISettingsStore settings, ILogger logger);
+}
+[ShellComponentAttribute("20")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.Platform.RdFramework.RdVerification.RdModelsVerifier : object {
+    public RdModelsVerifier(Lifetime lifetime, ShellPartCatalogSet productCatalogs);
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.RdVerification.RdShell : object {
+    [NotNullAttribute]
+private RdShellRegistrar myRegistrar;
+    [CompilerGeneratedAttribute]
+private IProtocol <Protocol>k__BackingField;
+    public IProtocol Protocol { get; }
+    public ReflectionSerializersFacade RdReflection { get; }
+    public RdShell(IProtocol protocol, RdShellRegistrar registrar);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProtocol get_Protocol();
+    public sealed virtual ReflectionSerializersFacade get_RdReflection();
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.RdVerification.RdShellExtensions : object {
+    [ExtensionAttribute]
+public static T InitBind(IRdShell self, T instance, Lifetime lifetime);
+    [ExtensionAttribute]
+public static T ActivateBindProxy(IRdShell self, Lifetime lifetime);
+    [ExtensionAttribute]
+public static T Activate(IRdShell self);
+    [ExtensionAttribute]
+public static void BindToLocalProtocol(IRdBindable rdModel, Lifetime lifetime, IShellLocks shellLocks);
+    [ExtensionAttribute]
+public static void BindToLocalProtocol(IRdBindable rdModel, Lifetime lifetime, LocalProtocolStub protocol);
+}
+[ShellComponentAttribute("18")]
+public class JetBrains.Platform.RdFramework.RdVerification.RdShellRegistrar : object {
+    private static Lazy`1<IProxyGenerator> ourProxyGenerator;
+    [CompilerGeneratedAttribute]
+private ReflectionSerializersFacade <Instance>k__BackingField;
+    public static IProxyGenerator ProxyGenerator { get; }
+    public ReflectionSerializersFacade Instance { get; }
+    public RdShellRegistrar(ITypesCatalog catalog, IEnumerable`1<IRdBlackListProvider> blackListProviders, IEnumerable`1<IRdConfigurator> configurators);
+    private static RdShellRegistrar();
+    public static IProxyGenerator get_ProxyGenerator();
+    [CompilerGeneratedAttribute]
+public ReflectionSerializersFacade get_Instance();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.RdVerification.RdTypeAttributeTypesCatalogProvider : object {
+    private IPartCatalogFilter JetBrains.Platform.RdFramework.RdVerification.IRdTypesCatalogProvider.Filter { get; }
+    private sealed virtual override IPartCatalogFilter JetBrains.Platform.RdFramework.RdVerification.IRdTypesCatalogProvider.get_Filter();
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.RdVerification.RdTypesCatalogWrapper : object {
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private LocalLazy`2<Dictionary`2<RdId, PartCatalogType>, ValueTuple`2<PartCatalog, ILazy`1<IEnumerable`1<IRdTypesCatalogProvider>>>> myPartsMap;
+    private ConcurrentDictionary`2<RdId, Type> myTypesMap;
+    public RdTypesCatalogWrapper(ShellPartCatalogSet productCatalogs, IEnumerable`1<IRdTypesCatalogProvider> partCatalogTypeProviders);
+    public sealed virtual Type GetById(RdId id);
+    public sealed virtual RdId GetByType(Type type);
+    public sealed virtual void AddType(Type type);
+    private static long Hash(StringSource& ss, long initValue);
+}
+public class JetBrains.Platform.RdFramework.RdVerification.SidewiseProtocol : Protocol {
+    private Nullable`1<bool> myIsBackend;
+    private Nullable`1<bool> JetBrains.Platform.RdFramework.RdVerification.IProtocolSide.IsBackend { get; }
+    public SidewiseProtocol(Lifetime lifetime, string name, Nullable`1<bool> isBackend, ISerializers serializers, IIdentities identities, IScheduler scheduler, IWire wire, RdContextBase[] initialContexts);
+    private sealed virtual override Nullable`1<bool> JetBrains.Platform.RdFramework.RdVerification.IProtocolSide.get_IsBackend();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.Platform.RdFramework.RdVerification.ZoneMarker : object {
+}
+[IsReadOnlyAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.FutureResponse`1 : ValueType {
+    private LifetimeDefinition myLifetimeDefinition;
+    private RdReflectProperty`1<RdReflectResult`1<TResponse>> myResponseProperty;
+    internal FutureResponse`1(LifetimeDefinition def, RdReflectProperty`1<RdReflectResult`1<TResponse>> propResponse);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.FutureResponse`1/<DangerousGetRawResponseAsync>d__3")]
+[NotNullAttribute]
+public Task`1<ValueTuple`2<LifetimeDefinition, Result`1<TResponse>>> DangerousGetRawResponseAsync();
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.FutureResponse`1/<DangerousGetResponseUnderFiringLifetimeAsync>d__4")]
+[NotNullAttribute]
+public Task`1<Result`1<TResponse>> DangerousGetResponseUnderFiringLifetimeAsync();
+    public void Detach();
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.FutureResponse`1/<GetScalarResponseAsync>d__6")]
+[NotNullAttribute]
+public Task`1<TResponse> GetScalarResponseAsync();
+    [NotNullAttribute]
+public Task WithLiveResponseAsync(Func`3<Lifetime, TResponse, Task> F);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.FutureResponse`1/<WithLiveResponseAsync>d__8`1")]
+[NotNullAttribute]
+public Task`1<TReturn> WithLiveResponseAsync(Func`3<Lifetime, TResponse, Task`1<TReturn>> F);
+    [NotNullAttribute]
+private static Task`1<TValue> GetFirstNonNullValueAsync(Lifetime lifetime, IProperty`1<TValue> property);
+    public sealed virtual bool Equals(FutureResponse`1<TResponse> other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[ShellComponentAttribute("16")]
+[DerivedComponentsInstantiationRequirementAttribute("0")]
+public class JetBrains.Platform.RdFramework.Reflection.LocalProtocolEmulation : object {
+    private ImmutableArray`1<RdReflectDictionaryEvents`2<string, IRdBindable>> myStorages;
+    public OperationMode Mode;
+    protected LocalProtocolEmulation(OperationMode mode);
+    public TTransport GetBackend(Lifetime lifetime);
+    public TTransport GetFrontend(Lifetime lifetime);
+    private TTransport GetOrCreateInstance(Lifetime lifetime, RdReflectDictionaryEvents`2<string, IRdBindable> storage);
+    [NotNullAttribute]
+protected RdReflectDictionaryEvents`2<string, IRdBindable> GetStorageForBackend();
+    [NotNullAttribute]
+protected RdReflectDictionaryEvents`2<string, IRdBindable> GetStorageForFrontend();
+    private static string GetStorageKeyForTransport();
+}
+[SettingsKeyAttribute("JetBrains.Application.Infra.HackSettingsKey", "Testing for out-of-process protocol emulation when running in-process")]
+public class JetBrains.Platform.RdFramework.Reflection.OutOfProcessProtocolEmulationSettingsKey : object {
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "Adds delays to protocol, when applicable; initially, that's when emulating the local protocol")]
+public bool IsEmulatingDelays;
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "When running in-process, switches supporting transport entities to use protocol emulation")]
+public bool IsInEmulationMode;
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectCollectionEvents`1 : CollectionEvents`1<TValue> {
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NotNullAttribute]
+private Dictionary`2<TValue, ValueTuple`2<GuidIndex, LifetimeDefinition>> myBindableItemData;
+    [NotNullAttribute]
+private RdWireableTrait myBinding;
+    [NotNullAttribute]
+private Dictionary`2<GuidIndex, TValue> myLookupBindableItemByNonce;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    public RdReflectCollectionEvents`1(string id, IEqualityComparer`1<TValue> comparer);
+    [UsedImplicitlyAttribute]
+public static RdReflectCollectionEvents`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectCollectionEvents`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader, CtxReadDelegate`1<TValue> _, CtxWriteDelegate`1<TValue> __);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectCollectionEvents`1<TValue> value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+    [CompilerGeneratedAttribute]
+private ValueTuple`2<GuidIndex, LifetimeDefinition> <.ctor>g__EnsureItemData|3_3(TValue item, Nullable`1<GuidIndex> nonceIfExternal);
+    [CompilerGeneratedAttribute]
+private void <.ctor>g__AddItem|3_4(LifetimeDefinition definition, TValue item, GuidIndex nonce);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectDictionaryEvents`2 : DictionaryEvents`2<TKey, TValue> {
+    private RdWireableTrait myBinding;
+    private Dictionary`2<TKey, LifetimeDefinition> myBindLifetimes;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    public RdReflectDictionaryEvents`2(string id, object _, object __);
+    public RdReflectDictionaryEvents`2(string id, object _, object __, object ___, object ____);
+    public RdReflectDictionaryEvents`2(object _, object __, object ___, object ____);
+    public RdReflectDictionaryEvents`2(string id);
+    [UsedImplicitlyAttribute]
+public static RdReflectDictionaryEvents`2<TKey, TValue> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectDictionaryEvents`2<TKey, TValue> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TKey> _, CtxWriteDelegate`1<TKey> __, CtxReadDelegate`1<TValue> ___, CtxWriteDelegate`1<TValue> ____);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectDictionaryEvents`2<TKey, TValue> value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+    [CompilerGeneratedAttribute]
+[CanBeNullAttribute]
+private LifetimeDefinition <.ctor>g__TryPreBindNested|5_4(Lifetime parentLifetime, KeyValuePair`2<TKey, TValue> pair, SerializationCtx serializationCtx, bool bind);
+    [CompilerGeneratedAttribute]
+internal static void <.ctor>g__BindNested|5_5(KeyValuePair`2<TKey, TValue> pair);
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Reflection.RdReflectEx : object {
+    [ExtensionAttribute]
+public static void AssertCanSend(RdWireableBase wireable);
+    [ExtensionAttribute]
+public static TWireable ReadWireableIdentities(UnsafeReader unreader, Func`2<PropertyId`1<TPropertyId>, TWireable> F);
+    [ExtensionAttribute]
+public static ValueTuple`2<PropertyId`1<TPropertyId>, RdId> ReadWireableIdentities(UnsafeReader unreader);
+    [ExtensionAttribute]
+public static void WriteWireableIdentities(UnsafeWriter unwriter, RdWireableBase wireable);
+}
+public static class JetBrains.Platform.RdFramework.Reflection.RdReflectInProcessBlackBox : object {
+    internal static GuidIndex ProcessNonce;
+    private static RdReflectInProcessBlackBox();
+    [NotNullAttribute]
+public static RdReflectInProcessBlackBox`1<TValue> Create(TValue value);
+}
+[RdScalarAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectInProcessBlackBox`1 : object {
+    private static ConcurrentDictionary`2<GuidIndex, TValue> myValuesInTransit;
+    public TValue Value;
+    public RdReflectInProcessBlackBox`1(TValue value);
+    private static RdReflectInProcessBlackBox`1();
+    public sealed virtual bool Equals(RdReflectInProcessBlackBox`1<TValue> other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    [UsedImplicitlyAttribute]
+public static RdReflectInProcessBlackBox`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader);
+    [UsedImplicitlyAttribute]
+public static RdReflectInProcessBlackBox`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader, CtxReadDelegate`1<TValue> _, CtxWriteDelegate`1<TValue> __);
+    public virtual string ToString();
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectInProcessBlackBox`1<TValue> value);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectProperty`1 : Property`1<TValue> {
+    private RdWireableTrait myBinding;
+    private Nullable`1<bool> myIsDrivingEnd;
+    private Property`1<PreValue<TValue>> myPreValue;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    public RdReflectProperty`1(PropertyId`1<TValue> id, TValue initial, Nullable`1<bool> isNullValueAllowed, ILogger logger, bool isFrontEndPreference);
+    [UsedImplicitlyAttribute]
+public static RdReflectProperty`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectProperty`1<TValue> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TValue> _, CtxWriteDelegate`1<TValue> __);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectProperty`1<TValue> value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private static PreValue<TValue> ReadValueCore(SerializationCtx ctx, UnsafeReader unreader);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+    private static void WriteValueCore(ValueTuple`2<SerializationCtx, PreValue<TValue>> tuple, UnsafeWriter unwriter);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectPropertyBag : PropertyBag {
+    private RdWireableTrait myBinding;
+    private ReadonlyToken myTokenFromWire;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private Dictionary`2<string, Action`1<ValueTuple`3<SerializationCtx, UnsafeReader, IRdWireableDispatchHelper>>> myTypedReadHandlers;
+    private Dictionary`2<string, Action> myTypedSendHandlers;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public static RdReflectPropertyBag Read(SerializationCtx ctx, UnsafeReader unreader);
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public void Write(SerializationCtx ctx, UnsafeWriter unwriter);
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectPropertyBag value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private void BindPropertyTyped(Lifetime lifetime, IProperty`1<TValue> property);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private void RecvPropertyValue(UnsafeReader unreader, string sId, IProtocol protocol, SerializationCtx sctx, IRdWireableDispatchHelper wdispatch);
+    private void SendAllValues();
+    private void SendPropertyValue(IProperty`1<TValue> property, TValue value);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+    [CompilerGeneratedAttribute]
+private void <.ctor>g__Recv|4_1(IProtocol protocol, SerializationCtx ctx, UnsafeReader unreader, IRdWireableDispatchHelper wdispatch);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectRequestResponse`2 : RdWireableBase {
+    private RdReflectDictionaryEvents`2<GuidIndex, RdReflectTransportObjectForRequestResponse`2<TRequest, TResponse>> myTransport;
+    public RdReflectRequestResponse`2(PropertyId`1<Tuple`2<TRequest, TResponse>> id);
+    public void Advise(Lifetime lifetime, Func`3<Lifetime, TRequest, Task`1<TResponse>> FHandler);
+    [MustUseReturnValueAttribute]
+public FutureResponse`1<TResponse> Fire(OuterLifetime lifetime, TRequest request);
+    [UsedImplicitlyAttribute]
+public static RdReflectRequestResponse`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectRequestResponse`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TRequest> _, CtxWriteDelegate`1<TRequest> __, CtxReadDelegate`1<TResponse> ___, CtxWriteDelegate`1<TResponse> ____);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectRequestResponse`2<TRequest, TResponse> value);
+    protected virtual void OnBindNested(Lifetime lifetime);
+    protected virtual void OnPreBindNested(Lifetime lifetime);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectResult`1 : RdWireableBase {
+    [CompilerGeneratedAttribute]
+private string <RawError>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TResult <RawResult>k__BackingField;
+    [CanBeNullAttribute]
+public string RawError { get; }
+    public TResult RawResult { get; }
+    public Result`1<TResult> Result { get; }
+    public RdReflectResult`1(string rawError, TResult rawResult);
+    [CompilerGeneratedAttribute]
+public string get_RawError();
+    [CompilerGeneratedAttribute]
+public TResult get_RawResult();
+    public Result`1<TResult> get_Result();
+    [NotNullAttribute]
+public static RdReflectResult`1<TResult> FromError(string message);
+    [NotNullAttribute]
+public static RdReflectResult`1<TResult> FromSuccess(TResult result);
+    [UsedImplicitlyAttribute]
+public static RdReflectResult`1<TResult> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectResult`1<TResult> Read(SerializationCtx ctx, UnsafeReader unreader, CtxReadDelegate`1<TResult> _, CtxWriteDelegate`1<TResult> __);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectResult`1<TResult> value);
+    protected virtual void OnPreBindNested(Lifetime lifetime);
+    protected virtual void OnBindNested(Lifetime lifetime);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectSignal`1 : Signal`1<TValue> {
+    private RdWireableTrait myBinding;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    public RdReflectSignal`1(string id);
+    [UsedImplicitlyAttribute]
+public static RdReflectSignal`1<TValue> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectSignal`1<TValue> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TValue> _, CtxWriteDelegate`1<TValue> __);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectSignal`1<TValue> value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    [NullableContextAttribute("2")]
+private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectSimpleSignal : SimpleSignal {
+    private RdWireableTrait myBinding;
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    public RdReflectSimpleSignal(string id);
+    [UsedImplicitlyAttribute]
+public static RdReflectSimpleSignal Read(SerializationCtx ctx, UnsafeReader unreader);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectSimpleSignal value);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCall`2 : RdWireableBase {
+    private static ILogger Logger;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ConcurrentDictionary`2<Guid, ValueTuple`2<string, TResponse>> myPendingResponses;
+    private ImmutableArray`1<SinkData<TRequest, TResponse>> mySinks;
+    private bool myTodoRemoveIfEverHadSinksForDiag;
+    private static TimeSpan SyncRequestResponseTimeout { get; }
+    public RdReflectSyncCall`2(PropertyId id);
+    public RdReflectSyncCall`2(string id);
+    private static RdReflectSyncCall`2();
+    public void Advise(Lifetime lifetime, TransactionReuseKey transactionReuseKey, Func`2<TRequest, TResponse> handler);
+    public TResponse Fire(TRequest request, TransactionReuseKey transactionReuseKey);
+    public virtual void OnWireReceived(IProtocol proto, SerializationCtx ctx, UnsafeReader unreader, IRdWireableDispatchHelper dispatchHelper);
+    [UsedImplicitlyAttribute]
+public static RdReflectSyncCall`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectSyncCall`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader unreader, CtxReadDelegate`1<TRequest> _, CtxWriteDelegate`1<TRequest> __, CtxReadDelegate`1<TResponse> ___, CtxWriteDelegate`1<TResponse> ____);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectSyncCall`2<TRequest, TResponse> value);
+    private static TResponse GetResponseFromSink(SinkData<TRequest, TResponse> sink, TRequest request);
+    private TResponse GetResponseFromWire(TRequest request);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCall`2/<OnRequestedByWireAsync>d__14")]
+private Task OnRequestedByWireAsync(Guid nonce, TRequest request, IProtocol proto, SerializationCtx ctx);
+    private static TimeSpan get_SyncRequestResponseTimeout();
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCall`2/<<OnRequestedByWireAsync>g__GetResponseAsync|14_1>d")]
+[CompilerGeneratedAttribute]
+internal static Task`1<TResponse> <OnRequestedByWireAsync>g__GetResponseAsync|14_1(TRequest request, ImmutableArray`1<SinkData<TRequest, TResponse>> sinks, Guid nonceForDiag);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCall`2/<<OnRequestedByWireAsync>g__TerminateByTimeoutAsync|14_2>d")]
+[CompilerGeneratedAttribute]
+internal static Task <OnRequestedByWireAsync>g__TerminateByTimeoutAsync|14_2(LifetimeDefinition def, Guid nonceForDiag);
+}
+public static class JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCallTransactionReuse : object {
+    private static ILogger Logger;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private static ConcurrentDictionary`2<TransactionReuseKey, ValueTuple`2<ReentrancyGuard, UInt32>> myAllowCounters;
+    private static RdReflectSyncCallTransactionReuse();
+    public static TOut WithAllowIntoMyTransaction(TransactionReuseKey transactionReuseKey, TIn in, Func`2<TIn, TOut> F);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Reflection.RdReflectSyncCallTransactionReuse/<WithTryJoinTransactionAsync>d__3`2")]
+public static Task`1<TOut> WithTryJoinTransactionAsync(Lifetime lifetime, TransactionReuseKey transactionReuseKey, TIn in, Func`2<TIn, TOut> F);
+}
+[RdModelAttribute]
+internal class JetBrains.Platform.RdFramework.Reflection.RdReflectTransportObjectForRequestResponse`2 : RdWireableBase {
+    public Guid Key;
+    public TRequest Request;
+    public RdReflectProperty`1<RdReflectResult`1<TResponse>> Response;
+    public RdReflectTransportObjectForRequestResponse`2(TRequest request);
+    private RdReflectTransportObjectForRequestResponse`2(Guid key, TRequest request, RdReflectProperty`1<RdReflectResult`1<TResponse>> response);
+    [UsedImplicitlyAttribute]
+public static RdReflectTransportObjectForRequestResponse`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader unreader);
+    public static RdReflectTransportObjectForRequestResponse`2<TRequest, TResponse> Read(SerializationCtx ctx, UnsafeReader unreader, CtxReadDelegate`1<TRequest> _, CtxWriteDelegate`1<TRequest> __, CtxReadDelegate`1<TResponse> ___, CtxWriteDelegate`1<TResponse> ____);
+    [UsedImplicitlyAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectTransportObjectForRequestResponse`2<TRequest, TResponse> value);
+    protected virtual void OnPreBindNested(Lifetime lifetime);
+    protected virtual void OnBindNested(Lifetime lifetime);
+}
+[RdTypeAttribute]
+[RdScalarAttribute]
+public class JetBrains.Platform.RdFramework.Reflection.RdReflectTypeRef : object {
+    [NotNullAttribute]
+public Type Type;
+    public RdReflectTypeRef(Type type);
+    public sealed virtual bool Equals(RdReflectTypeRef other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(RdReflectTypeRef left, RdReflectTypeRef right);
+    public static bool op_Inequality(RdReflectTypeRef left, RdReflectTypeRef right);
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public static RdReflectTypeRef Read(SerializationCtx ctx, UnsafeReader unreader);
+    public virtual string ToString();
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public void Write(SerializationCtx ctx, UnsafeWriter unwriter);
+    [UsedImplicitlyAttribute]
+[PublicAPIAttribute]
+public static void Write(SerializationCtx ctx, UnsafeWriter unwriter, RdReflectTypeRef value);
+}
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public abstract class JetBrains.Platform.RdFramework.Reflection.RdShellExtReflectionBindable : RdExtReflectionBindableBase {
+    protected RdShellExtReflectionBindable(Lifetime lifetime, IRdShell rd);
+}
+public abstract class JetBrains.Platform.RdFramework.Reflection.RdWireableBase : RdReactiveBase {
+    private IIdentities myIdentities;
+    [NotNullAttribute]
+public PropertyId Id;
+    [ObsoleteAttribute("Inconsistent property! The value of the base property is out of sync with IsBoundProperty and actual bound state.")]
+public bool IsBound { get; }
+    protected string ShortName { get; }
+    protected RdWireableBase(PropertyId id);
+    public bool get_IsBound();
+    public void BindNested(RdWireableBase[] nested);
+    public virtual void OnWireReceived(IProtocol proto, SerializationCtx ctx, UnsafeReader reader, IRdWireableDispatchHelper dispatchHelper);
+    public void PreBindNested(Lifetime lifetime, RdWireableBase[] nested);
+    public void PreBindNested(Lifetime lifetime, IRdBindable bindableNested, string localname, bool nextUniqueId);
+    protected virtual void Init(Lifetime lifetime, IProtocol proto, SerializationCtx ctx);
+    protected virtual void OnBindNested(Lifetime lifetime);
+    protected virtual void OnPreBindNested(Lifetime lifetime);
+    protected virtual void PreInit(Lifetime lifetime, IProtocol proto);
+    protected virtual string get_ShortName();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JetBrains.Platform.RdFramework.Reflection.RdWireableTrait : RdWireableBase {
+    [NullableAttribute("2")]
+private OnBindDelegate myFOnBind;
+    [NullableAttribute("2")]
+private OnPreBindDelegate myFOnPreBind;
+    private OnWireReceivedDelegate myFOnWireReceived;
+    public RdWireableTrait(PropertyId id, OnWireReceivedDelegate FOnWireReceived, OnBindDelegate FOnBind, OnPreBindDelegate FOnPreBind);
+    public virtual void OnWireReceived(IProtocol proto, SerializationCtx ctx, UnsafeReader reader, IRdWireableDispatchHelper dispatchHelper);
+    protected virtual void Init(Lifetime lifetime, IProtocol proto, SerializationCtx ctx);
+    protected virtual void PreInit(Lifetime lifetime, IProtocol proto);
+}
+public static class JetBrains.Platform.RdFramework.Reflection.ReactiveFactory : object {
+    public static RdProperty`1<T> NewRdProperty(bool isMaster);
+    public static AsyncRdProperty`1<T> NewAsyncRdProperty(bool isMaster);
+    public static RdSignal`1<T> NewRdSignal();
+    public static RdList`1<T> NewRdList(bool optimizeNested);
+    public static RdSet`1<T> NewRdSet(bool isMaster);
+    public static AsyncRdSet`1<T> NewAsyncRdSet(bool isMaster);
+    public static RdMap`2<TKey, TValue> NewRdMap(bool isMaster, bool optimizeNested);
+    public static AsyncRdMap`2<TKey, TValue> NewAsyncRdMap(bool isMaster);
+    public static RdCall`2<TReq, TRes> NewRdCall();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class JetBrains.Platform.RdFramework.Serialization.DiagnosticLookupRdIdOfTypeInCurrentAppdomain : object {
+    private static ILogger Logger;
+    private static LockObject myScanLock;
+    private static ImmutableHashSet`1<Assembly> myAssembliesScanned;
+    private static ImmutableDictionary`2<RdId, Type> myTypesInAppDomainById;
+    private static DiagnosticLookupRdIdOfTypeInCurrentAppdomain();
+    public static void ReportKnownType(Type type);
+    [NullableContextAttribute("2")]
+public static Type TryFindTypeByRdId(RdId rdid);
+    private static void Rescan();
+}
+public class JetBrains.Platform.RdFramework.Serialization.Icons.IconIdMarshaller : object {
+    private IIconIdWriteHelper myWriteHelper;
+    public IconIdMarshaller(IIconIdWriteHelper writeHelper);
+    public sealed virtual IconId Read(SerializationCtx ctx, UnsafeReader reader);
+    public sealed virtual void Write(SerializationCtx ctx, UnsafeWriter writer, IconId value);
+    private void WriteImpl(SerializationCtx ctx, UnsafeWriter writer, IconId value);
+    [CanBeNullAttribute]
+private IconId ReadIconImpl(SerializationCtx ctx, UnsafeReader reader);
+}
+[ShellComponentAttribute("16")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.Platform.RdFramework.Serialization.Icons.IconIdMarshallers : object {
+    [CompilerGeneratedAttribute]
+private Lifetime <myLifetime>P;
+    [CompilerGeneratedAttribute]
+private Lazy`1<ThemedIconManagerCreator> <myLazyThemedIconManager>P;
+    public IconIdMarshallers(Lifetime myLifetime, Lazy`1<ThemedIconManagerCreator> myLazyThemedIconManager);
+    private sealed virtual override void JetBrains.Platform.RdFramework.RdVerification.IRdConfigurator.OnCreated(ReflectionSerializersFacade instance);
+    [CompilerGeneratedAttribute]
+private IThemedIconManager <JetBrains.Platform.RdFramework.RdVerification.IRdConfigurator.OnCreated>b__3_0();
+}
+public class JetBrains.Platform.RdFramework.Serialization.Icons.IconIdMarshallingInfo : object {
+    [CompilerGeneratedAttribute]
+private IconId <IconId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IconId <WritableIconId>k__BackingField;
+    [NotNullAttribute]
+public IconId IconId { get; }
+    [NotNullAttribute]
+public IconId WritableIconId { get; }
+    public IconIdMarshallingInfo(IconId iconId, IconId writableIconId);
+    [CompilerGeneratedAttribute]
+public IconId get_IconId();
+    [CompilerGeneratedAttribute]
+public IconId get_WritableIconId();
+}
+public class JetBrains.Platform.RdFramework.Serialization.Icons.IconIdWriteHelper : object {
+    private Dictionary`2<IconId, IconIdMarshallingInfo> myInfos;
+    private IconId myInvalidPlaceholderWritableIconId;
+    [CanBeNullAttribute]
+protected virtual IThemedIconManager TryGetThemedIconManager();
+    protected void Clear();
+    public sealed virtual IconIdMarshallingInfo GetMarshallingInfo(IconId iconId);
+    [CanBeNullAttribute]
+public virtual IconId TryGetWritableIconId(IconId iconId);
+    public static bool EqualsMarshalledIconId(IconId x, IconId y);
+    public static IconId CreateInvalidPlaceholderWritableIconId();
+}
+public class JetBrains.Platform.RdFramework.Serialization.Icons.IconIdWriteHelperWithThemedIconManager : IconIdWriteHelper {
+    private Lifetime myLifetime;
+    private Lazy`1<IThemedIconManager> myLazyThemedIconManager;
+    public IconIdWriteHelperWithThemedIconManager(Lifetime lifetime, Lazy`1<IThemedIconManager> lazyThemedIconManager);
+    protected virtual IThemedIconManager TryGetThemedIconManager();
+    [CompilerGeneratedAttribute]
+private void <TryGetThemedIconManager>b__3_0(PropertyChangedEventArgs`1<IconTheme> args);
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Serialization.Icons.IconSerializers : object {
+    [ExtensionAttribute]
+public static void RegisterImageSerializers(ReflectionSerializers serializers);
+    [ExtensionAttribute]
+public static void RegisterIconIdSerializers(ReflectionSerializers scalarSerializers, IIconIdWriteHelper iconIdWriteHelper);
+    [CompilerGeneratedAttribute]
+internal static void <RegisterIconIdSerializers>g__OverrideSerializerForInheritor|1_2(<>c__DisplayClass1_0& );
+}
+public interface JetBrains.Platform.RdFramework.Serialization.Icons.IIconIdWriteHelper {
+    public abstract virtual IconIdMarshallingInfo GetMarshallingInfo(IconId iconId);
+}
+public class JetBrains.Platform.RdFramework.Serialization.Icons.NullIconId : IconId {
+    public static NullIconId Instance;
+    private static NullIconId();
+    public virtual string ToString();
+    public virtual int CompareTo(IconId otherRaw);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Serialization.PresentableItemSerialization : object {
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+public static PresentableItem ReadPresentableItem(UnsafeReader unreader, SerializationCtx ctx);
+    [ExtensionAttribute]
+[CanBeNullAttribute]
+public static PresentableItemBlock ReadPresentableItemBlock(UnsafeReader unreader, SerializationCtx ctx);
+    [ExtensionAttribute]
+public static void WritePresentableItem(UnsafeWriter unwriter, SerializationCtx ctx, IPresentableItem value);
+    [ExtensionAttribute]
+public static void WritePresentableItemBlock(UnsafeWriter unwriter, SerializationCtx ctx, PresentableItemBlock value);
+    private static void ReadPresentableItemImages(UnsafeReader unreader, SerializationCtx ctx, PresentableItemImageCollection images);
+    private static void WritePresentableItemImages(UnsafeWriter unwriter, SerializationCtx ctx, PresentableItemImageCollection images);
+}
+[RdModelAttribute]
+public class JetBrains.Platform.RdFramework.Serialization.RdAnchoringRect : RdReflectionBindableBase {
+    private RdReflectProperty`1<JetPhysicalRect> myRect;
+    public IProperty`1<JetPhysicalRect> Rectangle { get; }
+    public sealed virtual IProperty`1<JetPhysicalRect> get_Rectangle();
+    public static RdAnchoringRect Wrap(Lifetime lifetime, IAnchoringRect rect);
+}
+[ShellComponentAttribute("16")]
+[ZoneMarkerAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.Platform.RdFramework.Serialization.RegisterSerializersForWellKnownTypes : object {
+    private sealed virtual override void JetBrains.Platform.RdFramework.RdVerification.IRdConfigurator.OnCreated(ReflectionSerializersFacade instance);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Serialization.SerializersEx : object {
+    public static string ProtocolGlobalInternRootKey;
+    private static SerializersEx();
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+public static void WriteImmutableArray(UnsafeWriter writer, SerializationCtx ctx, ImmutableArray`1<T> value, WriteDelegate`2<T, SerializationCtx> itemWriter);
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+public static ImmutableArray`1<T> ReadImmutableArray(UnsafeReader reader, SerializationCtx ctx, ReadDelegate`2<T, SerializationCtx> itemReader);
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+public static void WriteArray(UnsafeWriter writer, CtxWriteDelegate`1<T> itemWriter, SerializationCtx ctx, FrugalLocalList`1<T> value);
+    [NullableContextAttribute("0")]
+[ExtensionAttribute]
+public static FrugalLocalList`1<T> ReadFrugalLocalList(UnsafeReader reader, CtxReadDelegate`1<T> itemReader, SerializationCtx ctx);
+    [NullableContextAttribute("2")]
+[ExtensionAttribute]
+public static TValue ReadRd(UnsafeReader this, SerializationCtx ctx);
+    [ExtensionAttribute]
+public static void WriteRd(UnsafeWriter this, SerializationCtx ctx, TValue value);
+    [ExtensionAttribute]
+public static void WriteRdId(UnsafeWriter writer, RdId value);
+    [ExtensionAttribute]
+public static TValue ReadForceInterned(SerializationCtx ctx, UnsafeReader unreader);
+    [ExtensionAttribute]
+public static void WriteForceInterned(SerializationCtx ctx, UnsafeWriter unwriter, TValue value);
+    [ExtensionAttribute]
+public static void WriteFrugalLocalList(UnsafeWriter this, SerializationCtx ctx, FrugalLocalList`1& value);
+    [ExtensionAttribute]
+public static FrugalLocalList`1<TItem> ReadFrugalLocalList(UnsafeReader this, SerializationCtx ctx);
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Util.PropertyBridgeEx : object {
+    [ExtensionAttribute]
+public static void FlowInto(IProperty`1<TValue> source, Lifetime lifetime, IViewableProperty`1<TValue> target);
+    [ExtensionAttribute]
+public static void FlowInto(IProperty`1<TSource> source, Lifetime lifetime, IViewableProperty`1<TTarget> target, Func`2<TSource, TTarget> convert);
+    [ExtensionAttribute]
+public static void FlowInto(IReadonlyProperty`1<TSource> source, Lifetime lifetime, IProperty`1<TTarget> target, Func`2<TSource, TTarget> convert);
+    [ExtensionAttribute]
+public static void FlowInto(IReadonlyProperty`1<T> source, Lifetime lifetime, IProperty`1<T> target);
+    [ExtensionAttribute]
+public static void FlowInto(IReadonlyProperty`1<TSource> source, Lifetime lifetime, IViewableProperty`1<TTarget> target, Func`2<TSource, TTarget> convert);
+    [ExtensionAttribute]
+public static void FlowInto(IReadonlyProperty`1<T> source, Lifetime lifetime, IViewableProperty`1<T> target);
+    [ExtensionAttribute]
+public static IProperty`1<TTarget> Select(IReadonlyProperty`1<TSource> source, Lifetime lifetime, string comment, Func`2<TSource, TTarget> convert);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Util.RdCallEx : object {
+    [CompilerGeneratedAttribute]
+private static TimeSpan <ShortTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static TimeSpan <LongTimeout>k__BackingField;
+    public static TimeSpan ShortTimeout { get; }
+    public static TimeSpan LongTimeout { get; }
+    public static TimeSpan InfiniteTimeout { get; }
+    private static RdCallEx();
+    [CompilerGeneratedAttribute]
+public static TimeSpan get_ShortTimeout();
+    [CompilerGeneratedAttribute]
+public static TimeSpan get_LongTimeout();
+    public static TimeSpan get_InfiniteTimeout();
+    [ExtensionAttribute]
+public static TOut SyncInterruptible(IRdCall`2<TIn, TOut> call, TIn arg, TimeSpan timeout, int checkPeriodMs);
+    [ExtensionAttribute]
+public static TOut SyncInterruptible(IRdCall`2<TIn, TOut> call, Lifetime lifetime, TIn arg, TimeSpan timeout, int checkPeriodMs);
+    [ExtensionAttribute]
+public static IRdTask`1<TRes> StartOrLocal(RdCall`2<TReq, TRes> self, TReq request, IScheduler responseScheduler);
+    [ExtensionAttribute]
+public static TRes SyncNested(RdCall`2<TReq, TRes> self, TReq request);
+    [ExtensionAttribute]
+public static TRes SyncNested(RdCall`2<TReq, TRes> self, Lifetime lifetime, TReq request);
+}
+public class JetBrains.Platform.RdFramework.Util.RdFreeThreadedBinder : object {
+    private Lifetime myLifetime;
+    private IShellLocks myLocks;
+    private string myTitle;
+    public RdFreeThreadedBinder(Lifetime lifetime, IShellLocks locks, string title);
+    private void Execute(string name, Action action);
+    public void FlowInto(IViewableProperty`1<T> viewableProperty, IProperty`1<T2> property, Func`2<T, T2> convert);
+    public void FlowInto(IViewableProperty`1<T> viewableProperty, IProperty`1<T> property);
+    public void FlowInto(IProperty`1<T> property, IViewableProperty`1<T2> viewableProperty, string title, Func`2<T, T2> convert);
+    public void FlowInto(IProperty`1<T> property, IViewableProperty`1<T> viewableProperty, string title);
+    public void Bind(IProperty`1<T> property, IViewableProperty`1<T2> viewableProperty, string title, Func`2<T, T2> convert, Func`2<T2, T> convertBack);
+    public void Bind(IProperty`1<T> property, IViewableProperty`1<T> viewableProperty, string title);
+    public void Bind(IProperty`1<T> property, IViewableProperty`1<T2> viewableProperty, string title, Func`2<T, T2> convert, Func`2<T2, T> convertBack, Func`3<T2, T2, bool> equals);
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Util.RdIdEx : object {
+    [ExtensionAttribute]
+public static RdId AssertNotNil(RdId that);
+}
+public class JetBrains.Platform.RdFramework.Util.RdPropertyBridge`1 : PropertyBoilerplate`1<TValue> {
+    private IViewableProperty`1<TValue> myViewable;
+    public RdPropertyBridge`1(IViewableProperty`1<TValue> viewable, string id);
+    protected virtual void AdviseCore(Lifetime lifetime, Action`1<PropertyChangedEventArgs`1<TValue>> handler);
+    protected virtual TValue GetValueCore(object cookie);
+    protected virtual bool SetValueCore(TValue value, object cookie);
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.Util.RdPropertyBridgeEx : object {
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static IProperty`1<TValue> AsIProperty(IViewableProperty`1<TValue> viewable, string id);
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static IProperty`1<TValue> AsIProperty(UProperty`1<TValue> rd, string id);
+}
+public class JetBrains.Platform.RdFramework.Util.UInOutSignal`2 : RdReactiveBase {
+    [NotNullAttribute]
+private RdCall`2<TIn, TOut> myRdCall;
+    private ISignal`1<InOutEventArgs`2<TIn, TOut>> myLocalSignal;
+    [CompilerGeneratedAttribute]
+private CtxReadDelegate`1<TIn> <ReadRequestDelegate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CtxWriteDelegate`1<TIn> <WriteRequestDelegate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CtxReadDelegate`1<TOut> <ReadResponseDelegate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CtxWriteDelegate`1<TOut> <WriteResponseDelegate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IScheduler <Scheduler>k__BackingField;
+    [CompilerGeneratedAttribute]
+private PropertyId`1<InOutEventArgs`2<TIn, TOut>> <Id>k__BackingField;
+    public CtxReadDelegate`1<TIn> ReadRequestDelegate { get; }
+    public CtxWriteDelegate`1<TIn> WriteRequestDelegate { get; }
+    public CtxReadDelegate`1<TOut> ReadResponseDelegate { get; }
+    public CtxWriteDelegate`1<TOut> WriteResponseDelegate { get; }
+    public IScheduler Scheduler { get; public set; }
+    public PropertyId`1<InOutEventArgs`2<TIn, TOut>> Id { get; }
+    public IProperty`1<InOutEventArgs`2<TIn, TOut>> Property { get; }
+    public IUntypedSignal AsUntyped { get; }
+    public UInOutSignal`2(CtxReadDelegate`1<TIn> readRequest, CtxWriteDelegate`1<TIn> writeRequest, CtxReadDelegate`1<TOut> readResponse, CtxWriteDelegate`1<TOut> writeResponse);
+    protected virtual void PreInit(Lifetime lifetime, IProtocol proto);
+    public Task`1<TOut> FireAsync(TIn value);
+    public sealed virtual void Fire(InOutEventArgs`2<TIn, TOut> value);
+    [CompilerGeneratedAttribute]
+public CtxReadDelegate`1<TIn> get_ReadRequestDelegate();
+    [CompilerGeneratedAttribute]
+public CtxWriteDelegate`1<TIn> get_WriteRequestDelegate();
+    [CompilerGeneratedAttribute]
+public CtxReadDelegate`1<TOut> get_ReadResponseDelegate();
+    [CompilerGeneratedAttribute]
+public CtxWriteDelegate`1<TOut> get_WriteResponseDelegate();
+    [CompilerGeneratedAttribute]
+public sealed virtual IScheduler get_Scheduler();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Scheduler(IScheduler value);
+    public virtual void OnWireReceived(IProtocol proto, SerializationCtx ctx, UnsafeReader reader, IRdWireableDispatchHelper dispatchHelper);
+    [CompilerGeneratedAttribute]
+public sealed virtual PropertyId`1<InOutEventArgs`2<TIn, TOut>> get_Id();
+    public sealed virtual IProperty`1<InOutEventArgs`2<TIn, TOut>> get_Property();
+    public sealed virtual IUntypedSignal get_AsUntyped();
+    public sealed virtual void Fire(InOutEventArgs`2<TIn, TOut> value, object cookie);
+    public sealed virtual void Advise(Lifetime lifetime, Action`1<InOutEventArgs`2<TIn, TOut>> handler);
+    public sealed virtual void Dispose();
+    public static UInOutSignal`2<TIn, TOut> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TIn> readKey, CtxWriteDelegate`1<TIn> writeKey, CtxReadDelegate`1<TOut> readValue, CtxWriteDelegate`1<TOut> writeValue);
+    public static void Write(SerializationCtx ctx, UnsafeWriter writer, UInOutSignal`2<TIn, TOut> value);
+    [CompilerGeneratedAttribute]
+private TOut <.ctor>b__2_0(TIn i);
+}
+public class JetBrains.Platform.RdFramework.Util.UListEvents`1 : RdList`1<T> {
+    [NotNullAttribute]
+private string myID;
+    private SignalWithDelegates`1<AddRemoveEventArgs`1<T>> mySignalAddRemove;
+    private SignalWithDelegates`1<AddRemoveIndexEventArgs`1<T>> mySignalAddRemoveIndex;
+    public static string LogCategory;
+    private ILogger myLogger;
+    private object mySyncRoot;
+    public ISignal`1<AddRemoveEventArgs`1<T>> AddRemove { get; }
+    public ISignal`1<BeforeAddRemoveEventArgs`1<T>> BeforeAddRemove { get; }
+    private ISignal`1<BeforeAddRemoveIndexEventArgs`1<T>> JetBrains.DataFlow.IListEvents<T>.BeforeAddRemove { get; }
+    private ISignal`1<AddRemoveIndexEventArgs`1<T>> JetBrains.DataFlow.IReadonlyListEvents<T>.AddRemove { get; }
+    public PropertyId`1<T> Id { get; }
+    public object SyncRoot { get; }
+    public bool IsSynchronized { get; }
+    [UsedImplicitlyAttribute]
+public UListEvents`1(string id, CtxReadDelegate`1<T> readValue, CtxWriteDelegate`1<T> writeValue);
+    public UListEvents`1(string id, CtxReadDelegate`1<T> readValue, CtxWriteDelegate`1<T> writeValue, long nextVersion);
+    protected virtual void PreInit(Lifetime lifetime, IProtocol proto);
+    private void OnAcknowledgeSinkAddRemove_Add(Action`1<AddRemoveIndexEventArgs`1<T>> handler);
+    private void OnAcknowledgeSinkAddRemove_Remove(Action`1<AddRemoveIndexEventArgs`1<T>> handler);
+    private void OnAcknowledgeSinkAddRemove(Action`1<AddRemoveEventArgs`1<T>> handler, AddRemove addremove);
+    public sealed virtual ISignal`1<AddRemoveEventArgs`1<T>> get_AddRemove();
+    public sealed virtual ISignal`1<BeforeAddRemoveEventArgs`1<T>> get_BeforeAddRemove();
+    private sealed virtual override ISignal`1<BeforeAddRemoveIndexEventArgs`1<T>> JetBrains.DataFlow.IListEvents<T>.get_BeforeAddRemove();
+    public sealed virtual bool Modify(AddRemove action, T item, int index, object cookie);
+    public sealed virtual bool Modify(AddRemove action, Func`1<T> funcGetItemIfAdding, int index, object cookie);
+    private sealed virtual override ISignal`1<AddRemoveIndexEventArgs`1<T>> JetBrains.DataFlow.IReadonlyListEvents<T>.get_AddRemove();
+    public sealed virtual PropertyId`1<T> get_Id();
+    public sealed virtual T[] ToArray();
+    public sealed virtual List`1<T> ToList();
+    public sealed virtual void CopyTo(Array array, int index);
+    public sealed virtual object get_SyncRoot();
+    public sealed virtual bool get_IsSynchronized();
+    public sealed virtual void View(Lifetime lifetime, Action`2<Lifetime, T> viewer);
+    public sealed virtual bool Add(T value, object cookie);
+    public sealed virtual void AddRange(IEnumerable`1<T> items);
+    public sealed virtual bool Modify(AddRemove action, T item, object cookie);
+    public sealed virtual bool Remove(T value, object cookie);
+    public sealed virtual void Clear(object cookie);
+    public static UListEvents`1<T> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<T> read, CtxWriteDelegate`1<T> write);
+    public static void Write(SerializationCtx ctx, UnsafeWriter writer, UListEvents`1<T> value);
+    [CompilerGeneratedAttribute]
+private void <PreInit>b__7_0(Action`1<AddRemoveEventArgs`1<T>> handler);
+    [CompilerGeneratedAttribute]
+private void <PreInit>b__7_1(Action`1<AddRemoveEventArgs`1<T>> handler);
+    [CompilerGeneratedAttribute]
+private void <PreInit>b__7_2(ListEvent`1<T> e);
+}
+public class JetBrains.Platform.RdFramework.Util.UProperty`1 : object {
+    private Property`1<TValue> myProperty;
+    private RdProperty`1<TValue> myViewableProperty;
+    public ISignal`1<PropertyChangedEventArgs`1<TValue>> Change { get; }
+    public PropertyId`1<TValue> Id { get; }
+    public bool IsNullValueAllowed { get; }
+    public Maybe`1<TValue> Maybe { get; }
+    public TValue Value { get; public set; }
+    private IUntypedProperty JetBrains.DataFlow.IHaveUntypedProperty.AsUntyped { get; }
+    private ISignal`1<BeforePropertyChangedEventArgs`1<TValue>> JetBrains.DataFlow.IProperty<TValue>.BeforeChange { get; }
+    private ISource`1<TValue> JetBrains.Collections.Viewable.IReadonlyProperty<TValue>.Change { get; }
+    private RName JetBrains.Rd.Base.IRdDynamic.Location { get; }
+    private RdId JetBrains.Rd.Base.IRdBindable.RdId { get; private set; }
+    [UsedImplicitlyAttribute]
+public UProperty`1(string id, CtxReadDelegate`1<TValue> readValue, CtxWriteDelegate`1<TValue> writeValue);
+    public UProperty`1(string id, TValue value);
+    public UProperty`1(string id, TValue value, CtxReadDelegate`1<TValue> readValue, CtxWriteDelegate`1<TValue> writeValue);
+    public sealed virtual ISignal`1<PropertyChangedEventArgs`1<TValue>> get_Change();
+    public sealed virtual PropertyId`1<TValue> get_Id();
+    public sealed virtual bool get_IsNullValueAllowed();
+    public sealed virtual Maybe`1<TValue> get_Maybe();
+    public sealed virtual TValue get_Value();
+    public sealed virtual void set_Value(TValue value);
+    private sealed virtual override void JetBrains.Collections.Viewable.ISource<TValue>.Advise(Lifetime lifetime, Action`1<TValue> handler);
+    private sealed virtual override IUntypedProperty JetBrains.DataFlow.IHaveUntypedProperty.get_AsUntyped();
+    private sealed virtual override ISignal`1<BeforePropertyChangedEventArgs`1<TValue>> JetBrains.DataFlow.IProperty<TValue>.get_BeforeChange();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.PreBind(Lifetime lf, IRdDynamic parent, string name);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Bind();
+    private sealed virtual override ISource`1<TValue> JetBrains.Collections.Viewable.IReadonlyProperty<TValue>.get_Change();
+    private sealed virtual override object System.ICloneable.Clone();
+    private sealed virtual override void System.IDisposable.Dispose();
+    private sealed virtual override TValue JetBrains.DataFlow.IProperty<TValue>.GetValue();
+    private sealed virtual override TValue JetBrains.DataFlow.IProperty<TValue>.GetValue(object cookie);
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.Identify(IIdentities identities, RdId id);
+    private void InitDataFlow();
+    private sealed virtual override RName JetBrains.Rd.Base.IRdDynamic.get_Location();
+    private sealed virtual override void JetBrains.Rd.Base.IPrintable.Print(PrettyPrinter printer);
+    private sealed virtual override void System.ComponentModel.INotifyPropertyChanged.add_PropertyChanged(PropertyChangedEventHandler value);
+    private sealed virtual override void System.ComponentModel.INotifyPropertyChanged.remove_PropertyChanged(PropertyChangedEventHandler value);
+    private sealed virtual override void System.ComponentModel.INotifyPropertyChanging.add_PropertyChanging(PropertyChangingEventHandler value);
+    private sealed virtual override void System.ComponentModel.INotifyPropertyChanging.remove_PropertyChanging(PropertyChangingEventHandler value);
+    private sealed virtual override IProtocol JetBrains.Rd.Base.IRdDynamic.TryGetProto();
+    private sealed virtual override RdId JetBrains.Rd.Base.IRdBindable.get_RdId();
+    private sealed virtual override void JetBrains.Rd.Base.IRdBindable.set_RdId(RdId value);
+    private sealed virtual override bool JetBrains.Rd.Base.IRdDynamic.TryGetSerializationContext(SerializationCtx& ctx);
+    private sealed virtual override bool JetBrains.DataFlow.IProperty<TValue>.SetValue(TValue value);
+    public sealed virtual bool SetValue(TValue value, object cookie);
+    public static UProperty`1<TValue> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TValue> readValue, CtxWriteDelegate`1<TValue> writeValue);
+    public static void Write(SerializationCtx ctx, UnsafeWriter writer, UProperty`1<TValue> value);
+}
+public class JetBrains.Platform.RdFramework.Util.USignal`1 : object {
+    private RdSignal`1<TValue> myRdSignal;
+    [CompilerGeneratedAttribute]
+private PropertyId`1<TValue> <Id>k__BackingField;
+    public PropertyId`1<TValue> Id { get; }
+    private IUntypedProperty JetBrains.DataFlow.IUntypedSignal.Property { get; }
+    private PropertyId JetBrains.DataFlow.IUntypedSignal.Id { get; }
+    public IProperty`1<TValue> Property { get; }
+    public Type ArgumentType { get; }
+    public IUntypedSignal AsUntyped { get; }
+    public IScheduler Scheduler { get; public set; }
+    public RName Location { get; }
+    public RdId RdId { get; public set; }
+    [UsedImplicitlyAttribute]
+public USignal`1(string id, CtxReadDelegate`1<TValue> readValue, CtxWriteDelegate`1<TValue> writeValue);
+    public sealed virtual void Advise(Lifetime lifetime, Action`1<TValue> handler);
+    public sealed virtual void Fire(TValue value);
+    public sealed virtual void Fire(TValue value, object cookie);
+    [CompilerGeneratedAttribute]
+public sealed virtual PropertyId`1<TValue> get_Id();
+    private sealed virtual override IUntypedProperty JetBrains.DataFlow.IUntypedSignal.get_Property();
+    private sealed virtual override PropertyId JetBrains.DataFlow.IUntypedSignal.get_Id();
+    public sealed virtual IProperty`1<TValue> get_Property();
+    public sealed virtual Type get_ArgumentType();
+    public sealed virtual IUntypedSignal get_AsUntyped();
+    private sealed virtual override void JetBrains.DataFlow.IUntypedSignal.Advise(Lifetime lifetime, Action`1<object> handler);
+    private sealed virtual override void JetBrains.DataFlow.IUntypedSignal.Fire(object value, object cookie);
+    public sealed virtual IScheduler get_Scheduler();
+    public sealed virtual void set_Scheduler(IScheduler value);
+    public sealed virtual IProtocol TryGetProto();
+    public sealed virtual bool TryGetSerializationContext(SerializationCtx& ctx);
+    public sealed virtual RName get_Location();
+    public sealed virtual void Print(PrettyPrinter printer);
+    public sealed virtual void PreBind(Lifetime lf, IRdDynamic parent, string name);
+    public sealed virtual void Bind();
+    public sealed virtual void Identify(IIdentities identities, RdId id);
+    public sealed virtual RdId get_RdId();
+    public sealed virtual void set_RdId(RdId value);
+    public static USignal`1<TValue> Read(SerializationCtx ctx, UnsafeReader reader, CtxReadDelegate`1<TValue> readValue, CtxWriteDelegate`1<TValue> writeValue);
+    public static void Write(SerializationCtx ctx, UnsafeWriter writer, USignal`1<TValue> value);
+    public sealed virtual void Dispose();
+}
+[IsReadOnlyAttribute]
+public class JetBrains.Rd.ClientId : ValueType {
+    private static ILogger Log;
+    [NotNullAttribute]
+public string Value;
+    [NotNullAttribute]
+private string myDescription;
+    public static AbsenceBehavior AbsenceBehaviorValue;
+    public static ClientId LocalId;
+    public static RdContext`1<string> Context;
+    public static CtxReadDelegate`1<ClientId> ReadDelegate;
+    public static CtxWriteDelegate`1<ClientId> WriteDelegate;
+    public static ClientId Current { get; }
+    [CanBeNullAttribute]
+public static Nullable`1<ClientId> CurrentOrNull { get; }
+    public ClientId(string value);
+    private static ClientId();
+    public virtual string ToString();
+    public static IDisposable CreateCookie(Nullable`1<ClientId> clientId);
+    public static ClientId get_Current();
+    public static Nullable`1<ClientId> get_CurrentOrNull();
+    public sealed virtual bool Equals(ClientId other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(ClientId left, ClientId right);
+    public static bool op_Inequality(ClientId left, ClientId right);
+}
+[ExtensionAttribute]
+public static class JetBrains.Rd.ClientIdEx : object {
+    [ExtensionAttribute]
+public static bool IsLocal(ClientId clientId);
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.Utils.ClientIdUtils.ClientIdUtil : object {
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+[AssertionMethodAttribute]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+public static void AssertClientIdConsistency(ClientId clientId, string message);
+    [ExtensionAttribute]
+public static Lifetime BindToClientId(Lifetime lifetime, ClientId clientId);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

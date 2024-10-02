@@ -1,0 +1,154 @@
+[ObsoleteAttribute("It is recommended to migrate to PriorityTaskScheduler and System.Tasks")]
+public class JetBrains.Common.APM.AsyncTaskDispatcher : object {
+    private int myThreadsAvalaible;
+    private int myResourcesCount;
+    private LinkedList`1<object> myGroupsQueue;
+    private Dictionary`2<object, LinkedList`1<TaskQueue>> myId2GroupMap;
+    private Dictionary`2<ITask, JetHashSet`1<object>> myTaskToGroupsMap;
+    private Dictionary`2<ITask, ITaskController> myTask2Controller;
+    [NotNullAttribute]
+private List`1<TaskData> myActiveTasks;
+    private Func`2<ITask, ITaskController> myTaskControllerFactory;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) myIsDisposed;
+    private AutoResetEvent myRoutineAlarm;
+    private object myCommandsAccess;
+    private Queue`1<Action> myCommands;
+    public AsyncTaskDispatcher(Lifetime lifetime);
+    public AsyncTaskDispatcher(int resourcesCount, Lifetime lifetime);
+    internal AsyncTaskDispatcher(int resourcesCount, Lifetime lifetime, Func`2<ITask, ITaskController> taskControllerFactory);
+    public sealed virtual void AddToHead(ITask task, object groupId);
+    public sealed virtual void AddToHead(IEnumerator`1<ITask> taskQueue, object groupId);
+    public sealed virtual void AddToTail(ITask task, object groupId);
+    public sealed virtual void AddToTail(IEnumerator`1<ITask> taskQueue, object groupId);
+    public sealed virtual void MoveToHead(object groupId);
+    public sealed virtual void Cancel(object groupId, bool andWait);
+    private void FreeAllResources();
+    private void FreeResourcesFor(object groupId);
+    private bool BelongToGroup(ITask task, object groupId);
+    private void Routine();
+    private void ProcessCommands();
+    private bool IsResourcesAvailable();
+    private void IncrementResourcesCount();
+    private int DecrementResourcesCount();
+    private void ProceedQueue();
+    private void ResumePausedTasks(object groupId);
+    private void ExecuteNewTasks(object groupId);
+    private void AttachTask(ITaskController taskController, ITask attachedTask, bool isShared);
+    private ITaskController GetOrCreateTaskController(ITask task);
+    private void SubscribeTaskEvents(ITaskController controller);
+    private void UnsubscribeTaskEvents(ITaskController controller);
+    private void Controller_OnTaskAttached(ITaskController sender, SharedTaskEventArgs e);
+    private void Controller_OnResourceReleased(ITaskController _, EventArgs __);
+    private void Controller_OnCompleted(ITaskController controller, EventArgs _);
+    private void Controller_OnReadyForCaptureResource(ITaskController sender, EventArgs args);
+    private void RemoveTaskFromActiveTasks(ITaskController taskController);
+    private void RemoveGroupsIfEmpty(ITaskController taskController);
+    private static void MoveExistElementToHeadOf(LinkedList`1<T> list, T element);
+    private static void MoveElementToHeadOf(LinkedList`1<T> list, T element);
+    [CompilerGeneratedAttribute]
+private bool <AttachTask>b__32_0(object groupId);
+}
+public interface JetBrains.Common.APM.ITaskController {
+    public ITask Task { get; }
+    public abstract virtual ITask get_Task();
+    public abstract virtual bool CaptureResource();
+    public abstract virtual void ReleaseResource();
+    public abstract virtual void Cancel();
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ResourceReleased(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ResourceReleased(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_TaskAttached(EventHandler`2<ITaskController, SharedTaskEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_TaskAttached(EventHandler`2<ITaskController, SharedTaskEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_Completed(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_Completed(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReadyForCaptureResource(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReadyForCaptureResource(EventHandler`2<ITaskController, EventArgs> value);
+}
+public class JetBrains.Common.APM.SingleTaskQueue : object {
+    private ITask myCurrent;
+    private ITask myTask;
+    public ITask Current { get; }
+    private object System.Collections.IEnumerator.Current { get; }
+    public SingleTaskQueue(ITask task);
+    public sealed virtual void Dispose();
+    public sealed virtual bool MoveNext();
+    public sealed virtual ITask get_Current();
+    private sealed virtual override object System.Collections.IEnumerator.get_Current();
+    public sealed virtual void Reset();
+}
+internal class JetBrains.Common.APM.TaskController : object {
+    private AutoResetEvent myAllowToContinueEvent;
+    private object myStateAccess;
+    private ITask myTask;
+    private bool myIsResourceCaptured;
+    private TaskState myState;
+    [CompilerGeneratedAttribute]
+private EventHandler`2<ITaskController, EventArgs> ResourceReleased;
+    [CompilerGeneratedAttribute]
+private EventHandler`2<ITaskController, SharedTaskEventArgs> TaskAttached;
+    [CompilerGeneratedAttribute]
+private EventHandler`2<ITaskController, EventArgs> Completed;
+    [CompilerGeneratedAttribute]
+private EventHandler`2<ITaskController, EventArgs> ReadyForCaptureResource;
+    public ITask Task { get; }
+    public TaskController(ITask task);
+    public sealed virtual bool CaptureResource();
+    public sealed virtual void ReleaseResource();
+    public sealed virtual void Cancel();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ResourceReleased(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ResourceReleased(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_TaskAttached(EventHandler`2<ITaskController, SharedTaskEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_TaskAttached(EventHandler`2<ITaskController, SharedTaskEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Completed(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Completed(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReadyForCaptureResource(EventHandler`2<ITaskController, EventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReadyForCaptureResource(EventHandler`2<ITaskController, EventArgs> value);
+    public sealed virtual ITask get_Task();
+    private void WaitForTask(ITask task, bool isShared);
+    private void OnTaskCompleted();
+    private void ExecuteActionAsync();
+    private void Yield();
+    private void AttachTask(ITask task, bool isShared);
+    public sealed virtual void Cancel(ITask sender);
+    public sealed virtual void Yield(ITask sender);
+    public sealed virtual void WaitForTask(ITask sender, ITask otherTask, bool isShared);
+    public sealed virtual void AttachTask(ITask sender, ITask otherTask, bool isShared);
+    [CompilerGeneratedAttribute]
+private void <ExecuteActionAsync>b__25_0(ITaskExecutionEnvironment env);
+}
+internal enum JetBrains.Common.APM.TaskState : Enum {
+    public int value__;
+    public static TaskState None;
+    public static TaskState Executing;
+    public static TaskState WaitForPause;
+    public static TaskState Paused;
+    public static TaskState WaitForTask;
+    public static TaskState Completed;
+    public static TaskState Canceled;
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

@@ -1,0 +1,218 @@
+public class Microsoft.Deployment.Compression.Cab.CabEngine : CompressionEngine {
+    private CabPacker packer;
+    private CabUnpacker unpacker;
+    private CabPacker Packer { get; }
+    private CabUnpacker Unpacker { get; }
+    protected virtual void Dispose(bool disposing);
+    private CabPacker get_Packer();
+    private CabUnpacker get_Unpacker();
+    public virtual void Pack(IPackStreamContext streamContext, IEnumerable`1<string> files, long maxArchiveSize);
+    public virtual bool IsArchive(Stream stream);
+    public virtual IList`1<ArchiveFileInfo> GetFileInfo(IUnpackStreamContext streamContext, Predicate`1<string> fileFilter);
+    public virtual void Unpack(IUnpackStreamContext streamContext, Predicate`1<string> fileFilter);
+    internal void ReportProgress(ArchiveProgressEventArgs e);
+}
+public class Microsoft.Deployment.Compression.Cab.CabException : ArchiveException {
+    private static ResourceManager errorResources;
+    private int error;
+    private int errorCode;
+    public int Error { get; }
+    public int ErrorCode { get; }
+    internal static ResourceManager ErrorResources { get; }
+    public CabException(string message, Exception innerException);
+    public CabException(string message);
+    internal CabException(int error, int errorCode, string message, Exception innerException);
+    internal CabException(int error, int errorCode, string message);
+    protected CabException(SerializationInfo info, StreamingContext context);
+    public int get_Error();
+    public int get_ErrorCode();
+    internal static ResourceManager get_ErrorResources();
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+    internal static string GetErrorMessage(int error, int errorCode, bool extracting);
+}
+public class Microsoft.Deployment.Compression.Cab.CabFileInfo : ArchiveFileInfo {
+    private int cabFolder;
+    public CabInfo Cabinet { get; }
+    public string CabinetName { get; }
+    public int CabinetFolderNumber { get; }
+    public CabFileInfo(CabInfo cabinetInfo, string filePath);
+    internal CabFileInfo(string filePath, int cabFolder, int cabNumber, FileAttributes attributes, DateTime lastWriteTime, long length);
+    protected CabFileInfo(SerializationInfo info, StreamingContext context);
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+    public CabInfo get_Cabinet();
+    public string get_CabinetName();
+    public int get_CabinetFolderNumber();
+    protected virtual void Refresh(ArchiveFileInfo newFileInfo);
+}
+public class Microsoft.Deployment.Compression.Cab.CabInfo : ArchiveInfo {
+    public CabInfo(string path);
+    protected CabInfo(SerializationInfo info, StreamingContext context);
+    protected virtual CompressionEngine CreateCompressionEngine();
+    public IList`1<CabFileInfo> GetFiles();
+    public IList`1<CabFileInfo> GetFiles(string searchPattern);
+}
+internal class Microsoft.Deployment.Compression.Cab.CabPacker : CabWorker {
+    private static string TempStreamName;
+    private Handle fciHandle;
+    private PFNALLOC fciAllocMemHandler;
+    private PFNFREE fciFreeMemHandler;
+    private PFNOPEN fciOpenStreamHandler;
+    private PFNREAD fciReadStreamHandler;
+    private PFNWRITE fciWriteStreamHandler;
+    private PFNCLOSE fciCloseStreamHandler;
+    private PFNSEEK fciSeekStreamHandler;
+    private PFNFILEPLACED fciFilePlacedHandler;
+    private PFNDELETE fciDeleteFileHandler;
+    private PFNGETTEMPFILE fciGetTempFileHandler;
+    private PFNGETNEXTCABINET fciGetNextCabinet;
+    private PFNSTATUS fciCreateStatus;
+    private PFNGETOPENINFO fciGetOpenInfo;
+    private IPackStreamContext context;
+    private FileAttributes fileAttributes;
+    private DateTime fileLastWriteTime;
+    private int maxCabBytes;
+    private long totalFolderBytesProcessedInCurrentCab;
+    private CompressionLevel compressionLevel;
+    private bool dontUseTempFiles;
+    private IList`1<Stream> tempStreams;
+    public bool UseTempFiles { get; public set; }
+    public CompressionLevel CompressionLevel { get; public set; }
+    public CabPacker(CabEngine cabEngine);
+    public bool get_UseTempFiles();
+    public void set_UseTempFiles(bool value);
+    public CompressionLevel get_CompressionLevel();
+    public void set_CompressionLevel(CompressionLevel value);
+    private void CreateFci(long maxArchiveSize);
+    public void Pack(IPackStreamContext streamContext, IEnumerable`1<string> files, long maxArchiveSize);
+    internal virtual int CabOpenStreamEx(string path, int openFlags, int shareMode, Int32& err, IntPtr pv);
+    internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, Int32& err, IntPtr pv);
+    internal virtual int CabCloseStreamEx(int streamHandle, Int32& err, IntPtr pv);
+    protected virtual void Dispose(bool disposing);
+    private static TCOMP GetCompressionType(CompressionLevel compLevel);
+    private void AddFile(string name, Stream stream, FileAttributes attributes, DateTime lastWriteTime, bool execute, CompressionLevel compLevel);
+    private void FlushFolder();
+    private void FlushCabinet();
+    private int CabGetOpenInfo(string path, Int16& date, Int16& time, Int16& attribs, Int32& err, IntPtr pv);
+    private int CabFilePlaced(IntPtr pccab, string filePath, long fileSize, int continuation, IntPtr pv);
+    private int CabGetNextCabinet(IntPtr pccab, UInt32 prevCabSize, IntPtr pv);
+    private int CabCreateStatus(STATUS typeStatus, UInt32 cb1, UInt32 cb2, IntPtr pv);
+    private int CabGetTempFile(IntPtr tempNamePtr, int tempNameSize, IntPtr pv);
+    private int CabDeleteFile(string path, Int32& err, IntPtr pv);
+}
+internal class Microsoft.Deployment.Compression.Cab.CabUnpacker : CabWorker {
+    private Handle fdiHandle;
+    private PFNALLOC fdiAllocMemHandler;
+    private PFNFREE fdiFreeMemHandler;
+    private PFNOPEN fdiOpenStreamHandler;
+    private PFNREAD fdiReadStreamHandler;
+    private PFNWRITE fdiWriteStreamHandler;
+    private PFNCLOSE fdiCloseStreamHandler;
+    private PFNSEEK fdiSeekStreamHandler;
+    private IUnpackStreamContext context;
+    private List`1<ArchiveFileInfo> fileList;
+    private int folderId;
+    private Predicate`1<string> filter;
+    public CabUnpacker(CabEngine cabEngine);
+    public bool IsArchive(Stream stream);
+    public IList`1<ArchiveFileInfo> GetFileInfo(IUnpackStreamContext streamContext, Predicate`1<string> fileFilter);
+    public void Unpack(IUnpackStreamContext streamContext, Predicate`1<string> fileFilter);
+    internal virtual int CabOpenStreamEx(string path, int openFlags, int shareMode, Int32& err, IntPtr pv);
+    internal virtual int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, Int32& err, IntPtr pv);
+    internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, Int32& err, IntPtr pv);
+    internal virtual int CabCloseStreamEx(int streamHandle, Int32& err, IntPtr pv);
+    protected virtual void Dispose(bool disposing);
+    private static string GetFileName(NOTIFICATION notification);
+    private bool IsCabinet(Stream cabStream, Int16& id, Int32& cabFolderCount, Int32& fileCount);
+    private int CabListNotify(NOTIFICATIONTYPE notificationType, NOTIFICATION notification);
+    private int CabExtractNotify(NOTIFICATIONTYPE notificationType, NOTIFICATION notification);
+    private int CabExtractCopyFile(NOTIFICATION notification);
+    private int CabExtractCloseFile(NOTIFICATION notification);
+}
+internal abstract class Microsoft.Deployment.Compression.Cab.CabWorker : object {
+    internal static string CabStreamName;
+    private CabEngine cabEngine;
+    private HandleManager`1<Stream> streamHandles;
+    private Stream cabStream;
+    private Stream fileStream;
+    private ERF erf;
+    private GCHandle erfHandle;
+    private IDictionary`2<string, short> cabNumbers;
+    private string nextCabinetName;
+    private bool suppressProgressEvents;
+    private Byte[] buf;
+    protected string currentFileName;
+    protected int currentFileNumber;
+    protected int totalFiles;
+    protected long currentFileBytesProcessed;
+    protected long currentFileTotalBytes;
+    protected short currentFolderNumber;
+    protected long currentFolderTotalBytes;
+    protected string currentArchiveName;
+    protected short currentArchiveNumber;
+    protected short totalArchives;
+    protected long currentArchiveBytesProcessed;
+    protected long currentArchiveTotalBytes;
+    protected long fileBytesProcessed;
+    protected long totalFileBytes;
+    public CabEngine CabEngine { get; }
+    internal ERF Erf { get; }
+    internal GCHandle ErfHandle { get; }
+    internal HandleManager`1<Stream> StreamHandles { get; }
+    internal bool SuppressProgressEvents { get; internal set; }
+    internal IDictionary`2<string, short> CabNumbers { get; }
+    internal string NextCabinetName { get; internal set; }
+    internal Stream CabStream { get; internal set; }
+    internal Stream FileStream { get; internal set; }
+    protected CabWorker(CabEngine cabEngine);
+    protected virtual override void Finalize();
+    public CabEngine get_CabEngine();
+    internal ERF get_Erf();
+    internal GCHandle get_ErfHandle();
+    internal HandleManager`1<Stream> get_StreamHandles();
+    internal bool get_SuppressProgressEvents();
+    internal void set_SuppressProgressEvents(bool value);
+    internal IDictionary`2<string, short> get_CabNumbers();
+    internal string get_NextCabinetName();
+    internal void set_NextCabinetName(string value);
+    internal Stream get_CabStream();
+    internal void set_CabStream(Stream value);
+    internal Stream get_FileStream();
+    internal void set_FileStream(Stream value);
+    public sealed virtual void Dispose();
+    protected void ResetProgressData();
+    protected void OnProgress(ArchiveProgressType progressType);
+    internal IntPtr CabAllocMem(int byteCount);
+    internal void CabFreeMem(IntPtr memPointer);
+    internal int CabOpenStream(string path, int openFlags, int shareMode);
+    internal virtual int CabOpenStreamEx(string path, int openFlags, int shareMode, Int32& err, IntPtr pv);
+    internal int CabReadStream(int streamHandle, IntPtr memory, int cb);
+    internal virtual int CabReadStreamEx(int streamHandle, IntPtr memory, int cb, Int32& err, IntPtr pv);
+    internal int CabWriteStream(int streamHandle, IntPtr memory, int cb);
+    internal virtual int CabWriteStreamEx(int streamHandle, IntPtr memory, int cb, Int32& err, IntPtr pv);
+    internal int CabCloseStream(int streamHandle);
+    internal virtual int CabCloseStreamEx(int streamHandle, Int32& err, IntPtr pv);
+    internal int CabSeekStream(int streamHandle, int offset, int seekOrigin);
+    internal virtual int CabSeekStreamEx(int streamHandle, int offset, int seekOrigin, Int32& err, IntPtr pv);
+    protected virtual void Dispose(bool disposing);
+    protected void CheckError(bool extracting);
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.Deployment.Compression.Cab.HandleManager`1 : object {
+    private List`1<T> handles;
+    public T Item { get; }
+    public T get_Item(int handle);
+    public int AllocHandle(T obj);
+    public void FreeHandle(int handle);
+}
+internal static class Microsoft.Deployment.Compression.Cab.NativeMethods : object {
+}
+internal static class Microsoft.Tools.WindowsInstallerXml.WixDistribution : object {
+    public static string NewsUrl;
+    public static string ShortProduct;
+    public static string SupportUrl;
+    public static string TelemetryUrlFormat;
+    public static string VSExtensionsLandingUrl;
+    private static WixDistribution();
+    public static string ReplacePlaceholders(string original, Assembly assembly);
+    private static bool TryGetAttribute(Assembly assembly, T& attribute);
+}

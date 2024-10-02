@@ -1,0 +1,1777 @@
+internal class JetBrains.Common.Timeline.EventLog.Cache.ChunksCache : object {
+    private object myAllocationLock;
+    private Queue`1<AllocationToken> myQueue;
+    private Func`3<ChunkInfoShort, IEventLog, ILoadedChunk> myLoader;
+    private Dictionary`2<ValueTuple`2<int, ChunkReference>, CacheEntry> myCache;
+    private ReaderWriterLock myCacheLock;
+    private AutoResetEvent myCacheCleanupTrigger;
+    private ManualResetEvent myDaemonFinishEvent;
+    private static TimeSpan ourCleanupCheckFrequency;
+    private static TimeSpan ourCachedNodeLifetimeDuration;
+    private static double CleanupFactor;
+    private long myTotalSize;
+    private long myMaxSize;
+    private int myAllocationId;
+    public long MaxSize { get; public set; }
+    public long Size { get; }
+    public int ChunksNum { get; }
+    public ChunksCache(Lifetime lifetime, Func`3<ChunkInfoShort, IEventLog, ILoadedChunk> loader, long maxSize);
+    private static ChunksCache();
+    private int GetDisposedAllocationIdOlderThan(DateTime time);
+    private int GetDisposedAllocationIdToFree(long size);
+    private long ClearCache(int maxAllocationID);
+    private void CacheDaemonProc();
+    public sealed virtual IChunk GetChunk(IEventLog log, ChunkInfoShort info, IAllocationToken token);
+    private IChunk TryGetChunkFromCache(ValueTuple`2<int, ChunkReference> key, AllocationToken t);
+    public sealed virtual IAllocationToken StartAllocation();
+    public sealed virtual long get_MaxSize();
+    public sealed virtual void set_MaxSize(long value);
+    public sealed virtual long get_Size();
+    public sealed virtual int get_ChunksNum();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__14_0();
+}
+public interface JetBrains.Common.Timeline.EventLog.Cache.IAllocationToken {
+    public long AllocatedSize { get; }
+    public abstract virtual long get_AllocatedSize();
+}
+internal interface JetBrains.Common.Timeline.EventLog.Cache.IChunksCache {
+    public long MaxSize { get; public set; }
+    public long Size { get; }
+    public int ChunksNum { get; }
+    public abstract virtual IChunk GetChunk(IEventLog log, ChunkInfoShort info, IAllocationToken token);
+    public abstract virtual IAllocationToken StartAllocation();
+    public abstract virtual long get_MaxSize();
+    public abstract virtual void set_MaxSize(long value);
+    public abstract virtual long get_Size();
+    public abstract virtual int get_ChunksNum();
+}
+public interface JetBrains.Common.Timeline.EventLog.Cache.ILoadedChunk {
+    public int Size { get; }
+    public abstract virtual int get_Size();
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.Timeline.EventLog.ChunkEx : object {
+    [ExtensionAttribute]
+internal static IEnumerable`1<EventOrChunk> GetChildren(IChunk chunk);
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Common.Timeline.EventLog.EventDetails : object {
+    [CompilerGeneratedAttribute]
+private Action Ready;
+    private UInt64[] myValues;
+    private byte myPendingProperties;
+    public int Count { get; }
+    private byte PendingProperties { get; private set; }
+    public bool HasPendingProperties { get; }
+    public ulong Item { get; public set; }
+    public EventDetails(UInt64[] values);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_Ready(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_Ready(Action value);
+    public static EventDetails CreateEmpty(int valuesNum);
+    public sealed virtual int get_Count();
+    private byte get_PendingProperties();
+    private void set_PendingProperties(byte value);
+    public sealed virtual bool get_HasPendingProperties();
+    public sealed virtual void StartPendingProperty();
+    public sealed virtual void StopPendingProperty();
+    public sealed virtual UInt64[] GetValues();
+    public sealed virtual ulong get_Item(int index);
+    public sealed virtual void set_Item(int index, ulong value);
+    [LocalizableAttribute("False")]
+public virtual string ToString();
+    public sealed virtual IEventDetails Clone();
+}
+internal class JetBrains.Common.Timeline.EventLog.EventLog : object {
+    private ILayerDescriptor myLayer;
+    private EventTreeHeader myEventTreeHeader;
+    private IEventTreeExplorer myExplorer;
+    private ChunkInfo myRootInfo;
+    private IThreadDescriptor myThreadDescriptor;
+    public ILayerDescriptor LayerDescriptor { get; }
+    public IEventTreeExplorer TreeExplorer { get; }
+    public ChunkInfo RootStatistics { get; }
+    public IThreadDescriptor ThreadDescriptor { get; }
+    internal EventLog(ILayerDescriptor layer, IThreadDescriptor threadDescriptor, EventTreeHeader eventTreeHeader);
+    internal void Init(IEventTreeExplorer explorer);
+    public sealed virtual ILayerDescriptor get_LayerDescriptor();
+    public sealed virtual IEventTreeExplorer get_TreeExplorer();
+    public sealed virtual ChunkInfo get_RootStatistics();
+    public sealed virtual IThreadDescriptor get_ThreadDescriptor();
+    public sealed virtual double GetPeak(KnownStatistics statisticsId, byte level, bool normalized);
+    public virtual string ToString();
+}
+public class JetBrains.Common.Timeline.EventLog.EventSession : object {
+    private Dictionary`2<ThreadId, IThreadModel> myThreads;
+    private IReadOnlyCollection`1<ThreadId> myThreadIdsReadonly;
+    private IThreadModel myRuntime;
+    private IEventLog[] myLogs;
+    private ILayerDescriptor[] myLayers;
+    private IEventTypeDescriptor[] myEventTypes;
+    private OneToListMap`2<int, int> myEventToLayerMap;
+    [CompilerGeneratedAttribute]
+private ulong <TicksPerSecond>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ModelRange <Range>k__BackingField;
+    public IEnumerable`1<IEventTypeDescriptor> EventTypes { get; }
+    public IEnumerable`1<ILayerDescriptor> Layers { get; }
+    public IEnumerable`1<IEventLog> Logs { get; }
+    public ulong TicksPerSecond { get; }
+    public ModelRange Range { get; }
+    private IReadOnlyCollection`1<ThreadId> JetBrains.Common.Timeline.EventLog.Interface.ILogStorage.Threads { get; }
+    internal EventSession(IEnumerable`1<IEventLog> logs, ILayerDescriptor[] layers, IEventTypeDescriptor[] eventTypes, ulong ticksPerSecond, ModelRange range);
+    public sealed virtual IEnumerable`1<IEventTypeDescriptor> get_EventTypes();
+    public sealed virtual IEnumerable`1<ILayerDescriptor> get_Layers();
+    public sealed virtual IEnumerable`1<IEventLog> get_Logs();
+    public sealed virtual IEnumerable`1<int> GetLayerIds(int eventId);
+    [CompilerGeneratedAttribute]
+public sealed virtual ulong get_TicksPerSecond();
+    [CompilerGeneratedAttribute]
+public sealed virtual ModelRange get_Range();
+    public sealed virtual IEventLog GetLog(ThreadId thread, int layer);
+    public sealed virtual IThreadDescriptor GetThread(ThreadId thread);
+    public sealed virtual ILayerDescriptor GetLayer(int layer);
+    public sealed virtual IEventTypeDescriptor GetEvent(int eventType);
+    private sealed virtual override IReadOnlyCollection`1<ThreadId> JetBrains.Common.Timeline.EventLog.Interface.ILogStorage.get_Threads();
+}
+public static class JetBrains.Common.Timeline.EventLog.EventSessionReader : object {
+    private static ILogger ourLog;
+    private static EventSessionReader();
+    public static ILogStorage Open(Lifetime lifetime, Func`2<Lifetime, BinaryReader> getRootSection, Func`3<Lifetime, int, BinaryReader> layerReader);
+}
+internal class JetBrains.Common.Timeline.EventLog.EventTreeExplorer : object {
+    private IEventLog myLog;
+    private IChunksCache myNodesCache;
+    public ModelRange Range { get; }
+    public ThreadId ThreadId { get; }
+    public EventTreeExplorer(IEventLog log, IChunksCache nodesCache);
+    [IteratorStateMachineAttribute("JetBrains.Common.Timeline.EventLog.EventTreeExplorer/<GetNodesCore>d__3")]
+private IEnumerable`1<EventOrChunk> GetNodesCore(ulong startTick, Predicate`1<ChunkInfo> enterPredicate);
+    public sealed virtual IEnumerable`1<EventOrChunk> GetNodes(ulong startTick, Predicate`1<ChunkInfo> enterPredicate);
+    public sealed virtual ModelRange get_Range();
+    public sealed virtual ThreadId get_ThreadId();
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.Timeline.EventLog.GoogleProtobufEx : object {
+    [ExtensionAttribute]
+public static T ReadSizedStruct(BinaryReader binaryReader, MessageParser`1<T> messageParser);
+}
+public interface JetBrains.Common.Timeline.EventLog.IChunk {
+    public abstract virtual IEnumerable`1<EventOrChunk> GetChildrenAfter(ulong startTick);
+}
+internal interface JetBrains.Common.Timeline.EventLog.IEventTreeNode {
+    public IEventTreeNode Left { get; }
+    public IEventTreeNode Right { get; }
+    public IEventItem Event { get; }
+    public bool IsLeaf { get; }
+    public abstract virtual IEventTreeNode get_Left();
+    public abstract virtual IEventTreeNode get_Right();
+    public abstract virtual IEventItem get_Event();
+    public abstract virtual bool get_IsLeaf();
+}
+internal interface JetBrains.Common.Timeline.EventLog.ILazyNodeFactory {
+    public abstract virtual IChunk CreateLazyLoadingNode(Int64[] statistics, ChunkPosition position, long reference, ulong leftTick, ulong rightTick);
+}
+public abstract class JetBrains.Common.Timeline.EventLog.Logger.EventsLoggerBase`1 : object {
+    private IChunkPool`1<TChunk> myChunkPool;
+    private IList`1<TChunk> myChunkStack;
+    private bool myIsFinished;
+    private UInt32 myEventsCount;
+    private TChunk PreviousChunk { get; }
+    private TChunk TopChunk { get; }
+    public UInt32 EventsCount { get; }
+    protected EventsLoggerBase`1(IChunkPool`1<TChunk> chunkPool);
+    private TChunk get_PreviousChunk();
+    private TChunk get_TopChunk();
+    protected abstract virtual ChunkInfo WriteChunk(TChunk chunk);
+    protected virtual void FinalizeLog(ChunkInfo rootRef);
+    public sealed virtual void Dispose();
+    private void PopChunk();
+    public sealed virtual void LogEvent(EventInfo eventInfo);
+    public sealed virtual UInt32 get_EventsCount();
+    public sealed virtual void Close();
+    private void FlushChunks(byte level, int minStackSize);
+    private TChunk PrepareTopChunk(ChunkPosition position);
+    protected void LogChunkRef(ChunkInfo chunkInfo, ChunkPosition position);
+    private void AddChunkRefCore(ChunkInfo chunkInfo, ChunkPosition position);
+    private void AddEvent(EventInfo eventInfo, ChunkPosition eventChunkPosition);
+    protected abstract virtual bool IsChunkReadyToWrite(TChunk chunk);
+    private void MergeChunks(TChunk src, TChunk dst);
+}
+public interface JetBrains.Common.Timeline.EventLog.Logger.IChunkFactory`1 {
+    public abstract virtual TChunk Create();
+}
+public interface JetBrains.Common.Timeline.EventLog.Logger.IChunkPool`1 {
+    public abstract virtual TChunk GetNewChunk(ChunkPosition position);
+    public abstract virtual void DisposeChunk(TChunk chunk);
+}
+public interface JetBrains.Common.Timeline.EventLog.Logger.ILoggerChunk {
+    public IList`1<EventOrChunk> Items { get; }
+    public ChunkPosition Position { get; public set; }
+    public int ItemsNum { get; }
+    public abstract virtual IList`1<EventOrChunk> get_Items();
+    public abstract virtual ChunkPosition get_Position();
+    public abstract virtual void set_Position(ChunkPosition value);
+    public abstract virtual int get_ItemsNum();
+    public abstract virtual void IncreaseLevel();
+    public abstract virtual void AddItem(EventOrChunk item);
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.Timeline.EventLog.Logger.LoggerChunkEx : object {
+    [ExtensionAttribute]
+public static void AddItem(ILoggerChunk chunk, EventInfo eventInfo);
+    [ExtensionAttribute]
+public static void AddItem(ILoggerChunk chunk, ChunkInfo chunkInfo);
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.Timeline.EventLog.PropertyTypeHelper : object {
+    [ExtensionAttribute]
+public static byte GetSize(PropertyType type);
+    [ExtensionAttribute]
+public static ulong ReadAsUlong(PropertyType type, Byte* address, Byte& sizeInBytes);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.EventPropertyDescriptor : object {
+    [CompilerGeneratedAttribute]
+private int <Index>k__BackingField;
+    private static MessageParser`1<EventPropertyDescriptor> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int TypeFieldNumber;
+    private static int TypeDefaultValue;
+    private int type_;
+    public static int EnumValuesFieldNumber;
+    private static FieldCodec`1<ByteString> _repeated_enumValues_codec;
+    private RepeatedField`1<ByteString> enumValues_;
+    public static int NameFieldNumber;
+    private static ByteString NameDefaultValue;
+    private ByteString name_;
+    public static int IDFieldNumber;
+    private static int IDDefaultValue;
+    private int iD_;
+    private PropertyType JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.Type { get; }
+    private String[] JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.EnumValues { get; }
+    private string JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.Name { get; }
+    public int Index { get; public set; }
+    unknown string PropertyName {public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<EventPropertyDescriptor> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int Type { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasType { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<ByteString> EnumValues { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ByteString Name { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasName { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int ID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasID { get; }
+    public EventPropertyDescriptor(PropertyType propertyType, string name, int id);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public EventPropertyDescriptor(EventPropertyDescriptor other);
+    private static EventPropertyDescriptor();
+    private sealed virtual override PropertyType JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.get_Type();
+    public void AddEnumValue(string value);
+    private sealed virtual override String[] JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.get_EnumValues();
+    private sealed virtual override string JetBrains.Common.Timeline.EventLog.Interface.IEventPropertyDescriptor.get_Name();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Index();
+    [CompilerGeneratedAttribute]
+public void set_Index(int value);
+    public void set_PropertyName(string value);
+    [ObsoleteAttribute("INTERNAL USE ONLY: Use ForEnum passing enum type which registered in EnumPropertyToType.Map for localization purposes")]
+public static EventPropertyDescriptor ForEnum(string propertyName, int id);
+    public static EventPropertyDescriptor ForEnum(string propertyName, int id, Type enumType);
+    public static MessageParser`1<EventPropertyDescriptor> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual EventPropertyDescriptor Clone();
+    public int get_Type();
+    public void set_Type(int value);
+    public bool get_HasType();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearType();
+    public RepeatedField`1<ByteString> get_EnumValues();
+    public ByteString get_Name();
+    public void set_Name(ByteString value);
+    public bool get_HasName();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearName();
+    public sealed virtual int get_ID();
+    public void set_ID(int value);
+    public bool get_HasID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(EventPropertyDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(EventPropertyDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+public static class JetBrains.Common.Timeline.EventLog.Protobuf.EventsReflection : object {
+    private static FileDescriptor descriptor;
+    public static FileDescriptor Descriptor { get; }
+    private static EventsReflection();
+    public static FileDescriptor get_Descriptor();
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.EventTreeHeader : object {
+    private static MessageParser`1<EventTreeHeader> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int LayerIDFieldNumber;
+    private static int LayerIDDefaultValue;
+    private int layerID_;
+    public static int ThreadIDFieldNumber;
+    private static UInt32 ThreadIDDefaultValue;
+    private UInt32 threadID_;
+    public static int RootChunkOffsetFieldNumber;
+    private static long RootChunkOffsetDefaultValue;
+    private long rootChunkOffset_;
+    public static int IsFirstEventTruncatedFieldNumber;
+    private static bool IsFirstEventTruncatedDefaultValue;
+    private bool isFirstEventTruncated_;
+    public static int IsLastEventTruncatedFieldNumber;
+    private static bool IsLastEventTruncatedDefaultValue;
+    private bool isLastEventTruncated_;
+    public static int PeaksFieldNumber;
+    private static FieldCodec`1<PeaksList> _repeated_peaks_codec;
+    private RepeatedField`1<PeaksList> peaks_;
+    public static int LeftTickFieldNumber;
+    private static ulong LeftTickDefaultValue;
+    private ulong leftTick_;
+    public static int RightTickFieldNumber;
+    private static ulong RightTickDefaultValue;
+    private ulong rightTick_;
+    public static int StatisticsFieldNumber;
+    private StatisticsList statistics_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<EventTreeHeader> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int LayerID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasLayerID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public UInt32 ThreadID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasThreadID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public long RootChunkOffset { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasRootChunkOffset { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool IsFirstEventTruncated { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasIsFirstEventTruncated { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool IsLastEventTruncated { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasIsLastEventTruncated { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<PeaksList> Peaks { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong LeftTick { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasLeftTick { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong RightTick { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasRightTick { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public StatisticsList Statistics { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public EventTreeHeader(EventTreeHeader other);
+    private static EventTreeHeader();
+    public static MessageParser`1<EventTreeHeader> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual EventTreeHeader Clone();
+    public int get_LayerID();
+    public void set_LayerID(int value);
+    public bool get_HasLayerID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearLayerID();
+    public UInt32 get_ThreadID();
+    public void set_ThreadID(UInt32 value);
+    public bool get_HasThreadID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearThreadID();
+    public long get_RootChunkOffset();
+    public void set_RootChunkOffset(long value);
+    public bool get_HasRootChunkOffset();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearRootChunkOffset();
+    public bool get_IsFirstEventTruncated();
+    public void set_IsFirstEventTruncated(bool value);
+    public bool get_HasIsFirstEventTruncated();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearIsFirstEventTruncated();
+    public bool get_IsLastEventTruncated();
+    public void set_IsLastEventTruncated(bool value);
+    public bool get_HasIsLastEventTruncated();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearIsLastEventTruncated();
+    public RepeatedField`1<PeaksList> get_Peaks();
+    public ulong get_LeftTick();
+    public void set_LeftTick(ulong value);
+    public bool get_HasLeftTick();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearLeftTick();
+    public ulong get_RightTick();
+    public void set_RightTick(ulong value);
+    public bool get_HasRightTick();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearRightTick();
+    public StatisticsList get_Statistics();
+    public void set_Statistics(StatisticsList value);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(EventTreeHeader other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(EventTreeHeader other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.EventTypeDescriptor : object {
+    private static MessageParser`1<EventTypeDescriptor> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int IDFieldNumber;
+    private static int IDDefaultValue;
+    private int iD_;
+    public static int PropertiesFieldNumber;
+    private static FieldCodec`1<EventPropertyDescriptor> _repeated_properties_codec;
+    private RepeatedField`1<EventPropertyDescriptor> properties_;
+    private ushort myDetailsSize;
+    private IEventPropertyDescriptor[] myProperties;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<EventTypeDescriptor> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int ID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<EventPropertyDescriptor> Properties { get; }
+    private IEventPropertyDescriptor[] JetBrains.Common.Timeline.EventLog.Interface.IEventTypeDescriptor.Properties { get; }
+    public ushort DetailsSize { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public EventTypeDescriptor(EventTypeDescriptor other);
+    public EventTypeDescriptor(KnownEventTypes eventType, EventPropertyDescriptor[] properties);
+    private static EventTypeDescriptor();
+    public static MessageParser`1<EventTypeDescriptor> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual EventTypeDescriptor Clone();
+    public sealed virtual int get_ID();
+    public void set_ID(int value);
+    public bool get_HasID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearID();
+    public RepeatedField`1<EventPropertyDescriptor> get_Properties();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(EventTypeDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(EventTypeDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+    private void Init();
+    public void InitAfterDeserialization();
+    public void AddProperty(EventPropertyDescriptor property);
+    private sealed virtual override IEventPropertyDescriptor[] JetBrains.Common.Timeline.EventLog.Interface.IEventTypeDescriptor.get_Properties();
+    public sealed virtual ushort get_DetailsSize();
+    public static EventTypeDescriptor Create(KnownEventTypes eventType, EventPropertyDescriptor[] properties);
+}
+public enum JetBrains.Common.Timeline.EventLog.Protobuf.GlobalMessageType : Enum {
+    public int value__;
+    [OriginalNameAttribute("ChunkMessage")]
+public static GlobalMessageType ChunkMessage;
+    [OriginalNameAttribute("EventDetailsMessage")]
+public static GlobalMessageType EventDetailsMessage;
+    [OriginalNameAttribute("EventTreeHeaderMessage")]
+public static GlobalMessageType EventTreeHeaderMessage;
+    [OriginalNameAttribute("ThreadDescriptorMessage")]
+public static GlobalMessageType ThreadDescriptorMessage;
+    [OriginalNameAttribute("EventTypeDescriptorMessage")]
+public static GlobalMessageType EventTypeDescriptorMessage;
+    [OriginalNameAttribute("StatisticsDescriptorMessage")]
+public static GlobalMessageType StatisticsDescriptorMessage;
+    [OriginalNameAttribute("LogIndexMessage")]
+public static GlobalMessageType LogIndexMessage;
+    [OriginalNameAttribute("StringMessage")]
+public static GlobalMessageType StringMessage;
+    [OriginalNameAttribute("LogHeaderMessage")]
+public static GlobalMessageType LogHeaderMessage;
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.LayerDescriptor : object {
+    private static MessageParser`1<LayerDescriptor> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int IDFieldNumber;
+    private static int IDDefaultValue;
+    private int iD_;
+    public static int EventTypesFieldNumber;
+    private static FieldCodec`1<int> _repeated_eventTypes_codec;
+    private RepeatedField`1<int> eventTypes_;
+    public static int StatisticDescriptorsFieldNumber;
+    private static FieldCodec`1<StatisticsDescriptor> _repeated_statisticDescriptors_codec;
+    private RepeatedField`1<StatisticsDescriptor> statisticDescriptors_;
+    public static int StatisticPeaksIDsFieldNumber;
+    private static FieldCodec`1<int> _repeated_statisticPeaksIDs_codec;
+    private RepeatedField`1<int> statisticPeaksIDs_;
+    public static int NormalizedStatisticPeaksIDsFieldNumber;
+    private static FieldCodec`1<int> _repeated_normalizedStatisticPeaksIDs_codec;
+    private RepeatedField`1<int> normalizedStatisticPeaksIDs_;
+    public static int NameFieldNumber;
+    private static ByteString NameDefaultValue;
+    private ByteString name_;
+    public static int StorageTypeFieldNumber;
+    private static StorageType StorageTypeDefaultValue;
+    private StorageType storageType_;
+    private IEventTypeDescriptor[] myEventTypes;
+    private TimelineStatistics[] myStatistics;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<LayerDescriptor> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int ID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<int> EventTypes { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<StatisticsDescriptor> StatisticDescriptors { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<int> StatisticPeaksIDs { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<int> NormalizedStatisticPeaksIDs { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ByteString Name { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasName { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public StorageType StorageType { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasStorageType { get; }
+    public int Id { get; }
+    private string JetBrains.Common.Timeline.EventLog.Interface.Reader.ILayerDescriptor.Name { get; }
+    public StorageTypeAdapter StorageTypeAdapter { get; }
+    private IEventTypeDescriptor[] JetBrains.Common.Timeline.EventLog.Interface.Reader.ILayerDescriptor.EventTypes { get; }
+    public TimelineStatistics[] Statistics { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public LayerDescriptor(LayerDescriptor other);
+    private static LayerDescriptor();
+    public static MessageParser`1<LayerDescriptor> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    public int get_ID();
+    public void set_ID(int value);
+    public bool get_HasID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearID();
+    public RepeatedField`1<int> get_EventTypes();
+    public RepeatedField`1<StatisticsDescriptor> get_StatisticDescriptors();
+    public RepeatedField`1<int> get_StatisticPeaksIDs();
+    public RepeatedField`1<int> get_NormalizedStatisticPeaksIDs();
+    public ByteString get_Name();
+    public void set_Name(ByteString value);
+    public bool get_HasName();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearName();
+    public StorageType get_StorageType();
+    public void set_StorageType(StorageType value);
+    public bool get_HasStorageType();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearStorageType();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(LayerDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(LayerDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+    public sealed virtual int get_Id();
+    private sealed virtual override string JetBrains.Common.Timeline.EventLog.Interface.Reader.ILayerDescriptor.get_Name();
+    public sealed virtual StorageTypeAdapter get_StorageTypeAdapter();
+    private sealed virtual override IEventTypeDescriptor[] JetBrains.Common.Timeline.EventLog.Interface.Reader.ILayerDescriptor.get_EventTypes();
+    public void Init(Func`2<int, IEventTypeDescriptor> eventTypeDescriptorsProvider);
+    public sealed virtual LayerDescriptor Clone();
+    public sealed virtual TimelineStatistics[] get_Statistics();
+    public sealed virtual int GetPeakStatisticIndex(int statisticsId, bool normalized);
+    public static LayerDescriptor ForSinglePoints(KnownEventTypes type);
+    public static LayerDescriptor ForSingleState(KnownEventTypes type);
+    public static LayerDescriptor ForSingleEventType(KnownEventTypes type);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.LogHeader : object {
+    private static MessageParser`1<LogHeader> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int ProcessIDFieldNumber;
+    private static UInt32 ProcessIDDefaultValue;
+    private UInt32 processID_;
+    public static int TicksPerSecondFieldNumber;
+    private static ulong TicksPerSecondDefaultValue;
+    private ulong ticksPerSecond_;
+    public static int StartTickFieldNumber;
+    private static ulong StartTickDefaultValue;
+    private ulong startTick_;
+    public static int LayersFieldNumber;
+    private static FieldCodec`1<LayerDescriptor> _repeated_layers_codec;
+    private RepeatedField`1<LayerDescriptor> layers_;
+    public static int EventTypesFieldNumber;
+    private static FieldCodec`1<EventTypeDescriptor> _repeated_eventTypes_codec;
+    private RepeatedField`1<EventTypeDescriptor> eventTypes_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<LogHeader> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public UInt32 ProcessID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasProcessID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong TicksPerSecond { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasTicksPerSecond { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong StartTick { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasStartTick { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<LayerDescriptor> Layers { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<EventTypeDescriptor> EventTypes { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public LogHeader(LogHeader other);
+    private static LogHeader();
+    public static MessageParser`1<LogHeader> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual LogHeader Clone();
+    public UInt32 get_ProcessID();
+    public void set_ProcessID(UInt32 value);
+    public bool get_HasProcessID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearProcessID();
+    public ulong get_TicksPerSecond();
+    public void set_TicksPerSecond(ulong value);
+    public bool get_HasTicksPerSecond();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearTicksPerSecond();
+    public ulong get_StartTick();
+    public void set_StartTick(ulong value);
+    public bool get_HasStartTick();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearStartTick();
+    public RepeatedField`1<LayerDescriptor> get_Layers();
+    public RepeatedField`1<EventTypeDescriptor> get_EventTypes();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(LogHeader other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(LogHeader other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.LogIndex : object {
+    private static MessageParser`1<LogIndex> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int ThreadsFieldNumber;
+    private static FieldCodec`1<ThreadDescriptor> _repeated_threads_codec;
+    private RepeatedField`1<ThreadDescriptor> threads_;
+    public static int HeadersFieldNumber;
+    private static FieldCodec`1<EventTreeHeader> _repeated_headers_codec;
+    private RepeatedField`1<EventTreeHeader> headers_;
+    public static int EndTickFieldNumber;
+    private static ulong EndTickDefaultValue;
+    private ulong endTick_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<LogIndex> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<ThreadDescriptor> Threads { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<EventTreeHeader> Headers { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong EndTick { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasEndTick { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public LogIndex(LogIndex other);
+    private static LogIndex();
+    public static MessageParser`1<LogIndex> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual LogIndex Clone();
+    public RepeatedField`1<ThreadDescriptor> get_Threads();
+    public RepeatedField`1<EventTreeHeader> get_Headers();
+    public ulong get_EndTick();
+    public void set_EndTick(ulong value);
+    public bool get_HasEndTick();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearEndTick();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(LogIndex other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(LogIndex other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.PeaksList : object {
+    private static MessageParser`1<PeaksList> _parser;
+    private UnknownFieldSet _unknownFields;
+    public static int ValuesFieldNumber;
+    private static FieldCodec`1<double> _repeated_values_codec;
+    private RepeatedField`1<double> values_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<PeaksList> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<double> Values { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public PeaksList(PeaksList other);
+    private static PeaksList();
+    public static MessageParser`1<PeaksList> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual PeaksList Clone();
+    public RepeatedField`1<double> get_Values();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(PeaksList other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(PeaksList other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+public static class JetBrains.Common.Timeline.EventLog.Protobuf.ProtobufEncoding : object {
+    private static Encoding ourEncoding;
+    private static ProtobufEncoding();
+    public static ByteString ToBytes(string s);
+    public static string ToString(ByteString arg);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.StatisticsDescriptor : object {
+    private static MessageParser`1<StatisticsDescriptor> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int EventValueSourceFieldNumber;
+    private static int EventValueSourceDefaultValue;
+    private int eventValueSource_;
+    public static int AggregationFieldNumber;
+    private static int AggregationDefaultValue;
+    private int aggregation_;
+    public static int EventTypeFieldNumber;
+    private static int EventTypeDefaultValue;
+    private int eventType_;
+    public static int EventPropertyIndexFieldNumber;
+    private static int EventPropertyIndexDefaultValue;
+    private int eventPropertyIndex_;
+    public static int FilterEventTypesFieldNumber;
+    private static bool FilterEventTypesDefaultValue;
+    private bool filterEventTypes_;
+    public static int IDFieldNumber;
+    private static int IDDefaultValue;
+    private int iD_;
+    public static int IsDefaultPropertyAggregatorFieldNumber;
+    private static bool IsDefaultPropertyAggregatorDefaultValue;
+    private bool isDefaultPropertyAggregator_;
+    public static int HasIntepolationHelperFieldNumber;
+    private static bool HasIntepolationHelperDefaultValue;
+    private bool hasIntepolationHelper_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<StatisticsDescriptor> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int EventValueSource { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasEventValueSource { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int Aggregation { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasAggregation { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int EventType { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasEventType { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int EventPropertyIndex { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasEventPropertyIndex { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool FilterEventTypes { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasFilterEventTypes { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public int ID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool IsDefaultPropertyAggregator { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasIsDefaultPropertyAggregator { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasIntepolationHelper { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasHasIntepolationHelper { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public StatisticsDescriptor(StatisticsDescriptor other);
+    private static StatisticsDescriptor();
+    public static MessageParser`1<StatisticsDescriptor> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual StatisticsDescriptor Clone();
+    public int get_EventValueSource();
+    public void set_EventValueSource(int value);
+    public bool get_HasEventValueSource();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearEventValueSource();
+    public int get_Aggregation();
+    public void set_Aggregation(int value);
+    public bool get_HasAggregation();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearAggregation();
+    public int get_EventType();
+    public void set_EventType(int value);
+    public bool get_HasEventType();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearEventType();
+    public int get_EventPropertyIndex();
+    public void set_EventPropertyIndex(int value);
+    public bool get_HasEventPropertyIndex();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearEventPropertyIndex();
+    public bool get_FilterEventTypes();
+    public void set_FilterEventTypes(bool value);
+    public bool get_HasFilterEventTypes();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearFilterEventTypes();
+    public int get_ID();
+    public void set_ID(int value);
+    public bool get_HasID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearID();
+    public bool get_IsDefaultPropertyAggregator();
+    public void set_IsDefaultPropertyAggregator(bool value);
+    public bool get_HasIsDefaultPropertyAggregator();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearIsDefaultPropertyAggregator();
+    public bool get_HasIntepolationHelper();
+    public void set_HasIntepolationHelper(bool value);
+    public bool get_HasHasIntepolationHelper();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearHasIntepolationHelper();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(StatisticsDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(StatisticsDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+    public static StatisticsDescriptor Counter(KnownEventTypes eventType);
+    public static StatisticsDescriptor Length(KnownEventTypes eventType);
+    public static StatisticsDescriptor FilteredByEventTypes(KnownStatistics id, StatisticsEventSource type, KnownEventTypes eventType, StatisticsAggregationMethod aggregationMethod, int eventPropertyIndex, bool isDefaulPropertyStatistics);
+    public static StatisticsDescriptor FromEventProperties(StatisticsEventSource type, KnownEventTypes eventType, StatisticsAggregationMethod aggregationMethod, int eventPropertyIndex);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.StatisticsList : object {
+    private static MessageParser`1<StatisticsList> _parser;
+    private UnknownFieldSet _unknownFields;
+    public static int ValuesFieldNumber;
+    private static FieldCodec`1<ulong> _repeated_values_codec;
+    private RepeatedField`1<ulong> values_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<StatisticsList> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public RepeatedField`1<ulong> Values { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public StatisticsList(StatisticsList other);
+    private static StatisticsList();
+    public static MessageParser`1<StatisticsList> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual StatisticsList Clone();
+    public RepeatedField`1<ulong> get_Values();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(StatisticsList other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(StatisticsList other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+public enum JetBrains.Common.Timeline.EventLog.Protobuf.StorageType : Enum {
+    public int value__;
+    [OriginalNameAttribute("EventTree")]
+public static StorageType EventTree;
+    [OriginalNameAttribute("CallStacks")]
+public static StorageType CallStacks;
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.StringEntry : object {
+    private static MessageParser`1<StringEntry> _parser;
+    private UnknownFieldSet _unknownFields;
+    public static int DataFieldNumber;
+    private static ByteString DataDefaultValue;
+    private ByteString data_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<StringEntry> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ByteString Data { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasData { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public StringEntry(StringEntry other);
+    private static StringEntry();
+    public static MessageParser`1<StringEntry> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual StringEntry Clone();
+    public ByteString get_Data();
+    public void set_Data(ByteString value);
+    public bool get_HasData();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearData();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(StringEntry other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(StringEntry other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+}
+[DebuggerDisplayAttribute("{ToString(),nq}")]
+public class JetBrains.Common.Timeline.EventLog.Protobuf.ThreadDescriptor : object {
+    private static MessageParser`1<ThreadDescriptor> _parser;
+    private UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    public static int IDFieldNumber;
+    private static UInt32 IDDefaultValue;
+    private UInt32 iD_;
+    public static int TypeFieldNumber;
+    private static UInt32 TypeDefaultValue;
+    private UInt32 type_;
+    public static int NameStringIdFieldNumber;
+    private static ulong NameStringIdDefaultValue;
+    private ulong nameStringId_;
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageParser`1<ThreadDescriptor> Parser { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public static MessageDescriptor Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private MessageDescriptor pb::Google.Protobuf.IMessage.Descriptor { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public UInt32 ID { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasID { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public UInt32 Type { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasType { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ulong NameStringId { get; public set; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public bool HasNameStringId { get; }
+    public ThreadId ThreadId { get; }
+    private ThreadTypes JetBrains.Common.Timeline.EventLog.Interface.IThreadDescriptor.Type { get; }
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public ThreadDescriptor(ThreadDescriptor other);
+    private static ThreadDescriptor();
+    public static MessageParser`1<ThreadDescriptor> get_Parser();
+    public static MessageDescriptor get_Descriptor();
+    private sealed virtual override MessageDescriptor pb::Google.Protobuf.IMessage.get_Descriptor();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual ThreadDescriptor Clone();
+    public UInt32 get_ID();
+    public void set_ID(UInt32 value);
+    public bool get_HasID();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearID();
+    public UInt32 get_Type();
+    public void set_Type(UInt32 value);
+    public bool get_HasType();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearType();
+    public sealed virtual ulong get_NameStringId();
+    public sealed virtual void set_NameStringId(ulong value);
+    public bool get_HasNameStringId();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public void ClearNameStringId();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual bool Equals(object other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual bool Equals(ThreadDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual int GetHashCode();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public virtual string ToString();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void WriteTo(CodedOutputStream output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalWriteTo(WriteContext& output);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual int CalculateSize();
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(ThreadDescriptor other);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+public sealed virtual void MergeFrom(CodedInputStream input);
+    [DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("protoc", "")]
+private sealed virtual override void pb::Google.Protobuf.IBufferMessage.InternalMergeFrom(ParseContext& input);
+    public sealed virtual ThreadId get_ThreadId();
+    private sealed virtual override ThreadTypes JetBrains.Common.Timeline.EventLog.Interface.IThreadDescriptor.get_Type();
+}
+public static class JetBrains.Common.Timeline.EventLog.Statistics.ChunkStatisticsAggregator : object {
+    public static UInt64[] Aggregate(TimelineStatistics[] statistics, IList`1<EventOrChunk> chunks);
+}
+public class JetBrains.Common.Timeline.EventLog.Statistics.DoubleAccumulator : MulticastDelegate {
+    public DoubleAccumulator(object object, IntPtr method);
+    public virtual void Invoke(UInt64* a, double b);
+    public virtual IAsyncResult BeginInvoke(UInt64* a, double b, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class JetBrains.Common.Timeline.EventLog.Statistics.DoubleStatisticsAggregator : object {
+    private DoubleAccumulator myAccumulator;
+    private DoubleChunkStatisticsExtractor myChunkStatisticsExtractor;
+    private DoubleEventStatisticsExtractor myEventStatisticsExtractor;
+    private double myDefaultValue;
+    public DoubleStatisticsAggregator(DoubleAccumulator accumulator, DoubleChunkStatisticsExtractor chunkStatisticsExtractor, DoubleEventStatisticsExtractor eventStatisticsExtractor, double defaultValue);
+    public sealed virtual void Initialize(UInt64* accumulator);
+    public sealed virtual void Aggregate(UInt64* current, ChunkInfo statistics);
+    public sealed virtual void Aggregate(UInt64* current, EventInfo eventInfo);
+    public sealed virtual void AggregatePart(UInt64* current, EventInfo eventInfo, ulong length);
+    public sealed virtual void Aggregate(UInt64* current, UInt64* value);
+    public sealed virtual bool HasPositiveStatistics(ChunkInfo chunk);
+    public sealed virtual bool HasPositiveStatistics(EventInfo eventInfo);
+}
+public class JetBrains.Common.Timeline.EventLog.Statistics.LongChunkStatisticsExtractor : MulticastDelegate {
+    public LongChunkStatisticsExtractor(object object, IntPtr method);
+    public virtual ulong Invoke(ChunkInfo stat);
+    public virtual IAsyncResult BeginInvoke(ChunkInfo stat, AsyncCallback callback, object object);
+    public virtual ulong EndInvoke(IAsyncResult result);
+}
+public class JetBrains.Common.Timeline.EventLog.Statistics.LongEventStatisticsExtractor : MulticastDelegate {
+    public LongEventStatisticsExtractor(object object, IntPtr method);
+    public virtual ulong Invoke(EventInfo eventInfo);
+    public virtual IAsyncResult BeginInvoke(EventInfo eventInfo, AsyncCallback callback, object object);
+    public virtual ulong EndInvoke(IAsyncResult result);
+}
+public class JetBrains.Common.Timeline.EventLog.Statistics.LongStatisticsAggregator : object {
+    private LongAccumulator myAccumulator;
+    private LongChunkStatisticsExtractor myChunkStatisticsExtractor;
+    private LongEventStatisticsExtractor myEventStatisticsExtractor;
+    private ulong myDefaultValue;
+    public LongStatisticsAggregator(LongAccumulator accumulator, LongChunkStatisticsExtractor chunkStatisticsExtractor, LongEventStatisticsExtractor eventStatisticsExtractor, ulong defaultValue);
+    public sealed virtual void Initialize(UInt64* accumulator);
+    public sealed virtual void Aggregate(UInt64* current, ChunkInfo statistics);
+    public sealed virtual void Aggregate(UInt64* current, EventInfo eventInfo);
+    public sealed virtual void AggregatePart(UInt64* current, EventInfo eventInfo, ulong length);
+    public sealed virtual void Aggregate(UInt64* current, UInt64* value);
+    public sealed virtual bool HasPositiveStatistics(ChunkInfo chunk);
+    public sealed virtual bool HasPositiveStatistics(EventInfo eventInfo);
+}
+public static class JetBrains.Common.Timeline.EventLog.Statistics.StatisticsAccumulators : object {
+    public static double DefaultDoubleValue;
+    public static ulong DefaultLongValue;
+    public static void SumDouble(UInt64* current, double value);
+    public static void SumLong(UInt64* current, ulong value);
+    public static void MaxLong(UInt64* current, ulong value);
+    public static void FirstDouble(UInt64* current, double value);
+    public static void FirstLong(UInt64* current, ulong value);
+}
+public enum JetBrains.Common.Timeline.EventLog.Statistics.StatisticsAggregationMethod : Enum {
+    public int value__;
+    public static StatisticsAggregationMethod Sum;
+    public static StatisticsAggregationMethod Max;
+    public static StatisticsAggregationMethod SumDouble;
+    public static StatisticsAggregationMethod CallStacks;
+}
+public enum JetBrains.Common.Timeline.EventLog.Statistics.StatisticsEventSource : Enum {
+    public int value__;
+    public static StatisticsEventSource Unknown;
+    public static StatisticsEventSource Counter;
+    public static StatisticsEventSource Length;
+    public static StatisticsEventSource Property;
+    public static StatisticsEventSource WeightedProperty;
+}
+public static class JetBrains.Common.Timeline.EventLog.Statistics.StatisticsFactory : object {
+    private static LongEventStatisticsExtractor CreateLongEventStatisticsExtractor(StatisticsDescriptor stat);
+    private static DoubleEventStatisticsExtractor CreateDoubleEventStatisticsExtractor(StatisticsDescriptor stat);
+    public static TimelineStatistics BuildStatistics(StatisticsDescriptor stat, int index);
+}
+public class JetBrains.Common.Timeline.EventLog.Storage.ArrayAllocator`1 : object {
+    private static int MaxArraySize;
+    private Queue`1[] myQueues;
+    private static int MaxQueueSize;
+    [ThreadStaticAttribute]
+private static ArrayAllocator`1<T> ourInstance;
+    public static ArrayAllocator`1<T> Instance { get; }
+    private Queue`1<T[]> GetQueue(int len);
+    public T[] AllocateArray(int size);
+    public void ReleaseArray(T[] array);
+    public static ArrayAllocator`1<T> get_Instance();
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Common.Timeline.EventLog.Storage.ArraysStorage`1 : object {
+    private T[][] myArrays;
+    public T[] Item { get; }
+    public ArraysStorage`1(int maxLength);
+    public T[] get_Item(int length);
+}
+public static class JetBrains.Common.Timeline.EventLog.Storage.ByteArrayUtils : object {
+    public static ulong ReadFromArray(Byte* array, ulong mask);
+}
+public class JetBrains.Common.Timeline.EventLog.Storage.CallStacksChunk : object {
+    private ThreadId myThreadId;
+    private Chunk`1<CallStackEvent> myHead;
+    private UInt64[] myBuffer;
+    [CompilerGeneratedAttribute]
+private int <Size>k__BackingField;
+    public int Size { get; }
+    public CallStacksChunk(ThreadId targetThreadId, ChunkInfoShort info, BinaryReader reader);
+    [IteratorStateMachineAttribute("JetBrains.Common.Timeline.EventLog.Storage.CallStacksChunk/<GetChildrenAfter>d__5")]
+public sealed virtual IEnumerable`1<EventOrChunk> GetChildrenAfter(ulong startTick);
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Size();
+}
+public class JetBrains.Common.Timeline.EventLog.Storage.Chunk : object {
+    private ushort myChunksNum;
+    private IntPtr myData;
+    private Byte* myDetails;
+    private Int32[] myExtraIndex;
+    private int myItemsNum;
+    private ILayerDescriptor myLayer;
+    private ulong myOffsetBase;
+    private PackedArray myOffsets;
+    private ModelRange myRange;
+    private long mySize;
+    private PackedArray[] myStatistics;
+    private PackedArray myTicks;
+    private Byte* myTypes;
+    private bool myIsDisposed;
+    private static ILogger ourLog;
+    public int Size { get; }
+    public Chunk(LayerDescriptor layer, ChunkInfoShort info, BinaryReader reader);
+    private static Chunk();
+    private static void FreeBuffer(Byte[] buffer);
+    private static Byte[] AllocBuffer(int count);
+    private static Byte[] EnsureBufferCapacity(Byte[] buffer, int count);
+    public sealed virtual IEnumerable`1<EventOrChunk> GetChildrenAfter(ulong startTick);
+    public sealed virtual int get_Size();
+    public sealed virtual void Dispose();
+    private int BinarySearch(ulong tick);
+    private ulong GetTick(int index);
+    private byte GetType(int index);
+    private void AssertNotDisposed();
+    [IteratorStateMachineAttribute("JetBrains.Common.Timeline.EventLog.Storage.Chunk/<GetChildren>d__27")]
+private IEnumerable`1<EventOrChunk> GetChildren(int startIndex);
+    private UInt64[] ReadDetails(IEventTypeDescriptor eventType, int detailsOffset);
+}
+public class JetBrains.Common.Timeline.EventLog.Storage.ChunkHeader : ValueType {
+    public ushort ItemsNum;
+    public byte BytesPerOffset;
+    public byte BytesPerTick;
+    public ulong OffsetsBase;
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual string ToString();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+private bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(ChunkHeader left, ChunkHeader right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(ChunkHeader left, ChunkHeader right);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool Equals(ChunkHeader other);
+}
+[IsReadOnlyAttribute]
+[DefaultMemberAttribute("Item")]
+internal class JetBrains.Common.Timeline.EventLog.Storage.PackedArray : ValueType {
+    private byte myBytesPerItem;
+    private Byte* myData;
+    private ulong myMask;
+    private int myRemainingSize;
+    public ulong Item { get; }
+    public PackedArray(Byte* data, byte bytesPerItem, int remainingSize);
+    public ulong get_Item(int index);
+    private static ulong CreateMask(byte bytesPerItem);
+}
+[DefaultMemberAttribute("Item")]
+[ThreadSafeAttribute]
+public class JetBrains.Common.Timeline.EventLog.StreamStringReader : object {
+    private BinaryReader[] myReaders;
+    private Object[] myLocks;
+    [CanBeNullAttribute]
+public string Item { get; }
+    public StreamStringReader(BinaryReader[] readers);
+    public sealed virtual string get_Item(StringId stringId);
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Common.Timeline.EventLog.StringReader : object {
+    private IStringReader myReader;
+    [CanBeNullAttribute]
+public string Item { get; }
+    public StringReader(BinaryReader[] binaryReaders);
+    public sealed virtual string get_Item(StringId id);
+}
+internal class JetBrains.Common.Timeline.EventLog.ThreadModel : object {
+    private OneToListMap`2<int, IEventLog> myLogs;
+    [CompilerGeneratedAttribute]
+private IThreadDescriptor <Descriptor>k__BackingField;
+    public IThreadDescriptor Descriptor { get; }
+    public ThreadModel(IThreadDescriptor descriptor, IEnumerable`1<IEventLog> logs);
+    [CompilerGeneratedAttribute]
+public sealed virtual IThreadDescriptor get_Descriptor();
+    public sealed virtual IEnumerable`1<IEventLog> GetLogs(int layerId);
+}
+public interface JetBrains.DotTrace.DalInterface.Common.Utils.IKnowsMemoryUsage {
+    public abstract virtual long MemoryUsage();
+}
+public class JetBrains.DotTrace.DalInterface.Timeline.Processing.Chunk`1 : object {
+    public static int MaxChunkSizeInBytes;
+    public T[] Data;
+    public Chunk`1<T> Next;
+    public int Count;
+    public int Generation;
+    public static Chunk`1<T> Nil;
+    public int Capacity { get; }
+    private static Chunk`1();
+    private Chunk`1(int capacity, int generation);
+    public int get_Capacity();
+    public void Add(T item);
+    public void InsertAt(int index, T item);
+    public static Chunk`1<T> Create(int generation, int capacity);
+    public static Chunk`1<T> ShallowCopy(Chunk`1<T> other);
+    public Chunk`1<T> ShallowCopy();
+    private void DeepCopy(int generation);
+    public void DeepCopyIfNecessary(int generation);
+    public T Last();
+    public T LastOrDefault();
+    public T First();
+    public sealed virtual long MemoryUsage();
+}
+[ExtensionAttribute]
+public static class JetBrains.DotTrace.DalInterface.Timeline.Processing.ChunkEx : object {
+    [ExtensionAttribute]
+public static void RemoveFirstItems(Chunk`1<T> chunk, int count, int generation);
+    [ExtensionAttribute]
+public static Chunk`1<T> CreateChunkBefore(Chunk`1<T> chunk, int generation, int capacity);
+    public static Chunk`1<T> AddChunkAfter(Chunk`1<T> chunk, int generation, int capacity);
+    [ExtensionAttribute]
+public static Chunk`1<T> Add(Chunk`1<T> chunk, int generation, T item, int capacity);
+    [ExtensionAttribute]
+public static void AddToChunk(Chunk`1<T> chunk, int generation, T item);
+    [ExtensionAttribute]
+public static void ShrinkChunkToCount(Chunk`1<T> chunk, int count);
+    [ExtensionAttribute]
+public static bool ContainsChunk(Chunk`1<T> haystack, Chunk`1<T> needle);
+    [ExtensionAttribute]
+public static Chunk`1<T> InsertAt0(Chunk`1<T> chunk, T item, int generation, int capacity);
+    [ExtensionAttribute]
+public static ValueTuple`2<Chunk`1<T>, Chunk`1<T>> ReadChunks(Stream stream, long dataOffset, long dataSize);
+}
+public class JetBrains.DotTrace.DalInterface.Timeline.Processing.Chunks`1 : object {
+    [CompilerGeneratedAttribute]
+private int <generation>P;
+    [CompilerGeneratedAttribute]
+private int <defaultCapacity>P;
+    public Chunk`1<T> Head;
+    public Chunk`1<T> Tail;
+    public Chunks`1(int generation, int defaultCapacity);
+    public bool IsEmpty();
+    [IteratorStateMachineAttribute("JetBrains.DotTrace.DalInterface.Timeline.Processing.Chunks`1/<GetEnumerator>d__6")]
+public sealed virtual IEnumerator`1<ReadOnlyMemory`1<T>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    [IteratorStateMachineAttribute("JetBrains.DotTrace.DalInterface.Timeline.Processing.Chunks`1/<GetItemsSlow>d__8")]
+public IEnumerable`1<T> GetItemsSlow();
+    public void RemoveFirstItems(int count);
+    public void Add(T item);
+    public int CountSlow();
+    public sealed virtual long MemoryUsage();
+    public Chunk`1<T> RemoveFirstChunk();
+    public Chunk`1<T> InsertAt0(T item);
+    public Chunks`1<T> ShallowCopy();
+    public Chunk`1<T> Add(Chunk`1<T> chunk, T item, bool assertChunk);
+    public void DropAllChunksAfter(Chunk`1<T> current);
+    private bool ContainsChunk(Chunk`1<T> needle);
+    public T LastItem();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsUnmanagedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

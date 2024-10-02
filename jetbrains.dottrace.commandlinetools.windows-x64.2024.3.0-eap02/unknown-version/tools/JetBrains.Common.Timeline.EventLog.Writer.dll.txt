@@ -1,0 +1,293 @@
+public static class JetBrains.Common.Timeline.EventLog.Writer.ChunkSerializer : object {
+    private static void PackValue(ulong value, byte bytes, Byte[] buffer, int index);
+    private static byte GetMeaningfulBytes(ulong value);
+    public static ValueTuple`2<ChunkInfo, long> WriteChunk(ILoggerChunk chunk, ILayerDescriptor layer, BinaryWriter memoryWriter, Func`2<int, byte> eventTypeToIndexMap);
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.DataDescriptor : object {
+    private Dictionary`2<int, LayerDescriptor> myLayers;
+    private Dictionary`2<int, EventTypeDescriptor> myEventTypes;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventTypeDescriptorEventArgs> EventTypeAdded;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<LayerDescriptorEventArgs> LayerAdded;
+    public IEnumerable`1<LayerDescriptor> Layers { get; }
+    public IEnumerable`1<EventTypeDescriptor> EventTypes { get; }
+    public sealed virtual IEnumerable`1<LayerDescriptor> get_Layers();
+    public sealed virtual LayerDescriptor GetLayer(int id);
+    public sealed virtual EventTypeDescriptor GetEvent(int id);
+    public sealed virtual void AddLayer(LayerDescriptor layer);
+    public sealed virtual void AddEventTypeIfNotExist(EventTypeDescriptor eventType);
+    public sealed virtual void AddEventType(EventTypeDescriptor eventType);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_EventTypeAdded(EventHandler`1<EventTypeDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_EventTypeAdded(EventHandler`1<EventTypeDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_LayerAdded(EventHandler`1<LayerDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_LayerAdded(EventHandler`1<LayerDescriptorEventArgs> value);
+    public sealed virtual IEnumerable`1<EventTypeDescriptor> get_EventTypes();
+    private void InitLayer(LayerDescriptor layer);
+    [CompilerGeneratedAttribute]
+private IEventTypeDescriptor <InitLayer>b__17_0(int e);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class JetBrains.Common.Timeline.EventLog.Writer.EventSessionWriter : object {
+    private IDictionary`2<EventLogId, EventTreeInfo> myEventLoggers;
+    private Lifetime myLifetime;
+    private IDataDescriptor myDataDescriptor;
+    private long myStartOffset;
+    private IDictionary`2<ThreadId, ThreadDescriptor> myThreads;
+    private BinaryWriter myRootWriter;
+    private static int MinChunkLevel;
+    [NullableAttribute("2")]
+private LogHeader myLogHeader;
+    private static ILogger ourLog;
+    private Func`3<Lifetime, int, BinaryWriter> myGetLayerWriter;
+    private Dictionary`2<int, BinaryWriter> myLayerIdToSectionMemory;
+    [CompilerGeneratedAttribute]
+private EventSessionState <State>k__BackingField;
+    private Dictionary`2<EventLogId, ulong> myLastEvent;
+    public EventSessionState State { get; private set; }
+    public EventSessionWriter(Lifetime lifetime, Func`2<Lifetime, BinaryWriter> getRootWriter, Func`3<Lifetime, int, BinaryWriter> getLayerWriter, IDataDescriptor dataDescriptor);
+    private static EventSessionWriter();
+    public static long ReserveSpaceForHeaderAndIndex(BinaryWriter writer);
+    private BinaryWriter GetOrCreateWriter(int layerId);
+    private void DataDescriptorOnEventTypeAdded(object sender, EventTypeDescriptorEventArgs eventTypeDescriptorEventArgs);
+    private void DataDescriptorOnLayerAdded(object sender, LayerDescriptorEventArgs layerDescriptorEventArgs);
+    [CompilerGeneratedAttribute]
+public sealed virtual EventSessionState get_State();
+    [CompilerGeneratedAttribute]
+private void set_State(EventSessionState value);
+    public sealed virtual void StartSession(ulong tick, ulong ticksPerSecond);
+    public sealed virtual void SetThreadInfo(IThreadDescriptor info);
+    public sealed virtual void StopSession(ulong tick);
+    public static void FinalizeSession(LogHeader logHeader, LogIndex logIndex, BinaryWriter rootWriter, long startOffset);
+    public static LogIndex CreateLogIndex(ulong tick, IEnumerable`1<EventTreeHeader> treeHeaders, IDictionary`2<ThreadId, ThreadDescriptor> threads);
+    [NullableContextAttribute("2")]
+public sealed virtual void LogEvent(ThreadId threadId, int layerId, ulong tick, int eventId, UInt64[] details);
+    public static void TruncateFirstEvent(EventTreeInfo eventTree, UInt64& lastTick, ulong tick);
+    public static void LogEvent(EventTreeInfo eventTree, UInt64& lastTick, ulong tick, int eventId, UInt64[] details);
+    public static void StopLayer(EventTreeInfo eventTree);
+    private static void CheckTickOrder(EventTreeInfo eventTree, UInt64& lastTick, ulong tick);
+    public static EventTreeInfo CreateEventTreeInfo(Lifetime lifetime, ThreadId threadId, LayerDescriptor layer, BinaryWriter binaryWriter);
+    private EventTreeInfo CreateEventTreeInfo(EventLogId id);
+    public static DataDescriptor CreateDataDescriptor(IEnumerable`1<WrittenLayer> writtenLayers);
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.EventTypeDescriptorEventArgs : EventArgs {
+    public EventTypeDescriptor EventType;
+    public EventTypeDescriptorEventArgs(EventTypeDescriptor eventType);
+}
+public interface JetBrains.Common.Timeline.EventLog.Writer.IDataDescriptor {
+    public IEnumerable`1<LayerDescriptor> Layers { get; }
+    public IEnumerable`1<EventTypeDescriptor> EventTypes { get; }
+    public abstract virtual IEnumerable`1<LayerDescriptor> get_Layers();
+    public abstract virtual IEnumerable`1<EventTypeDescriptor> get_EventTypes();
+    public abstract virtual LayerDescriptor GetLayer(int id);
+    public abstract virtual EventTypeDescriptor GetEvent(int id);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_LayerAdded(EventHandler`1<LayerDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_LayerAdded(EventHandler`1<LayerDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_EventTypeAdded(EventHandler`1<EventTypeDescriptorEventArgs> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_EventTypeAdded(EventHandler`1<EventTypeDescriptorEventArgs> value);
+}
+public interface JetBrains.Common.Timeline.EventLog.Writer.IMutableDataDescriptor {
+    public abstract virtual void AddLayer(LayerDescriptor layer);
+    public abstract virtual void AddEventType(EventTypeDescriptor eventType);
+    public abstract virtual void AddEventTypeIfNotExist(EventTypeDescriptor eventType);
+}
+public interface JetBrains.Common.Timeline.EventLog.Writer.IPeaksCalculator {
+    public abstract virtual void AddData(EventInfo eventItem);
+    public abstract virtual Double[] Finish();
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.LayerDescriptorEventArgs : EventArgs {
+    public LayerDescriptor Layer;
+    public LayerDescriptorEventArgs(LayerDescriptor layer);
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.LoggerChunk : object {
+    private List`1<EventOrChunk> myItems;
+    private ChunkPosition myPosition;
+    public int ItemsNum { get; }
+    public IList`1<EventOrChunk> Items { get; }
+    public ChunkPosition Position { get; public set; }
+    public ulong LeftTick { get; }
+    public ulong RightTick { get; }
+    public sealed virtual int get_ItemsNum();
+    public sealed virtual IList`1<EventOrChunk> get_Items();
+    public sealed virtual ChunkPosition get_Position();
+    public sealed virtual void set_Position(ChunkPosition value);
+    public sealed virtual void IncreaseLevel();
+    public sealed virtual void AddItem(EventOrChunk item);
+    public sealed virtual ulong get_LeftTick();
+    public sealed virtual ulong get_RightTick();
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.LoggerChunkFactory : object {
+    public sealed virtual LoggerChunk Create();
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.LoggerChunkPool : object {
+    private IChunkFactory`1<ILoggerChunk> myChunkFactory;
+    private static int MaxBagSize;
+    private SingleThreadObjectPool`1<ILoggerChunk> myBag;
+    public LoggerChunkPool(Lifetime lifetime, IChunkFactory`1<ILoggerChunk> chunkFactory);
+    public sealed virtual ILoggerChunk GetNewChunk(ChunkPosition position);
+    private static void InitChunk(ILoggerChunk result, ChunkPosition position);
+    public sealed virtual void DisposeChunk(ILoggerChunk chunk);
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.PeaksCalculator : object {
+    private Double[] myChunkPeaks;
+    private Double[] myEventPeaks;
+    private UInt64[] myCurrentChunkValues;
+    private UInt64[] myChunkLengths;
+    private static int LevelsNum;
+    private ModelRange myPreviousRange;
+    private bool myHasPreviousRange;
+    private bool myFinished;
+    private TimelineStatistics myStatistics;
+    private bool myNormalizedValues;
+    private IStatisticsAggregator myAggregator;
+    public PeaksCalculator(TimelineStatistics statistics, bool normalizedValues);
+    private void Flush(byte flushLevel);
+    public sealed virtual void AddData(EventInfo eventItem);
+    public sealed virtual Double[] Finish();
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.ProtobufEventsLogger : EventsLoggerBase`1<ILoggerChunk> {
+    private BinaryWriter mySection;
+    private int myMinChunkSize;
+    private ILayerDescriptor myLayerDescriptor;
+    private long myLastWrittenChunkOffset;
+    private IDictionary`2<int, byte> myEventTypeToIndexMap;
+    [CompilerGeneratedAttribute]
+private ChunkInfo <RootInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <WrittenBytes>k__BackingField;
+    public ChunkInfo RootInfo { get; private set; }
+    public long LastWrittenChunkOffset { get; }
+    public long WrittenBytes { get; private set; }
+    public ProtobufEventsLogger(Lifetime lifetime, BinaryWriter section, byte minChunkLevel, LayerDescriptor layerDescriptor);
+    [CompilerGeneratedAttribute]
+public ChunkInfo get_RootInfo();
+    [CompilerGeneratedAttribute]
+private void set_RootInfo(ChunkInfo value);
+    protected virtual bool IsChunkReadyToWrite(ILoggerChunk chunk);
+    protected virtual void FinalizeLog(ChunkInfo rootRef);
+    protected virtual ChunkInfo WriteChunk(ILoggerChunk chunk);
+    public long get_LastWrittenChunkOffset();
+    [CompilerGeneratedAttribute]
+public long get_WrittenBytes();
+    [CompilerGeneratedAttribute]
+private void set_WrittenBytes(long value);
+    [CompilerGeneratedAttribute]
+private byte <WriteChunk>b__12_0(int e);
+}
+[ThreadUnsafeAttribute]
+internal class JetBrains.Common.Timeline.EventLog.Writer.SingleThreadObjectPool`1 : object {
+    private IItemStore<T> myItemStore;
+    private int myMaxCapacity;
+    public int Count { get; }
+    public SingleThreadObjectPool`1(int capacity, int maxCapacity, AccessMode<T> mode);
+    public int get_Count();
+    public bool TryTake(T& result);
+    public void Add(T item);
+    public void Clear();
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.StreamStringWriter : object {
+    private BinaryWriter myDataWriter;
+    public StreamStringWriter(BinaryWriter binaryWriter);
+    public sealed virtual ulong Write(string s);
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.Timeline.EventLog.Writer.UnsafeStreamEx : object {
+    [ExtensionAttribute]
+public static void WriteStruct(BinaryWriter writer, T header);
+    [ExtensionAttribute]
+public static void WriteStruct(Stream stream, T header);
+    [ExtensionAttribute]
+public static void WriteStruct(Stream stream, T header, Byte[] bytes);
+}
+public class JetBrains.Common.Timeline.EventLog.Writer.WrittenLayer : object {
+    [CompilerGeneratedAttribute]
+private LayerDescriptor <LayerDescriptor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<EventTypeDescriptor> <EventsDescriptor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<ThreadId, EventTreeHeader> <ThreadIdToEventTree>k__BackingField;
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+protected Type EqualityContract { get; }
+    public LayerDescriptor LayerDescriptor { get; public set; }
+    public IEnumerable`1<EventTypeDescriptor> EventsDescriptor { get; public set; }
+    public Dictionary`2<ThreadId, EventTreeHeader> ThreadIdToEventTree { get; public set; }
+    public WrittenLayer(LayerDescriptor LayerDescriptor, IEnumerable`1<EventTypeDescriptor> EventsDescriptor, Dictionary`2<ThreadId, EventTreeHeader> ThreadIdToEventTree);
+    [CompilerGeneratedAttribute]
+protected WrittenLayer(WrittenLayer original);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+protected virtual Type get_EqualityContract();
+    [CompilerGeneratedAttribute]
+public LayerDescriptor get_LayerDescriptor();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_LayerDescriptor(LayerDescriptor value);
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<EventTypeDescriptor> get_EventsDescriptor();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_EventsDescriptor(IEnumerable`1<EventTypeDescriptor> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<ThreadId, EventTreeHeader> get_ThreadIdToEventTree();
+    [CompilerGeneratedAttribute]
+public Void modreq(System.Runtime.CompilerServices.IsExternalInit) set_ThreadIdToEventTree(Dictionary`2<ThreadId, EventTreeHeader> value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public virtual string ToString();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+protected virtual bool PrintMembers(StringBuilder builder);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public static bool op_Inequality(WrittenLayer left, WrittenLayer right);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public static bool op_Equality(WrittenLayer left, WrittenLayer right);
+    [CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(WrittenLayer other);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public virtual WrittenLayer <Clone>$();
+    [CompilerGeneratedAttribute]
+public void Deconstruct(LayerDescriptor& LayerDescriptor, IEnumerable`1& EventsDescriptor, Dictionary`2& ThreadIdToEventTree);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

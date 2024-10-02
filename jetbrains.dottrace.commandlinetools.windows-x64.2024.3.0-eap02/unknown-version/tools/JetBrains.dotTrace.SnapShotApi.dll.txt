@@ -1,0 +1,1926 @@
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.AnnotationsManager : object {
+    private IContextBoundSettingsStoreLive myContext;
+    [CompilerGeneratedAttribute]
+private Action AnnotationsChanged;
+    [CompilerGeneratedAttribute]
+private IProperty`1<string> <Description>k__BackingField;
+    public IEnumerable`1<Pair`2<FunctionId, string>> AnnotatedFunctions { get; }
+    public IProperty`1<string> Description { get; }
+    public AnnotationsManager(Lifetime lifetime, SnapshotSettingsComponent settingsStore);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_AnnotationsChanged(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_AnnotationsChanged(Action value);
+    [IteratorStateMachineAttribute("JetBrains.dotTrace.SnapShotApi.Components.AnnotationsManager/<get_AnnotatedFunctions>d__6")]
+public sealed virtual IEnumerable`1<Pair`2<FunctionId, string>> get_AnnotatedFunctions();
+    private static bool TryBuildMetadata(string name, FunctionId& metadata);
+    [CompilerGeneratedAttribute]
+public sealed virtual IProperty`1<string> get_Description();
+    public sealed virtual void SetAnnotation(FunctionId function, string text);
+    [NotNullAttribute]
+public sealed virtual string GetAnnotation(FunctionId function);
+    private sealed virtual override void JetBrains.dotTrace.SnapShotApi.ISnapshotSettingsNeedSave.SaveSettings();
+}
+[SettingsKeyAttribute("System.Reflection.Missing", "AnnotationsManagerSettings")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.AnnotationsManagerSettings : object {
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "Description")]
+public string Description;
+    [SettingsIndexedEntryAttribute("Identifiers")]
+public IIndexedEntry`2<string, string> FunctionAnnotations;
+}
+[SnapshotComponentAttribute("Performance", "0")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.CallTreeProcessorHost : SnapshotProcessor`1<CallTreeProviderTask> {
+    public CallTreeProcessorHost(CallTreeProviderTask dotTraceTask);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.CallTreeProviderTask : DotTraceBaseTask`1<bool> {
+    private static int BufferSize;
+    private static string TaskName;
+    private PerformanceSnapshot mySnapshot;
+    private ICallTreeStartupProcessor[] myCallTreeProcessors;
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public CallTreeProviderTask(Lifetime lifetime, PerformanceSnapshot snapshot, IAsyncTaskRunner taskRunner, IForegroundProgressPresenter foregroundProgressPresenter, IEnumerable`1<ICallTreeStartupProcessor> callTreeStartupProcessors);
+    public virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    protected virtual bool CalculateDataCore(IExecutionControllerOld ec);
+    private bool ProcessBatch(CallTreeSectionNodeSimple[] batch, int groupId, long rootOffset, long alreadyReadCount, int start, int count);
+}
+[SettingsKeyAttribute("System.Reflection.Missing", "ExcludedFunctionsSettings")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.ExcludedFunctionsSettings : object {
+    [SettingsIndexedEntryAttribute("Excluded functions FuIds")]
+public IIndexedEntry`2<UInt32, bool> FunctionsList;
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.FunctionData : object {
+    public FunctionId FuId;
+    public FunctionMetrics Metrics;
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.FunctionMetrics : ValueType {
+    public ulong OwnTime;
+    public ulong SysTime;
+    public ulong TotalTime;
+    public FunctionMetrics(ulong ownTime, ulong sysTime, ulong totalTime);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(FunctionMetrics other);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.HotspotsPrecomputing : object {
+    private bool mySkipProcessingDue2Settings;
+    private int myPrevGroup;
+    private ulong myGroupTopTime;
+    private PerformanceSnapshot mySnapshot;
+    private IContextBoundSettingsStoreLive myContext;
+    private SystemModulesSnapshotComponent mySysModules;
+    private EventWaitingFunctionsManager myEventFunctions;
+    private HashSet`1<FunctionId> myExcludedFunctions;
+    private ProductConfigurations myRunConfigs;
+    private IDictionary`2<FunctionId, FunctionMetrics> myStore;
+    private List`1<Pair`2<CallTreeSectionNodeSimple, ulong>> mySystemCalls;
+    private List`1<Pair`2<CallTreeSectionNodeSimple, ulong>> myAllCalls;
+    private IDictionary`2<string, IDictionary`2<FunctionId, FunctionMetrics>> myVirtualMethods;
+    private List`1<VirtualFuncHotspot> myTopResultBySystemAndOwnTime;
+    private List`1<VirtualFuncHotspot> myTopResultBySystemAndOwnFactorTotalTime;
+    public List`1<VirtualFuncHotspot> TopResultByOwnAndSystemTime { get; }
+    public List`1<VirtualFuncHotspot> TopResultByOwnAndSystemFactorTotalTime { get; }
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public HotspotsPrecomputing(Lifetime lifetime, PerformanceSnapshot host, ISettingsStore settingsStore, SystemModulesSnapshotComponent sysModules, EventWaitingFunctionsManager eventFunctions, ProductConfigurations runConfigs);
+    private void LoadSettings();
+    private void SaveSettings();
+    public List`1<VirtualFuncHotspot> get_TopResultByOwnAndSystemTime();
+    public List`1<VirtualFuncHotspot> get_TopResultByOwnAndSystemFactorTotalTime();
+    public void ExcludeFromTopList(IEnumerable`1<FunctionId> funcs);
+    public sealed virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    public sealed virtual void Start();
+    public sealed virtual void ProcessBatch(CallTreeSectionNodeSimple[] buffer, int groupId, long rootOffset, int startIndex, int count);
+    private bool IsNewGroupStart(int groupId);
+    private void StartNewGroup(int groupId);
+    private void UpdateChildCallsList(CallTreeSectionNodeSimple node, List`1<Pair`2<CallTreeSectionNodeSimple, ulong>> calls, ulong sumTime);
+    private static ulong GetSumTime(CallTreeSectionNodeSimple node, List`1<Pair`2<CallTreeSectionNodeSimple, ulong>> calls);
+    private static void CalcSuffixLengthAndTime(CallTreeSectionNodeSimple node, IList`1<Pair`2<CallTreeSectionNodeSimple, ulong>> calls, Int32& suffixLength, UInt64& sumOwnTime);
+    private static bool IsInsideYourTree(long leftOffset, long leftOffsetOnStack);
+    public sealed virtual void End();
+    private void UpdateTopLists();
+    private List`1<VirtualFuncHotspot> BuildTopListWithMetric(IFunctionMetric metric, int topListThreshold, int maxResults);
+}
+[SettingsKeyAttribute("System.Reflection.Missing", "HotspotsPrecomputingSettings")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.HotspotsPrecomputingSettings : object {
+    [SettingsIndexedEntryAttribute("Hotspots precomputed values")]
+public IIndexedEntry`2<string, VirtualFuncImplementations> VirtualFunctionsList;
+}
+public enum JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.SubtreeStatus : Enum {
+    public int value__;
+    public static SubtreeStatus System;
+    public static SubtreeStatus User;
+    public static SubtreeStatus HalfPassed;
+    public static SubtreeStatus Rejected;
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.SuhsMetricPrecomputing : object {
+    private int myPrevGroup;
+    private ulong myGroupTopTime;
+    private bool myIsInternal;
+    private PerformanceSnapshot mySnapshot;
+    private SystemModulesSnapshotComponent mySysModules;
+    private List`1<Tuple`3<CallTreeSectionNodeSimple, SubtreeStatus, ulong>> myAllCalls;
+    private OneToListMap`2<long, Tuple`2<long, ulong>> myStore;
+    private ILogger _logger;
+    [CompilerGeneratedAttribute]
+private List`1<Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double>> <Result>k__BackingField;
+    public List`1<Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double>> Result { get; }
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public SuhsMetricPrecomputing(PerformanceSnapshot host, ISettingsStore settingsStore, ProductConfigurations runConfigs, SystemModulesSnapshotComponent sysModules);
+    [CompilerGeneratedAttribute]
+public List`1<Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double>> get_Result();
+    public sealed virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    public sealed virtual void Start();
+    public sealed virtual void ProcessBatch(CallTreeSectionNodeSimple[] buffer, int groupId, long rootOffset, int startIndex, int count);
+    private void Push(CallTreeSectionNodeSimple node, SubtreeStatus status, int suffixLength, Action`1<Tuple`3<CallTreeSectionNodeSimple, SubtreeStatus, ulong>> f);
+    public sealed virtual void End();
+    private void StartNewGroup(int groupId);
+    private void FlushResults();
+    private void Index2Node(long rootIndex, CallTreeSectionOffset& offset, CallTreeSectionNode& node, String& name);
+    private void StoreResult(List`1<Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double>> storage, CallTreeSectionNode sysNode, long systemRoot, CallTreeSectionNode userNode, long userLong, double metric);
+    private int Comparer(Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double> arg1, Tuple`5<CallTreeSectionNode, long, CallTreeSectionNode, long, double> arg2);
+    private double Metric2(Tuple`2<long, ulong> userRootTuple, CallTreeSectionNode userNode);
+    private bool IsNewGroupStart(int groupId);
+    private SubtreeStatus LeafNodeStatus(CallTreeSectionNodeSimple node);
+    private static bool IsInsideYourTree(long leftOffset, long leftOffsetOnStack);
+    private void CalcSuffixProps(CallTreeSectionNodeSimple node, Int32& suffixLength, Boolean& hasRejects, Boolean& hasHalfPassed, Boolean& allSystem, Boolean& allSystemOrUser);
+    private void StorePattern(Tuple`3<CallTreeSectionNodeSimple, SubtreeStatus, ulong> stackNode, CallTreeSectionNodeSimple systemNode);
+    private void UpdatePattern(CallTreeSectionNodeSimple stackNode, CallTreeSectionNodeSimple systemNode, ulong adjustedSystemAndOwnTime);
+    private CallTreeSectionOffset Index2Offset(long val);
+    private int PathLength(CallTreeSectionNode bottom, CallTreeSectionNode root);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.SysModuleStatistics : object {
+    private static int cGroupRange;
+    private bool mySkipProcessing;
+    private SystemModulesSnapshotComponent mySysModules;
+    private Dictionary`2<int, List`1<byte>> myBitMask;
+    private Dictionary`2<int, bool> myCompleteSystemThread;
+    private List`1<byte> myCurrentGroup;
+    private bool isCompletelySystem;
+    private byte bCounter;
+    private UInt32 indexer;
+    private int myPrevGroup;
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public SysModuleStatistics(IProductCommandLine cmdLine, SystemModulesSnapshotComponent sysModules);
+    public sealed virtual void Start();
+    public sealed virtual void ProcessBatch(CallTreeSectionNodeSimple[] buffer, int groupId, long rootOffset, int startIndex, int count);
+    public sealed virtual void End();
+    public sealed virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    private bool IsNewGroupStart(int groupId);
+    private void StartNewGroup(int groupId);
+    private void FinishPreviousGroup();
+    private void AddRange(byte counter);
+}
+[SnapshotComponentAttribute("Performance", "0")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.ThreadTimeStatistics : object {
+    private SystemModulesSnapshotComponent mySysModules;
+    private EventWaitingFunctionsManager myWaitingFunctionsManager;
+    private ulong ThreadWorkTime;
+    private ulong ThreadUserWorkTime;
+    private int myPrevGroup;
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public ThreadTimeStatistics(SystemModulesSnapshotComponent sysModules, EventWaitingFunctionsManager waitingFunctionsManager);
+    public sealed virtual void Start();
+    public sealed virtual void ProcessBatch(CallTreeSectionNodeSimple[] buffer, int groupId, long rootOffset, int startIndex, int count);
+    public sealed virtual void End();
+    public sealed virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    private bool IsNewGroupStart(int groupId);
+    private void StartNewGroup(int groupId);
+    private void FinishPreviousGroup();
+}
+[SnapshotComponentAttribute("", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.ValidateCpuCounters : object {
+    private PerformanceSnapshot mySnapshot;
+    private ISnapshotStructureValidator myValidator;
+    private UInt64[] myThreadsTime;
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public ValidateCpuCounters(Lifetime lifetime, PerformanceSnapshot snapshot, ISnapshotStructureValidator validator);
+    public sealed virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+    public sealed virtual void Start();
+    public sealed virtual void ProcessBatch(CallTreeSectionNodeSimple[] batch, int groupId, long rootOffset, int start, int count);
+    public sealed virtual void End();
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.VirtualFuncHotspot : object {
+    [CompilerGeneratedAttribute]
+private string <FunctionSignature>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<FunctionData> <Implementations>k__BackingField;
+    public string FunctionSignature { get; }
+    public IEnumerable`1<FunctionData> Implementations { get; }
+    public VirtualFuncHotspot(string signature, IDictionary`2<FunctionId, FunctionMetrics> implementations, IFunctionMetric metric);
+    [CompilerGeneratedAttribute]
+public string get_FunctionSignature();
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<FunctionData> get_Implementations();
+}
+[ValueSerializerAttribute("JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.VirtualFuncImplsSerializer")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.VirtualFuncImplementations : object {
+    public IEnumerable`1<FunctionData> Data;
+    public VirtualFuncImplementations(IEnumerable`1<FunctionData> data);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(VirtualFuncImplementations other);
+}
+internal class JetBrains.dotTrace.SnapShotApi.Components.CallTreeProcessors.VirtualFuncImplsSerializer : ValueSerializerBase`1<VirtualFuncImplementations> {
+    private static string Store(VirtualFuncImplementations implementations);
+    private static VirtualFuncImplementations Load(string storedString);
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Components.DotTraceBaseTask`1 : object {
+    private static int MaxCancelTimeout;
+    private object myLockObject;
+    [CanBeNullAttribute]
+private ITask`1<T> myTask;
+    private LifetimeDefinition myLifetimeTaskDefinition;
+    private IAsyncTaskDispatcher myDispatcher;
+    private string myTaskName;
+    private bool myResultIsReady;
+    private T myResult;
+    [CompilerGeneratedAttribute]
+private IForegroundProgressPresenter <ForegroundProgressPresenter>k__BackingField;
+    protected IForegroundProgressPresenter ForegroundProgressPresenter { get; }
+    public IAsyncOperation Operation { get; }
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    protected DotTraceBaseTask`1(Lifetime lifetime, IAsyncTaskRunner taskRunner, IForegroundProgressPresenter foregroundProgressPresenter, string taskName, bool isDiskTask);
+    public T CalculateData(IExecutionControllerOld executionController);
+    protected abstract virtual T CalculateDataCore(IExecutionControllerOld executionController);
+    protected bool TryWaitForComplete();
+    [CompilerGeneratedAttribute]
+protected IForegroundProgressPresenter get_ForegroundProgressPresenter();
+    protected bool TryWaitForComplete(T& result);
+    private ITask`1<T> GetCurrentTaskOrResult(T& result);
+    public sealed virtual IAsyncOperation get_Operation();
+    public sealed virtual void Start(bool addToHead);
+    public sealed virtual void WaitForResult(bool showUi);
+    public sealed virtual void Cancel();
+    public sealed virtual void MaximizePriority();
+    private void RunTaskCore(bool addToHead);
+    private void CancelTaskCore();
+    public virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+}
+[SnapshotComponentAttribute("Performance", "0")]
+public class JetBrains.dotTrace.SnapShotApi.Components.EventWaitingFunctionsManager : object {
+    private ISignaturesProvider mySigProvider;
+    private static String[] ourPresetFunctions;
+    private HashSet`1<FunctionId> myIds;
+    public IEnumerable`1<FunctionId> EventFunctionIDs { get; }
+    public EventWaitingFunctionsManager(ISignaturesProvider sigProvider);
+    private static EventWaitingFunctionsManager();
+    public void PrepareData();
+    public bool IsEventWaitingFunction(T node);
+    public IEnumerable`1<FunctionId> get_EventFunctionIDs();
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.FullNamespaceTreeBuilder : object {
+    private PerformanceSnapshot mySnapshot;
+    private MethodInfoProvider myMethodInfoProvider;
+    public FullNamespaceTreeBuilder(PerformanceSnapshot snapshot, MethodInfoProvider methodInfoProvider);
+    public ISnapshotNamespaceTree CalculateData(IExecutionControllerOld executionController);
+    [CompilerGeneratedAttribute]
+private FullMethodName <CalculateData>b__3_0(FunctionSignature fSig);
+}
+[SnapshotComponentAttribute("Performance", "0")]
+public class JetBrains.dotTrace.SnapShotApi.Components.FullNamespaceTreeProcessor : SnapshotProcessor`1<FullNamespaceTreeProviderTask> {
+    public FullNamespaceTreeProcessor(FullNamespaceTreeProviderTask dotTraceTask);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.FullNamespaceTreeProviderTask : DotTraceBaseTask`1<ISnapshotNamespaceTree> {
+    private FullNamespaceTreeBuilder myFullNamespaceTreeBuilder;
+    private static string TaskName;
+    public ISnapshotNamespaceTree Tree { get; }
+    public FullNamespaceTreeProviderTask(Lifetime lifetime, PerformanceSnapshot snapshot, IAsyncTaskRunner taskRunner, IForegroundProgressPresenter foregroundProgressPresenter, MethodInfoProvider methodInfoProvider);
+    protected virtual ISnapshotNamespaceTree CalculateDataCore(IExecutionControllerOld executionController);
+    public sealed virtual ISnapshotNamespaceTree get_Tree();
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.GainManager : object {
+    private static string cRootTagName;
+    private static int cVersion;
+    private SnapshotSettingsComponent mySnapshotSettingsStorage;
+    private ISignaturesProvider myNsTree;
+    private Dictionary`2<FunctionId, bool> myGainKeys;
+    private Dictionary`2<CallTreeSectionNode, GainInfo> myGainsInstance;
+    private Dictionary`2<FunctionId, GainInfo> myGainsFunc;
+    private Dictionary`2<CallTreeSectionNode, ICallTreeNodeState`1<IMeasureNode>> myInstanceStatesMap;
+    private Dictionary`2<FunctionId, ICallTreeNodeState`1<IMeasureNode>> myFuncStatesMap;
+    private PerformanceSnapshot mySnapshot;
+    private GainSerializerHelper mySerializer;
+    [CompilerGeneratedAttribute]
+private Action AdjustedFunctionsListChanged;
+    public GainManager(Lifetime lifetime, PerformanceSnapshot snapshot, SnapshotSettingsComponent settingsStore, IThreading threading, ISignaturesProvider nsTreeProvider);
+    [CompilerGeneratedAttribute]
+public void add_AdjustedFunctionsListChanged(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_AdjustedFunctionsListChanged(Action value);
+    public ICollection`1<KeyValuePair`2<FunctionId, ICallTreeNodeState`1<IMeasureNode>>> GetAdjustedFunctionsStates();
+    public ICollection`1<KeyValuePair`2<CallTreeSectionNode, ICallTreeNodeState`1<IMeasureNode>>> GetAdjustedInstanceStates();
+    public virtual int GetHashCode();
+    private void LoadSettings();
+    private void SaveSettings();
+    public void ReadFromXml(XmlElement element);
+    private void ReadGains(XmlElement element, string tag, Dictionary`2<T, ICallTreeNodeState`1<IMeasureNode>> stateMap, Dictionary`2<T, GainInfo> gainMap, Func`2<string, T> convertor);
+    private static bool HasAllAttributes(XmlElement e);
+    private static void ExtractOwntimeAndRatio(XmlElement nodeElement, Boolean& isOwnTime, Single& ratio);
+    private ICallTreeNodeState`1<IMeasureNode> ReadStateInfo(XmlElement nodeElement);
+    private void ReadStatesData(XmlElement element);
+    public void WriteToXml(XmlElement element);
+    private void SerializeInstances(XmlElement element);
+    private void SerializeFunctions(XmlElement element);
+    private void SerializeGainKeys(XmlElement element);
+    private void SerializeState(ICallTreeNodeState`1<IMeasureNode> state, XmlElement element);
+    private static void SerializeGain(XmlElement root, GainInfo gainInfo, string id);
+    public bool IsProbablyOptimizedNode(FunctionId fid);
+    public bool IsOptimizedNode(ICallTreeNode`1<IMeasureNode> node);
+    public bool IsSingleOptimizedNode(ICallTreeNode`1<IMeasureNode> node);
+    public bool IsCompletelyOptimizedNode(FunctionId fid);
+    public bool HasAdjustmentsUnderNode(ICallTreeNode`1<IMeasureNode> root);
+    public void GetAdjustedSourceInfo(ICallTreeNode`1<IMeasureNode> node, Boolean& isOptimized, Boolean& allInstances, Boolean& ownTime, Boolean& isFixedParent, Single& ratio, Boolean& consistent);
+    public ulong GetGainOnNode(ICallTreeNode`1<IMeasureNode> node);
+    private ulong GetGainOnNode(CallTreeSectionNode node);
+    private static bool FeasibleGainRoot(CallTreeSectionNode nodeKey, CallTreeSectionNode nodeOffset);
+    private static ulong ComputeGain(bool isOwnTime, CallTreeSectionNode node, float factor);
+    public void ConstructGainTOI(ICallTreeNode`1<IMeasureNode> node, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    public void ConstructGainTAI(ICallTreeNode`1<IMeasureNode> node, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    public void ConstructGain(ICallTreeNode`1<IMeasureNode> node, bool isSingleInstance, bool isOwnTime, float factor, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    public void ConstructGainWithParent(ICallTreeNode`1<IMeasureNode> node, bool isOwnTime, ICallTreeNode`1<IMeasureNode> parent, float factor, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    public void ConstructGainForWholeClass(ICallTreeNode`1<IMeasureNode> node, ICallTreeNode`1<IMeasureNode> viewRoot, bool isOwnTime, float factor, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    private void ConstructGainMappingOn(ICallTreeNode`1<IMeasureNode> node, FunctionId fMetadataId, bool isSingleInstance, bool isOwnTime, float factor, FunctionId parentFId, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    private void ConstructGainMappingOnSingleInstance(ICallTreeNode`1<IMeasureNode> node, bool isOwnTime, float factor, ICallTreeNodeState`1<IMeasureNode> state);
+    private void ConstructGainMappingOnSelectedInstances(FunctionId fId, bool isOwnTime, float factor, FunctionId parentFId, ICallTreeNodeState`1<IMeasureNode> state, IProgressIndicator progress);
+    private void ConstructGainMappingOnAllInstances(FunctionId fid, bool isOwnTime, float factor, ICallTreeNodeState`1<IMeasureNode> state);
+    private void AddGainInfo(T key, IDictionary`2<T, GainInfo> dictionary, bool isOwnTime, bool isFixedParent, float ratio);
+    public void RemoveAllGains();
+    public void RemoveGain(ICallTreeNode`1<IMeasureNode> node);
+    public void RemoveGainById(FunctionId id);
+    public void RemoveGainByClass(ICallTreeNode`1<IMeasureNode> node, IProgressIndicator progress);
+    public void RemoveAdjustmentsUnderNode(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator progress);
+    private void RemoveGainByGivenSet(IEnumerable`1<CallTreeSectionNode> nodes);
+    private void RemoveGainByGivenId(FunctionId id);
+    [CompilerGeneratedAttribute]
+private CallTreeSectionNode <ReadFromXml>b__20_0(string s);
+    [CompilerGeneratedAttribute]
+private bool <IsOptimizedNode>b__33_0(CallTreeSectionNode n);
+    [CompilerGeneratedAttribute]
+private bool <IsSingleOptimizedNode>b__34_0(CallTreeSectionNode n);
+}
+[SettingsKeyAttribute("System.Reflection.Missing", "GainManagerSettings")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.GainManagerSettings : object {
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "XmlContent")]
+public string XmlContent;
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.CachingHotspotsProcessor : HotspotsProcessor {
+    protected IEnumerable`1<ICallTreeNode`1<IMeasureNode>> myCachedResult;
+    protected CachingHotspotsProcessor(PerformanceSnapshot shot, INodeComparer comparer);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Do(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, IProgressIndicator pi);
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.FunctionsStatisticsInTypes : object {
+    private static IEqualityComparer`1<IMetadataTypeInfo> MetadataTypeComparer;
+    private JetHashSet`1<TypeInfo> myTypes;
+    private Dictionary`2<FunctionId, MethodInfo> myMethods;
+    private ulong myTimeResolution;
+    private IDictionary`2<string, IDictionary`2<FunctionId, FunctionMetrics>> myResults;
+    private bool myResultsAreActual;
+    public FunctionsStatisticsInTypes(ulong timeResolution);
+    private static FunctionsStatisticsInTypes();
+    public void UpdateForFunction(IMetadataSectionAssemblyProvider metadataProvider, FunctionId fuId, ulong ownTime, ulong systemTime, ulong totalTime);
+    public IDictionary`2<string, IDictionary`2<FunctionId, FunctionMetrics>> GetResults();
+    private void SaveInfoAboutMethod(MethodInfo methodInfo, IEnumerable`1<IMetadataTypeInfo> roots);
+    private static MethodInfo CreateMethodInfo(IMetadataMethod givenMethod, FunctionId fuId, ulong ownTime, ulong systemTime, ulong totalTime);
+    private TypeInfo GetTypeInfo(IEnumerable`1<IMetadataTypeInfo> componentTypes);
+    private static void FindParentTypes(string methodName, MethodSignature methodSignature, IMetadataTypeInfo classType, IDictionary`2<IMetadataTypeInfo, IList`1<IMetadataTypeInfo>> allHierarchy);
+    private static bool DoesTypeContainMethod(IMetadataTypeInfo classType, string methodName, MethodSignature methodSignature);
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsByInstanceCountProcessor : CachingHotspotsProcessor {
+    public HotspotsByInstanceCountProcessor(PerformanceSnapshot shot);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Do(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> Convert2BacktraceNodes(List`1<ICallTreeNode`1<IMeasureNode>> topLevel);
+    protected virtual IStructureFilter`1<IMeasureNode> CreateAcceptPredicate();
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> CutResultList(ICallTreeNode`1<IMeasureNode> root, List`1<ICallTreeNode`1<IMeasureNode>> firstNodes);
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsByMetricProcessor : CachingHotspotsProcessor {
+    public static int cThreshold;
+    public static int cMaxElementsInResult;
+    private SystemModulesSnapshotComponent mySysModules;
+    private static EventWaitingFunctionsManager myEventFuncMgr;
+    private IFunctionMetric myHotspotnessMetric;
+    private List`1<Pair`2<CallTreeSectionNode, ulong>> myProcStack;
+    private Dictionary`2<FunctionId, Tuple`3<ulong, ulong, ulong>> myStore;
+    private Dictionary`2<CallTreeSectionOffset, ulong> myWaitFunctionsMap;
+    private static int BufferSize;
+    private int prevGroupId;
+    private ulong myGroupTopTime;
+    public HotspotsByMetricProcessor(SystemModulesSnapshotComponent sysModules, EventWaitingFunctionsManager eventFuncMgr, PerformanceSnapshot host, IFunctionMetric hotspotnessMetric);
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> Convert2BacktraceNodes(List`1<ICallTreeNode`1<IMeasureNode>> topLevel);
+    protected virtual IStructureFilter`1<IMeasureNode> CreateAcceptPredicate();
+    public virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, IProgressIndicator pi);
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> IterateOverSnapshot(IProgressIndicator pi, IStructureFilter`1<IMeasureNode> acceptor);
+    private List`1<ICallTreeNode`1<IMeasureNode>> DoImpl(List`1<CallTreeSectionNode> snNodes, AllFunctionCallsUnderRootConstructor ctor, IProgressIndicator pi);
+    private double ComputeMetric(Tuple`3<ulong, ulong, ulong> times);
+    private bool ProcessNodes(CallTreeSectionNode[] batch, int groupId, long rootOffset, long alreadyReadCount, int start, int count);
+    private bool IsNewGroupStart(int groupId);
+    private void StartNewGroup(int groupId);
+    private void CalcSuffixLengthAndTime(CallTreeSectionNode node, Int32& suffixLength, UInt64& sumOwnTime);
+    public static IEnumerable`1<TItemId> ConstructTopList(IDictionary`2<TItemId, TValue> store, IComparer`1<TItemId> comparer, Func`2<TValue, double> metric, TItemId defaultValue, EventWaitingFunctionsManager eventFuncMgr, int threshold, int maxElementsInResult);
+    private static void ProgressNode(List`1<T> topLevel, T id, IComparer`1<T> comparer, EventWaitingFunctionsManager eventFuncMgr, T& minValue);
+    private List`1<ICallTreeNode`1<IMeasureNode>> Convert2Nodes(IEnumerable`1<FunctionId> toplist, AllFunctionCallsUnderRootConstructor ctor);
+    private List`1<ICallTreeNode`1<IMeasureNode>> Convert2BacktraceNodes(List`1<ICallTreeNode`1<IMeasureNode>> topLevel, IProgressIndicator pi);
+    private ulong CalcTree(CallTreeSectionNode node);
+    [CompilerGeneratedAttribute]
+private CallTreeSectionNode <CalcTree>b__28_1(CallTreeSectionOffset offset);
+    [CompilerGeneratedAttribute]
+private ulong <CalcTree>b__28_2(ulong current, CallTreeSectionNode offset);
+}
+[AttributeUsageAttribute("4")]
+[MeansImplicitUseAttribute]
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsComputerAttribute : PartAttribute {
+}
+[AttributeUsageAttribute("4")]
+[MeansImplicitUseAttribute]
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsDiffComputerAttribute : PartAttribute {
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsProcessor : HotspotsProcessorBase {
+    private static string cDefaultName;
+    protected static int cMinimalHotspotsCount;
+    protected ICallTreeNode`1<IMeasureNode> mySessionRoot;
+    protected HotspotsProcessor(PerformanceSnapshot shot, INodeComparer comparer);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Do(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> IterateOverSnapshot(IProgressIndicator pi, IStructureFilter`1<IMeasureNode> acceptor);
+    public virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, ICallTreeNode`1<IMeasureNode> root, IProgressIndicator progress);
+    public virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, IProgressIndicator pi);
+    private void ProcessNode(FunctionId fId, AllFunctionCallsUnderRootConstructor ctor, List`1<ICallTreeNode`1<IMeasureNode>> topLevel, ICallTreeNode`1& minValueNode, UInt64& minValue);
+    private bool FitNode(List`1<ICallTreeNode`1<IMeasureNode>> topLevel, ICallTreeNode`1<IMeasureNode> node, ICallTreeNode`1<IMeasureNode> minValue);
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.HotspotsProcessorBase : object {
+    protected static int cHotspotsPrimaryBuffer;
+    protected static int ciProgressGradeFactor;
+    protected PerformanceSnapshot mySnapshot;
+    protected INodeComparer myComparer;
+    [CompilerGeneratedAttribute]
+private string <MethodName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ShortMethodName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Priority>k__BackingField;
+    public string MethodName { get; protected set; }
+    public string ShortMethodName { get; public set; }
+    public int Priority { get; protected set; }
+    protected HotspotsProcessorBase(PerformanceSnapshot shot, INodeComparer comparer);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_MethodName();
+    [CompilerGeneratedAttribute]
+protected void set_MethodName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ShortMethodName();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ShortMethodName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Priority();
+    [CompilerGeneratedAttribute]
+protected void set_Priority(int value);
+    public abstract virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Do(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public abstract virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public abstract virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, IProgressIndicator pi);
+    protected abstract virtual List`1<ICallTreeNode`1<IMeasureNode>> Convert2BacktraceNodes(List`1<ICallTreeNode`1<IMeasureNode>> topLevel);
+    protected abstract virtual IStructureFilter`1<IMeasureNode> CreateAcceptPredicate();
+    protected void ProgressNode(List`1<ICallTreeNode`1<IMeasureNode>> topLevel, ICallTreeNode`1<IMeasureNode> node, ICallTreeNode`1& minValueNode, UInt64& minValue);
+    protected static int SmartProgressIncrement(IProgressIndicator progress, int count);
+    protected virtual List`1<ICallTreeNode`1<IMeasureNode>> CutResultList(ICallTreeNode`1<IMeasureNode> root, List`1<ICallTreeNode`1<IMeasureNode>> firstNodes);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.IFunctionMetric {
+    public string MethodName { get; }
+    public string ShortMethodName { get; }
+    public abstract virtual string get_MethodName();
+    public abstract virtual string get_ShortMethodName();
+    public abstract virtual double Evaluate(ulong ownTime, ulong systemTime, ulong totalTime);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.IHotspotsProcessor {
+    public int Priority { get; }
+    public string MethodName { get; }
+    public string ShortMethodName { get; public set; }
+    public abstract virtual int get_Priority();
+    public abstract virtual string get_MethodName();
+    public abstract virtual string get_ShortMethodName();
+    public abstract virtual void set_ShortMethodName(string value);
+    public abstract virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Do(ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public abstract virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, ICallTreeNode`1<IMeasureNode> root, IProgressIndicator pi);
+    public abstract virtual List`1<ICallTreeNode`1<IMeasureNode>> Do(AllFunctionCallsUnderRootConstructor ctor, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, IProgressIndicator pi);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.INodeComparer {
+    public abstract virtual ulong ComputeValue(ICallTreeNode`1<IMeasureNode> node);
+    public abstract virtual int Compare(ICallTreeNode`1<IMeasureNode> x, ulong val);
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.OwnPlusSystemTimeMetric : object {
+    public string MethodName { get; }
+    public string ShortMethodName { get; }
+    public sealed virtual string get_MethodName();
+    public sealed virtual string get_ShortMethodName();
+    public sealed virtual double Evaluate(ulong ownTime, ulong systemTime, ulong totalTime);
+}
+public class JetBrains.dotTrace.SnapShotApi.Components.HotspotsProcessing.TotalTimeFactorOwnTimeMetric : object {
+    public string MethodName { get; }
+    public string ShortMethodName { get; }
+    public sealed virtual string get_MethodName();
+    public sealed virtual string get_ShortMethodName();
+    public sealed virtual double Evaluate(ulong ownTime, ulong sytemTime, ulong totalTime);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Components.ISystemModulesSnapshotComponent {
+    public abstract virtual bool IsSystemModule(SectionIndex`1<IMetadataSection> metaDataIndex);
+    public abstract virtual bool IsSystemFunction(FunctionId id);
+    public abstract virtual bool IsSystemFunction(FunctionId id, IFuidToMetadataIdConverter convertor);
+    public abstract virtual bool IsSystemFunction(CallTreeSectionNode node);
+    public abstract virtual bool IsSystemFunction(ICallTreeNode`1<IMeasureNode> node);
+    public abstract virtual bool IsSystemSubtree(ICallTreeNode`1<IMeasureNode> node);
+    public abstract virtual bool IsSystemSubtree(CallTreeSectionNode node);
+    public abstract virtual bool GetFirstUserFunctionNode(CallTreeSectionOffset leftOffset, CallTreeSectionOffset rightOffset, CallTreeSectionNode& result);
+}
+[SnapshotComponentAttribute("", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.PerformanceAdvancedMethodInfoProviderComponent : PerformanceAdvancedMethodInfoProvider {
+    public PerformanceAdvancedMethodInfoProviderComponent(PerformanceSnapshot performanceSnapshot);
+}
+[SnapshotComponentAttribute("", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.PerformanceNavigationInfoAccessorComponent : PerformanceNavigationInfoAccessor {
+    public PerformanceNavigationInfoAccessorComponent(AssemblyInfoDatabase assemblyInfoDatabase, PerformanceSnapshot snapshot);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.SearchHistoryManager : object {
+    private SnapshotSettingsComponent mySnapshotSettingsStorage;
+    private List`1<string> mySearchHistory;
+    [NotNullAttribute]
+public List`1<string> History { get; public set; }
+    public SearchHistoryManager(Lifetime lifetime, SnapshotSettingsComponent settingsStore);
+    public List`1<string> get_History();
+    public void set_History(List`1<string> value);
+    public void AddHistoryItem(string text, FunctionId metaDataId);
+    private sealed virtual override void JetBrains.dotTrace.SnapShotApi.ISnapshotSettingsNeedSave.SaveSettings();
+    private void LoadSettings();
+    private void SaveSettings();
+}
+[SettingsKeyAttribute("System.Reflection.Missing", "AnnotationsManagerSettings")]
+internal class JetBrains.dotTrace.SnapShotApi.Components.SearchHistoryManagerSettings : object {
+    [SettingsEntryAttribute("Mono.Cecil.CustomAttributeArgument", "Count")]
+public int Count;
+    [SettingsIndexedEntryAttribute("Strings")]
+public IIndexedEntry`2<int, string> Strings;
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Components.SnapshotProcessor`1 : object {
+    private T myDotTraceTask;
+    private bool myRunAsync;
+    public IDotTraceTask Task { get; }
+    public bool RunAsync { get; }
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    protected SnapshotProcessor`1(T dotTraceTask, bool runAsync);
+    public sealed virtual IDotTraceTask get_Task();
+    public sealed virtual bool get_RunAsync();
+    [IteratorStateMachineAttribute("JetBrains.dotTrace.SnapShotApi.Components.SnapshotProcessor`1/<get_Dependencies>d__8")]
+public virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.Components.SystemModulesSnapshotComponent : object {
+    private static int cGroupSize;
+    private static string cGacModuleSignature;
+    private ILogger myLogger;
+    private PerformanceSnapshot mySnapshot;
+    private Boolean[] mySysModulesMask;
+    private Dictionary`2<int, Pair`2<ulong, ulong>> myThreadTimes;
+    private Dictionary`2<int, bool> myCompleteSystemThreads;
+    [CanBeNullAttribute]
+private Dictionary`2<int, List`1<byte>> myBitMask;
+    private IAsyncDataController`1<bool> myReadyController;
+    private IDataProvider`1<bool> myReadyProvider;
+    private FunctionId[] myReadBuffer;
+    private SystemModulesOptionsManager mySystemModulesOptionsManager;
+    [CompilerGeneratedAttribute]
+private Action ModulesChanged;
+    [CompilerGeneratedAttribute]
+private IDataProvider`1<Func`2<FunctionId, bool>> <IsSystemFunctionProvider>k__BackingField;
+    private bool isSystemBatch;
+    public IDataProvider`1<Func`2<FunctionId, bool>> IsSystemFunctionProvider { get; }
+    public IDataProvider`1<bool> Ready { get; }
+    public int ThreadsCount { get; }
+    public int SystemThreadsCount { get; }
+    public SystemModulesSnapshotComponent(Lifetime lifetime, ILogger logger, PerformanceSnapshot snapshot, SystemModulesOptionsManager systemModulesOptionsManager);
+    [CompilerGeneratedAttribute]
+public void add_ModulesChanged(Action value);
+    [CompilerGeneratedAttribute]
+public void remove_ModulesChanged(Action value);
+    [CompilerGeneratedAttribute]
+public IDataProvider`1<Func`2<FunctionId, bool>> get_IsSystemFunctionProvider();
+    public IDataProvider`1<bool> get_Ready();
+    public void AddModulesRange(Dictionary`2<int, List`1<byte>> bitMask, Dictionary`2<int, bool> completeSystemThreads);
+    public void AddThreadTimes(int groupId, ulong threadWorkTime, ulong threadUserWorkTime);
+    public int get_ThreadsCount();
+    public int get_SystemThreadsCount();
+    public sealed virtual bool IsSystemModule(SectionIndex`1<IMetadataSection> metaDataIndex);
+    public bool IsSystemGacModule(SectionIndex`1<IMetadataSection> metaDataIndex);
+    public static bool IsGacModulePath(SectionIndex`1<IMetadataSection> metaDataIndex, IModulePathSection section);
+    public sealed virtual bool IsSystemFunction(FunctionId id);
+    public sealed virtual bool IsSystemFunction(FunctionId id, IFuidToMetadataIdConverter convertor);
+    public bool IsSystemGacFunction(FunctionId id, IFuidToMetadataIdConverter convertor);
+    public sealed virtual bool IsSystemFunction(CallTreeSectionNode node);
+    public sealed virtual bool IsSystemFunction(ICallTreeNode`1<IMeasureNode> node);
+    private bool IsSystemThread(ICallTreeNode`1<IMeasureNode> node);
+    public sealed virtual bool IsSystemSubtree(ICallTreeNode`1<IMeasureNode> node);
+    public sealed virtual bool IsSystemSubtree(CallTreeSectionNode node);
+    private void OnModulesChanged();
+    private void UpdateCache();
+    private bool IsModuleSystem(SectionIndex`1<IMetadataSection> sectionIndex);
+    private bool IsModuleOrAssemblySystem(string name);
+    private bool IsSystemRange(CallTreeSectionNode node);
+    private bool CheckRange(int groupId, int leftIndex, int rightIndex);
+    private bool CheckInByte(int groupId, int left, int right);
+    private bool CheckBatchForSystemness(FunctionId[] batch, int groupId, long rootOffset, long alreadyReadCount, int start, int count);
+    public sealed virtual bool GetFirstUserFunctionNode(CallTreeSectionOffset leftOffset, CallTreeSectionOffset rightOffset, CallTreeSectionNode& result);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_1();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_2();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_3(Action h);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_4(Action h);
+    [CompilerGeneratedAttribute]
+private bool <IsModuleSystem>b__40_1(FileSystemPath p);
+}
+[ExtensionAttribute]
+public static class JetBrains.dotTrace.SnapShotApi.DependedTaskHelpers : object {
+    [ExtensionAttribute]
+public static T[] GetTopoSortedArray(IEnumerable`1<T> tasks);
+    public static void CheckThatNoDependencies(IEnumerable`1<T> testList, IEnumerable`1<T> noDependencyList);
+    private static Nullable`1<int> TestDependency(IDependedEntity t1, IDependedEntity t2, Dictionary`2<IDependedEntity, JetHashSet`1<IDependedEntity>> allDependencies);
+    private static void AddWithDependencies(IDependedEntity entity, Dictionary`2<IDependedEntity, JetHashSet`1<IDependedEntity>> allDependencies);
+    private static bool DependsOn(IDependedEntity t1, IDependedEntity t2, Dictionary`2<IDependedEntity, JetHashSet`1<IDependedEntity>> allDependencies);
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.dotTrace.SnapShotApi.ExposeSnapshotContainerForSnapshotToolWindowContent : object {
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public IProperty`1<IComponentContainer> SnapshotContainerWhenOpen;
+}
+public class JetBrains.dotTrace.SnapShotApi.FunctionSignatureCache : object {
+    private Dictionary`2<FunctionId, FunctionSignature> myCache;
+    private IMetadataSection myMetadataSection;
+    private IModulePathSection myModulePaths;
+    private IAdvancedMethodInfoProviderAccessor myMethodInfoProviderAccessor;
+    public FunctionSignatureCache(IMetadataSection metadataSection, IModulePathSection modules, IAdvancedMethodInfoProviderAccessor methodInfoProviderAccessor);
+    private void AddWellKnownToCache(FunctionId rootId, string name);
+    public sealed virtual FunctionSignature GetSignature(FunctionId fid);
+    public sealed virtual FunctionSignature GetSignatureFull(FunctionId fid);
+    private FunctionSignature GetSignatureImpl(FunctionId fid, bool complete);
+    public sealed virtual IEnumerable`1<FunctionSignature> GetSignatures(IEnumerable`1<FunctionId> functionIds);
+    public sealed virtual IEnumerable`1<FunctionSignature> GetSignaturesFull(IEnumerable`1<FunctionId> functionIds);
+    private IEnumerable`1<FunctionSignature> GetSignaturesImpl(IEnumerable`1<FunctionId> list, IMetadataSectionAssemblyProvider provider, bool complete);
+    public sealed virtual IDictionary`2<FunctionId, FunctionSignature> GetSignaturesMap(IEnumerable`1<FunctionId> functionIds);
+    private HashMap`2<FunctionId, FunctionSignature> GetSignaturesMap(IEnumerable`1<FunctionId> list, IMetadataSectionAssemblyProvider provider);
+    [CanBeNullAttribute]
+private FunctionSignature FindWellKnownSignature(FunctionId fid);
+    private FunctionSignature ExtractSignature(FunctionId fid, IMetadataSectionAssemblyProvider assemblyProvider);
+    private FunctionSignature ExtractSignatureFull(FunctionId fid, IMetadataSectionAssemblyProvider assemblyProvider);
+    private FunctionSignature ExtractSignatureImpl(FunctionId fid, IMetadataSectionAssemblyProvider assemblyProvider, bool isComplete);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<FunctionSignature> <GetSignatures>b__9_0(IEnumerable`1<FunctionId> ids, IMetadataSectionAssemblyProvider provider);
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<FunctionSignature> <GetSignaturesFull>b__10_0(IEnumerable`1<FunctionId> ids, IMetadataSectionAssemblyProvider provider);
+}
+public class JetBrains.dotTrace.SnapShotApi.HierarchicalPath`1 : object {
+    public HierarchicalPath`1<T> Parent;
+    public T Data;
+    private UInt32 myHash;
+    private HierarchicalPath`1(HierarchicalPath`1<T> parent, T data, UInt32 hash);
+    public static HierarchicalPath`1<T> CreateNestedPath(List`1<T> data, Func`2<T, UInt32> hashCodeComputer);
+    public T LastElementData();
+    private static HierarchicalPath`1<T> CreateNestedPath(HierarchicalPath`1<T> parent, T data, Func`2<T, UInt32> hashCodeComputer);
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+}
+public interface JetBrains.dotTrace.SnapShotApi.IAnnotationsManager {
+    public IEnumerable`1<Pair`2<FunctionId, string>> AnnotatedFunctions { get; }
+    public IProperty`1<string> Description { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_AnnotationsChanged(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_AnnotationsChanged(Action value);
+    public abstract virtual IEnumerable`1<Pair`2<FunctionId, string>> get_AnnotatedFunctions();
+    public abstract virtual IProperty`1<string> get_Description();
+    public abstract virtual void SetAnnotation(FunctionId function, string text);
+    public abstract virtual string GetAnnotation(FunctionId function);
+}
+public interface JetBrains.dotTrace.SnapShotApi.ICallTreeNodeInfo {
+    public ICallTreeNode`1<IMeasureNode> Node { get; }
+    public FunctionSignature Signature { get; }
+    public DateTime SnapshotDate { get; }
+    public abstract virtual ICallTreeNode`1<IMeasureNode> get_Node();
+    public abstract virtual FunctionSignature get_Signature();
+    public abstract virtual DateTime get_SnapshotDate();
+}
+public interface JetBrains.dotTrace.SnapShotApi.ICallTreeStartupProcessor {
+    public abstract virtual void Start();
+    public abstract virtual void ProcessBatch(CallTreeSectionNodeSimple[] buffer, int groupId, long rootOffset, int startIndex, int count);
+    public abstract virtual void End();
+}
+public interface JetBrains.dotTrace.SnapShotApi.IContextDependableFilter`1 {
+    public abstract virtual void InitByNode(ICallTreeNode`1<T> node);
+}
+public interface JetBrains.dotTrace.SnapShotApi.IDependedEntity {
+    public IEnumerable`1<IDependedEntity> Dependencies { get; }
+    public abstract virtual IEnumerable`1<IDependedEntity> get_Dependencies();
+}
+public interface JetBrains.dotTrace.SnapShotApi.IFunctionEnumeratorFilter`1 {
+    public abstract virtual bool Accept(T nodeOrHeader);
+}
+public interface JetBrains.dotTrace.SnapShotApi.IFunctionSignatureCache {
+    public abstract virtual FunctionSignature GetSignature(FunctionId fid);
+    public abstract virtual FunctionSignature GetSignatureFull(FunctionId fid);
+    public abstract virtual IEnumerable`1<FunctionSignature> GetSignatures(IEnumerable`1<FunctionId> functionIds);
+    public abstract virtual IEnumerable`1<FunctionSignature> GetSignaturesFull(IEnumerable`1<FunctionId> functionIds);
+    public abstract virtual IDictionary`2<FunctionId, FunctionSignature> GetSignaturesMap(IEnumerable`1<FunctionId> functionIds);
+}
+public interface JetBrains.dotTrace.SnapShotApi.INodeConstructor {
+    public abstract virtual ICallTreeNode`1<IMeasureNode> Create(ICallTreeNode`1<IMeasureNode> currentNode);
+}
+public interface JetBrains.dotTrace.SnapShotApi.INodeFromIdConstructor {
+    public abstract virtual ICallTreeNode`1<IMeasureNode> Create(FunctionId fid);
+}
+public interface JetBrains.dotTrace.SnapShotApi.INodeFromListConstructor`1 {
+    public abstract virtual ICallTreeNode`1<IMeasureNode> Create(IEnumerable`1<T> dataSourceCollection);
+}
+public interface JetBrains.dotTrace.SnapShotApi.ISnapshot {
+    [NotNullAttribute]
+public IComponentContainer ComponentContainer { get; }
+    [NotNullAttribute]
+public IFullEnvironmentSection Environment { get; }
+    public string RawPresentableName { get; }
+    [NotNullAttribute]
+public FileSystemPath IndexFile { get; }
+    public FileSystemPath LastSavedLocation { get; }
+    public abstract virtual IComponentContainer get_ComponentContainer();
+    public abstract virtual IFullEnvironmentSection get_Environment();
+    public abstract virtual string get_RawPresentableName();
+    public abstract virtual FileSystemPath get_IndexFile();
+    public abstract virtual FileSystemPath get_LastSavedLocation();
+    public abstract virtual void Compose(object containerOwner, IComponentContainer parentContainer, IPartCatalogSet catalogueSet);
+}
+public interface JetBrains.dotTrace.SnapShotApi.ISnapshotSettings {
+    public abstract virtual IContextBoundSettingsStore BindToContextTransient();
+    public abstract virtual IContextBoundSettingsStoreLive BindToContextLive(Lifetime lt);
+    public abstract virtual void SaveTo(FileSystemPath newContentFile);
+}
+public interface JetBrains.dotTrace.SnapShotApi.ISnapshotSettingsNeedSave {
+    public abstract virtual void SaveSettings();
+}
+public interface JetBrains.dotTrace.SnapShotApi.ISnapshotStructureValidator {
+    public bool IsSnapshotValid { get; }
+    public SnapshotStructureError Error { get; }
+    public abstract virtual bool get_IsSnapshotValid();
+    public abstract virtual SnapshotStructureError get_Error();
+    public abstract virtual void InvalidateSnapshot(SnapshotStructureError reason);
+}
+public interface JetBrains.dotTrace.SnapShotApi.IStructureFilter`1 {
+    public abstract virtual bool AcceptNode(ICallTreeNode`1<T> node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.AllFunctionCallsUnderRootConstructor : NodeUniversalCtorBase {
+    private RecursionAnalysisMode myAccountForRecursion;
+    private ICallTreeNode`1<IMeasureNode> myRoot;
+    private List`1<CallTreeSectionNode> myTopRoots;
+    private Dictionary`2<CallTreeSectionNode, Pair`2<CallTreeSectionOffset, CallTreeSectionOffset>> myRootStorageBorders;
+    private HashSet`1<int> myRootNodesSections;
+    public HashSet`1<int> RootSectionIndices { get; }
+    public AllFunctionCallsUnderRootConstructor(ISnapshot host, ICallTreeNode`1<IMeasureNode> root, RecursionAnalysisMode accountForRecursion);
+    public AllFunctionCallsUnderRootConstructor(ISnapshot host, IEnumerable`1<ICallTreeNode`1<IMeasureNode>> roots, RecursionAnalysisMode accountForRecursion);
+    private void CreateBorderPairs();
+    public HashSet`1<int> get_RootSectionIndices();
+    public virtual ICallTreeNode`1<IMeasureNode> Create(ICallTreeNode`1<IMeasureNode> exampleNode);
+    [CanBeNullAttribute]
+public virtual ICallTreeNode`1<IMeasureNode> Create(FunctionId fid);
+    private List`1<CallTreeSectionNode> CollectSectoredNodes(FunctionId fid);
+    private static bool AssertFidsEqual(ICallTreeNode`1<IMeasureNode> node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.BacktraceThreadNode : ThreadStartNode {
+    protected BacktraceThreadNode(PerformanceSnapshot snapshot, IEnumerable`1<CallTreeSectionNode> nodes, ThreadFlags type, string name);
+    public static BacktraceThreadNode CreateNode(PerformanceSnapshot snapshot, IEnumerable`1<CallTreeSectionNode> nodes);
+    public virtual bool CanExpand();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.BacktraceTreeNode : PerformanceTreeNodeBase {
+    private BacktraceTreeNode myParent;
+    private Dictionary`2<CallTreeSectionOffset, Pair`2<CallTreeSectionNode, ulong>> myTimes2ParentsMap;
+    private Dictionary`2<CallTreeSectionOffset, Pair`2<HeaderNodeRef, ulong>> myTimes2ParentsRefInitialMap;
+    private SnsOffsetsCollection _reference;
+    private int _precomputedHashCodeForOptimizedConstruction;
+    [CompilerGeneratedAttribute]
+private FunctionId <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <AggValue>k__BackingField;
+    public FunctionId Id { get; }
+    public ulong AggValue { get; public set; }
+    public ISNodesCollection Reference { get; }
+    public List`1<CallTreeSectionNode> Content { get; }
+    public IEnumerable`1<CallTreeSectionOffset> ContentOffsets { get; }
+    private BacktraceTreeNode(IEnumerable`1<CallTreeSectionNode> roots, PerformanceSnapshot host, Dictionary`2<CallTreeSectionNode, ulong> map);
+    private BacktraceTreeNode(HeaderNode root, FunctionId nodeId, PerformanceSnapshot host, FunctionSignature sig, Dictionary`2<CallTreeSectionNode, ulong> map);
+    private BacktraceTreeNode(BacktraceTreeNode parent, IEnumerable`1<CallTreeSectionNode> nodes, PerformanceSnapshot host, Dictionary`2<CallTreeSectionNode, Pair`2<CallTreeSectionNode, ulong>> map);
+    public static BacktraceTreeNode CreateNode(List`1<CallTreeSectionNode> roots, PerformanceSnapshot host, Dictionary`2<CallTreeSectionNode, ulong> map);
+    public static BacktraceTreeNode CreateNode(ICallTreeNode`1<IMeasureNode> root, Dictionary`2<CallTreeSectionNode, ulong> map);
+    [CompilerGeneratedAttribute]
+public FunctionId get_Id();
+    [CompilerGeneratedAttribute]
+public ulong get_AggValue();
+    [CompilerGeneratedAttribute]
+public void set_AggValue(ulong value);
+    public ISNodesCollection get_Reference();
+    public virtual int GetHashCode();
+    public virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public List`1<CallTreeSectionNode> get_Content();
+    public IEnumerable`1<CallTreeSectionOffset> get_ContentOffsets();
+    private void CreateParent2TimeMap(IEnumerable`1<CallTreeSectionNode> nodes, Dictionary`2<CallTreeSectionNode, ulong> map);
+    private void CreateParent2TimeMap(IEnumerable`1<HeaderNodeRef> nodeRefs, Dictionary`2<CallTreeSectionNode, ulong> map);
+    private void CreateTimeAndCallInfo(Dictionary`2<CallTreeSectionNode, Pair`2<CallTreeSectionNode, ulong>> map);
+    private void CreateTimeAndCallInfo(HeaderNode root);
+    private void CreateParent2TimeMap(Dictionary`2<CallTreeSectionNode, Pair`2<CallTreeSectionNode, ulong>> map);
+    public virtual bool CanExpand();
+    public virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    private IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetResultDescendants(IEnumerable`1<ICallTreeNode`1<IMeasureNode>> parents, Dictionary`2<CallTreeSectionOffset, Pair`2<CallTreeSectionNode, ulong>> map);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+    private Dictionary`2<CallTreeSectionOffset, Pair`2<CallTreeSectionNode, ulong>> ConvertRefs2TimesMap();
+    private ICallTreeNode`1<IMeasureNode> Create(ICallTreeNode`1<IMeasureNode> node, Dictionary`2<CallTreeSectionOffset, Pair`2<CallTreeSectionNode, ulong>> map);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    [CompilerGeneratedAttribute]
+private CallTreeSectionNode <get_Content>b__19_1(Pair`2<HeaderNodeRef, ulong> refs);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.ByOffsetComparer : object {
+    public sealed virtual bool Equals(CallTreeSectionNode x, CallTreeSectionNode y);
+    public sealed virtual int GetHashCode(CallTreeSectionNode node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.CallNodeEqualityComparer : object {
+    public sealed virtual bool Equals(ICallTreeNode`1<IMeasureNode> node1, ICallTreeNode`1<IMeasureNode> node2);
+    public sealed virtual int GetHashCode(ICallTreeNode`1<IMeasureNode> node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.CallTreeNodeRestoreContext : object {
+    [CompilerGeneratedAttribute]
+private PerformanceSnapshot <Snapshot>k__BackingField;
+    public PerformanceSnapshot Snapshot { get; }
+    public CallTreeNodeRestoreContext(PerformanceSnapshot snapshot);
+    [CompilerGeneratedAttribute]
+public PerformanceSnapshot get_Snapshot();
+}
+[DataContractAttribute]
+public class JetBrains.dotTrace.SnapShotApi.Nodes.CallTreeSectionNodesState : object {
+    [DataMemberAttribute]
+protected string myData;
+    public CallTreeSectionNodesState(IEnumerable`1<CallTreeSectionNode> nodes);
+    public sealed virtual IEnumerable`1<CallTreeSectionNode> Restore(PerformanceSnapshot context);
+    public virtual bool Equals(object obj);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.CommonRootNode : PerformanceTreeNodeBase {
+    public bool IsSnapshotRoot { get; }
+    public CommonRootNode(IEnumerable`1<CallTreeSectionNode> children, PerformanceSnapshot host);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public virtual bool get_IsSnapshotRoot();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.DiffNodeCtor : NodeCtorBase {
+    public static DiffNodeCtor Default;
+    [CompilerGeneratedAttribute]
+private double <NormalizingRatio>k__BackingField;
+    public double NormalizingRatio { get; private set; }
+    public bool IsDefault { get; }
+    public DiffNodeCtor(ISnapshot localHost, double normRatio);
+    private static DiffNodeCtor();
+    public static DiffNodeCtor CreateCtor(ISnapshot localHost, double factor);
+    [CompilerGeneratedAttribute]
+public double get_NormalizingRatio();
+    [CompilerGeneratedAttribute]
+private void set_NormalizingRatio(double value);
+    public bool get_IsDefault();
+    public virtual ICallTreeNode`1<IMeasureNode> Create(ICallTreeNode`1<IMeasureNode> currentNode);
+    public DiffTreeNode Create(ICallTreeNode`1<IMeasureNode> remoteNode, ICallTreeNode`1<IMeasureNode> localNode);
+    public void Reset();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.DiffTreeNode : UserDataHolder {
+    private PerformanceNodeInfo myInfo;
+    private ICallTreeNode`1<IMeasureNode> myLocalNode;
+    private ICallTreeNode`1<IMeasureNode> myRemoteNode;
+    private DiffNodeCtor myCtor;
+    [CompilerGeneratedAttribute]
+private object <Match>k__BackingField;
+    public DiffNodeCtor Ctor { get; }
+    public ICallTreeNode`1<IMeasureNode> LocalNode { get; }
+    public ICallTreeNode`1<IMeasureNode> RemoteNode { get; }
+    public object Match { get; public set; }
+    public ISnapshot Host { get; }
+    public IMeasureNode Info { get; }
+    public bool IsSnapshotRoot { get; }
+    public bool HasChildren { get; }
+    public bool HasParents { get; }
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    internal DiffTreeNode(ICallTreeNode`1<IMeasureNode> remoteNode, ICallTreeNode`1<IMeasureNode> localNode, DiffNodeCtor ctor);
+    public sealed virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    private void ComputeInfo();
+    public void ResetCtor();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public DiffNodeCtor get_Ctor();
+    public ICallTreeNode`1<IMeasureNode> get_LocalNode();
+    public ICallTreeNode`1<IMeasureNode> get_RemoteNode();
+    [CompilerGeneratedAttribute]
+public object get_Match();
+    [CompilerGeneratedAttribute]
+public void set_Match(object value);
+    public sealed virtual ISnapshot get_Host();
+    public sealed virtual IMeasureNode get_Info();
+    public sealed virtual bool get_IsSnapshotRoot();
+    public sealed virtual bool get_HasChildren();
+    public sealed virtual bool get_HasParents();
+    public sealed virtual string get_PresentableName();
+    public sealed virtual FunctionSignature get_Signature();
+    public sealed virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public sealed virtual bool CanExpand();
+    public sealed virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+    private IEnumerable`1<ICallTreeNode`1<IMeasureNode>> MergeSignatures(Dictionary`2<FunctionSignature, ICallTreeNode`1<IMeasureNode>> remotes, Dictionary`2<FunctionSignature, ICallTreeNode`1<IMeasureNode>> locals);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.GroupNode : UserDataHolder {
+    private static string cSpecialGroupName;
+    public string myInducedName;
+    private List`1<ICallTreeNode`1<IMeasureNode>> myNodes;
+    private HashSet`1<GroupNode> myNamespaces;
+    private ClassSignature mySignature;
+    private ISnapshot myHost;
+    private long myTime;
+    private long myOwnTime;
+    private long myCalls;
+    public IEnumerable`1<ICallTreeNode`1<IMeasureNode>> Nodes { get; }
+    public IEnumerable`1<GroupNode> Groups { get; }
+    public bool HasChildren { get; }
+    public bool HasParents { get; }
+    public bool IsSnapshotRoot { get; }
+    public ISnapshot Host { get; }
+    public IMeasureNode Info { get; }
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public long Time { get; }
+    public long OwnTime { get; }
+    public long Calls { get; }
+    public long Delta { get; public set; }
+    public bool TimeIsValid { get; }
+    public bool IsRecursive { get; }
+    public bool IsInjected { get; }
+    public bool IsRecursionIncomplete { get; public set; }
+    public bool IsRecursionBanned { get; public set; }
+    public GroupNode(ClassSignature sig, ISnapshot host);
+    public GroupNode(string name, ISnapshot host);
+    public IEnumerable`1<ICallTreeNode`1<IMeasureNode>> get_Nodes();
+    public IEnumerable`1<GroupNode> get_Groups();
+    public sealed virtual bool get_HasChildren();
+    public sealed virtual bool get_HasParents();
+    public sealed virtual bool get_IsSnapshotRoot();
+    public sealed virtual ISnapshot get_Host();
+    public sealed virtual IMeasureNode get_Info();
+    public sealed virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public sealed virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public virtual string ToString();
+    public sealed virtual string get_PresentableName();
+    public sealed virtual FunctionSignature get_Signature();
+    public sealed virtual bool CanExpand();
+    public sealed virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    public void AddNode(ICallTreeNode`1<IMeasureNode> f);
+    public void AddNode(GroupNode group, ICallTreeNode`1<IMeasureNode> f);
+    public void RecomputeTotalTime();
+    private void AppendCounts(ICallTreeNode`1<IMeasureNode> f);
+    public sealed virtual long get_Time();
+    public sealed virtual long get_OwnTime();
+    public sealed virtual long get_Calls();
+    public sealed virtual long get_Delta();
+    public sealed virtual void set_Delta(long value);
+    public sealed virtual bool get_TimeIsValid();
+    public sealed virtual bool get_IsRecursive();
+    public sealed virtual bool get_IsInjected();
+    public sealed virtual void SetModifiedTime(long timeInUnits);
+    public sealed virtual void ClearRecursionByOracle();
+    public sealed virtual bool get_IsRecursionIncomplete();
+    public sealed virtual void set_IsRecursionIncomplete(bool value);
+    public sealed virtual bool get_IsRecursionBanned();
+    public sealed virtual void set_IsRecursionBanned(bool value);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.HeaderNode : UserDataHolder {
+    private PerformanceNodeInfo myInfo;
+    private PerformanceSnapshot mySnapshot;
+    private FunctionId myIdentity;
+    private RecursionAnalysisMode myAnalyzeChildrenRecursion;
+    private List`1<IHeaderIndexEntry> myHeaderIndices;
+    public bool IsSnapshotRoot { get; }
+    public FunctionId Function { get; }
+    public ISnapshot Host { get; }
+    public IMeasureNode Info { get; }
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public bool HasChildren { get; }
+    public bool HasParents { get; }
+    private HeaderNode(FunctionId fid, List`1<IHeaderIndexEntry> headers, ISnapshot host, RecursionAnalysisMode analyzeChildrenRecursion);
+    public sealed virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public static HeaderNode CreateNode(FunctionId fid, PerformanceSnapshot host);
+    public static HeaderNode CreateRecursionSuspendedNode(FunctionId fid, List`1<IHeaderIndexEntry> headers, ISnapshot host);
+    public sealed virtual void SelfInitializeGain();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public sealed virtual bool get_IsSnapshotRoot();
+    public FunctionId get_Function();
+    public sealed virtual ISnapshot get_Host();
+    public sealed virtual IMeasureNode get_Info();
+    public sealed virtual string get_PresentableName();
+    public sealed virtual FunctionSignature get_Signature();
+    public sealed virtual bool get_HasChildren();
+    public sealed virtual bool CanExpand();
+    public sealed virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    private OneToListMap`2<FunctionId, CallTreeSectionOffset> CollectChildNodeRefOffsets(InterruptionHandler check);
+    private IEnumerable`1<ICallTreeNode`1<IMeasureNode>> CreateChildrenFromOffsetSets(OneToListMap`2<FunctionId, CallTreeSectionOffset> offsets, InterruptionHandler check);
+    public sealed virtual bool get_HasParents();
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+    public int GetContentCount();
+    public IEnumerable`1<CallTreeSectionNode> GetContent();
+    public void ForContentDo(Action`1<CallTreeSectionNode> action);
+    [IteratorStateMachineAttribute("JetBrains.dotTrace.SnapShotApi.Nodes.HeaderNode/<GetRefContent>d__39")]
+public IEnumerable`1<HeaderNodeRef> GetRefContent();
+    public void ForHeaderRefNodeDirectDo(Action`2<HeaderNodeRef, IHeaderDataNode> action, IExecutionControllerOld controller);
+    public void ForHeaderRefNodeReverseDo(Action`2<HeaderNodeRef, IHeaderDataNode> action);
+    private IHeaderDataNode GetLoadedHeader(int index);
+    [CompilerGeneratedAttribute]
+private CallTreeSectionNode <CreateChildrenFromOffsetSets>b__32_0(CallTreeSectionOffset offset);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.ICallTreeNode`1 {
+    public T Info { get; }
+    public ISnapshot Host { get; }
+    public abstract virtual T get_Info();
+    public abstract virtual ISnapshot get_Host();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.ICallTreeNodeState`1 {
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.IFoldableNode {
+    public bool IsGomogenous { get; }
+    public ICallTreeNode`1<IMeasureNode> FoldRoot { get; }
+    public IEnumerable`1<ICallTreeNode`1<IMeasureNode>> FoldedNodes { get; }
+    public IFoldActor FoldingOffActor { get; }
+    public abstract virtual bool get_IsGomogenous();
+    public abstract virtual ICallTreeNode`1<IMeasureNode> get_FoldRoot();
+    public abstract virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> get_FoldedNodes();
+    public abstract virtual IFoldActor get_FoldingOffActor();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.IFoldActor {
+    public string Description { get; }
+    public ActiveImageInfo Image { get; }
+    public abstract virtual string get_Description();
+    public abstract virtual ActiveImageInfo get_Image();
+    public abstract virtual void Turn(object Node, object view);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.IGainChangeableNode {
+    public abstract virtual void SelfInitializeGain();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.IHierarchyNode`1 {
+    public bool IsSnapshotRoot { get; }
+    public bool HasParents { get; }
+    public bool HasChildren { get; }
+    public abstract virtual bool get_IsSnapshotRoot();
+    public abstract virtual bool get_HasParents();
+    public abstract virtual bool get_HasChildren();
+    public abstract virtual bool CanExpand();
+    public abstract virtual bool CanExpand(Predicate`1<ICallTreeNode`1<T>> stopOnTruePredicate);
+    public abstract virtual IEnumerable`1<ICallTreeNode`1<T>> GetChildren();
+    public abstract virtual IEnumerable`1<ICallTreeNode`1<T>> GetParents();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.IMeasureNode {
+    public long Time { get; }
+    public long Delta { get; public set; }
+    public long OwnTime { get; }
+    public long Calls { get; }
+    public bool TimeIsValid { get; }
+    public bool IsRecursive { get; }
+    public bool IsInjected { get; }
+    public bool IsRecursionIncomplete { get; public set; }
+    public bool IsRecursionBanned { get; public set; }
+    public abstract virtual long get_Time();
+    public abstract virtual long get_Delta();
+    public abstract virtual void set_Delta(long value);
+    public abstract virtual long get_OwnTime();
+    public abstract virtual long get_Calls();
+    public abstract virtual bool get_TimeIsValid();
+    public abstract virtual bool get_IsRecursive();
+    public abstract virtual bool get_IsInjected();
+    public abstract virtual void SetModifiedTime(long timeInUnits);
+    public abstract virtual void ClearRecursionByOracle();
+    public abstract virtual bool get_IsRecursionIncomplete();
+    public abstract virtual void set_IsRecursionIncomplete(bool value);
+    public abstract virtual bool get_IsRecursionBanned();
+    public abstract virtual void set_IsRecursionBanned(bool value);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Nodes.ISNodesCollection {
+    public abstract virtual int GetHashCode();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.MultirootNode : PerformanceTreeNodeBase {
+    private FunctionSignature myExampleSig;
+    private IList`1<ICallTreeNode`1<IMeasureNode>> myChildren;
+    private int myHashCode;
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public bool IsSnapshotRoot { get; }
+    private MultirootNode(long calls, long time, IList`1<ICallTreeNode`1<IMeasureNode>> children, PerformanceSnapshot host);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public static MultirootNode CreateNode(IEnumerable`1<ICallTreeNode`1<IMeasureNode>> children, PerformanceSnapshot host);
+    public virtual string get_PresentableName();
+    public virtual FunctionSignature get_Signature();
+    public virtual bool get_IsSnapshotRoot();
+    public virtual bool CanExpand();
+    public virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    public virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public virtual int GetHashCode();
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Nodes.NodeCtorBase : object {
+    [CompilerGeneratedAttribute]
+private PerformanceSnapshot <Snapshot>k__BackingField;
+    protected PerformanceSnapshot Snapshot { get; }
+    protected NodeCtorBase(ISnapshot host);
+    [CompilerGeneratedAttribute]
+protected PerformanceSnapshot get_Snapshot();
+    public abstract virtual ICallTreeNode`1<IMeasureNode> Create(ICallTreeNode`1<IMeasureNode> currentNode);
+}
+[ExtensionAttribute]
+public static class JetBrains.dotTrace.SnapShotApi.Nodes.NodeLogic : object {
+    [ExtensionAttribute]
+public static int GetStorageNodesCount(ICallTreeNode`1<IMeasureNode> node);
+    [ExtensionAttribute]
+public static List`1<CallTreeSectionNode> GetStorageNodes(ICallTreeNode`1<IMeasureNode> node);
+    [ExtensionAttribute]
+public static void ForStorageNodesDo(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action);
+    [ExtensionAttribute]
+public static IEnumerable`1<CallTreeSectionNode> GetChildStorageNodes(ICallTreeNode`1<IMeasureNode> node, PerformanceSnapshot snapshot);
+    public static List`1<CallTreeSectionNode> FindTopNodes(ICallTreeNode`1<IMeasureNode> node);
+    public static List`1<CallTreeSectionNode> FindTopNodes(HeaderNode node);
+    [NotNullAttribute]
+public static List`1<CallTreeSectionNode> FindTopNodes(List`1<CallTreeSectionNode> nodes);
+    public static List`1<CallTreeSectionNode> FindTopNodes(IEnumerable`1<ICallTreeNode`1<IMeasureNode>> nodes);
+    [NotNullAttribute]
+public static List`1<Pair`2<CallTreeSectionNode, T>> FindTopNodes(List`1<Pair`2<CallTreeSectionNode, T>> nodes);
+    public static List`1<CallTreeSectionNode> FindTopNodes(List`1<CallTreeSectionNode> nodes, Dictionary`2& cardinality);
+    public static bool HasTopNodesImplicitely(ICallTreeNode`1<IMeasureNode> node);
+    [ExtensionAttribute]
+public static FunctionId FId(ICallTreeNode`1<IMeasureNode> node);
+    public static FunctionId GetParentFid(ICallTreeNode`1<IMeasureNode> node);
+    public static bool ContainsUnderTop(PerformanceSnapshot host, List`1<CallTreeSectionNode> nodes, FunctionId id, Property`1<bool> isCancelled);
+    public static bool ContainsUnderTopIncluded(PerformanceSnapshot host, List`1<CallTreeSectionNode> nodes, FunctionId id, Property`1<bool> isCancelled);
+    [ExtensionAttribute]
+public static bool Contains(ICallTreeNode`1<IMeasureNode> node, CallTreeSectionNode storageNode);
+    public static List`1<ICallTreeNode`1<IMeasureNode>> CollectMethods(PerformanceSnapshot host, ISignaturesProvider tree, ICallTreeNode`1<IMeasureNode> viewRoot, ICallTreeNode`1<IMeasureNode> baseNode, Predicate`1<FunctionSignature> selector, IProgressIndicator progress);
+    public static bool AnyMethods(PerformanceSnapshot host, ISignaturesProvider tree, ICallTreeNode`1<IMeasureNode> viewRoot, ICallTreeNode`1<IMeasureNode> baseNode, Predicate`1<FunctionSignature> selector);
+    [ExtensionAttribute]
+public static bool ForAllChildFids(ICallTreeNode`1<IMeasureNode> node, Predicate`1<FunctionId> func);
+    public static bool AllFidsEqual(ICallTreeNode`1<IMeasureNode> node);
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Nodes.NodeUniversalCtorBase : NodeCtorBase {
+    protected NodeUniversalCtorBase(ISnapshot host);
+    public abstract virtual ICallTreeNode`1<IMeasureNode> Create(FunctionId fid);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.NullDiffTreeNode : UserDataHolder {
+    private ICallTreeNode`1<IMeasureNode> myCounterpart;
+    protected PerformanceNodeInfo myInfo;
+    [CompilerGeneratedAttribute]
+private bool <IsCounterpartSystem>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISnapshot <Host>k__BackingField;
+    public bool IsCounterpartSystem { get; public set; }
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public bool IsSnapshotRoot { get; }
+    public IMeasureNode Info { get; }
+    public bool HasParents { get; }
+    public bool HasChildren { get; }
+    public ISnapshot Host { get; }
+    public NullDiffTreeNode(ISnapshot itsHost, ICallTreeNode`1<IMeasureNode> counterpart);
+    public sealed virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    [CompilerGeneratedAttribute]
+public bool get_IsCounterpartSystem();
+    [CompilerGeneratedAttribute]
+public void set_IsCounterpartSystem(bool value);
+    public sealed virtual bool Equals(ICallTreeNode`1<IMeasureNode> other);
+    public sealed virtual string get_PresentableName();
+    public sealed virtual FunctionSignature get_Signature();
+    public sealed virtual bool get_IsSnapshotRoot();
+    public sealed virtual IMeasureNode get_Info();
+    public sealed virtual bool get_HasParents();
+    public sealed virtual bool get_HasChildren();
+    [CompilerGeneratedAttribute]
+public sealed virtual ISnapshot get_Host();
+    public sealed virtual bool CanExpand();
+    public sealed virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    public sealed virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.PerformanceNodeInfo : object {
+    private long myTime;
+    [CompilerGeneratedAttribute]
+private long <Delta>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <OwnTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Calls>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <TimeIsValid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsRecursive>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsInjected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsRecursionIncomplete>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsRecursionBanned>k__BackingField;
+    public long Time { get; }
+    public long Delta { get; public set; }
+    public long OwnTime { get; }
+    public long Calls { get; }
+    public bool TimeIsValid { get; }
+    public bool IsRecursive { get; private set; }
+    public bool IsInjected { get; }
+    public bool IsRecursionIncomplete { get; public set; }
+    public bool IsRecursionBanned { get; public set; }
+    public PerformanceNodeInfo(long time, long ownTime, long calls, bool timeIsValid, bool isRecursive, bool isInjected);
+    public sealed virtual long get_Time();
+    public sealed virtual void SetModifiedTime(long timeInUnits);
+    public sealed virtual void ClearRecursionByOracle();
+    [CompilerGeneratedAttribute]
+public virtual long get_Delta();
+    [CompilerGeneratedAttribute]
+public virtual void set_Delta(long value);
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_OwnTime();
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Calls();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_TimeIsValid();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsRecursive();
+    [CompilerGeneratedAttribute]
+private void set_IsRecursive(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsInjected();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsRecursionIncomplete();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_IsRecursionIncomplete(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsRecursionBanned();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_IsRecursionBanned(bool value);
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Nodes.PerformanceTreeNodeBase : UserDataHolder {
+    private int myHashCode;
+    protected bool myHasParents;
+    protected PerformanceNodeInfo myInfo;
+    protected FunctionSignature mySignature;
+    protected PerformanceSnapshot mySnapshot;
+    internal List`1<CallTreeSectionNode> myStorageNodes;
+    [CompilerGeneratedAttribute]
+private List`1<CallTreeSectionNode> <TopNodes>k__BackingField;
+    public List`1<CallTreeSectionNode> TopNodes { get; }
+    public ISnapshot Host { get; }
+    public IMeasureNode Info { get; }
+    public bool IsSnapshotRoot { get; }
+    public bool HasChildren { get; }
+    public bool HasParents { get; }
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    protected PerformanceTreeNodeBase(IEnumerable`1<CallTreeSectionNode> storageNodes, PerformanceSnapshot host, RecursionAnalysisMode analyzeRecursion);
+    public abstract virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    [CompilerGeneratedAttribute]
+public List`1<CallTreeSectionNode> get_TopNodes();
+    public sealed virtual void SelfInitializeGain();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public virtual bool Equals(object obj);
+    public sealed virtual ISnapshot get_Host();
+    public sealed virtual IMeasureNode get_Info();
+    public virtual bool get_IsSnapshotRoot();
+    public sealed virtual bool get_HasChildren();
+    public sealed virtual bool get_HasParents();
+    public virtual string get_PresentableName();
+    public virtual FunctionSignature get_Signature();
+    public virtual bool CanExpand();
+    public virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetParents();
+    private IEnumerable`1<CallTreeSectionNode> GetChildren(CallTreeSectionNode node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.RootNode`1 : PerformanceTreeNodeBase {
+    private List`1<T> myChildren;
+    [CompilerGeneratedAttribute]
+private Predicate`1<ICallTreeNode`1<IMeasureNode>> <ChildrenFilter>k__BackingField;
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public bool IsSnapshotRoot { get; }
+    public Predicate`1<ICallTreeNode`1<IMeasureNode>> ChildrenFilter { get; public set; }
+    protected RootNode`1(IEnumerable`1<T> children, IEnumerable`1<CallTreeSectionNode> storeNodes, PerformanceSnapshot host);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public static RootNode`1<T> CreateNode(IEnumerable`1<T> children, PerformanceSnapshot host);
+    public virtual string get_PresentableName();
+    public virtual FunctionSignature get_Signature();
+    public virtual bool get_IsSnapshotRoot();
+    [CompilerGeneratedAttribute]
+public Predicate`1<ICallTreeNode`1<IMeasureNode>> get_ChildrenFilter();
+    [CompilerGeneratedAttribute]
+public void set_ChildrenFilter(Predicate`1<ICallTreeNode`1<IMeasureNode>> value);
+    public virtual bool CanExpand();
+    public virtual bool CanExpand(Predicate`1<ICallTreeNode`1<IMeasureNode>> stopOnTruePredicate);
+    public virtual IEnumerable`1<ICallTreeNode`1<IMeasureNode>> GetChildren();
+    [CompilerGeneratedAttribute]
+private bool <CanExpand>b__15_0(ICallTreeNode`1<IMeasureNode> node);
+    [CompilerGeneratedAttribute]
+private bool <GetChildren>b__17_0(ICallTreeNode`1<IMeasureNode> node);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.SnapshotTreeNode : PerformanceTreeNodeBase {
+    private SnapshotTreeNode(IEnumerable`1<CallTreeSectionNode> storageNodes, PerformanceSnapshot host, RecursionAnalysisMode accountForRecursion);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public static SnapshotTreeNode CreateNode(CallTreeSectionNode storageNode, PerformanceSnapshot host);
+    public static SnapshotTreeNode CreateNode(IEnumerable`1<CallTreeSectionNode> storageNodes, PerformanceSnapshot host);
+    public static SnapshotTreeNode CreateNode(IEnumerable`1<CallTreeSectionOffset> offsets, PerformanceSnapshot host);
+    public static SnapshotTreeNode CreateNode(ICallTreeNode`1<IMeasureNode> baseNode);
+    public static SnapshotTreeNode CreateNode(IEnumerable`1<CallTreeSectionNode> storageNodes, PerformanceSnapshot host, RecursionAnalysisMode accountForRecursion);
+    public bool HasSiblingsUnder(ICallTreeNode`1<IMeasureNode> root);
+    public static ICallTreeNode`1<IMeasureNode> CreateNodeFromTopNodes(IEnumerable`1<CallTreeSectionNode> topNodes, PerformanceSnapshot host);
+}
+internal class JetBrains.dotTrace.SnapShotApi.Nodes.SnsOffsetsCollection : object {
+    private IEnumerable`1<CallTreeSectionNode> myStoreNodes;
+    internal SnsOffsetsCollection(IEnumerable`1<CallTreeSectionNode> storeNodes);
+    private sealed virtual override int JetBrains.dotTrace.SnapShotApi.Nodes.ISNodesCollection.GetHashCode();
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.ThreadStartNode : PerformanceTreeNodeBase {
+    private string myName;
+    public FunctionSignature Signature { get; }
+    public ThreadStartNode(PerformanceSnapshot snapshot, IEnumerable`1<CallTreeSectionNode> nodes, ThreadFlags type, string name);
+    public virtual ICallTreeNodeState`1<IMeasureNode> GetState();
+    public static ThreadStartNode CreateNode(PerformanceSnapshot snapshot, IEnumerable`1<CallTreeSectionNode> nodes);
+    public virtual FunctionSignature get_Signature();
+    public virtual bool CanExpand();
+    public sealed virtual bool Equals(ThreadStartNode other);
+    public virtual bool Equals(object obj);
+    public virtual bool Equals(ICallTreeNode`1<IMeasureNode> node);
+    public virtual string ToString();
+    public virtual int GetHashCode();
+}
+public static class JetBrains.dotTrace.SnapShotApi.Nodes.TopNodesIterations : object {
+    public static void ForEachTopNode(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action);
+    public static void ForEachTopNodeReversed(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action);
+    private static void ForEachTopNodeReversedImpl(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action);
+    private static void ForEachTopNodeReversedFromHeaderImpl(HeaderNode node, Action`1<CallTreeSectionNode> action);
+    public static void ForEachTopNodeDirect(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action, IExecutionControllerOld controller);
+    private static void ForEachTopNodeDirectImpl(ICallTreeNode`1<IMeasureNode> node, Action`1<CallTreeSectionNode> action, IExecutionControllerOld controller);
+    private static void ForEachTopNodeDirectFromHeaderImpl(HeaderNode node, Action`1<CallTreeSectionNode> action, IExecutionControllerOld controller);
+}
+public class JetBrains.dotTrace.SnapShotApi.Nodes.UnionIterator : object {
+    private List`1<CallTreeSectionNode> myFirst;
+    private List`1<CallTreeSectionNode> mySecond;
+    private int myFirstIndex;
+    private int mySecondIndex;
+    public UnionIterator(List`1<CallTreeSectionNode> first, List`1<CallTreeSectionNode> second);
+    public bool GetNext(CallTreeSectionNode& node, Boolean& isFirst);
+    private static CallTreeSectionNode GetNextMin(List`1<CallTreeSectionNode> source, Int32& sourceIndex, List`1<CallTreeSectionNode> fold, Int32& foldIndex, Boolean& isFirst);
+}
+[ExtensionAttribute]
+public static class JetBrains.dotTrace.SnapShotApi.Performance.ContextRules : object {
+    [ExtensionAttribute]
+[NotNullAttribute]
+public static ContextRange ToContextRangeForSnapshotOnlyRestrictedRW(PerformanceSnapshot shot);
+}
+public static class JetBrains.dotTrace.SnapShotApi.Performance.DataConstants : object {
+    public static DataConstant`1<PerformanceSnapshot> Snapshot;
+    public static DataConstant`1<ILiveRecentSnapshot> RecentSnapshot;
+    private static DataConstants();
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Performance.HostBasedFunctionEnumeratorFilter`1 : object {
+    protected PerformanceSnapshot _host;
+    protected HostBasedFunctionEnumeratorFilter`1(PerformanceSnapshot host);
+    public abstract virtual bool Accept(T item);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Performance.IRootsMetadataReader {
+    public IEnumerable`1<FunctionId> Roots { get; }
+    public bool Empty { get; }
+    public int TotalTests { get; }
+    public abstract virtual IEnumerable`1<FunctionId> get_Roots();
+    public abstract virtual bool get_Empty();
+    public abstract virtual int get_TotalTests();
+}
+public class JetBrains.dotTrace.SnapShotApi.Performance.OnlyMyCodeFunctionFilter : HostBasedFunctionEnumeratorFilter`1<FunctionId> {
+    public OnlyMyCodeFunctionFilter(PerformanceSnapshot host);
+    public virtual bool Accept(FunctionId id);
+}
+public class JetBrains.dotTrace.SnapShotApi.Performance.OnlyMyCodeHeaderFilter : HostBasedFunctionEnumeratorFilter`1<IEnumerable`1<IHeaderDataNode>> {
+    public OnlyMyCodeHeaderFilter(PerformanceSnapshot host);
+    public virtual bool Accept(IEnumerable`1<IHeaderDataNode> nodeOrHeader);
+}
+public class JetBrains.dotTrace.SnapShotApi.Performance.PerformanceSnapshot : Snapshot {
+    public static string PerformanceSnapshotId;
+    private static int MaxWaitTime;
+    private ReaderWriterLockSlim myReaderWriterLock;
+    private IFunctionSignatureCache myCacheFunctionSignatures;
+    private PerformanceSnapshotReader myRawSnapshot;
+    private CommonRootNode myRootNodeAllThreads;
+    private RootNode`1<ThreadStartNode> myRootNodeByThread;
+    private bool myCanConstructFastIndices;
+    private Dictionary`2<FunctionId, int> myFunctionsProfile;
+    private Dictionary`2<FunctionId, long> myFunctionsRef;
+    private Dictionary`2<FunctionId, Pair`2<int, int>> mySectionBorders;
+    private Dictionary`2<FunctionId, long> mySingletons;
+    public int StatMaximalHeaderCount;
+    public int StatTotalHeaders;
+    public int StatTotalOptHeaders;
+    [CompilerGeneratedAttribute]
+private bool <IsEmpty>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsSamplingMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Reason>k__BackingField;
+    public bool IsEmpty { get; }
+    public ISnapshotStorage SnapshotStorage { get; }
+    public IPerformanceSnapshot RawSnapshot { get; }
+    public IFullEnvironmentSection Environment { get; }
+    public string Identity { get; }
+    public ulong TimeResolution { get; }
+    public bool IsSamplingMode { get; }
+    [CanBeNullAttribute]
+public ICallTreeNode`1<IMeasureNode> RootNodeByThread { get; }
+    [CanBeNullAttribute]
+public CommonRootNode RootNodeAllThreads { get; }
+    [CanBeNullAttribute]
+public string Reason { get; }
+    public int ModulesCount { get; }
+    public int SectionsCount { get; }
+    public int FunctionsCount { get; }
+    public IRealtimeChartModel RealtimeModel { get; }
+    public IFunctionSignatureCache SigCache { get; }
+    public PerformanceSnapshot(Lifetime lifetime, FileSystemPath indexFile, PerformanceSnapshotReader rawSnapshot, PerformanceInfo snapshotInfo, string presentableName, string reason);
+    public void LockWithMe(FileSystemPath fileSystemPath);
+    private void ReleaseRawSnapshot();
+    [CompilerGeneratedAttribute]
+public bool get_IsEmpty();
+    public ISnapshotStorage get_SnapshotStorage();
+    public IPerformanceSnapshot get_RawSnapshot();
+    public virtual IFullEnvironmentSection get_Environment();
+    public string get_Identity();
+    public ulong get_TimeResolution();
+    [CompilerGeneratedAttribute]
+public bool get_IsSamplingMode();
+    public ICallTreeNode`1<IMeasureNode> get_RootNodeByThread();
+    public CommonRootNode get_RootNodeAllThreads();
+    [CompilerGeneratedAttribute]
+public string get_Reason();
+    public int get_ModulesCount();
+    public int get_SectionsCount();
+    public int get_FunctionsCount();
+    public IRealtimeChartModel get_RealtimeModel();
+    public int GetThreadsCount(ICallTreeNode`1<IMeasureNode> callNode);
+    public IFunctionSignatureCache get_SigCache();
+    [NotNullAttribute]
+public FunctionSignature GetSignature(FunctionId fid);
+    public FunctionSignature GetSignatureFull(FunctionId fid);
+    [NotNullAttribute]
+public IEnumerable`1<FunctionSignature> GetSignatures(IEnumerable`1<FunctionId> fids);
+    public IEnumerable`1<FunctionSignature> GetSignaturesFull(IEnumerable`1<FunctionId> fids);
+    public bool ContainsFId(FunctionId fid);
+    private void LoadFunctionsInfo();
+    private void AssignNewReference(Dictionary`2<FunctionId, long> funRef, FunctionId key, int i, int count);
+    private static void SetSectionBorders(Dictionary`2<FunctionId, Pair`2<int, int>> borders, int i, FunctionId key);
+    public ThreadFlags GetThreadType(CallTreeSectionOffset offset);
+    public string GetThreadName(CallTreeSectionOffset offset);
+    private CommonRootNode LoadRootNodeThreadsMerged();
+    private ICallTreeNode`1<IMeasureNode> LoadRootNodeByThread();
+    [CanBeNullAttribute]
+public ThreadStartNode LoadThreadNodeById(UInt32 threadId);
+    public IEnumerable`1<FunctionId> GetFunctionIDs();
+    public int GetFunctionProfile(FunctionId fid);
+    [IteratorStateMachineAttribute("JetBrains.dotTrace.SnapShotApi.Performance.PerformanceSnapshot/<HeaderEnumerator>d__67")]
+public IEnumerable`1<Pair`2<FunctionId, List`1<IHeaderIndexEntry>>> HeaderEnumerator();
+    private IEnumerable`1<IHeaderDataNode> ConstructOptimizedSet(FunctionId key, int count);
+    private List`1<IHeaderIndexEntry> ConstructOptimizedSet2(FunctionId key, int count);
+    private IEnumerable`1<int> ConstructSectionsSet(FunctionId key, int count);
+    public IHeaderDataNode LoadHeaderFromSection(int groupId, FunctionId fid);
+    private IHeaderIndexEntry LoadHeaderIndexFromSection(int groupId, FunctionId fid);
+    public IHeaderDataNode LoadHeader(IHeaderIndexEntry entry, FunctionId fid);
+    public IEnumerable`1<IHeaderDataNode> LoadHeaders(FunctionId fid);
+    public List`1<IHeaderIndexEntry> LoadHeaderIndices(FunctionId fid);
+    public bool IsFidIncluded(FunctionId fid, HashSet`1<int> sections);
+    private static bool HaveIntersectionsInSections(IEnumerable`1<int> indices, ICollection`1<int> sections);
+    public bool IsNodeUnderOtherNodeFast(ICallTreeNode`1<IMeasureNode> node, ICallTreeNode`1<IMeasureNode> parent);
+    [IteratorStateMachineAttribute("JetBrains.dotTrace.SnapShotApi.Performance.PerformanceSnapshot/<EnumerateNodeRefsUnderAllRoots>d__79")]
+internal IEnumerable`1<HeaderNodeRef> EnumerateNodeRefsUnderAllRoots(FunctionId fId);
+    public CallTreeSectionNode LoadFunctionNode(CallTreeSectionOffset offset);
+    public CallTreeSectionNode LoadFunctionNodeUncached(CallTreeSectionOffset offset);
+    public IEnumerable`1<CallTreeSectionNode> GetChildren(CallTreeSectionNode node);
+    public IEnumerable`1<CallTreeSectionNode> GetChildren(CallTreeSectionOffset offset);
+    public bool IsContainedUnderRoot(ICallTreeNode`1<IMeasureNode> root, FunctionId fid, Property`1<bool> isCancelled);
+    public bool IsContainedUnderRootIncluded(ICallTreeNode`1<IMeasureNode> root, FunctionId fid, Property`1<bool> isCancelled);
+    public bool IsContainedUnderRoots(List`1<CallTreeSectionNode> roots, FunctionId fid, Property`1<bool> isCancelled);
+    public bool IsContainedUnderRootsIncluded(List`1<CallTreeSectionNode> roots, FunctionId fid, Property`1<bool> isCancelled);
+    private bool IsContainedUnderRootNodes(List`1<CallTreeSectionNode> roots, FunctionId fId, Property`1<bool> isCancelled);
+    private static bool IsHeaderFitBetween(IHeaderIndexEntry indexEntry, CallTreeSectionOffset minOffset, CallTreeSectionOffset maxOffset);
+    private static bool ContainsNodeRefNew(List`1<CallTreeSectionNode> roots, IHeaderDataNode header);
+    public List`1<CallTreeSectionNode> LoadNodesUnderRoot(ICallTreeNode`1<IMeasureNode> root, FunctionId fid, Nullable`1<int> threshold);
+    public List`1<CallTreeSectionNode> LoadNodesUnderRoots(IEnumerable`1<CallTreeSectionNode> roots, FunctionId fId, Nullable`1<int> threshold);
+    private IEnumerable`1<CallTreeSectionNode> LoadNodesUnderTheRoot(CallTreeSectionNode root, FunctionId fId, Nullable`1<int> threshold);
+    public IEnumerable`1<CallTreeSectionNode> LoadNodesUnderTheRootOpt(List`1<CallTreeSectionNode> roots, FunctionId metaDataId, IEnumerable`1<int> sections, Nullable`1<int> threshold);
+    private static bool AreRootsWithinHeader(List`1<CallTreeSectionNode> roots, IHeaderIndexEntry headerEntry);
+    private void LoadNodesInHeaderUnderRoots(List`1<CallTreeSectionNode> roots, IHeaderDataNode header, List`1<CallTreeSectionNode> result);
+    public List`1<CallTreeSectionNode> LoadAllNodes(FunctionId fId, Nullable`1<int> threshold, Property`1<bool> isCancelled);
+    public int CalcNodesUnderTheRoot(ICallTreeNode`1<IMeasureNode> root, FunctionId fId, bool includeSameFidOnRoot);
+    public int CalcNodesUnderTheRoot(CallTreeSectionNode root, FunctionId fId, bool includeSameFidOnRoot);
+    public int CountNodesUnderAllRoots(FunctionId fId);
+    public int CalcNodesUnderTheRoot(CallTreeSectionNode root);
+    public bool HasInjection(ICallTreeNode`1<IMeasureNode> treeNode);
+    public MeasureNode[] GetInjectingArray(ICallTreeNode`1<IMeasureNode> treeNode);
+    private Exception AttachInjectionInfo(ApplicationException exception, ICallTreeNode`1<IMeasureNode> treeNode);
+    private MeasureNode[] GetInjectingArray(CallTreeSectionOffset nodeOffset, SectionOffset`1<ICallTreeInjectSection> injOffset);
+    private bool ForbidCache(CallTreeSectionOffset offset);
+    private void RestoreCache(CallTreeSectionOffset offset, bool cacheStrategy);
+    public void EnumerateAllFunctions(IProgressIndicator progress);
+    public T RunUnderReadLock(Func`1<T> readAction);
+    [CompilerGeneratedAttribute]
+private ThreadStartNode <LoadRootNodeByThread>b__63_0(KeyValuePair`2<UInt32, IList`1<CallTreeSectionNode>> x);
+}
+[ExtensionAttribute]
+public static class JetBrains.dotTrace.SnapShotApi.Performance.PerformanceSnapshotNamingEx : object {
+    [ExtensionAttribute]
+public static string PresentableNameWithoutDate(ISnapshot snapshot);
+    [ExtensionAttribute]
+public static string PresentableShortNameWithoutDate(ISnapshot snapshot);
+    [ExtensionAttribute]
+public static string PresentableName(ISnapshot snapshot);
+}
+public class JetBrains.dotTrace.SnapShotApi.Performance.RootsMetadataProcessor : SnapshotProcessor`1<RootsMetadataReaderTask> {
+    public RootsMetadataProcessor(RootsMetadataReaderTask dotTraceTask);
+}
+public class JetBrains.dotTrace.SnapShotApi.Performance.RootsMetadataReaderTask : DotTraceBaseTask`1<bool> {
+    private static string TaskName;
+    private static string cRootTag;
+    private static string cFunctionTag;
+    private static string cModuleTag;
+    private static string cNamespaceTag;
+    private static string cNameAttribute;
+    private static string cModIdAttribute;
+    private static string cNspaceIdAttribute;
+    private static string cIdAttribute;
+    private ISignaturesProvider myFullNamespaceTreeProvider;
+    private string myContent;
+    private HashSet`1<FunctionId> myRoots;
+    private HashSet`1<string> myFqns;
+    [CompilerGeneratedAttribute]
+private int <TotalTests>k__BackingField;
+    private Dictionary`2<string, string> Namespaces;
+    private Dictionary`2<string, string> Modules;
+    public bool Empty { get; }
+    public IEnumerable`1<FunctionId> Roots { get; }
+    public int TotalTests { get; private set; }
+    public RootsMetadataReaderTask(Lifetime lifetime, PerformanceSnapshot host, ISignaturesProvider fullNamespaceTreeProvider, IAsyncTaskRunner taskRunner, IForegroundProgressPresenter foregroundProgressPresenter);
+    public sealed virtual bool get_Empty();
+    public sealed virtual IEnumerable`1<FunctionId> get_Roots();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_TotalTests();
+    [CompilerGeneratedAttribute]
+private void set_TotalTests(int value);
+    protected virtual bool CalculateDataCore(IExecutionControllerOld executionController);
+    private void ProcessNamespace(XmlElement root);
+    private void ProcessModule(XmlElement root);
+    private void ProcessFunction(XmlElement root);
+    private string FilterContent(string content);
+    private INamespaceTreeNode Resolve(IEnumerable`1<INamespaceTreeNode> nodes);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IRestorable`1 {
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IRestorable`2 {
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IRestorativeState`1 {
+    public abstract virtual T Restore();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IRestorativeState`2 {
+    public abstract virtual T Restore(P context);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IState {
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IStateAppliable`1 {
+    public abstract virtual bool ApplyState(T state);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Persistence.IStateful`1 {
+    [CanBeNullAttribute]
+public abstract virtual T GetState();
+}
+[DataContractAttribute]
+public class JetBrains.dotTrace.SnapShotApi.Persistence.MetadataIdState : object {
+    [DataMemberAttribute]
+private string myFId;
+    public MetadataIdState(FunctionId metadataId);
+    public sealed virtual FunctionId Restore();
+}
+public class JetBrains.dotTrace.SnapShotApi.Persistence.StateSerializer : object {
+    private DataContractSerializer mySerializer;
+    public DataContractSerializer Serializer { get; }
+    public StateSerializer(Type baseType, IEnumerable`1<Type> knownTypes);
+    public DataContractSerializer get_Serializer();
+    public void WriteToXml(XmlElement element, IStateful`1<T> obj);
+    public TObject ReadFromXml(XmlElement element);
+    public TObject ReadFromXml(XmlElement element, TContext context);
+    public void ReadFromXml(XmlElement element, IStateAppliable`1<T> obj);
+}
+public class JetBrains.dotTrace.SnapShotApi.Properties.ExemptFromZoningValidation : object {
+    [BuildStepAttribute]
+public static PackageZoningInvalid MyZoningIsInvalid(AllAssembliesOnEverything param1);
+}
+public interface JetBrains.dotTrace.SnapShotApi.Providers.IDotTraceTask {
+    public IAsyncOperation Operation { get; }
+    public abstract virtual void Start(bool addToHead);
+    public abstract virtual void WaitForResult(bool showUi);
+    public abstract virtual void Cancel();
+    public abstract virtual void MaximizePriority();
+    public abstract virtual IAsyncOperation get_Operation();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Providers.IFunctionSignatureProvider {
+    public string PresentableName { get; }
+    public FunctionSignature Signature { get; }
+    public abstract virtual string get_PresentableName();
+    public abstract virtual FunctionSignature get_Signature();
+}
+public interface JetBrains.dotTrace.SnapShotApi.Providers.ISnapshotProcessor {
+    public IDotTraceTask Task { get; }
+    public bool RunAsync { get; }
+    public abstract virtual IDotTraceTask get_Task();
+    public abstract virtual bool get_RunAsync();
+}
+public class JetBrains.dotTrace.SnapShotApi.Signatures.ClassSignature : object {
+    internal static ClassSignature Unknown;
+    private SectionIndex`1<IMetadataSection> MetaDataOffset;
+    [CompilerGeneratedAttribute]
+private string <ClassName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <NamespaceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MetadataToken <Token>k__BackingField;
+    [NotNullAttribute]
+public string ClassName { get; }
+    [NotNullAttribute]
+public string NamespaceName { get; }
+    public MetadataToken Token { get; }
+    public ClassSignature(string namespaceName, string className, SectionIndex`1<IMetadataSection> sectionOffset, MetadataToken token);
+    private static ClassSignature();
+    [CompilerGeneratedAttribute]
+public string get_ClassName();
+    [CompilerGeneratedAttribute]
+public string get_NamespaceName();
+    [CompilerGeneratedAttribute]
+public MetadataToken get_Token();
+    public static bool op_Equality(ClassSignature left, ClassSignature right);
+    public static bool op_Inequality(ClassSignature left, ClassSignature right);
+    public string ToString(Options options);
+    public virtual string ToString();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(ClassSignature other);
+    public sealed virtual State GetState();
+}
+public class JetBrains.dotTrace.SnapShotApi.Signatures.CrossHostsSignatureComparer : object {
+    private static string GetModuleShortName(FileSystemPath path);
+    public sealed virtual bool Equals(FunctionSignature x, FunctionSignature y);
+    public static bool EqualsEx(FunctionSignature x, FunctionSignature y);
+    public sealed virtual int GetHashCode(FunctionSignature obj);
+}
+public class JetBrains.dotTrace.SnapShotApi.Signatures.FunctionSignature : object {
+    public static FunctionSignature Root;
+    public FunctionId FunctionId;
+    private string myParameters;
+    private IMetadataSection myMetadataSection;
+    private IAdvancedMethodInfoProviderAccessor myMethodInfoProviderAccessor;
+    private IModulePathSection myPathsModule;
+    private bool myPropertyInfoProcessed;
+    private string mySetterPropertyName;
+    private string myGetterPropertyName;
+    [CompilerGeneratedAttribute]
+private ClassSignature <ClassSignature>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FunctionName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InterfaceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Flags <FunctionSpec>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsPublic>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsProtected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsInternal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsVirtual>k__BackingField;
+    private bool myMvidCached;
+    private Guid myMvid;
+    private SectionIndex`1<IMetadataSection> myMetadataIndex;
+    public MetadataToken Token;
+    [NotNullAttribute]
+public ClassSignature ClassSignature { get; }
+    [NotNullAttribute]
+public string FunctionName { get; }
+    [NotNullAttribute]
+public string InterfaceName { get; }
+    public Flags FunctionSpec { get; }
+    public bool IsPublic { get; }
+    public bool IsProtected { get; }
+    public bool IsInternal { get; }
+    public bool IsVirtual { get; }
+    public string Parameters { get; }
+    public bool IsThread { get; }
+    public bool HasThreadMessageQueue { get; }
+    public bool IsWorkThread { get; }
+    public bool IsMainThread { get; }
+    public bool IsFinalizerThread { get; }
+    public bool IsFunction { get; }
+    public bool IsUnmanaged { get; }
+    public bool IsSpecialName { get; }
+    public bool IsCtor { get; }
+    public bool IsGetterFunction { get; }
+    public bool IsSetterFunction { get; }
+    public string PropertyName { get; }
+    public Guid ModuleMvid { get; }
+    [CanBeNullAttribute]
+public FileSystemPath ModulePath { get; }
+    public string OwnerFullyQualifiedName { get; }
+    public IAssemblyResolver AssemblyResolver { get; }
+    public ModuleDebugInfo DebugInfos { get; }
+    internal FunctionSignature(string name, ThreadFlags type);
+    public FunctionSignature(ClassSignature classSignature, string predefinedName);
+    public FunctionSignature(ClassSignature classSignature, string predefinedName, FunctionId fuid, SectionIndex`1<IMetadataSection> metadataIndex, MetadataToken token);
+    internal FunctionSignature(ClassSignature classSignature, string parameters, string functionName, bool isUnmanaged, bool isSpecialName, bool isPublic, bool isProtected, bool isInternal, bool isVirtual, FunctionId fuid, IModulePathSection paths, IMetadataSection section, IAdvancedMethodInfoProviderAccessor methodInfoProviderAccessor);
+    private static FunctionSignature();
+    [CompilerGeneratedAttribute]
+public ClassSignature get_ClassSignature();
+    [CompilerGeneratedAttribute]
+public string get_FunctionName();
+    [CompilerGeneratedAttribute]
+public string get_InterfaceName();
+    [CompilerGeneratedAttribute]
+public Flags get_FunctionSpec();
+    [CompilerGeneratedAttribute]
+public bool get_IsPublic();
+    [CompilerGeneratedAttribute]
+public bool get_IsProtected();
+    [CompilerGeneratedAttribute]
+public bool get_IsInternal();
+    [CompilerGeneratedAttribute]
+public bool get_IsVirtual();
+    public string get_Parameters();
+    public bool get_IsThread();
+    public bool get_HasThreadMessageQueue();
+    public bool get_IsWorkThread();
+    public bool get_IsMainThread();
+    public bool get_IsFinalizerThread();
+    public bool get_IsFunction();
+    public bool get_IsUnmanaged();
+    public bool get_IsSpecialName();
+    public bool get_IsCtor();
+    public bool get_IsGetterFunction();
+    public bool get_IsSetterFunction();
+    public string get_PropertyName();
+    private void LoadParams();
+    private void GetPropertyInfo();
+    public Guid get_ModuleMvid();
+    public AssemblyNameInfo GetAssemblyName();
+    public FileSystemPath get_ModulePath();
+    public string get_OwnerFullyQualifiedName();
+    public IAssemblyResolver get_AssemblyResolver();
+    public ModuleDebugInfo get_DebugInfos();
+    public sealed virtual bool Equals(FunctionSignature other);
+    public virtual string ToString();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public string ToString(Options options);
+    public static bool op_Equality(FunctionSignature left, FunctionSignature right);
+    public static bool op_Inequality(FunctionSignature left, FunctionSignature right);
+    [CompilerGeneratedAttribute]
+private string <LoadParams>b__64_0(Lifetime lt);
+}
+[ExtensionAttribute]
+public static class JetBrains.dotTrace.SnapShotApi.Signatures.FunctionSignatureEx : object {
+    [ExtensionAttribute]
+public static string GetPresentableMethodName(FunctionSignature functionSignature);
+    [ExtensionAttribute]
+public static string GetPresentableClassName(ClassSignature classSignature);
+}
+public class JetBrains.dotTrace.SnapShotApi.Signatures.SignatureChangedHandler : MulticastDelegate {
+    public SignatureChangedHandler(object object, IntPtr method);
+    public virtual void Invoke(ICallTreeNodeInfo curentNode);
+    public virtual IAsyncResult BeginInvoke(ICallTreeNodeInfo curentNode, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public interface JetBrains.dotTrace.SnapShotApi.SignatureTree.ISignaturesProvider {
+    public ISnapshotNamespaceTree Tree { get; }
+    public abstract virtual ISnapshotNamespaceTree get_Tree();
+}
+[SnapshotComponentAttribute("Performance", "0")]
+public class JetBrains.dotTrace.SnapShotApi.SignatureTree.MethodInfoProvider : object {
+    private PerformanceSnapshot mySnapshot;
+    [CanBeNullAttribute]
+private SystemModulesSnapshotComponent mySystemModules;
+    public MethodInfoProvider(PerformanceSnapshot snapshot, SystemModulesSnapshotComponent systemModules);
+    public MethodViewData GetMethodInfo(FunctionSignature sig);
+}
+public abstract class JetBrains.dotTrace.SnapShotApi.Snapshot : object {
+    public static string GenericSnapshotId;
+    [CompilerGeneratedAttribute]
+private string <RawPresentableName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FileSystemPath <LastSavedLocation>k__BackingField;
+    protected Lifetime myLifetime;
+    private ComponentContainer myComponentContainer;
+    private IComponentContainer myAlienContainer;
+    [CompilerGeneratedAttribute]
+private FileSystemPath <IndexFile>k__BackingField;
+    public string RawPresentableName { get; }
+    public FileSystemPath LastSavedLocation { get; public set; }
+    public FileSystemPath IndexFile { get; }
+    public IFullEnvironmentSection Environment { get; }
+    public bool IsContainer { get; }
+    public IComponentContainer ComponentContainer { get; }
+    protected Snapshot(Lifetime lifetime, FileSystemPath indexFile, string presentableName);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_RawPresentableName();
+    [CompilerGeneratedAttribute]
+public sealed virtual FileSystemPath get_LastSavedLocation();
+    [CompilerGeneratedAttribute]
+public void set_LastSavedLocation(FileSystemPath value);
+    [CompilerGeneratedAttribute]
+public sealed virtual FileSystemPath get_IndexFile();
+    public abstract virtual IFullEnvironmentSection get_Environment();
+    public bool get_IsContainer();
+    public sealed virtual IComponentContainer get_ComponentContainer();
+    public sealed virtual void Compose(object containerOwner, IComponentContainer parentContainer, IPartCatalogSet catalogueSet);
+    public void Set(IComponentContainer container);
+}
+[AttributeUsageAttribute("4")]
+[MeansImplicitUseAttribute]
+public class JetBrains.dotTrace.SnapShotApi.SnapshotComponentAttribute : ComponentAttribute {
+    [NotNullAttribute]
+public string SnapshotId;
+    public SnapshotComponentAttribute(string snapshotId, Instantiation instantiation);
+}
+[SnapshotComponentAttribute("Performance", "10")]
+public class JetBrains.dotTrace.SnapShotApi.SnapshotSettingsComponent : object {
+    private static string SnapshotSettingsFilePostfix;
+    private PerformanceSnapshot mySnapshot;
+    private ISettingsStore mySettingsStore;
+    private SnapshotSettings mySnapshotSettings;
+    private FileSystemPath mystoragePath;
+    public SnapshotSettingsComponent(Lifetime lt, PerformanceSnapshot snapshot, IThreading threading, IFileSystemTracker filetracker, ISettingsStore settingsStore, FileSettingsStorageBehavior behavior, SettingsStorageProvidersCollection expose, InternKeyPathComponent interned);
+    public sealed virtual void SaveTo(FileSystemPath path);
+    public sealed virtual IContextBoundSettingsStore BindToContextTransient();
+    public sealed virtual IContextBoundSettingsStoreLive BindToContextLive(Lifetime lt);
+    private static void CopySettingsStorage(FileSystemPath currentSettingsPath, FileSystemPath destinationSettingsPath);
+}
+public enum JetBrains.dotTrace.SnapShotApi.SnapshotStructureError : Enum {
+    public int value__;
+    public static SnapshotStructureError EmptySnapshot;
+    public static SnapshotStructureError InconsistentCallTime;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class JetBrains.dotTrace.SnapShotApi.SnapshotToolWindowContent`1 : NestedContainerToolWindowContent`1<TContent> {
+    public SnapshotToolWindowContent`1(Lifetime lifetime, Optional`1<ToolWindowInstance> twi, ExposeSnapshotContainerForSnapshotToolWindowContent exposure, IAsyncComposeManager asyncComposeManager, IThreading threading);
+}
+public class JetBrains.dotTrace.SnapShotApi.TruePredicate : object {
+    public sealed virtual bool AcceptNode(ICallTreeNode`1<IMeasureNode> node);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.dotTrace.SnapShotApi.ZoneMarker : object {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

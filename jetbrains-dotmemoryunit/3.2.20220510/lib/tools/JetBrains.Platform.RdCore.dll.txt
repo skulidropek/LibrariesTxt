@@ -1,0 +1,1030 @@
+public enum JetBrains.DataFlow.AddRemove : Enum {
+    public int value__;
+    public static AddRemove Add;
+    public static AddRemove Remove;
+}
+public static class JetBrains.DataFlow.EternalLifetime : object {
+    [NotNullAttribute]
+public static Lifetime Instance { get; }
+    [NotNullAttribute]
+public static LifetimeDefinition Definition { get; }
+    public static Lifetime get_Instance();
+    public static LifetimeDefinition get_Definition();
+}
+public class JetBrains.DataFlow.Lifetime : object {
+    private static bool OptionThrowOnSchedullingInTerminated;
+    private static bool OptionRevertSchedulledInTerminated;
+    private SpinWaitLock myLock;
+    private LifetimeFlags myFlags;
+    [NotNullAttribute]
+private SmartList`1<Action> myItems;
+    private ILog myLogger;
+    internal static Lifetime Eternal;
+    public bool IsTerminated { get; }
+    internal Lifetime(LifetimeFlags flags, ILog logger);
+    private static Lifetime();
+    [NotNullAttribute]
+public Lifetime AddDispose(IDisposable item);
+    private void ReportTerminatedLifetime(string sAnotherLifetimeRelation);
+    [NotNullAttribute]
+[HandleProcessCorruptedStateExceptionsAttribute]
+public Lifetime AddAction(Action F);
+    [NotNullAttribute]
+public Lifetime AddBracket(Action FOpening, Action FClosing);
+    [NotNullAttribute]
+public Lifetime AddRef(object object);
+    [HandleProcessCorruptedStateExceptionsAttribute]
+internal void AttachNested(LifetimeDefinition defNested, bool isPossiblyAlreadyTerminated);
+    public bool get_IsTerminated();
+    [HandleProcessCorruptedStateExceptionsAttribute]
+internal void Terminate();
+}
+public class JetBrains.DataFlow.LifetimeDefinition : object {
+    [NotNullAttribute]
+private Lifetime myLifetime;
+    [NotNullAttribute]
+public static LifetimeDefinition Eternal;
+    public bool IsTerminated { get; }
+    [NotNullAttribute]
+public Lifetime Lifetime { get; }
+    internal LifetimeDefinition(string id, LifetimeFlags flags, ILog logger);
+    private static LifetimeDefinition();
+    public void Terminate();
+    public sealed virtual void Dispose();
+    public bool get_IsTerminated();
+    public Lifetime get_Lifetime();
+}
+public static class JetBrains.DataFlow.Lifetimes : object {
+    public static string AnonymousLifetimeId;
+    private static Lifetimes();
+    [ObsoleteAttribute("Will be replaced with CreateIntersection2 so that you'd be thinking of who terminates the intersection lifetime.")]
+[NotNullAttribute]
+public static Lifetime CreateIntersection(Lifetime[] lifetimes);
+    [NotNullAttribute]
+public static LifetimeDefinition CreateIntersection(OuterLifetime[] lifetimes);
+    [NotNullAttribute]
+public static LifetimeDefinition CreateIntersection(ILog logger, OuterLifetime[] lifetimes);
+    [NotNullAttribute]
+public static LifetimeDefinition CreateIntersection2(Lifetime[] lifetimes);
+    [NotNullAttribute]
+public static LifetimeDefinition CreateIntersection2(ILog logger, Lifetime[] lifetimes);
+    [NotNullAttribute]
+public static LifetimeDefinition Define(Lifetime lifetime, string id, Action`2<LifetimeDefinition, Lifetime> FAtomic, ILog logger);
+    [NotNullAttribute]
+public static LifetimeDefinition Define(OuterLifetime lifetime, string id, Action`2<LifetimeDefinition, Lifetime> FAtomic, ILog logger);
+    [PureAttribute]
+[NotNullAttribute]
+public static LifetimeDefinition Define(string id, ILog logger);
+    [NotNullAttribute]
+[ObsoleteAttribute("Pass in the parent lifetime.")]
+public static LifetimeDefinition Define(Action`2<LifetimeDefinition, Lifetime> FAtomic);
+    public static void Synchronize(LifetimeDefinition[] definitions);
+    public static void Using(Action`1<Lifetime> λ);
+    public static void Using(Lifetime parent, Action`1<Lifetime> λ);
+    public static TRetVal Using(Func`2<Lifetime, TRetVal> λ);
+    public static TRetVal Using(Lifetime parent, Func`2<Lifetime, TRetVal> λ);
+    [AsyncStateMachineAttribute("JetBrains.DataFlow.Lifetimes/<UsingAsync>d__3")]
+[DebuggerStepThroughAttribute]
+public static Task UsingAsync(Func`2<Lifetime, Task> λ);
+    [DebuggerStepThroughAttribute]
+[AsyncStateMachineAttribute("JetBrains.DataFlow.Lifetimes/<UsingAsync>d__7`1")]
+public static Task`1<TRetVal> UsingAsync(Func`2<Lifetime, Task`1<TRetVal>> λ);
+}
+public class JetBrains.DataFlow.OuterLifetime : ValueType {
+    private Lifetime myLifetime;
+    public bool IsTerminated { get; }
+    private OuterLifetime(Lifetime lifetime);
+    public bool get_IsTerminated();
+    public static OuterLifetime op_Implicit(Lifetime lifetime);
+    public static OuterLifetime op_Implicit(LifetimeDefinition lifetime);
+    public void AssertNotNull();
+    internal void AttachNested(LifetimeDefinition intersection, bool isPossiblyAlreadyTerminated);
+}
+public class JetBrains.DataFlow.SequentialLifetimes : object {
+    [NotNullAttribute]
+private Lifetime myParentLifetime;
+    [NotNullAttribute]
+private LifetimeDefinition myCurrentLifetime;
+    public bool IsTerminated { get; }
+    public SequentialLifetimes(Lifetime lifetime);
+    [NotNullAttribute]
+public Lifetime Next();
+    public void Next(Action`1<Lifetime> FNext);
+    public void DefineNext(Action`2<LifetimeDefinition, Lifetime> FNext);
+    public void TerminateCurrent();
+    public bool get_IsTerminated();
+    [HandleProcessCorruptedStateExceptionsAttribute]
+private void SetCurrentLifetime(LifetimeDefinition lifetimeToSet);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__0();
+}
+public interface JetBrains.Platform.RdFramework.IScheduler {
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    public abstract virtual void Queue(Action action);
+    public abstract virtual bool get_IsActive();
+    public abstract virtual bool get_OutOfOrderExecution();
+}
+[ExtensionAttribute]
+public static class JetBrains.Platform.RdFramework.SchedulerEx : object {
+    [ExtensionAttribute]
+public static void AssertThread(IScheduler scheduler);
+    [ExtensionAttribute]
+public static void QueueOrInvokeIf(IScheduler sc, bool condition, Action action);
+    [ExtensionAttribute]
+public static void InvokeOrQueue(IScheduler sc, Action action);
+    [ExtensionAttribute]
+public static void InvokeOrQueue(IScheduler sc, Lifetime lifetime, Action action);
+    [ExtensionAttribute]
+public static void InvokeSync(IScheduler sc, Action action);
+}
+public class JetBrains.Platform.RdFramework.SynchronousScheduler : object {
+    public static SynchronousScheduler Instance;
+    [ThreadStaticAttribute]
+private static int ourActive;
+    [CompilerGeneratedAttribute]
+private static Action CS$<>9__CachedAnonymousMethodDelegate2;
+    [CompilerGeneratedAttribute]
+private static Action CS$<>9__CachedAnonymousMethodDelegate3;
+    public bool IsActive { get; }
+    public bool OutOfOrderExecution { get; }
+    private static SynchronousScheduler();
+    public void SetActive(Lifetime lifetime);
+    public sealed virtual void Queue(Action action);
+    public sealed virtual bool get_IsActive();
+    public sealed virtual bool get_OutOfOrderExecution();
+    [CompilerGeneratedAttribute]
+private static void <SetActive>b__0();
+    [CompilerGeneratedAttribute]
+private static void <SetActive>b__1();
+}
+[LocalizableAttribute("False")]
+[ExtensionAttribute]
+public static class JetBrains.Util.Assertion : object {
+    [ConditionalAttribute("JET_MODE_ASSERT")]
+[ContractAnnotationAttribute("condition:false=>void")]
+[AssertionMethodAttribute]
+public static void Assert(bool condition, string message);
+    [ConditionalAttribute("JET_MODE_ASSERT")]
+[AssertionMethodAttribute]
+public static void AssertCurrentThread(Thread thread);
+    [StringFormatMethodAttribute("message")]
+[AssertionMethodAttribute]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+[ContractAnnotationAttribute("condition:false=>void")]
+public static void Assert(bool condition, string message, T arg);
+    [ContractAnnotationAttribute("condition:false=>void")]
+[AssertionMethodAttribute]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+[StringFormatMethodAttribute("message")]
+public static void Assert(bool condition, string message, T1 arg1, T2 arg2);
+    [ContractAnnotationAttribute("condition:false=>void")]
+[AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+public static void Assert(bool condition, string message, T1 arg1, T2 arg2, T3 arg3);
+    [ContractAnnotationAttribute("condition:false=>void")]
+[AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+public static void Assert(bool condition, string message, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+    [AssertionMethodAttribute]
+[ContractAnnotationAttribute("condition:false=>void")]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+[StringFormatMethodAttribute("message")]
+public static void Assert(bool condition, string message, Object[] args);
+    [AssertionMethodAttribute]
+[ContractAnnotationAttribute("=>void")]
+public static void Fail(string message);
+    [AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+[ContractAnnotationAttribute("=>void")]
+public static void Fail(string message, object arg);
+    [AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+[ContractAnnotationAttribute("=>void")]
+public static void Fail(string message, object arg1, object arg2);
+    [ContractAnnotationAttribute("=>void")]
+[AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Fail(string message, object arg1, object arg2, object arg3);
+    [StringFormatMethodAttribute("message")]
+[ContractAnnotationAttribute("=>void")]
+[AssertionMethodAttribute]
+public static void Fail(string message, Object[] args);
+    [ContractAnnotationAttribute("condition:null=>void")]
+[AssertionMethodAttribute]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+public static void AssertNotNull(object condition, string message);
+    [AssertionMethodAttribute]
+[ContractAnnotationAttribute("condition:null=>void")]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+[StringFormatMethodAttribute("message")]
+public static void AssertNotNull(object condition, string message, object arg);
+    [AssertionMethodAttribute]
+[ConditionalAttribute("JET_MODE_ASSERT")]
+[ContractAnnotationAttribute("condition:null=>void")]
+[StringFormatMethodAttribute("message")]
+public static void AssertNotNull(object condition, string message, object arg1, object arg2);
+    [ConditionalAttribute("JET_MODE_ASSERT")]
+[ContractAnnotationAttribute("condition:null=>void")]
+[AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+public static void AssertNotNull(object condition, string message, object arg1, object arg2, object arg3);
+    [ConditionalAttribute("JET_MODE_ASSERT")]
+[ContractAnnotationAttribute("condition:null=>void")]
+[AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+public static void AssertNotNull(object condition, string message, Object[] args);
+    [ContractAnnotationAttribute("value:null=>void;=>notnull")]
+[ExtensionAttribute]
+public static T NotNull(T value, string message);
+    [ExtensionAttribute]
+[ContractAnnotationAttribute("value:null=>void;=>notnull")]
+public static T NotNull(T value);
+    [ExtensionAttribute]
+[ContractAnnotationAttribute("value:null=>void")]
+public static T NotNull(Nullable`1<T> value, string message);
+    [ContractAnnotationAttribute("value:null=>void")]
+[ExtensionAttribute]
+public static T NotNull(Nullable`1<T> value);
+    [StringFormatMethodAttribute("message")]
+[AssertionMethodAttribute]
+public static void Require(bool value, string message);
+    [StringFormatMethodAttribute("message")]
+[AssertionMethodAttribute]
+public static void Require(bool value, string message, object arg1);
+    [AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Require(bool value, string message, object arg1, object arg2);
+    [AssertionMethodAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Require(bool value, string message, Object[] args);
+    [SourceTemplateAttribute]
+[ExtensionAttribute]
+public static void nn(object x);
+    [ExtensionAttribute]
+[SourceTemplateAttribute]
+public static void req(object x);
+}
+public class JetBrains.Util.Concurrency.SpinWaitLock : ValueType {
+    private int _ownerThreadId;
+    private int _lockCount;
+    private static int _processorCount;
+    private static int _sleepCount;
+    public static int ApprovedProcessorCount { get; }
+    private static SpinWaitLock();
+    public static int get_ApprovedProcessorCount();
+    public bool TryEnter();
+    public void Enter();
+    public void Exit();
+    private bool TryEnter(int currentThreadId);
+    private static void CalcApprovedProcessorCount();
+    private static void Sleep();
+}
+[UsedImplicitlyAttribute]
+[ExtensionAttribute]
+public static class JetBrains.Util.Concurrency.SpinWaitLockExtensions : object {
+    [ExtensionAttribute]
+[UsedImplicitlyAttribute]
+[ObsoleteAttribute("It is not possible to use the using() pattern with the non-allocating SpinWaitLock because its lock status is cloned on copying. Either call paired methods, or use SpinWaitLockRef and allocate a heap object.")]
+public static SpinWaitLockCookie Acquire(SpinWaitLock spinWaitLock);
+}
+public class JetBrains.Util.DataStructures.EmptyEnumerator`1 : object {
+    [NotNullAttribute]
+public static EmptyEnumerator`1<T> Instance;
+    [ObsoleteAttribute("Use .Instance instead")]
+[NotNullAttribute]
+public static EmptyEnumerator`1<T> INSTANCE;
+    public T Current { get; }
+    private object System.Collections.IEnumerator.Current { get; }
+    private static EmptyEnumerator`1();
+    public sealed virtual T get_Current();
+    private sealed virtual override object System.Collections.IEnumerator.get_Current();
+    public sealed virtual bool MoveNext();
+    public sealed virtual void Reset();
+    public sealed virtual void Dispose();
+    [NotNullAttribute]
+public IEnumerator`1<T> GetEnumerator();
+}
+public static class JetBrains.Util.EmptyAction : object {
+    public static Action Instance;
+    [CompilerGeneratedAttribute]
+private static Action CS$<>9__CachedAnonymousMethodDelegate1;
+    private static EmptyAction();
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__0();
+}
+public static class JetBrains.Util.EmptyAction`1 : object {
+    public static Action`1<T> Instance;
+    [CompilerGeneratedAttribute]
+private static Action`1<T> CS$<>9__CachedAnonymousMethodDelegate1;
+    private static EmptyAction`1();
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__0(T t);
+}
+public static class JetBrains.Util.EmptyAction`2 : object {
+    public static Action`2<T1, T2> Instance;
+    [CompilerGeneratedAttribute]
+private static Action`2<T1, T2> CS$<>9__CachedAnonymousMethodDelegate1;
+    private static EmptyAction`2();
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__0(T1 t1, T2 t2);
+}
+public static class JetBrains.Util.EmptyAction`3 : object {
+    public static Action`3<T1, T2, T3> Instance;
+    [CompilerGeneratedAttribute]
+private static Action`3<T1, T2, T3> CS$<>9__CachedAnonymousMethodDelegate1;
+    private static EmptyAction`3();
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__0(T1 t1, T2 t2, T3 t3);
+}
+public static class JetBrains.Util.EmptyArray : object {
+    [PureAttribute]
+[NotNullAttribute]
+public static T[] GetInstance();
+}
+[DebuggerDisplayAttribute("Length = 0")]
+public static class JetBrains.Util.EmptyArray`1 : object {
+    [NotNullAttribute]
+public static T[] Instance;
+    private static EmptyArray`1();
+}
+public class JetBrains.Util.Internal.Memory : object {
+    public static void CopyMemory(Byte* src, Byte* dest, int len);
+    public static void Barrier();
+}
+public static class JetBrains.Util.JetKeyValuePair : object {
+    [DebuggerStepThroughAttribute]
+[PureAttribute]
+public static KeyValuePair`2<TKey, TValue> Of(TKey key, TValue value);
+}
+public interface JetBrains.Util.Logging.ILog {
+    [NotNullAttribute]
+public string Category { get; }
+    public abstract virtual string get_Category();
+    public abstract virtual bool IsEnabled(LoggingLevel level);
+    public abstract virtual void Log(LoggingLevel level, string message, Exception exception);
+}
+public interface JetBrains.Util.Logging.ILogFactory {
+    [NotNullAttribute]
+public abstract virtual ILog GetLog(string category);
+}
+public class JetBrains.Util.Logging.Log : object {
+    public static string DefaultDateFormat;
+    private static StaticsForType`1<ILogFactory> ourStatics;
+    private static ILogFactory ourNullFactory;
+    private static ILogFactory modreq(System.Runtime.CompilerServices.IsVolatile) ourCurrentFactory;
+    public static ILog Root;
+    [CompilerGeneratedAttribute]
+private static Action CS$<>9__CachedAnonymousMethodDelegate1;
+    public static ILogFactory DefaultFactory { get; public set; }
+    private static Log();
+    public static ILogFactory get_DefaultFactory();
+    public static void set_DefaultFactory(ILogFactory value);
+    public static ILog GetLog(string category);
+    public static ILog GetLog(Type type);
+    public static ILog GetLog();
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__0();
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.Logging.LogEx : object {
+    [ExtensionAttribute]
+public static ILog GetSublogger(ILog log, string subcategory);
+    [ExtensionAttribute]
+public static bool IsTraceEnabled(ILog this);
+    [ExtensionAttribute]
+public static bool IsVersboseEnabled(ILog this);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void LogFormat(ILog this, LoggingLevel level, string message, T1 t1);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void LogFormat(ILog this, LoggingLevel level, string message, T1 t1, T2 t2);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void LogFormat(ILog this, LoggingLevel level, string message, T1 t1, T2 t2, T3 t3);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void LogFormat(ILog this, LoggingLevel level, string message, T1 t1, T2 t2, T3 t3, T4 t4);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void LogFormat(ILog this, LoggingLevel level, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Trace(ILog this, string message);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Trace(ILog this, string message, T1 t1);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Trace(ILog this, string message, T1 t1, T2 t2);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Trace(ILog this, string message, T1 t1, T2 t2, T3 t3);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Trace(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Trace(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Trace(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6);
+    [ExtensionAttribute]
+public static void Verbose(ILog this, string message);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Verbose(ILog this, string message, T1 t1);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Verbose(ILog this, string message, T1 t1, T2 t2);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Verbose(ILog this, string message, T1 t1, T2 t2, T3 t3);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Verbose(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Verbose(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5);
+    [StringFormatMethodAttribute("message")]
+[ExtensionAttribute]
+public static void Verbose(ILog this, string message, T1 t1, T2 t2, T3 t3, T4 t4, T5 t5, T6 t6);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("message")]
+public static void Verbose(ILog this, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Warn(ILog this, string message);
+    [ExtensionAttribute]
+public static void Warn(ILog this, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Warn(ILog this, Exception ex, string message);
+    [ExtensionAttribute]
+public static void Error(ILog this, string message);
+    [ExtensionAttribute]
+public static void Error(ILog this, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Error(ILog this, string message, Exception e);
+    [ExtensionAttribute]
+public static void Error(ILog this, Exception ex, string message);
+    [ExtensionAttribute]
+public static void Assert(ILog this, bool condition, string message);
+    [ExtensionAttribute]
+public static void Assert(ILog this, bool condition, string message, T1 t1);
+    [ExtensionAttribute]
+public static void Assert(ILog this, bool condition, string message, Object[] args);
+    [ExtensionAttribute]
+public static void Catch(ILog log, Action action);
+    [ExtensionAttribute]
+public static void CatchAndDrop(ILog log, Action action);
+    [ExtensionAttribute]
+public static void CatchWarn(ILog log, Action action);
+    private static void DropException(Exception e);
+    [ExtensionAttribute]
+[StringFormatMethodAttribute("s")]
+private static string FormatEx(string s, Object[] p);
+}
+public static class JetBrains.Util.Logging.LogLog : object {
+    private static int MaxRecordsToStore;
+    private static LoggingLevel modreq(System.Runtime.CompilerServices.IsVolatile) ourSeverityFilter;
+    private static object ourLock;
+    private static List`1<Action`1<LogLogRecord>> ourEventListeners;
+    [ThreadStaticAttribute]
+private static bool ourReentrancyGuard;
+    private static LinkedList`1<LogLogRecord> ourRecords;
+    public static LoggingLevel SeverityFilter { get; public set; }
+    public static List`1<LogLogRecord> StoredRecords { get; }
+    private static LogLog();
+    public static LoggingLevel get_SeverityFilter();
+    public static void set_SeverityFilter(LoggingLevel value);
+    public static void add_RecordsChanged(Action`1<LogLogRecord> value);
+    public static void remove_RecordsChanged(Action`1<LogLogRecord> value);
+    private static void Fire(string category, string msg, LoggingLevel severity);
+    private static void RecordsStoreListener(LogLogRecord record);
+    public static List`1<LogLogRecord> get_StoredRecords();
+    public static void Error(Exception ex, string comment);
+    public static void Error(string error);
+    public static void Info(string msg);
+    [StringFormatMethodAttribute("format")]
+public static void Verbose(string category, string format, Object[] args);
+    [StringFormatMethodAttribute("format")]
+public static void Trace(string category, string format, Object[] args);
+    public static void Catch(string comment, Action action);
+    public static void Catch(Action action);
+    public static T Catch(Func`1<T> action);
+}
+public class JetBrains.Util.Logging.LogLogRecord : object {
+    [CompilerGeneratedAttribute]
+private DateTime <Time>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Category>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LoggingLevel <Severity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    public DateTime Time { get; private set; }
+    public string Category { get; private set; }
+    public LoggingLevel Severity { get; private set; }
+    [NotNullAttribute]
+public string Message { get; private set; }
+    public LogLogRecord(string category, LoggingLevel severity, string message);
+    [CompilerGeneratedAttribute]
+public DateTime get_Time();
+    [CompilerGeneratedAttribute]
+private void set_Time(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_Category();
+    [CompilerGeneratedAttribute]
+private void set_Category(string value);
+    [CompilerGeneratedAttribute]
+public LoggingLevel get_Severity();
+    [CompilerGeneratedAttribute]
+private void set_Severity(LoggingLevel value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+private void set_Message(string value);
+    public string Format(bool includeDate);
+}
+public class JetBrains.Util.Logging.NullLog : object {
+    public static NullLog Instance;
+    private string JetBrains.Util.Logging.ILog.Category { get; }
+    private static NullLog();
+    private sealed virtual override string JetBrains.Util.Logging.ILog.get_Category();
+    private sealed virtual override bool JetBrains.Util.Logging.ILog.IsEnabled(LoggingLevel level);
+    private sealed virtual override void JetBrains.Util.Logging.ILog.Log(LoggingLevel level, string message, Exception exception);
+}
+public class JetBrains.Util.Logging.SingletonLogFactory : object {
+    private ILog myLog;
+    public SingletonLogFactory(ILog log);
+    public sealed virtual ILog GetLog(string category);
+}
+public enum JetBrains.Util.LoggingLevel : Enum {
+    public int value__;
+    public static LoggingLevel OFF;
+    public static LoggingLevel FATAL;
+    public static LoggingLevel ERROR;
+    public static LoggingLevel WARN;
+    public static LoggingLevel INFO;
+    public static LoggingLevel VERBOSE;
+    public static LoggingLevel TRACE;
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.LoggingLevelEx : object {
+    [ExtensionAttribute]
+public static bool IsSeriousError(LoggingLevel level);
+    [ExtensionAttribute]
+public static LoggingLevel AtLeast(Nullable`1<LoggingLevel> level, LoggingLevel least);
+}
+public static class JetBrains.Util.MethodImplAdvancedOptions : object {
+    public static MethodImplOptions AggressiveInlining;
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.NullableEx : object {
+    [ExtensionAttribute]
+public static Nullable`1<T> ToNullable(T t);
+}
+public class JetBrains.Util.PersistentMap.UnsafeReader : object {
+    private Byte* myPtr;
+    private Byte* myInitialPtr;
+    private int myMaxlen;
+    public static ReadDelegate`1<bool> BoolDelegate;
+    public static ReadDelegate`1<bool> BooleanDelegate;
+    public static ReadDelegate`1<byte> ByteDelegate;
+    public static ReadDelegate`1<Guid> GuidDelegate;
+    public static ReadDelegate`1<char> CharDelegate;
+    public static ReadDelegate`1<decimal> DecimalDelegate;
+    public static ReadDelegate`1<double> DoubleDelegate;
+    public static ReadDelegate`1<float> FloatDelegate;
+    public static ReadDelegate`1<short> Int16Delegate;
+    public static ReadDelegate`1<short> ShortDelegate;
+    public static ReadDelegate`1<int> Int32Delegate;
+    public static ReadDelegate`1<int> IntDelegate;
+    public static ReadDelegate`1<long> Int64Delegate;
+    public static ReadDelegate`1<long> LongDelegate;
+    public static ReadDelegate`1<ushort> UInt16Delegate;
+    public static ReadDelegate`1<UInt32> UInt32Delegate;
+    public static ReadDelegate`1<ulong> UInt64Delegate;
+    public static ReadDelegate`1<DateTime> DateTimeDelegate;
+    public static ReadDelegate`1<Uri> UriDelegate;
+    public static ReadDelegate`1<string> StringDelegate;
+    public static ReadDelegate`1<Byte[]> ByteArrayDelegate;
+    public static ReadDelegate`1<Boolean[]> BoolArrayDelegate;
+    public static ReadDelegate`1<Int32[]> IntArrayDelegate;
+    public static ReadDelegate`1<String[]> StringArrayDelegate;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<byte> CS$<>9__CachedAnonymousMethodDelegate1;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<bool> CS$<>9__CachedAnonymousMethodDelegate1a;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<bool> CS$<>9__CachedAnonymousMethodDelegate1b;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<byte> CS$<>9__CachedAnonymousMethodDelegate1c;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<Guid> CS$<>9__CachedAnonymousMethodDelegate1d;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<char> CS$<>9__CachedAnonymousMethodDelegate1e;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<decimal> CS$<>9__CachedAnonymousMethodDelegate1f;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<double> CS$<>9__CachedAnonymousMethodDelegate20;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<float> CS$<>9__CachedAnonymousMethodDelegate21;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<short> CS$<>9__CachedAnonymousMethodDelegate22;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<short> CS$<>9__CachedAnonymousMethodDelegate23;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<int> CS$<>9__CachedAnonymousMethodDelegate24;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<int> CS$<>9__CachedAnonymousMethodDelegate25;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<long> CS$<>9__CachedAnonymousMethodDelegate26;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<long> CS$<>9__CachedAnonymousMethodDelegate27;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<ushort> CS$<>9__CachedAnonymousMethodDelegate28;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<UInt32> CS$<>9__CachedAnonymousMethodDelegate29;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<ulong> CS$<>9__CachedAnonymousMethodDelegate2a;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<DateTime> CS$<>9__CachedAnonymousMethodDelegate2b;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<Uri> CS$<>9__CachedAnonymousMethodDelegate2c;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<string> CS$<>9__CachedAnonymousMethodDelegate2d;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<Byte[]> CS$<>9__CachedAnonymousMethodDelegate2e;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<Boolean[]> CS$<>9__CachedAnonymousMethodDelegate2f;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<Int32[]> CS$<>9__CachedAnonymousMethodDelegate30;
+    [CompilerGeneratedAttribute]
+private static ReadDelegate`1<String[]> CS$<>9__CachedAnonymousMethodDelegate31;
+    private static UnsafeReader();
+    public static UnsafeReader CreateReader(Byte* ptr, int len);
+    public static void With(Byte[] data, Action`1<UnsafeReader> action);
+    public UnsafeReader Reset(Byte* ptr, int len);
+    [ConditionalAttribute("JET_MODE_ASSERT")]
+private void AssertLength(int size);
+    public Byte* ReadRaw(int count);
+    public bool ReadBoolean();
+    public byte ReadByte();
+    public Guid ReadGuid();
+    public char ReadChar();
+    public decimal ReadDecimal();
+    public double ReadDouble();
+    public float ReadFloat();
+    public short ReadInt16();
+    public short ReadShort();
+    public int ReadInt32();
+    public static int ReadInt32FromBytes(Byte[] bytes);
+    public long ReadInt64();
+    public int ReadInt();
+    public long ReadLong();
+    public ushort ReadUInt16();
+    public UInt32 ReadUInt32();
+    public ulong ReadUInt64();
+    public DateTime ReadDateTime();
+    public Uri ReadUri();
+    public string ReadString();
+    public T[] ReadArray(ReadDelegate`1<T> readDelegate);
+    public Int32[] ReadIntArray();
+    public Byte[] ReadByteArray();
+    public TCol ReadCollection(ReadDelegate`1<T> readDelegate, Func`2<int, TCol> contructor);
+    public TDict ReadDictionary(ReadDelegate`1<TK> readKeyDelegate, ReadDelegate`1<TV> readValueDelegate, Func`2<int, TDict> constructor);
+    public bool ReadNullness();
+    public bool ReadBool();
+    [CompilerGeneratedAttribute]
+private static byte <ReadGuid>b__0(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static bool <.cctor>b__2(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static bool <.cctor>b__3(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static byte <.cctor>b__4(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static Guid <.cctor>b__5(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static char <.cctor>b__6(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static decimal <.cctor>b__7(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static double <.cctor>b__8(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static float <.cctor>b__9(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static short <.cctor>b__a(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static short <.cctor>b__b(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static int <.cctor>b__c(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static int <.cctor>b__d(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static long <.cctor>b__e(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static long <.cctor>b__f(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static ushort <.cctor>b__10(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static UInt32 <.cctor>b__11(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static ulong <.cctor>b__12(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static DateTime <.cctor>b__13(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static Uri <.cctor>b__14(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static string <.cctor>b__15(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static Byte[] <.cctor>b__16(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static Boolean[] <.cctor>b__17(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static Int32[] <.cctor>b__18(UnsafeReader reader);
+    [CompilerGeneratedAttribute]
+private static String[] <.cctor>b__19(UnsafeReader reader);
+}
+public class JetBrains.Util.PersistentMap.UnsafeWriter : object {
+    private static string LogCategory;
+    private static int InitialAllocSize;
+    [ThreadStaticAttribute]
+private static UnsafeWriter ourWriter;
+    private object myLock;
+    private Byte* myStartPtr;
+    private int myCurrentAllocSize;
+    private Byte* myPtr;
+    private int myCount;
+    public static WriteDelegate`1<bool> BooleanDelegate;
+    public static WriteDelegate`1<byte> ByteDelegate;
+    public static WriteDelegate`1<Guid> GuidDelegate;
+    public static WriteDelegate`1<char> CharDelegate;
+    public static WriteDelegate`1<decimal> DecimalDelegate;
+    public static WriteDelegate`1<double> DoubleDelegate;
+    public static WriteDelegate`1<float> FloatDelegate;
+    public static WriteDelegate`1<short> Int16Delegate;
+    public static WriteDelegate`1<int> Int32Delegate;
+    public static WriteDelegate`1<long> Int64Delegate;
+    public static WriteDelegate`1<ushort> UInt16Delegate;
+    public static WriteDelegate`1<UInt32> UInt32Delegate;
+    public static WriteDelegate`1<ulong> UInt64Delegate;
+    public static WriteDelegate`1<DateTime> DateTimeDelegate;
+    public static WriteDelegate`1<Uri> UriDelegate;
+    public static WriteDelegate`1<string> StringDelegate;
+    public static WriteDelegate`1<Byte[]> ByteArrayDelegate;
+    public static WriteDelegate`1<Int32[]> IntArrayDelegate;
+    public static WriteDelegate`1<String[]> StringArrayDelegate;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<byte> CS$<>9__CachedAnonymousMethodDelegate5;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<bool> CS$<>9__CachedAnonymousMethodDelegate19;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<byte> CS$<>9__CachedAnonymousMethodDelegate1a;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<Guid> CS$<>9__CachedAnonymousMethodDelegate1b;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<char> CS$<>9__CachedAnonymousMethodDelegate1c;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<decimal> CS$<>9__CachedAnonymousMethodDelegate1d;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<double> CS$<>9__CachedAnonymousMethodDelegate1e;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<float> CS$<>9__CachedAnonymousMethodDelegate1f;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<short> CS$<>9__CachedAnonymousMethodDelegate20;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<int> CS$<>9__CachedAnonymousMethodDelegate21;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<long> CS$<>9__CachedAnonymousMethodDelegate22;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<ushort> CS$<>9__CachedAnonymousMethodDelegate23;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<UInt32> CS$<>9__CachedAnonymousMethodDelegate24;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<ulong> CS$<>9__CachedAnonymousMethodDelegate25;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<DateTime> CS$<>9__CachedAnonymousMethodDelegate26;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<Uri> CS$<>9__CachedAnonymousMethodDelegate27;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<string> CS$<>9__CachedAnonymousMethodDelegate28;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<Byte[]> CS$<>9__CachedAnonymousMethodDelegate29;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<Int32[]> CS$<>9__CachedAnonymousMethodDelegate2a;
+    [CompilerGeneratedAttribute]
+private static WriteDelegate`1<String[]> CS$<>9__CachedAnonymousMethodDelegate2b;
+    private int Count { get; }
+    private Byte* Data { get; }
+    public Byte* Ptr { get; }
+    private static UnsafeWriter();
+    public static Cookie NewThreadLocalWriter();
+    protected virtual void Finalize();
+    private void Reset(int start);
+    private int get_Count();
+    private Byte* get_Data();
+    public Byte* get_Ptr();
+    private void Prepare(int nbytes);
+    private void Realloc(int newCount);
+    public void Write(bool value);
+    public void Write(byte value);
+    public void Write(Guid value);
+    public void Write(char value);
+    public void Write(decimal value);
+    public void Write(double value);
+    public void Write(float value);
+    public void Write(short value);
+    public void Write(int value);
+    public static void WriteInt32ToBytes(int value, Byte[] data, int offset);
+    public void Write(long value);
+    public void Write(ushort value);
+    public void Write(UInt32 value);
+    public void Write(ulong value);
+    public void Write(DateTime value);
+    public void Write(Uri value);
+    public void Write(string value);
+    public void WriteStringContent(string value);
+    public void WriteStringContent(string value, int offset, int count);
+    public void Write(Byte* ptr, int size);
+    public void Write(Int32[] value);
+    public void Write(Byte[] value);
+    public void WriteRaw(Byte[] value);
+    public void WriteRaw(Byte[] value, int start, int length);
+    public void Alloc(int length);
+    public void Write(WriteDelegate`1<T> writeDelegate, TCol value);
+    public void Write(WriteDelegate`1<TK> writeKeyDelegate, WriteDelegate`1<TV> writeValueDelegate, TDict value);
+    [ContractAnnotationAttribute("null=>false")]
+public bool WriteNullness(Nullable`1<T> value);
+    [ContractAnnotationAttribute("null=>false")]
+public bool WriteNullness(T value);
+    [CompilerGeneratedAttribute]
+private void <Finalize>b__2();
+    [CompilerGeneratedAttribute]
+private static void <Write>b__4(UnsafeWriter writer, byte b);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__6(UnsafeWriter writer, bool x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__7(UnsafeWriter writer, byte x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__8(UnsafeWriter writer, Guid x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__9(UnsafeWriter writer, char x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__a(UnsafeWriter writer, decimal x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__b(UnsafeWriter writer, double x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__c(UnsafeWriter writer, float x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__d(UnsafeWriter writer, short x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__e(UnsafeWriter writer, int x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__f(UnsafeWriter writer, long x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__10(UnsafeWriter writer, ushort x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__11(UnsafeWriter writer, UInt32 x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__12(UnsafeWriter writer, ulong x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__13(UnsafeWriter writer, DateTime x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__14(UnsafeWriter writer, Uri x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__15(UnsafeWriter writer, string x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__16(UnsafeWriter writer, Byte[] x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__17(UnsafeWriter writer, Int32[] x);
+    [CompilerGeneratedAttribute]
+private static void <.cctor>b__18(UnsafeWriter writer, String[] x);
+}
+public class JetBrains.Util.ReferenceEqualityComparer`1 : object {
+    [NotNullAttribute]
+private static ReferenceEqualityComparer`1<T> ourDefault;
+    [NotNullAttribute]
+public static IEqualityComparer`1<T> Default { get; }
+    private static ReferenceEqualityComparer`1();
+    public sealed virtual bool Equals(T x, T y);
+    public sealed virtual int GetHashCode(T obj);
+    public static IEqualityComparer`1<T> get_Default();
+}
+[DefaultMemberAttribute("Item")]
+public class JetBrains.Util.SynchronizedDictionary`2 : object {
+    private IDictionary`2<TK, TV> myImpl;
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public TV Item { get; public set; }
+    public ICollection`1<TK> Keys { get; }
+    public ICollection`1<TV> Values { get; }
+    public sealed virtual IEnumerator`1<KeyValuePair`2<TK, TV>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual void Add(KeyValuePair`2<TK, TV> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<TK, TV> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual bool Remove(KeyValuePair`2<TK, TV> item);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual bool ContainsKey(TK key);
+    public sealed virtual void Add(TK key, TV value);
+    public sealed virtual bool Remove(TK key);
+    public sealed virtual bool TryGetValue(TK key, TV& value);
+    public sealed virtual TV get_Item(TK key);
+    public sealed virtual void set_Item(TK key, TV value);
+    public sealed virtual ICollection`1<TK> get_Keys();
+    public sealed virtual ICollection`1<TV> get_Values();
+}
+public class JetBrains.Util.Threading.ByteBufferAsyncProcessor : object {
+    private static string LogCategory;
+    private static int DefaultChunkSize;
+    private static int DefaultShrinkIntervalMs;
+    private Processor myProcessor;
+    private object myLock;
+    public int ChunkSize;
+    private int myLastShrinkOrGrowTimeMs;
+    public int ShrinkIntervalMs;
+    private bool myAllDataProcessed;
+    private Chunk myFreeChunk;
+    private Chunk modreq(System.Runtime.CompilerServices.IsVolatile) myFirstChunkToProcess;
+    private Thread myAsyncProcessingThread;
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private StateKind <State>k__BackingField;
+    public string Id { get; private set; }
+    public bool AllDataProcessed { get; }
+    public StateKind State { get; private set; }
+    public ByteBufferAsyncProcessor(string id, Processor processor);
+    public ByteBufferAsyncProcessor(string id, int chunkSize, Processor processor);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(string value);
+    public bool get_AllDataProcessed();
+    [CompilerGeneratedAttribute]
+public StateKind get_State();
+    [CompilerGeneratedAttribute]
+private void set_State(StateKind value);
+    private void CleanupInternal();
+    private bool TerminateInternal(int timeoutMs, StateKind state, string action);
+    private void ThreadProc();
+    public void Start();
+    public bool Stop(int timeoutMs);
+    public bool Terminate(int timeoutMs);
+    public void Put(Byte[] data);
+    public void Put(Cookie data);
+    public void Put(Byte* start, int count);
+    [CompilerGeneratedAttribute]
+private void <TerminateInternal>b__3();
+}
+public class JetBrains.Util.Util.SmartList`1 : ValueType {
+    private static List`1<T> SINGLE_MARKER;
+    private T mySingleValue;
+    private List`1<T> myMultipleValues;
+    public int Count { get; }
+    private static SmartList`1();
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    public int get_Count();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public void Add(T item);
+    public void Clear();
+    public int LastIndexOf(T item, IEqualityComparer`1<T> comparer);
+    public bool RemoveAt(int index);
+    public T[] ToArray();
+}
+public static class JetBrains.Util.Util.Statics : object {
+    private static Dictionary`2<Type, object> ourPerTypeStatics;
+    private static Statics();
+    public static StaticsForType`1<T> For();
+}
+public class JetBrains.Util.Util.StaticsForType`1 : object {
+    private List`1<T> myList;
+    private Action Changed;
+    private void add_Changed(Action value);
+    private void remove_Changed(Action value);
+    private void FireChanged();
+    public void ForEachValue(Action action);
+    public void AddLast(T value);
+    public void AddFirst(T value);
+    [CanBeNullAttribute]
+public T PeekFirst();
+    [CanBeNullAttribute]
+public T PeekLast();
+    public void ReplaceFirst(T value);
+    public bool RemoveLastReferenceEqual(T value, bool failIfNotLast);
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.Util.StringUtil : object {
+    [ExtensionAttribute]
+public static bool IsEmpty(string str);
+}
+[ExtensionAttribute]
+public static class JetBrains.Util.Util.ThreadEx : object {
+    [ExtensionAttribute]
+public static string ToThreadString(Thread thread);
+}

@@ -1,0 +1,518 @@
+public class JetBrains.Common.CallTreeStorage.BinaryReaderCompactTreeReader : CompactTreeReader {
+    public BinaryReaderCompactTreeReader(Func`1<BinaryReader> binaryReaderAccessor, CompactTreeKeySize keySize);
+    private static Func`2<int, UInt32> CreateValueAccessor(Func`1<BinaryReader> readerAccessor);
+}
+public class JetBrains.Common.CallTreeStorage.ChunkArrayCompactTreeReader : CompactTreeReader {
+    public ChunkArrayCompactTreeReader(IList`1<byte> list, CompactTreeKeySize keySize);
+    private static Func`2<int, UInt32> CreateValueExtractor(IList`1<byte> list);
+}
+public class JetBrains.Common.CallTreeStorage.CombinedTreeVisitor`2 : VisitorCombiner`1<ITreeVisitor`2<T, TContext>> {
+    public CombinedTreeVisitor`2(ITreeVisitor`2[] many);
+    public sealed virtual VisitResult StartNodeProcessing(T ptr, TContext context);
+    public sealed virtual void EndNodeProcessing(T ptr, TContext context);
+    public sealed virtual void AllNodesProcessed();
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreeDfsTraverse : TreeDfsTraverse`1<UInt32> {
+    public CompactTreeDfsTraverse(ICompactTreeReader reader);
+}
+public static class JetBrains.Common.CallTreeStorage.CompactTreeHelper : object {
+    public static CompactTreeKeySize GetCompactTreeKeySize(UInt32 keySize);
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreeIndexificator : object {
+    public static UInt32 NullIndex;
+    private ICompactTreePtrToIndexConverter myCompactTreePtrToIndexConverter;
+    private Action`2<int, CompactTreeNode> mySetItem;
+    private Action`1<int> myFlushToItem;
+    private ICompactTreeReader mySourceTree;
+    [CompilerGeneratedAttribute]
+private static Action`1<int> CS$<>9__CachedAnonymousMethodDelegate6;
+    public CompactTreeIndexificator(ICompactTreeReader sourceTree, ICompactTreePtrToIndexConverter compactTreePtrToIndexConverter, Action`2<int, CompactTreeNode> setItem, Action`1<int> flushToItem);
+    private static CompactTreeIndexificator();
+    public static CompactTreeIndexificator Create(ICompactTreeReader sourceTree, ICompactTreePtrToIndexConverter compactTreePtrToIndexConverter, IStructuredSectionMemory`1<CompactTreeNode> writeTo);
+    public static CompactTreeIndexificator Create(ICompactTreeReader sourceTree, ICompactTreePtrToIndexConverter compactTreePtrToIndexConverter, IList`1<CompactTreeNode> writeTo);
+    public void ProcessNodes(IEnumerable`1<UInt32> nodes);
+    public void ProcessNodes(IEnumerable`1<UInt32> nodes, IExecutionController controller);
+    public void ProcessNode(UInt32 treePtr, Nullable`1<ulong> newKeyValue);
+    private CompactTreeNodeReference ComposeReference(UInt32 treePtr);
+    [CompilerGeneratedAttribute]
+private static void <Create>b__5(int index);
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreeKeyRewriter : object {
+    private IInMemoryStream myCallTreeSectionStream;
+    private UInt32 myKeySize;
+    private UInt32 myNodeSize;
+    private CompactTreeKeySize myCompactTreeKeySize;
+    private BinaryWriter myWriter;
+    public CompactTreeKeyRewriter(IInMemoryStream callTreeSectionStream, Stream outputStream, UInt32 keySize, UInt32 nodeSize);
+    private IntPtr GetMemoryPointer(UInt32 startPosition, UInt32 sectorSize);
+    private void WriteSector(UInt32 startPosition, UInt32 endPosition);
+    public void RewriteKeys(Func`2<ulong, ulong> keyConverter);
+    public void RewriteKeys(Func`2<ulong, ulong> keyConverter, IExecutionController controller);
+    public sealed virtual void Dispose();
+}
+public enum JetBrains.Common.CallTreeStorage.CompactTreeKeySize : Enum {
+    public int value__;
+    public static CompactTreeKeySize FourBytes;
+    public static CompactTreeKeySize EightBytes;
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreeNode : ValueType {
+    [CompilerGeneratedAttribute]
+private ulong <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CompactTreeNodeReference <Reference>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <FirstChild>k__BackingField;
+    public ulong Key { get; private set; }
+    public CompactTreeNodeReference Reference { get; private set; }
+    public UInt32 FirstChild { get; private set; }
+    public CompactTreeNode(ulong key, CompactTreeNodeReference reference, UInt32 firstChild);
+    [CompilerGeneratedAttribute]
+public ulong get_Key();
+    [CompilerGeneratedAttribute]
+private void set_Key(ulong value);
+    [CompilerGeneratedAttribute]
+public CompactTreeNodeReference get_Reference();
+    [CompilerGeneratedAttribute]
+private void set_Reference(CompactTreeNodeReference value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_FirstChild();
+    [CompilerGeneratedAttribute]
+private void set_FirstChild(UInt32 value);
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreeNodeReference : ValueType {
+    public static UInt32 IsParentReferenceMask;
+    public static CompactTreeNodeReference NullReference;
+    private UInt32 myRaw;
+    public UInt32 Raw { get; }
+    public UInt32 Index { get; }
+    public CompactTreeNodeReference(UInt32 reference, Type type);
+    private CompactTreeNodeReference(UInt32 raw);
+    private static CompactTreeNodeReference();
+    public UInt32 get_Raw();
+    public UInt32 get_Index();
+    public bool ToSibling();
+    public bool ToParent();
+}
+public class JetBrains.Common.CallTreeStorage.CompactTreePtrToIndexConverter : object {
+    private ICompactTreeReader myReader;
+    private UInt32 myNodeSize;
+    private Interval[] myGaps;
+    public CompactTreePtrToIndexConverter(ICompactTreeReader reader, UInt32 nodeSize);
+    public sealed virtual UInt32 Convert(UInt32 ptr);
+    private UInt32 CalculateGapBeforePointer(UInt32 ptr);
+}
+[UsedImplicitlyAttribute]
+public class JetBrains.Common.CallTreeStorage.CompactTreeReader : object {
+    private static int PayloadSize;
+    private static int PtrSize;
+    private Func`2<int, UInt32> myValueFromAddressReader;
+    private CompactTreeKeySize myKeySize;
+    private UInt32 myIsParentReferenceBitMask;
+    private Header myHeader;
+    protected long Shift;
+    private int myKeySizeBytes;
+    public UInt32 NullPtr { get; }
+    public UInt32 RootPtr { get; }
+    public CompactTreeReader(Func`2<int, UInt32> valueFromAddressReader, CompactTreeKeySize keySize, UInt32 isParentReferenceBitMask);
+    public sealed virtual UInt32 GetParent(UInt32 treeNodePtr);
+    public sealed virtual UInt32 GetNextSibling(UInt32 treeNodePtr);
+    public sealed virtual UInt32 GetFirstChild(UInt32 treeNodePtr);
+    public sealed virtual UInt32 get_NullPtr();
+    public sealed virtual ulong ReadKey(UInt32 treeNodePtr);
+    public sealed virtual UInt32 ReadPayload(UInt32 treeNodePtr, int index);
+    public sealed virtual UInt32 get_RootPtr();
+    public sealed virtual IEnumerable`1<UInt32> EnumerateAllNodes(UInt32 nodeSize);
+    private Header ReadHeader(Func`2<int, UInt32> valueFromAddressReader);
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.CallTreeStorage.CompactTreeReaderEx : object {
+    [CompilerGeneratedAttribute]
+private static Func`2<UInt32, int> CS$<>9__CachedAnonymousMethodDelegatea;
+    [CompilerGeneratedAttribute]
+private static Func`2<int, UInt32> CS$<>9__CachedAnonymousMethodDelegateb;
+    [ExtensionAttribute]
+public static IEnumerable`1<UInt32> GetChildren(ICompactTreeReader tree, UInt32 ptr);
+    [ExtensionAttribute]
+public static IEnumerable`1<UInt32> GetPathToRoot(ICompactTreeReader tree, UInt32 ptr);
+    [ExtensionAttribute]
+public static List`1<DfsNode`2<UInt32, ulong>> BuildDfsTree(ICompactTreeReader callTreeReader, Dictionary`2& dfsToPtrMap, Dictionary`2& keysIndex);
+    [ExtensionAttribute]
+public static List`1<DfsNode`2<TOffset, TKey>> BuildDfsTree(ICompactTreeReader callTreeReader, Dictionary`2& dfsToPtrMap, Dictionary`2& keysIndex, Func`2<TOffset, int> offsetToIndex, TOffset invalidOffset, Func`2<int, TOffset> indexToOffset, ITreeVisitor`2<UInt32, IKeyContainingContext`1<TKey>> keySettingVisitor, TKey invalidKey);
+    [ExtensionAttribute]
+public static HashSet`1<FunctionUID> CollectUniqueKeys(ICompactTreeReader reader, bool ignoreShift);
+    [ExtensionAttribute]
+public static void CollectUniqueKeys(ICompactTreeReader reader, UInt32 ptr, HashSet`1<FunctionUID> result, bool ignoreShift);
+    [CompilerGeneratedAttribute]
+private static int <BuildDfsTree>b__8(UInt32 u);
+    [CompilerGeneratedAttribute]
+private static UInt32 <BuildDfsTree>b__9(int i);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.ActionConsumer`2 : object {
+    private Action`3<UInt32, TOffset, DfsNode`2<TOffset, TKey>> myEndNode;
+    private Action`4<UInt32, TOffset, TOffset, TKey> myStartNode;
+    private Action`1<UInt32> myOnFinish;
+    public ActionConsumer`2(Action`3<UInt32, TOffset, DfsNode`2<TOffset, TKey>> endNode, Action`4<UInt32, TOffset, TOffset, TKey> startNode, Action`1<UInt32> onFinish);
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.ClassicDfsTreeReader`2 : object {
+    private IReadOnlyList`1<DfsNode`2<TOffset, TKey>> myDfsNodes;
+    private TOffset myNullPtr;
+    private Func`2<TOffset, int> myOffsetToIndex;
+    private Func`2<TOffset, TOffset> myPreviousOffset;
+    private IComparer`1<TOffset> myComparer;
+    public TOffset RootPtr { get; }
+    public TOffset NullPtr { get; }
+    public ClassicDfsTreeReader`2(IReadOnlyList`1<DfsNode`2<TOffset, TKey>> dfsNodes, TOffset nullPtr, Func`2<TOffset, int> offsetToIndex, Func`2<TOffset, TOffset> previousOffset, IComparer`1<TOffset> comparer);
+    public sealed virtual TOffset get_RootPtr();
+    public sealed virtual TOffset get_NullPtr();
+    public sealed virtual TKey ReadKey(TOffset ptr);
+    public sealed virtual TOffset GetParent(TOffset ptr);
+    public sealed virtual TOffset GetLeft(TOffset ptr);
+    public sealed virtual IEnumerable`1<TOffset> GetChildrenReversed(TOffset rootIndex);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.CombiningDfsNodeConsumer`2 : VisitorCombiner`1<IEmittedDfsNodeConsumer`2<TOffset, TKey>> {
+    public CombiningDfsNodeConsumer`2(IEmittedDfsNodeConsumer`2[] many);
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.DfsNode`2 : ValueType {
+    public TOffset Offset;
+    public TKey Key;
+    public TOffset ParentOffset;
+    public TOffset LeftOffset;
+    public virtual string ToString();
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.DfsNodesWriter`2 : object {
+    private IStructuredSectionMemory`1<DfsNode`2<TOffset, TKey>> myMemory;
+    private Func`2<TOffset, int> myOffsetToIndex;
+    public DfsNodesWriter`2(IStructuredSectionMemory`1<DfsNode`2<TOffset, TKey>> memory, Func`2<TOffset, int> offsetToIndex);
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.DfsToPtrMapWriter`3 : object {
+    private IStructuredSectionMemory`1<T> myDfsToPtrMap;
+    private Func`2<UInt32, T> myTransformOldIndex;
+    private Func`2<TOffset, int> myOffsetToIndex;
+    public IReadonlyStructuredSectionMemory`1<T> Data { get; }
+    public DfsToPtrMapWriter`3(IStructuredSectionMemory`1<T> dfsToPtrMap, Func`2<UInt32, T> transformOldIndex, Func`2<TOffset, int> offsetToIndex);
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+    public IReadonlyStructuredSectionMemory`1<T> get_Data();
+}
+public interface JetBrains.Common.CallTreeStorage.Dfs.IClassicDfsTreeReader`2 {
+    public TOffset RootPtr { get; }
+    public TOffset NullPtr { get; }
+    public abstract virtual TOffset get_RootPtr();
+    public abstract virtual TOffset get_NullPtr();
+    public abstract virtual TKey ReadKey(TOffset ptr);
+    public abstract virtual TOffset GetParent(TOffset ptr);
+    public abstract virtual TOffset GetLeft(TOffset ptr);
+    public abstract virtual IEnumerable`1<TOffset> GetChildrenReversed(TOffset ptr);
+}
+public interface JetBrains.Common.CallTreeStorage.Dfs.IEmittedDfsNodeConsumer`2 {
+    public abstract virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public abstract virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public abstract virtual void OnFinish(UInt32 nodesCount);
+}
+public interface JetBrains.Common.CallTreeStorage.Dfs.IKeyContainingContext`1 {
+    public TKey Key { get; public set; }
+    public abstract virtual TKey get_Key();
+    public abstract virtual void set_Key(TKey value);
+}
+public interface JetBrains.Common.CallTreeStorage.Dfs.ISkipNodeContext {
+    public bool SkipNode { get; public set; }
+    public abstract virtual bool get_SkipNode();
+    public abstract virtual void set_SkipNode(bool value);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.KeyContainingContext`1 : object {
+    [CompilerGeneratedAttribute]
+private TKey <Key>k__BackingField;
+    public TKey Key { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual TKey get_Key();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Key(TKey value);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.KeySettingVisitor : object {
+    private ICompactTreeReader myCompactTreeReader;
+    public KeySettingVisitor(ICompactTreeReader compactTreeReader);
+    public sealed virtual VisitResult StartNodeProcessing(UInt32 ptr, IKeyContainingContext`1<ulong> sharedContext);
+    public sealed virtual void EndNodeProcessing(UInt32 ptr, IKeyContainingContext`1<ulong> sharedContext);
+    public sealed virtual void AllNodesProcessed();
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.KeyToNodesAscendingIndex`2 : object {
+    private ConditionalLog myLog;
+    private Dictionary`2<TKey, List`1<TOffset>> myData;
+    public static IComparer`1<TOffset> Comparer { get; }
+    public Dictionary`2<TKey, List`1<TOffset>> Data { get; }
+    public static IComparer`1<TOffset> get_Comparer();
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newPtr, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+    public Dictionary`2<TKey, List`1<TOffset>> get_Data();
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.NodePayload : ValueType {
+    public long OwnPayload;
+    public long TotalPayload;
+    public int CallCount;
+    public NodePayload(long ownPayload, int callCount);
+    public virtual int GetHashCode();
+    public sealed virtual bool Equals(NodePayload other);
+}
+public enum JetBrains.Common.CallTreeStorage.Dfs.PayloadDisplayType : Enum {
+    public int value__;
+    public static PayloadDisplayType Visible;
+    public static PayloadDisplayType Dissolved;
+    public static PayloadDisplayType Hidden;
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.PostOrderDfsNodeEmitter`3 : object {
+    private IEmittedDfsNodeConsumer`2<TOffset, TKey> myNodeConsumer;
+    private TOffset myInvalidOffset;
+    private Func`2<int, TOffset> myIndexToOffset;
+    private Stack`1<NodeRefWithChildren<TContext, TOffset, TKey>> myStack;
+    private int myCurrentDfsIndex;
+    public PostOrderDfsNodeEmitter`3(IEmittedDfsNodeConsumer`2<TOffset, TKey> nodeConsumer, TOffset invalidOffset, Func`2<int, TOffset> indexToOffset, TKey invalidKey);
+    public sealed virtual VisitResult StartNodeProcessing(UInt32 ptr, TContext context);
+    public sealed virtual void EndNodeProcessing(UInt32 ptr, TContext context);
+    private void EmitChildren(NodeRefWithChildren<TContext, TOffset, TKey> currentNodeWithChildren, TOffset parentIndex);
+    public sealed virtual void AllNodesProcessed();
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.RawNodeSkipContext`1 : object {
+    [CompilerGeneratedAttribute]
+private bool <SkipNode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TKey <Key>k__BackingField;
+    public bool SkipNode { get; public set; }
+    public TKey Key { get; public set; }
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_SkipNode();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_SkipNode(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual TKey get_Key();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Key(TKey value);
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.SkipNodeContextSetter`2 : object {
+    private Stack`1<StackFrame<TContext, TKey>> myStack;
+    private SkipNodePredicate<TContext, TKey> mySkipPredicate;
+    private StackFrame<TContext, TKey> myDefaultFrame;
+    public SkipNodeContextSetter`2(SkipNodePredicate<TContext, TKey> skipPredicate, TKey invalidKey);
+    public sealed virtual VisitResult StartNodeProcessing(UInt32 ptr, TContext context);
+    public sealed virtual void EndNodeProcessing(UInt32 ptr, TContext context);
+    public sealed virtual void AllNodesProcessed();
+}
+public class JetBrains.Common.CallTreeStorage.Dfs.SkippedNodeMapBuilder`3 : object {
+    private Stack`1<Frame<TContext, TOffset, TKey>> myStack;
+    private int myCounter;
+    private int myEmittedCounter;
+    private EmittedMapEntry<TContext, TOffset, TKey> myEmitHandler;
+    public SkippedNodeMapBuilder`3(EmittedMapEntry<TContext, TOffset, TKey> emitHandler);
+    public sealed virtual VisitResult StartNodeProcessing(UInt32 ptr, TContext context);
+    public sealed virtual void EndNodeProcessing(UInt32 ptr, TContext context);
+    public sealed virtual void AllNodesProcessed();
+    public sealed virtual void StartNodeProcessing(UInt32 oldIndex, TOffset newIndex, TOffset leftIndex, TKey key);
+    public sealed virtual void EndNodeProcessing(UInt32 oldIndex, TOffset newIndex, DfsNode`2<TOffset, TKey> node);
+    public sealed virtual void OnFinish(UInt32 nodesCount);
+}
+[UsedImplicitlyAttribute]
+public class JetBrains.Common.CallTreeStorage.FlagFirstCompactTreeReader : CompactTreeReader {
+    private static UInt32 IsParentReferenceBitMask;
+    public FlagFirstCompactTreeReader(Func`2<int, UInt32> valueFromAddressReader, CompactTreeKeySize keySize);
+}
+public class JetBrains.Common.CallTreeStorage.ForeignBinaryReaderCompactTreeReader : FlagFirstCompactTreeReader {
+    public ForeignBinaryReaderCompactTreeReader(BinaryReader binaryReader, CompactTreeKeySize keySize);
+    private static Func`2<int, UInt32> CreateValueAccessor(BinaryReader reader);
+}
+public class JetBrains.Common.CallTreeStorage.FuncTreeVisitor`2 : object {
+    private Func`3<T, TContext, VisitResult> myStartNode;
+    private Action`2<T, TContext> myEndNode;
+    private Action myComplete;
+    public FuncTreeVisitor`2(Func`3<T, TContext, VisitResult> startNode, Action`2<T, TContext> endNode, Action complete);
+    public sealed virtual VisitResult StartNodeProcessing(T ptr, TContext sharedContext);
+    public sealed virtual void EndNodeProcessing(T ptr, TContext sharedContext);
+    public sealed virtual void AllNodesProcessed();
+}
+public interface JetBrains.Common.CallTreeStorage.ICompactTreePtrToIndexConverter {
+    public abstract virtual UInt32 Convert(UInt32 ptr);
+}
+public interface JetBrains.Common.CallTreeStorage.ICompactTreeReader {
+    public UInt32 NullPtr { get; }
+    public UInt32 RootPtr { get; }
+    public abstract virtual UInt32 GetParent(UInt32 treeNodePtr);
+    public abstract virtual UInt32 GetNextSibling(UInt32 treeNodePtr);
+    public abstract virtual UInt32 GetFirstChild(UInt32 treeNodePtr);
+    public abstract virtual UInt32 get_NullPtr();
+    public abstract virtual ulong ReadKey(UInt32 treeNodePtr);
+    public abstract virtual UInt32 ReadPayload(UInt32 treeNodePtr, int index);
+    public abstract virtual UInt32 get_RootPtr();
+    public abstract virtual IEnumerable`1<UInt32> EnumerateAllNodes(UInt32 nodeSize);
+}
+public interface JetBrains.Common.CallTreeStorage.ICompactTreeWriter {
+    public abstract virtual void WriteKey(UInt32 treeNodePtr, UInt32 key);
+}
+public interface JetBrains.Common.CallTreeStorage.IIndexableCompactTreeReader {
+}
+public interface JetBrains.Common.CallTreeStorage.IIndexableCompactTreeWriter {
+    public abstract virtual UInt32 AddChild(UInt32 parentPtr, ulong key);
+    public abstract virtual UInt32 InsertMiddleMan(UInt32 parentPtr, ulong key);
+}
+public class JetBrains.Common.CallTreeStorage.IndexableCompactTree : object {
+    protected Func`1<int> GetCount;
+    protected Func`2<int, CompactTreeNode> GetItem;
+    [CompilerGeneratedAttribute]
+private UInt32 <NullPtr>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UInt32 <RootPtr>k__BackingField;
+    public UInt32 NullPtr { get; private set; }
+    public UInt32 RootPtr { get; private set; }
+    protected IndexableCompactTree(Func`2<int, CompactTreeNode> getItem, Func`1<int> getCount);
+    public sealed virtual UInt32 GetParent(UInt32 index);
+    protected CompactTreeNode GetLastSibling(UInt32 anySiblingIndex, CompactTreeNodeReference& reference, UInt32& lastSiblingIndex);
+    public sealed virtual UInt32 GetNextSibling(UInt32 index);
+    public sealed virtual UInt32 GetFirstChild(UInt32 index);
+    [CompilerGeneratedAttribute]
+public sealed virtual UInt32 get_NullPtr();
+    [CompilerGeneratedAttribute]
+private void set_NullPtr(UInt32 value);
+    public sealed virtual ulong ReadKey(UInt32 index);
+    public sealed virtual UInt32 ReadPayload(UInt32 index, int payloadIndex);
+    [CompilerGeneratedAttribute]
+public sealed virtual UInt32 get_RootPtr();
+    [CompilerGeneratedAttribute]
+private void set_RootPtr(UInt32 value);
+    public sealed virtual IEnumerable`1<UInt32> EnumerateAllNodes(UInt32 nodeSize);
+    public static IndexableCompactTree Create(IReadOnlyList`1<CompactTreeNode> indexable);
+}
+public class JetBrains.Common.CallTreeStorage.IndexableCompactTreeWriter : IndexableCompactTree {
+    private Action`2<int, CompactTreeNode> mySetItem;
+    private Action`1<int> myFlushToItem;
+    [CompilerGeneratedAttribute]
+private static Action`1<int> CS$<>9__CachedAnonymousMethodDelegate8;
+    public IndexableCompactTreeWriter(Func`2<int, CompactTreeNode> getItem, Func`1<int> getCount, Action`2<int, CompactTreeNode> setItem, Action`1<int> flushToItem);
+    public static IndexableCompactTreeWriter Create(IStructuredSectionMemory`1<CompactTreeNode> section);
+    public static IndexableCompactTreeWriter Create(IList`1<CompactTreeNode> list);
+    public sealed virtual UInt32 AddChild(UInt32 parentPtr, ulong key);
+    public sealed virtual UInt32 InsertMiddleMan(UInt32 parentPtr, ulong key);
+    [CompilerGeneratedAttribute]
+private static void <Create>b__7(int i);
+}
+public class JetBrains.Common.CallTreeStorage.InMemoryStreamCompactTreeReader : CompactTreeReader {
+    public InMemoryStreamCompactTreeReader(IInMemoryStream stream, StreamAccessDirection direction, CompactTreeKeySize keySize);
+    private static Func`2<int, UInt32> CreateValueAccessor(IInMemoryStream stream, StreamAccessDirection direction);
+}
+public class JetBrains.Common.CallTreeStorage.IntermediateCompactTree : object {
+    private static UInt32 IsParentReferenceMask;
+    private static int PayloadSize;
+    private static int PtrSize;
+    private Func`2<int, UInt32> myValueFromAddressReader;
+    private CompactTreeKeySize myKeySize;
+    private ulong mySectionSize;
+    protected long Shift;
+    private int myKeySizeBytes;
+    private int myNodeSize;
+    public UInt32 NullPtr { get; }
+    public UInt32 RootPtr { get; }
+    public IntermediateCompactTree(Func`2<int, UInt32> valueFromAddressReader, ulong sectionSize, int nodeSize);
+    public sealed virtual UInt32 GetParent(UInt32 treeNodePtr);
+    public sealed virtual UInt32 GetNextSibling(UInt32 treeNodePtr);
+    public sealed virtual UInt32 GetFirstChild(UInt32 treeNodePtr);
+    public sealed virtual UInt32 get_NullPtr();
+    public sealed virtual ulong ReadKey(UInt32 treeNodePtr);
+    public sealed virtual UInt32 ReadPayload(UInt32 treeNodePtr, int index);
+    public sealed virtual UInt32 get_RootPtr();
+    public sealed virtual IEnumerable`1<UInt32> EnumerateAllNodes(UInt32 nodeSize);
+}
+public class JetBrains.Common.CallTreeStorage.IntermediateCompactTreeReader : IntermediateCompactTree {
+    public IntermediateCompactTreeReader(IInMemoryStream stream, StreamAccessDirection direction, ulong sectionSize, int nodeSize);
+    private static Func`2<int, UInt32> CreateValueAccessor(IInMemoryStream stream, StreamAccessDirection direction);
+}
+public interface JetBrains.Common.CallTreeStorage.ITreeVisitor`2 {
+    public abstract virtual VisitResult StartNodeProcessing(T ptr, TContext sharedContext);
+    public abstract virtual void EndNodeProcessing(T ptr, TContext sharedContext);
+    public abstract virtual void AllNodesProcessed();
+}
+[ExtensionAttribute]
+public static class JetBrains.Common.CallTreeStorage.MemoryCompactTreeWriterEx : object {
+    [ExtensionAttribute]
+public static bool AddKeyIfNotExist(IIndexableCompactTreeWriter writer, UInt32 parentIndex, ulong key, UInt32& nodeIndex);
+    [ExtensionAttribute]
+public static Nullable`1<UInt32> FindExistingChildByKey(ICompactTreeReader tree, UInt32 parentIndex, ulong targetKey);
+    [ExtensionAttribute]
+public static UInt32 AddBranch(IIndexableCompactTreeWriter writer, UInt32 parentIndex, IEnumerable`1<UInt32> branchNodes);
+    [ExtensionAttribute]
+public static UInt32 AddBranch(IIndexableCompactTreeWriter writer, UInt32 parentIndex, IEnumerable`1<UInt32> branchNodes, List`1& newIndices);
+    [ExtensionAttribute]
+public static UInt32 AddBranch(IIndexableCompactTreeWriter writer, UInt32 parentIndex, IEnumerable`1<ulong> branchNodeFuids, List`1& newIndices);
+    [ExtensionAttribute]
+public static UInt32 AddBranch(IIndexableCompactTreeWriter writer, UInt32 parentIndex, IEnumerable`1<ulong> branchNodeFuids);
+}
+[FlagsAttribute]
+internal enum JetBrains.Common.CallTreeStorage.NodeState : Enum {
+    public byte value__;
+    public static NodeState FirstStage;
+    public static NodeState ChildrenTraversed;
+}
+[ExtensionAttribute]
+internal static class JetBrains.Common.CallTreeStorage.NodeStateExtensionMethods : object {
+    [ExtensionAttribute]
+public static bool IsSet(NodeState flags, NodeState flagToTest);
+    [ExtensionAttribute]
+public static bool IsClear(NodeState flags, NodeState flagToTest);
+    [ExtensionAttribute]
+public static NodeState Set(NodeState flags, NodeState setFlags);
+    [ExtensionAttribute]
+public static NodeState Clear(NodeState flags, NodeState clearFlags);
+}
+public class JetBrains.Common.CallTreeStorage.NullTreeVisitor`2 : object {
+    public static NullTreeVisitor`2<T, TContext> Instance;
+    private static NullTreeVisitor`2();
+    public sealed virtual VisitResult StartNodeProcessing(T ptr, TContext context);
+    public sealed virtual void EndNodeProcessing(T ptr, TContext context);
+    public sealed virtual void AllNodesProcessed();
+}
+public enum JetBrains.Common.CallTreeStorage.StreamAccessDirection : Enum {
+    public int value__;
+    public static StreamAccessDirection Forward;
+    public static StreamAccessDirection Backward;
+}
+public class JetBrains.Common.CallTreeStorage.StreamCompactTreeReader : CompactTreeReader {
+    public StreamCompactTreeReader(Stream stream, CompactTreeKeySize keySize);
+    public static Func`2<int, UInt32> CreateStreamValueReader(Stream stream);
+}
+public class JetBrains.Common.CallTreeStorage.StreamCompactTreeReaderWriter : StreamCompactTreeReader {
+    private BinaryWriter myWriter;
+    public StreamCompactTreeReaderWriter(Stream stream);
+    public sealed virtual void WriteKey(UInt32 treeNodePtr, UInt32 key);
+    public sealed virtual void Dispose();
+}
+public class JetBrains.Common.CallTreeStorage.TreeDfsTraverse`1 : object {
+    private Func`1<T> myRootGetter;
+    private Func`2<T, IEnumerable`1<T>> myGetChildren;
+    public TreeDfsTraverse`1(Func`1<T> rootGetter, Func`1<T> nullNodeGetter, Func`2<T, T> getFirstChild, Func`2<T, T> getNextSibling, IEqualityComparer`1<T> comparer);
+    public TreeDfsTraverse`1(Func`1<T> rootGetter, Func`2<T, IEnumerable`1<T>> getChildren);
+    private static IEnumerable`1<T> GetChildren(T node, Func`1<T> nullNodeGetter, Func`2<T, T> getFirstChild, IEqualityComparer`1<T> equalityComparer, Func`2<T, T> getNextSibling);
+    public void Traverse(ITreeVisitor`2<T, TContext> visitor, Func`1<T> overriddenGetRoot);
+    public void Traverse(ITreeVisitor`2<T, TContext> visitor, IExecutionController controller, Func`1<T> overriddenGetRoot);
+    private void UpdateParentSnapshot(IEnumerator`1<T> child, bool childNodeExist, Snapshot`1& snapshot);
+    private void PushNextChild(Stack`1<Snapshot`1<T, TContext>> stack, IEnumerator`1<T> child);
+}
+public class JetBrains.Common.CallTreeStorage.VisitorCombiner`1 : object {
+    protected List`1<T> List;
+    public VisitorCombiner`1(T one);
+    public VisitorCombiner`1(T[] many);
+    public void Register(T one);
+    public void Register(T[] many);
+    public bool Deregister(T one);
+    public void Deregister(T[] many);
+}
+public enum JetBrains.Common.CallTreeStorage.VisitResult : Enum {
+    public int value__;
+    public static VisitResult ProcessChildren;
+    public static VisitResult SkipChildren;
+}

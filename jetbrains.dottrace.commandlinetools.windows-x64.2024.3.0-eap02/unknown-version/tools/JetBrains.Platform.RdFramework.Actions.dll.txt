@@ -1,0 +1,239 @@
+public abstract class JetBrains.Platform.RdFramework.Actions.ActionException : ApplicationException {
+    protected ActionException(string actionId, string problem);
+    protected ActionException(string actionId, string problem, Exception innerException);
+}
+public class JetBrains.Platform.RdFramework.Actions.ActionExecutionException : ActionException {
+    public ActionExecutionException(string actionId, string message);
+    public ActionExecutionException(string actionId, Exception innerException);
+}
+public class JetBrains.Platform.RdFramework.Actions.ActionNotFoundException : ActionException {
+    public ActionNotFoundException(string actionId);
+}
+public class JetBrains.Platform.RdFramework.Actions.ActionUnavailableException : ActionException {
+    [CompilerGeneratedAttribute]
+private bool <RequirementNotReady>k__BackingField;
+    public bool RequirementNotReady { get; }
+    public ActionUnavailableException(string actionId, bool requirementNotReady);
+    [CompilerGeneratedAttribute]
+public bool get_RequirementNotReady();
+}
+public class JetBrains.Platform.RdFramework.Actions.Backend.ActionUpdateRequestData : object {
+    private Lazy`1<Identity> myId;
+    public ActionUpdateRequest Request;
+    public IActionDefWithId ActionDefWithId;
+    [CompilerGeneratedAttribute]
+private IDataContext <DataContext>k__BackingField;
+    public TaskCompletionSource`1<EvaluatedActionDescriptor> Future;
+    public OuterLifetime RequestLifetime;
+    public IDataContext DataContext { get; }
+    public Identity Id { get; }
+    public ActionUpdateRequestData(OuterLifetime lifetime, ActionUpdateRequest request, IActionDefWithId actionDefWithId, IDataContext dataContext);
+    [CompilerGeneratedAttribute]
+public IDataContext get_DataContext();
+    public Identity get_Id();
+    [CompilerGeneratedAttribute]
+private Identity <.ctor>b__10_0();
+}
+internal class JetBrains.Platform.RdFramework.Actions.Backend.ActionUpdateRequestDataComparer : object {
+    private Dictionary`2<Identity, long> myWeights;
+    public ActionUpdateRequestDataComparer(Dictionary`2<Identity, long> weights);
+    public sealed virtual int Compare(ActionUpdateRequestData x, ActionUpdateRequestData y);
+}
+internal class JetBrains.Platform.RdFramework.Actions.Backend.ActionUpdateTimeStatistics : object {
+    private static ConcurrentDictionary`2<Identity, long> ourAction2Weights;
+    private ILogger myLogger;
+    private static ActionUpdateTimeStatistics();
+    public void UpdateActionTime(ActionUpdateRequestData x, long time);
+    public IComparer`1<ActionUpdateRequestData> CreateComparer();
+}
+public class JetBrains.Platform.RdFramework.Actions.Backend.GuardHistoryEntry : ValueType {
+    public string ActionName;
+    public double ElapsedTimeMs;
+    [NotNullAttribute]
+public IList`1<GuardHistoryEntry> SubEntries;
+    public GuardHistoryEntry(string actionName, double elapsedTimeMs);
+    public GuardHistoryEntry(string actionName, double elapsedTimeMs, IList`1<GuardHistoryEntry> subEntries);
+}
+public class JetBrains.Platform.RdFramework.Actions.Backend.Identity : ValueType {
+    public string ActionId;
+    public string Place;
+    public Identity(string actionId, string place);
+    public sealed virtual bool Equals(Identity other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[ZoneDefinitionAttribute]
+public interface JetBrains.Platform.RdFramework.Actions.Backend.IRdActionsBackendZone {
+}
+public interface JetBrains.Platform.RdFramework.Actions.Backend.IRdDataRuleProvider {
+    [NotNullAttribute]
+public abstract virtual IEnumerable`1<IDataRule> GetDataRules(RdDataConstant constant);
+}
+[ShellComponentAttribute("0")]
+public class JetBrains.Platform.RdFramework.Actions.Backend.RdActions : object {
+    [NotNullAttribute]
+private RdActionsAsyncAvailability myAsyncAvailability;
+    [CompilerGeneratedAttribute]
+private ReentranceGuardWatcher <GuardWatcher>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ILogger <Logger>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IShellLocks <Locks>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IActionManager <ActionManager>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RdDataContextFactory <DataContextFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RequirementsManager <RequirementsManager>k__BackingField;
+    internal RdDispatcher RdDispatcher;
+    [NotNullAttribute]
+internal ReentranceGuardWatcher GuardWatcher { get; }
+    [NotNullAttribute]
+protected ILogger Logger { get; }
+    [NotNullAttribute]
+internal IShellLocks Locks { get; }
+    internal IActionManager ActionManager { get; }
+    [NotNullAttribute]
+public RdDataContextFactory DataContextFactory { get; }
+    [NotNullAttribute]
+internal RequirementsManager RequirementsManager { get; }
+    protected bool AssertRequirementExecutionTime { get; }
+    public RdActions(ILogger logger, IActionManager actionManager, RdDataContextFactory dataContextFactory, RequirementsManager requirementsManager, IShellLocks locks, RdDispatcher rdDispatcher, RdActionsAsyncAvailability asyncAvailability, ReentranceGuardWatcher guardWatcher);
+    [CompilerGeneratedAttribute]
+internal ReentranceGuardWatcher get_GuardWatcher();
+    [CompilerGeneratedAttribute]
+protected ILogger get_Logger();
+    [CompilerGeneratedAttribute]
+internal IShellLocks get_Locks();
+    [CompilerGeneratedAttribute]
+internal IActionManager get_ActionManager();
+    [CompilerGeneratedAttribute]
+public RdDataContextFactory get_DataContextFactory();
+    [CompilerGeneratedAttribute]
+internal RequirementsManager get_RequirementsManager();
+    protected virtual bool get_AssertRequirementExecutionTime();
+    public Task`1<EvaluatedActionDescriptor> Update(Lifetime lt, ActionUpdateRequest request);
+    [AsyncStateMachineAttribute("JetBrains.Platform.RdFramework.Actions.Backend.RdActions/<TryExecuteAsync>d__24")]
+public Task`1<bool> TryExecuteAsync(Lifetime lt, ActionExecuteRequest request);
+    public IActionDefWithId GetActionDefById(string actionId);
+    public IActionDefWithId GetActionDefByIdOrNull(string actionId);
+    internal static EvaluatedActionDescriptor CreateEvaluatedActionDescriptor(IActionDefWithId actionDefWithId, IDataContext dataContext, IActionHandlers handlers);
+}
+[ShellComponentAttribute("10")]
+public class JetBrains.Platform.RdFramework.Actions.Backend.RdActionsAsyncAvailability : object {
+    private static long TimeThresholdOnUi;
+    private ILogger myLogger;
+    private IShellLocks myLocks;
+    private IActionManager myActionManager;
+    private GroupingEvent myPushAsyncUpdateEvent;
+    private RequirementsManager myRequirementsManager;
+    private Lifetime myLifetime;
+    private List`1<ActionUpdateRequestData> myUpdateList;
+    private ActionUpdateTimeStatistics myStatistics;
+    protected bool AssertExecutionTime { get; }
+    public RdActionsAsyncAvailability(ILogger logger, Lifetime lifetime, IShellLocks locks, IActionManager actionManager, RequirementsManager requirementsManager);
+    protected virtual bool get_AssertExecutionTime();
+    private void DoUpdateAsync();
+    private static string DumpRequestList(IEnumerable`1<ActionUpdateRequestData> requests);
+    private void UpdateOnBackgroundThread(IPriorityQueue`1<ActionUpdateRequestData> actionsToUpdate);
+    private long UpdateAction(ActionUpdateRequestData req, IDataContext dataContext);
+    public void PushPresentationUpdate(ActionUpdateRequestData req);
+}
+[ShellComponentAttribute("10")]
+public class JetBrains.Platform.RdFramework.Actions.Backend.RdDataContextFactory : object {
+    private Lifetime myLifetime;
+    private DataContexts myDataContexts;
+    private IRdDataRuleProvider[] myDataRuleProviders;
+    private Tuple`3<Guid, IDataContext, LifetimeDefinition> myLastSharedDataContext;
+    public RdDataContextFactory(Lifetime lifetime, IEnumerable`1<IRdDataRuleProvider> dataRuleProviders, DataContexts dataContexts);
+    public IDataContext CreateDataContextFrom(Lifetime lifetime, List`1<RdDataConstant> constants);
+    protected virtual void ProcessDataConstant(Lifetime lifetime, RdDataConstant constant, List`1<IDataRule> dataRules);
+}
+[ShellComponentAttribute("16")]
+public class JetBrains.Platform.RdFramework.Actions.Backend.ReentranceGuardWatcher : object {
+    private ILogger myLogger;
+    private IShellLocks myLocks;
+    private Queue`1<Pair`2<string, Stopwatch>> myTimingQ;
+    private Queue`1<Pair`2<string, Stopwatch>> myEventsTimingQ;
+    public ReentranceGuardWatcher(ILogger logger, IShellLocks locks);
+    public void StartCollectingHistory(Lifetime lifetime, IList`1<GuardHistoryEntry> history);
+}
+public static class JetBrains.Platform.RdFramework.Actions.Backend.ReentranceGuardWatcherEx : object {
+    public static string PresentGuardHisotyEntries(IList`1<GuardHistoryEntry> history);
+}
+[ZoneMarkerAttribute]
+public class JetBrains.Platform.RdFramework.Actions.Backend.ZoneMarker : object {
+}
+public class JetBrains.Platform.RdFramework.Actions.EvaluatedActionDescriptor : object {
+    [CompilerGeneratedAttribute]
+private StandartPresentation <StandardPresentation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICustomActionPresentation <CustomPresentation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ShouldFallBack>k__BackingField;
+    public StandartPresentation StandardPresentation { get; }
+    public ICustomActionPresentation CustomPresentation { get; }
+    public bool ShouldFallBack { get; }
+    public bool IsAvailable { get; }
+    public bool IsVisible { get; }
+    public EvaluationStatus Status { get; }
+    public string Text { get; }
+    public string Description { get; }
+    public EvaluatedActionDescriptor(EvaluatedAction evaluatedAction);
+    public EvaluatedActionDescriptor(StandartPresentation standardPresentation, ICustomActionPresentation customPresentation, bool shouldFallBack);
+    [CompilerGeneratedAttribute]
+public StandartPresentation get_StandardPresentation();
+    [CompilerGeneratedAttribute]
+public ICustomActionPresentation get_CustomPresentation();
+    [CompilerGeneratedAttribute]
+public bool get_ShouldFallBack();
+    public bool get_IsAvailable();
+    public bool get_IsVisible();
+    public EvaluationStatus get_Status();
+    public string get_Text();
+    public string get_Description();
+}
+[ZoneDefinitionAttribute]
+public interface JetBrains.Platform.RdFramework.Actions.Frontend.IRdActionsFrontendZone {
+}
+public interface JetBrains.Platform.RdFramework.Actions.Frontend.IRdDataConstantProvider {
+    [NotNullAttribute]
+public abstract virtual IEnumerable`1<RdDataConstant> GetDataConstants();
+}
+[ZoneMarkerAttribute]
+public class JetBrains.Platform.RdFramework.Actions.Frontend.ZoneMarker : object {
+}
+public class JetBrains.Platform.RdFramework.Actions.SharedDataContextDataConstant : RdDataConstant {
+    [CompilerGeneratedAttribute]
+private Guid <Value>k__BackingField;
+    public Guid Value { get; }
+    public SharedDataContextDataConstant(Guid value);
+    [CompilerGeneratedAttribute]
+public Guid get_Value();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
