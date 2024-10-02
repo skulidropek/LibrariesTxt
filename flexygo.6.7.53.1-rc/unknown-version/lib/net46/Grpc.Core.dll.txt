@@ -1,0 +1,1671 @@
+public class Grpc.Core.CallInvocationDetails`2 : ValueType {
+    private Channel channel;
+    private string method;
+    private string host;
+    private Marshaller`1<TRequest> requestMarshaller;
+    private Marshaller`1<TResponse> responseMarshaller;
+    private CallOptions options;
+    public Channel Channel { get; }
+    public string Method { get; }
+    public string Host { get; }
+    public Marshaller`1<TRequest> RequestMarshaller { get; }
+    public Marshaller`1<TResponse> ResponseMarshaller { get; }
+    public CallOptions Options { get; }
+    public CallInvocationDetails`2(Channel channel, Method`2<TRequest, TResponse> method, CallOptions options);
+    public CallInvocationDetails`2(Channel channel, Method`2<TRequest, TResponse> method, string host, CallOptions options);
+    public CallInvocationDetails`2(Channel channel, string method, string host, Marshaller`1<TRequest> requestMarshaller, Marshaller`1<TResponse> responseMarshaller, CallOptions options);
+    public Channel get_Channel();
+    public string get_Method();
+    public string get_Host();
+    public Marshaller`1<TRequest> get_RequestMarshaller();
+    public Marshaller`1<TResponse> get_ResponseMarshaller();
+    public CallOptions get_Options();
+    public CallInvocationDetails`2<TRequest, TResponse> WithOptions(CallOptions options);
+}
+public static class Grpc.Core.Calls : object {
+    public static TResponse BlockingUnaryCall(CallInvocationDetails`2<TRequest, TResponse> call, TRequest req);
+    public static AsyncUnaryCall`1<TResponse> AsyncUnaryCall(CallInvocationDetails`2<TRequest, TResponse> call, TRequest req);
+    public static AsyncServerStreamingCall`1<TResponse> AsyncServerStreamingCall(CallInvocationDetails`2<TRequest, TResponse> call, TRequest req);
+    public static AsyncClientStreamingCall`2<TRequest, TResponse> AsyncClientStreamingCall(CallInvocationDetails`2<TRequest, TResponse> call);
+    public static AsyncDuplexStreamingCall`2<TRequest, TResponse> AsyncDuplexStreamingCall(CallInvocationDetails`2<TRequest, TResponse> call);
+}
+public class Grpc.Core.Channel : ChannelBase {
+    private static ILogger Logger;
+    private object myLock;
+    private AtomicCounter activeCallCounter;
+    private CancellationTokenSource shutdownTokenSource;
+    private GrpcEnvironment environment;
+    private CompletionQueueSafeHandle completionQueue;
+    private ChannelSafeHandle handle;
+    private Dictionary`2<string, ChannelOption> options;
+    private bool shutdownRequested;
+    private static BatchCompletionDelegate WatchConnectivityStateHandler;
+    public ChannelState State { get; }
+    public string ResolvedTarget { get; }
+    public CancellationToken ShutdownToken { get; }
+    internal ChannelSafeHandle Handle { get; }
+    internal GrpcEnvironment Environment { get; }
+    internal CompletionQueueSafeHandle CompletionQueue { get; }
+    public Channel(string target, ChannelCredentials credentials);
+    public Channel(string target, ChannelCredentials credentials, IEnumerable`1<ChannelOption> options);
+    public Channel(string host, int port, ChannelCredentials credentials);
+    public Channel(string host, int port, ChannelCredentials credentials, IEnumerable`1<ChannelOption> options);
+    private static Channel();
+    public ChannelState get_State();
+    [AsyncStateMachineAttribute("Grpc.Core.Channel/<WaitForStateChangedAsync>d__16")]
+public Task WaitForStateChangedAsync(ChannelState lastObservedState, Nullable`1<DateTime> deadline);
+    public Task`1<bool> TryWaitForStateChangedAsync(ChannelState lastObservedState, Nullable`1<DateTime> deadline);
+    public string get_ResolvedTarget();
+    public CancellationToken get_ShutdownToken();
+    [AsyncStateMachineAttribute("Grpc.Core.Channel/<ConnectAsync>d__22")]
+public Task ConnectAsync(Nullable`1<DateTime> deadline);
+    [AsyncStateMachineAttribute("Grpc.Core.Channel/<ShutdownAsyncCore>d__23")]
+protected virtual Task ShutdownAsyncCore();
+    public virtual CallInvoker CreateCallInvoker();
+    internal ChannelSafeHandle get_Handle();
+    internal GrpcEnvironment get_Environment();
+    internal CompletionQueueSafeHandle get_CompletionQueue();
+    internal void AddCallReference(object call);
+    internal void RemoveCallReference(object call);
+    internal long GetCallReferenceCount();
+    private ChannelState GetConnectivityState(bool tryToConnect);
+    private static void EnsureUserAgentChannelOption(Dictionary`2<string, ChannelOption> options);
+    private static Dictionary`2<string, ChannelOption> CreateOptionsDictionary(IEnumerable`1<ChannelOption> options);
+}
+public class Grpc.Core.ChannelOption : object {
+    private OptionType type;
+    private string name;
+    private int intValue;
+    private string stringValue;
+    public OptionType Type { get; }
+    public string Name { get; }
+    public int IntValue { get; }
+    public string StringValue { get; }
+    public ChannelOption(string name, string stringValue);
+    public ChannelOption(string name, int intValue);
+    public OptionType get_Type();
+    public string get_Name();
+    public int get_IntValue();
+    public string get_StringValue();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(ChannelOption other);
+    public virtual int GetHashCode();
+    public static bool op_Equality(ChannelOption option1, ChannelOption option2);
+    public static bool op_Inequality(ChannelOption option1, ChannelOption option2);
+}
+public static class Grpc.Core.ChannelOptions : object {
+    public static string SslTargetNameOverride;
+    public static string Census;
+    public static string MaxConcurrentStreams;
+    public static string MaxReceiveMessageLength;
+    public static string MaxSendMessageLength;
+    [ObsoleteAttribute("Use MaxReceiveMessageLength instead.")]
+public static string MaxMessageLength;
+    public static string Http2InitialSequenceNumber;
+    public static string DefaultAuthority;
+    public static string PrimaryUserAgentString;
+    public static string SecondaryUserAgentString;
+    public static string SoReuseport;
+    internal static ChannelArgsSafeHandle CreateChannelArgs(ICollection`1<ChannelOption> options);
+}
+public enum Grpc.Core.ChannelState : Enum {
+    public int value__;
+    public static ChannelState Idle;
+    public static ChannelState Connecting;
+    public static ChannelState Ready;
+    public static ChannelState TransientFailure;
+    public static ChannelState Shutdown;
+}
+public enum Grpc.Core.CompressionLevel : Enum {
+    public int value__;
+    public static CompressionLevel None;
+    public static CompressionLevel Low;
+    public static CompressionLevel Medium;
+    public static CompressionLevel High;
+}
+public class Grpc.Core.DefaultCallInvoker : CallInvoker {
+    private Channel channel;
+    public DefaultCallInvoker(Channel channel);
+    public virtual TResponse BlockingUnaryCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncUnaryCall`1<TResponse> AsyncUnaryCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncServerStreamingCall`1<TResponse> AsyncServerStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncClientStreamingCall`2<TRequest, TResponse> AsyncClientStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options);
+    public virtual AsyncDuplexStreamingCall`2<TRequest, TResponse> AsyncDuplexStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options);
+    protected virtual CallInvocationDetails`2<TRequest, TResponse> CreateCall(Method`2<TRequest, TResponse> method, string host, CallOptions options);
+}
+internal class Grpc.Core.DefaultServerCallContext : ServerCallContext {
+    private CallSafeHandle callHandle;
+    private string method;
+    private string host;
+    private DateTime deadline;
+    private Metadata requestHeaders;
+    private CancellationToken cancellationToken;
+    private Metadata responseTrailers;
+    private Status status;
+    private IServerResponseStream serverResponseStream;
+    private AuthContext lazyAuthContext;
+    protected string MethodCore { get; }
+    protected string HostCore { get; }
+    protected string PeerCore { get; }
+    protected DateTime DeadlineCore { get; }
+    protected Metadata RequestHeadersCore { get; }
+    protected CancellationToken CancellationTokenCore { get; }
+    protected Metadata ResponseTrailersCore { get; }
+    protected Status StatusCore { get; protected set; }
+    protected WriteOptions WriteOptionsCore { get; protected set; }
+    protected AuthContext AuthContextCore { get; }
+    internal DefaultServerCallContext(CallSafeHandle callHandle, string method, string host, DateTime deadline, Metadata requestHeaders, CancellationToken cancellationToken, IServerResponseStream serverResponseStream);
+    protected virtual ContextPropagationToken CreatePropagationTokenCore(ContextPropagationOptions options);
+    protected virtual Task WriteResponseHeadersAsyncCore(Metadata responseHeaders);
+    protected virtual string get_MethodCore();
+    protected virtual string get_HostCore();
+    protected virtual string get_PeerCore();
+    protected virtual DateTime get_DeadlineCore();
+    protected virtual Metadata get_RequestHeadersCore();
+    protected virtual CancellationToken get_CancellationTokenCore();
+    protected virtual Metadata get_ResponseTrailersCore();
+    protected virtual Status get_StatusCore();
+    protected virtual void set_StatusCore(Status value);
+    protected virtual WriteOptions get_WriteOptionsCore();
+    protected virtual void set_WriteOptionsCore(WriteOptions value);
+    protected virtual AuthContext get_AuthContextCore();
+    private AuthContext GetAuthContextEager();
+}
+public class Grpc.Core.GrpcEnvironment : object {
+    private static int MinDefaultThreadPoolSize;
+    private static int DefaultBatchContextPoolSharedCapacity;
+    private static int DefaultBatchContextPoolThreadLocalCapacity;
+    private static int DefaultRequestCallContextPoolSharedCapacity;
+    private static int DefaultRequestCallContextPoolThreadLocalCapacity;
+    private static object staticLock;
+    private static GrpcEnvironment instance;
+    private static int refCount;
+    private static Nullable`1<int> customThreadPoolSize;
+    private static Nullable`1<int> customCompletionQueueCount;
+    private static bool inlineHandlers;
+    private static int batchContextPoolSharedCapacity;
+    private static int batchContextPoolThreadLocalCapacity;
+    private static int requestCallContextPoolSharedCapacity;
+    private static int requestCallContextPoolThreadLocalCapacity;
+    private static HashSet`1<Channel> registeredChannels;
+    private static HashSet`1<Server> registeredServers;
+    private static AtomicCounter nativeInitCounter;
+    private static ILogger logger;
+    private IObjectPool`1<BatchContextSafeHandle> batchContextPool;
+    private IObjectPool`1<RequestCallContextSafeHandle> requestCallContextPool;
+    private GrpcThreadPool threadPool;
+    private DebugStats debugStats;
+    private AtomicCounter cqPickerCounter;
+    private bool isShutdown;
+    [CompilerGeneratedAttribute]
+private static EventHandler ShuttingDown;
+    public static ILogger Logger { get; }
+    internal IReadOnlyCollection`1<CompletionQueueSafeHandle> CompletionQueues { get; }
+    internal IObjectPool`1<BatchContextSafeHandle> BatchContextPool { get; }
+    internal IObjectPool`1<RequestCallContextSafeHandle> RequestCallContextPool { get; }
+    internal bool IsAlive { get; }
+    internal DebugStats DebugStats { get; }
+    private static bool IsNativeShutdownAllowed { get; }
+    private static GrpcEnvironment();
+    internal static GrpcEnvironment AddRef();
+    [AsyncStateMachineAttribute("Grpc.Core.GrpcEnvironment/<ReleaseAsync>d__26")]
+internal static Task ReleaseAsync();
+    internal static int GetRefCount();
+    internal static void RegisterChannel(Channel channel);
+    internal static void UnregisterChannel(Channel channel);
+    internal static void RegisterServer(Server server);
+    internal static void UnregisterServer(Server server);
+    public static Task ShutdownChannelsAsync();
+    public static Task KillServersAsync();
+    public static ILogger get_Logger();
+    public static void SetLogger(ILogger customLogger);
+    public static void SetThreadPoolSize(int threadCount);
+    public static void SetCompletionQueueCount(int completionQueueCount);
+    public static void SetHandlerInlining(bool inlineHandlers);
+    public static void SetBatchContextPoolParams(int sharedCapacity, int threadLocalCapacity);
+    public static void SetRequestCallContextPoolParams(int sharedCapacity, int threadLocalCapacity);
+    [CompilerGeneratedAttribute]
+public static void add_ShuttingDown(EventHandler value);
+    [CompilerGeneratedAttribute]
+public static void remove_ShuttingDown(EventHandler value);
+    internal IReadOnlyCollection`1<CompletionQueueSafeHandle> get_CompletionQueues();
+    internal IObjectPool`1<BatchContextSafeHandle> get_BatchContextPool();
+    internal IObjectPool`1<RequestCallContextSafeHandle> get_RequestCallContextPool();
+    internal bool get_IsAlive();
+    internal CompletionQueueSafeHandle PickCompletionQueue();
+    internal DebugStats get_DebugStats();
+    internal static string GetCoreVersionString();
+    internal static void GrpcNativeInit();
+    internal static void GrpcNativeShutdown();
+    [AsyncStateMachineAttribute("Grpc.Core.GrpcEnvironment/<ShutdownAsync>d__60")]
+private Task ShutdownAsync();
+    private int GetThreadPoolSizeOrDefault();
+    private int GetCompletionQueueCountOrDefault();
+    private static bool get_IsNativeShutdownAllowed();
+    [CompilerGeneratedAttribute]
+private void <ShutdownAsync>b__60_0();
+}
+[ExtensionAttribute]
+public static class Grpc.Core.Interceptors.ServerServiceDefinitionExtensions : object {
+    [ExtensionAttribute]
+public static ServerServiceDefinition Intercept(ServerServiceDefinition serverServiceDefinition, Interceptor interceptor);
+    [ExtensionAttribute]
+public static ServerServiceDefinition Intercept(ServerServiceDefinition serverServiceDefinition, Interceptor[] interceptors);
+}
+internal class Grpc.Core.Internal.AsyncCall`2 : AsyncCallBase`2<TRequest, TResponse> {
+    private static ILogger Logger;
+    private CallInvocationDetails`2<TRequest, TResponse> details;
+    private INativeCall injectedNativeCall;
+    private bool registeredWithChannel;
+    private CancellationTokenRegistration cancellationTokenRegistration;
+    private TaskCompletionSource`1<TResponse> unaryResponseTcs;
+    private TaskCompletionSource`1<object> streamingResponseCallFinishedTcs;
+    private TaskCompletionSource`1<Metadata> responseHeadersTcs;
+    private Nullable`1<ClientSideStatus> finishedStatus;
+    public Task StreamingResponseCallFinishedTask { get; }
+    public Task`1<Metadata> ResponseHeadersAsync { get; }
+    public CallInvocationDetails`2<TRequest, TResponse> Details { get; }
+    protected bool IsClient { get; }
+    private IUnaryResponseClientCallback UnaryResponseClientCallback { get; }
+    private IReceivedStatusOnClientCallback ReceivedStatusOnClientCallback { get; }
+    private IReceivedResponseHeadersCallback ReceivedResponseHeadersCallback { get; }
+    public AsyncCall`2(CallInvocationDetails`2<TRequest, TResponse> callDetails);
+    public AsyncCall`2(CallInvocationDetails`2<TRequest, TResponse> callDetails, INativeCall injectedNativeCall);
+    private static AsyncCall`2();
+    public TResponse UnaryCall(TRequest msg);
+    public Task`1<TResponse> UnaryCallAsync(TRequest msg);
+    public Task`1<TResponse> ClientStreamingCallAsync();
+    public void StartServerStreamingCall(TRequest msg);
+    public void StartDuplexStreamingCall();
+    public Task SendMessageAsync(TRequest msg, WriteFlags writeFlags);
+    public Task`1<TResponse> ReadMessageAsync();
+    public Task SendCloseFromClientAsync();
+    public Task get_StreamingResponseCallFinishedTask();
+    public Task`1<Metadata> get_ResponseHeadersAsync();
+    public Status GetStatus();
+    public Metadata GetTrailers();
+    public CallInvocationDetails`2<TRequest, TResponse> get_Details();
+    protected virtual void OnAfterReleaseResourcesLocked();
+    protected virtual void OnAfterReleaseResourcesUnlocked();
+    protected virtual bool get_IsClient();
+    protected virtual Exception GetRpcExceptionClientOnly();
+    protected virtual Task CheckSendAllowedOrEarlyResult();
+    private Task CheckSendPreconditionsClientSide();
+    private void Initialize(CompletionQueueSafeHandle cq);
+    private void OnFailedToStartCallLocked();
+    private INativeCall CreateNativeCall(CompletionQueueSafeHandle cq);
+    private void RegisterCancellationCallback();
+    private WriteFlags GetWriteFlagsForCall();
+    private void HandleReceivedResponseHeaders(bool success, Metadata responseHeaders);
+    private void HandleUnaryResponse(bool success, ClientSideStatus receivedStatus, IBufferReader receivedMessageReader, Metadata responseHeaders);
+    private void HandleFinished(bool success, ClientSideStatus receivedStatus);
+    private IUnaryResponseClientCallback get_UnaryResponseClientCallback();
+    private sealed virtual override void Grpc.Core.Internal.IUnaryResponseClientCallback.OnUnaryResponseClient(bool success, ClientSideStatus receivedStatus, IBufferReader receivedMessageReader, Metadata responseHeaders);
+    private IReceivedStatusOnClientCallback get_ReceivedStatusOnClientCallback();
+    private sealed virtual override void Grpc.Core.Internal.IReceivedStatusOnClientCallback.OnReceivedStatusOnClient(bool success, ClientSideStatus receivedStatus);
+    private IReceivedResponseHeadersCallback get_ReceivedResponseHeadersCallback();
+    private sealed virtual override void Grpc.Core.Internal.IReceivedResponseHeadersCallback.OnReceivedResponseHeaders(bool success, Metadata responseHeaders);
+    [CompilerGeneratedAttribute]
+private void <OnFailedToStartCallLocked>b__35_0(object state);
+}
+internal abstract class Grpc.Core.Internal.AsyncCallBase`2 : object {
+    private static ILogger Logger;
+    protected static Status DeserializeResponseFailureStatus;
+    private Action`2<TWrite, SerializationContext> serializer;
+    private Func`2<DeserializationContext, TRead> deserializer;
+    protected object myLock;
+    protected INativeCall call;
+    protected bool disposed;
+    protected bool started;
+    protected bool cancelRequested;
+    protected TaskCompletionSource`1<TRead> streamingReadTcs;
+    protected TaskCompletionSource`1<object> streamingWriteTcs;
+    protected TaskCompletionSource`1<object> sendStatusFromServerTcs;
+    protected bool isStreamingWriteCompletionDelayed;
+    protected bool readingDone;
+    protected bool halfcloseRequested;
+    protected bool finished;
+    protected bool initialMetadataSent;
+    protected long streamingWritesCounter;
+    protected bool receiveResponseHeadersPending;
+    private static Action`1<object> CancelCallFromToken;
+    protected bool IsClient { get; }
+    protected ISendCompletionCallback SendCompletionCallback { get; }
+    private IReceivedMessageCallback ReceivedMessageCallback { get; }
+    public AsyncCallBase`2(Action`2<TWrite, SerializationContext> serializer, Func`2<DeserializationContext, TRead> deserializer);
+    private static AsyncCallBase`2();
+    public void Cancel();
+    protected void CancelWithStatus(Status status);
+    protected void InitializeInternal(INativeCall call);
+    protected Task SendMessageInternalAsync(TWrite msg, WriteFlags writeFlags);
+    protected Task`1<TRead> ReadMessageInternalAsync();
+    protected bool ReleaseResourcesIfPossible();
+    protected abstract virtual bool get_IsClient();
+    protected abstract virtual Exception GetRpcExceptionClientOnly();
+    protected void ReleaseResources();
+    protected virtual void OnAfterReleaseResourcesLocked();
+    protected virtual void OnAfterReleaseResourcesUnlocked();
+    protected abstract virtual Task CheckSendAllowedOrEarlyResult();
+    protected SliceBufferSafeHandle UnsafeSerialize(TWrite msg, DefaultSerializationContext context);
+    protected Exception TryDeserialize(IBufferReader reader, TRead& msg);
+    protected void HandleSendFinished(bool success);
+    protected void HandleSendStatusFromServerFinished(bool success);
+    protected void HandleReadFinished(bool success, IBufferReader receivedMessageReader);
+    protected ISendCompletionCallback get_SendCompletionCallback();
+    private sealed virtual override void Grpc.Core.Internal.ISendCompletionCallback.OnSendCompletion(bool success);
+    private IReceivedMessageCallback get_ReceivedMessageCallback();
+    private sealed virtual override void Grpc.Core.Internal.IReceivedMessageCallback.OnReceivedMessage(bool success, IBufferReader receivedMessageReader);
+    internal CancellationTokenRegistration RegisterCancellationCallbackForToken(CancellationToken cancellationToken);
+}
+internal class Grpc.Core.Internal.AsyncCallServer`2 : AsyncCallBase`2<TResponse, TRequest> {
+    private TaskCompletionSource`1<object> finishedServersideTcs;
+    private CancellationTokenSource cancellationTokenSource;
+    private Server server;
+    public CancellationToken CancellationToken { get; }
+    public string Peer { get; }
+    protected bool IsClient { get; }
+    private IReceivedCloseOnServerCallback ReceiveCloseOnServerCallback { get; }
+    private ISendStatusFromServerCompletionCallback SendStatusFromServerCompletionCallback { get; }
+    public AsyncCallServer`2(Action`2<TResponse, SerializationContext> serializer, Func`2<DeserializationContext, TRequest> deserializer, Server server);
+    public void Initialize(CallSafeHandle call, CompletionQueueSafeHandle completionQueue);
+    public void InitializeForTesting(INativeCall call);
+    public Task ServerSideCallAsync();
+    public Task SendMessageAsync(TResponse msg, WriteFlags writeFlags);
+    public Task`1<TRequest> ReadMessageAsync();
+    public Task SendInitialMetadataAsync(Metadata headers);
+    public Task SendStatusFromServerAsync(Status status, Metadata trailers, Nullable`1<ResponseWithFlags<TRequest, TResponse>> optionalWrite);
+    public CancellationToken get_CancellationToken();
+    public string get_Peer();
+    protected virtual bool get_IsClient();
+    protected virtual Exception GetRpcExceptionClientOnly();
+    protected virtual void OnAfterReleaseResourcesLocked();
+    protected virtual Task CheckSendAllowedOrEarlyResult();
+    private void HandleFinishedServerside(bool success, bool cancelled);
+    private IReceivedCloseOnServerCallback get_ReceiveCloseOnServerCallback();
+    private sealed virtual override void Grpc.Core.Internal.IReceivedCloseOnServerCallback.OnReceivedCloseOnServer(bool success, bool cancelled);
+    private ISendStatusFromServerCompletionCallback get_SendStatusFromServerCompletionCallback();
+    private sealed virtual override void Grpc.Core.Internal.ISendStatusFromServerCompletionCallback.OnSendStatusFromServerCompletion(bool success);
+}
+internal class Grpc.Core.Internal.AtomicCounter : object {
+    private long counter;
+    public long Count { get; }
+    public AtomicCounter(long initialCount);
+    public long Increment();
+    public void IncrementIfNonzero(Boolean& success);
+    public long Decrement();
+    public long get_Count();
+}
+internal class Grpc.Core.Internal.AuthContextSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static AuthContextSafeHandle();
+    public AuthContext ToAuthContext();
+    protected virtual bool ReleaseHandle();
+    private AuthProperty PtrToAuthProperty(IntPtr authPropertyPtr);
+}
+internal class Grpc.Core.Internal.BatchCompletionDelegate : MulticastDelegate {
+    public BatchCompletionDelegate(object object, IntPtr method);
+    public virtual void Invoke(bool success, BatchContextSafeHandle ctx, object state);
+    public virtual IAsyncResult BeginInvoke(bool success, BatchContextSafeHandle ctx, object state, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.BatchContextSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ILogger Logger;
+    private Action`1<BatchContextSafeHandle> returnToPoolAction;
+    private CompletionCallbackData completionCallbackData;
+    public IntPtr Handle { get; }
+    private Nullable`1<int> Grpc.Core.Internal.IBufferReader.TotalLength { get; }
+    private static BatchContextSafeHandle();
+    public static BatchContextSafeHandle Create();
+    public IntPtr get_Handle();
+    public sealed virtual void SetReturnToPoolAction(Action`1<BatchContextSafeHandle> returnAction);
+    public void SetCompletionCallback(BatchCompletionDelegate callback, object state);
+    public Metadata GetReceivedInitialMetadata();
+    public ClientSideStatus GetReceivedStatusOnClient();
+    public IBufferReader GetReceivedMessageReader();
+    public bool GetReceivedCloseOnServerCancelled();
+    public void Recycle();
+    protected virtual bool ReleaseHandle();
+    private sealed virtual override void Grpc.Core.Internal.IOpCompletionCallback.OnComplete(bool success);
+    private sealed virtual override Nullable`1<int> Grpc.Core.Internal.IBufferReader.get_TotalLength();
+    private sealed virtual override bool Grpc.Core.Internal.IBufferReader.TryGetNextSlice(Slice& slice);
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.CallCredentialsExtensions : object {
+    [ExtensionAttribute]
+public static CallCredentialsSafeHandle ToNativeCredentials(CallCredentials credentials);
+}
+internal class Grpc.Core.Internal.CallCredentialsSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static CallCredentialsSafeHandle();
+    public static CallCredentialsSafeHandle CreateComposite(CallCredentialsSafeHandle creds1, CallCredentialsSafeHandle creds2);
+    protected virtual bool ReleaseHandle();
+}
+internal enum Grpc.Core.Internal.CallError : Enum {
+    public int value__;
+    public static CallError OK;
+    public static CallError Error;
+    public static CallError NotOnServer;
+    public static CallError NotOnClient;
+    public static CallError AlreadyAccepted;
+    public static CallError AlreadyInvoked;
+    public static CallError NotInvoked;
+    public static CallError AlreadyFinished;
+    public static CallError TooManyOperations;
+    public static CallError InvalidFlags;
+    public static CallError InvalidMetadata;
+    public static CallError InvalidMessage;
+    public static CallError NotServerCompletionQueue;
+    public static CallError BatchTooBig;
+    public static CallError PayloadTypeMismatch;
+    public static CallError CompletionQueueShutdown;
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.CallErrorExtensions : object {
+    [ExtensionAttribute]
+public static void CheckOk(CallError callError);
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.CallOptionsExtensions : object {
+    [ExtensionAttribute]
+internal static CallOptions Normalize(CallOptions options);
+}
+internal class Grpc.Core.Internal.CallSafeHandle : SafeHandleZeroIsInvalid {
+    public static CallSafeHandle NullInstance;
+    private static NativeMethods Native;
+    private static BatchCompletionDelegate CompletionHandler_IUnaryResponseClientCallback;
+    private static BatchCompletionDelegate CompletionHandler_IReceivedStatusOnClientCallback;
+    private static BatchCompletionDelegate CompletionHandler_IReceivedMessageCallback;
+    private static BatchCompletionDelegate CompletionHandler_IReceivedResponseHeadersCallback;
+    private static BatchCompletionDelegate CompletionHandler_ISendCompletionCallback;
+    private static BatchCompletionDelegate CompletionHandler_ISendStatusFromServerCompletionCallback;
+    private static BatchCompletionDelegate CompletionHandler_IReceivedCloseOnServerCallback;
+    private static UInt32 GRPC_WRITE_BUFFER_HINT;
+    private CompletionQueueSafeHandle completionQueue;
+    private static CallSafeHandle();
+    public void Initialize(CompletionQueueSafeHandle completionQueue);
+    public void SetCredentials(CallCredentialsSafeHandle credentials);
+    public sealed virtual void StartUnary(IUnaryResponseClientCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public sealed virtual void StartUnary(BatchContextSafeHandle ctx, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public sealed virtual void StartClientStreaming(IUnaryResponseClientCallback callback, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public sealed virtual void StartServerStreaming(IReceivedStatusOnClientCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public sealed virtual void StartDuplexStreaming(IReceivedStatusOnClientCallback callback, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public sealed virtual void StartSendMessage(ISendCompletionCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, bool sendEmptyInitialMetadata);
+    public sealed virtual void StartSendCloseFromClient(ISendCompletionCallback callback);
+    public sealed virtual void StartSendStatusFromServer(ISendStatusFromServerCompletionCallback callback, Status status, MetadataArraySafeHandle metadataArray, bool sendEmptyInitialMetadata, SliceBufferSafeHandle optionalPayload, WriteFlags writeFlags);
+    public sealed virtual void StartReceiveMessage(IReceivedMessageCallback callback);
+    public sealed virtual void StartReceiveInitialMetadata(IReceivedResponseHeadersCallback callback);
+    public sealed virtual void StartServerSide(IReceivedCloseOnServerCallback callback);
+    public sealed virtual void StartSendInitialMetadata(ISendCompletionCallback callback, MetadataArraySafeHandle metadataArray);
+    public sealed virtual void Cancel();
+    public sealed virtual void CancelWithStatus(Status status);
+    public sealed virtual string GetPeer();
+    public AuthContextSafeHandle GetAuthContext();
+    protected virtual bool ReleaseHandle();
+    private static UInt32 GetFlags(bool buffered);
+    public static CallSafeHandle CreateFake(IntPtr ptr, CompletionQueueSafeHandle cq);
+}
+internal class Grpc.Core.Internal.ChannelArgsSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ChannelArgsSafeHandle();
+    public static ChannelArgsSafeHandle CreateNull();
+    public static ChannelArgsSafeHandle Create(int size);
+    public void SetString(int index, string key, string value);
+    public void SetInteger(int index, string key, int value);
+    protected virtual bool ReleaseHandle();
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.ChannelCredentialsExtensions : object {
+    [ExtensionAttribute]
+public static ChannelCredentialsSafeHandle ToNativeCredentials(ChannelCredentials credentials);
+}
+internal class Grpc.Core.Internal.ChannelCredentialsSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ChannelCredentialsSafeHandle();
+    public static ChannelCredentialsSafeHandle CreateNullCredentials();
+    public static ChannelCredentialsSafeHandle CreateSslCredentials(string pemRootCerts, KeyCertificatePair keyCertPair, IntPtr verifyPeerCallbackTag);
+    public static ChannelCredentialsSafeHandle CreateComposite(ChannelCredentialsSafeHandle channelCreds, CallCredentialsSafeHandle callCreds);
+    protected virtual bool ReleaseHandle();
+}
+internal class Grpc.Core.Internal.ChannelSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ChannelSafeHandle();
+    public static ChannelSafeHandle CreateInsecure(string target, ChannelArgsSafeHandle channelArgs);
+    public static ChannelSafeHandle CreateSecure(ChannelCredentialsSafeHandle credentials, string target, ChannelArgsSafeHandle channelArgs);
+    public CallSafeHandle CreateCall(CallSafeHandle parentCall, ContextPropagationFlags propagationMask, CompletionQueueSafeHandle cq, string method, string host, Timespec deadline, CallCredentialsSafeHandle credentials);
+    public ChannelState CheckConnectivityState(bool tryToConnect);
+    public void WatchConnectivityState(ChannelState lastObservedState, Timespec deadline, CompletionQueueSafeHandle cq, BatchCompletionDelegate callback, object callbackState);
+    public string GetTarget();
+    protected virtual bool ReleaseHandle();
+}
+internal class Grpc.Core.Internal.ClientRequestStream`2 : object {
+    private AsyncCall`2<TRequest, TResponse> call;
+    private WriteOptions writeOptions;
+    public WriteOptions WriteOptions { get; public set; }
+    public ClientRequestStream`2(AsyncCall`2<TRequest, TResponse> call);
+    public sealed virtual Task WriteAsync(TRequest message);
+    public sealed virtual Task CompleteAsync();
+    public sealed virtual WriteOptions get_WriteOptions();
+    public sealed virtual void set_WriteOptions(WriteOptions value);
+    private WriteFlags GetWriteFlags();
+}
+internal class Grpc.Core.Internal.ClientResponseStream`2 : object {
+    private AsyncCall`2<TRequest, TResponse> call;
+    private TResponse current;
+    public TResponse Current { get; }
+    public ClientResponseStream`2(AsyncCall`2<TRequest, TResponse> call);
+    public sealed virtual TResponse get_Current();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.ClientResponseStream`2/<MoveNext>d__5")]
+public sealed virtual Task`1<bool> MoveNext(CancellationToken token);
+    public void Dispose();
+}
+internal class Grpc.Core.Internal.ClientSideStatus : ValueType {
+    private Status status;
+    private Metadata trailers;
+    public Status Status { get; }
+    public Metadata Trailers { get; }
+    public ClientSideStatus(Status status, Metadata trailers);
+    public Status get_Status();
+    public Metadata get_Trailers();
+}
+internal class Grpc.Core.Internal.ClientStreamingServerCallHandler`2 : object {
+    private static ILogger Logger;
+    private Method`2<TRequest, TResponse> method;
+    private ClientStreamingServerMethod`2<TRequest, TResponse> handler;
+    public ClientStreamingServerCallHandler`2(Method`2<TRequest, TResponse> method, ClientStreamingServerMethod`2<TRequest, TResponse> handler);
+    private static ClientStreamingServerCallHandler`2();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.ClientStreamingServerCallHandler`2/<HandleCall>d__4")]
+public sealed virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal enum Grpc.Core.Internal.ClockType : Enum {
+    public int value__;
+    public static ClockType Monotonic;
+    public static ClockType Realtime;
+    public static ClockType Precise;
+    public static ClockType Timespan;
+}
+internal static class Grpc.Core.Internal.CommonPlatformDetection : object {
+    public static OSKind GetOSKind();
+    public static CpuArchitecture GetProcessArchitecture();
+    private static int uname(IntPtr buf);
+    private static string GetUname();
+}
+internal class Grpc.Core.Internal.CompletionQueueEvent : ValueType {
+    private static NativeMethods Native;
+    public CompletionType type;
+    public int success;
+    public IntPtr tag;
+    internal static int NativeSize { get; }
+    private static CompletionQueueEvent();
+    internal static int get_NativeSize();
+}
+internal class Grpc.Core.Internal.CompletionQueueSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private AtomicCounter shutdownRefcount;
+    private CompletionRegistry completionRegistry;
+    public CompletionRegistry CompletionRegistry { get; }
+    private static CompletionQueueSafeHandle();
+    public static CompletionQueueSafeHandle CreateSync();
+    public static CompletionQueueSafeHandle CreateAsync(CompletionRegistry completionRegistry);
+    public CompletionQueueEvent Next();
+    public CompletionQueueEvent Pluck(IntPtr tag);
+    public UsageScope NewScope();
+    public void Shutdown();
+    public CompletionRegistry get_CompletionRegistry();
+    protected virtual bool ReleaseHandle();
+    private void DecrementShutdownRefcount();
+    private void BeginOp();
+    private void EndOp();
+}
+internal class Grpc.Core.Internal.CompletionRegistry : object {
+    private static ILogger Logger;
+    private GrpcEnvironment environment;
+    private Func`1<BatchContextSafeHandle> batchContextFactory;
+    private Func`1<RequestCallContextSafeHandle> requestCallContextFactory;
+    private Dictionary`2<IntPtr, IOpCompletionCallback> dict;
+    private SpinLock spinLock;
+    private IntPtr lastRegisteredKey;
+    public IntPtr LastRegisteredKey { get; }
+    public CompletionRegistry(GrpcEnvironment environment, Func`1<BatchContextSafeHandle> batchContextFactory, Func`1<RequestCallContextSafeHandle> requestCallContextFactory);
+    private static CompletionRegistry();
+    public void Register(IntPtr key, IOpCompletionCallback callback);
+    public BatchContextSafeHandle RegisterBatchCompletion(BatchCompletionDelegate callback, object state);
+    public RequestCallContextSafeHandle RegisterRequestCallCompletion(RequestCallCompletionDelegate callback);
+    public IOpCompletionCallback Extract(IntPtr key);
+    public IntPtr get_LastRegisteredKey();
+}
+[FlagsAttribute]
+internal enum Grpc.Core.Internal.ContextPropagationFlags : Enum {
+    public int value__;
+    public static ContextPropagationFlags Deadline;
+    public static ContextPropagationFlags CensusStatsContext;
+    public static ContextPropagationFlags CensusTracingContext;
+    public static ContextPropagationFlags Cancellation;
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.ContextPropagationTokenExtensions : object {
+    [ExtensionAttribute]
+public static ContextPropagationTokenImpl AsImplOrNull(ContextPropagationToken instanceOrNull);
+}
+internal class Grpc.Core.Internal.ContextPropagationTokenImpl : ContextPropagationToken {
+    private static ContextPropagationFlags DefaultCoreMask;
+    internal static ContextPropagationFlags DefaultMask;
+    private CallSafeHandle parentCall;
+    private DateTime deadline;
+    private CancellationToken cancellationToken;
+    private ContextPropagationOptions options;
+    internal CallSafeHandle ParentCall { get; }
+    internal DateTime ParentDeadline { get; }
+    internal CancellationToken ParentCancellationToken { get; }
+    internal ContextPropagationOptions Options { get; }
+    internal ContextPropagationTokenImpl(CallSafeHandle parentCall, DateTime deadline, CancellationToken cancellationToken, ContextPropagationOptions options);
+    internal CallSafeHandle get_ParentCall();
+    internal DateTime get_ParentDeadline();
+    internal CancellationToken get_ParentCancellationToken();
+    internal ContextPropagationOptions get_Options();
+}
+internal class Grpc.Core.Internal.CoreErrorDetailException : Exception {
+    public CoreErrorDetailException(string message);
+}
+internal class Grpc.Core.Internal.CStringSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static CStringSafeHandle();
+    public string GetValue();
+    protected virtual bool ReleaseHandle();
+}
+internal class Grpc.Core.Internal.DebugStats : object {
+    public AtomicCounter PendingBatchCompletions;
+    public void CheckOK();
+    private void DebugWarning(string message);
+}
+internal class Grpc.Core.Internal.DefaultCallCredentialsConfigurator : CallCredentialsConfiguratorBase {
+    private CallCredentialsSafeHandle nativeCredentials;
+    public CallCredentialsSafeHandle NativeCredentials { get; }
+    public CallCredentialsSafeHandle get_NativeCredentials();
+    public virtual void SetAsyncAuthInterceptorCredentials(object state, AsyncAuthInterceptor interceptor);
+    public virtual void SetCompositeCredentials(object state, IReadOnlyList`1<CallCredentials> credentials);
+    private CallCredentialsSafeHandle CompositeToNativeRecursive(IReadOnlyList`1<CallCredentials> credentials, int startIndex);
+}
+internal class Grpc.Core.Internal.DefaultChannelCredentialsConfigurator : ChannelCredentialsConfiguratorBase {
+    private static ILogger Logger;
+    private static ConditionalWeakTable`2<ChannelCredentials, Lazy`1<ChannelCredentialsSafeHandle>> CachedNativeCredentials;
+    private static object StaticLock;
+    private bool configured;
+    private ChannelCredentialsSafeHandle nativeCredentials;
+    public ChannelCredentialsSafeHandle NativeCredentials { get; }
+    private static DefaultChannelCredentialsConfigurator();
+    public ChannelCredentialsSafeHandle get_NativeCredentials();
+    public virtual void SetInsecureCredentials(object state);
+    public virtual void SetSslCredentials(object state, string rootCertificates, KeyCertificatePair keyCertificatePair, VerifyPeerCallback verifyPeerCallback);
+    public virtual void SetCompositeCredentials(object state, ChannelCredentials channelCredentials, CallCredentials callCredentials);
+    private ChannelCredentialsSafeHandle CreateNativeSslCredentials(string rootCertificates, KeyCertificatePair keyCertificatePair, VerifyPeerCallback verifyPeerCallback);
+    private ChannelCredentialsSafeHandle CreateNativeCompositeCredentials(ChannelCredentials channelCredentials, CallCredentials callCredentials);
+    private ChannelCredentialsSafeHandle GetOrCreateNativeCredentials(ChannelCredentials key, Func`1<ChannelCredentialsSafeHandle> nativeCredentialsFactory);
+}
+internal class Grpc.Core.Internal.DefaultDeserializationContext : DeserializationContext {
+    private static ThreadLocal`1<DefaultDeserializationContext> threadLocalInstance;
+    private IBufferReader bufferReader;
+    private int payloadLength;
+    private ReusableSliceBuffer cachedSliceBuffer;
+    public int PayloadLength { get; }
+    private static DefaultDeserializationContext();
+    public virtual int get_PayloadLength();
+    public virtual Byte[] PayloadAsNewBuffer();
+    public virtual ReadOnlySequence`1<byte> PayloadAsReadOnlySequence();
+    public void Initialize(IBufferReader bufferReader);
+    public void Reset();
+    public static DefaultDeserializationContext GetInitializedThreadLocal(IBufferReader bufferReader);
+}
+internal class Grpc.Core.Internal.DefaultObjectPool`1 : object {
+    private object myLock;
+    private Action`1<T> returnAction;
+    private Func`1<T> itemFactory;
+    private Queue`1<T> sharedQueue;
+    private int sharedCapacity;
+    private ThreadLocal`1<ThreadLocalData<T>> threadLocalData;
+    private int threadLocalCapacity;
+    private int rentLimit;
+    private bool disposed;
+    public DefaultObjectPool`1(Func`1<T> itemFactory, int sharedCapacity, int threadLocalCapacity);
+    public sealed virtual T Lease();
+    private T LeaseInternal();
+    public sealed virtual void Return(T item);
+    public sealed virtual void Dispose();
+}
+internal class Grpc.Core.Internal.DefaultSerializationContext : SerializationContext {
+    private static ThreadLocal`1<DefaultSerializationContext> threadLocalInstance;
+    private bool isComplete;
+    private SliceBufferSafeHandle sliceBuffer;
+    private static DefaultSerializationContext();
+    public virtual void Complete(Byte[] payload);
+    public virtual IBufferWriter`1<byte> GetBufferWriter();
+    public virtual void SetPayloadLength(int payloadLength);
+    public virtual void Complete();
+    internal SliceBufferSafeHandle GetPayload();
+    public void Reset();
+    public static UsageScope GetInitializedThreadLocalScope();
+}
+internal static class Grpc.Core.Internal.DefaultSslRootsOverride : object {
+    private static string RootsPemResourceName;
+    private static object staticLock;
+    private static DefaultSslRootsOverride();
+    public static void Override(NativeMethods native);
+}
+internal class Grpc.Core.Internal.DuplexStreamingServerCallHandler`2 : object {
+    private static ILogger Logger;
+    private Method`2<TRequest, TResponse> method;
+    private DuplexStreamingServerMethod`2<TRequest, TResponse> handler;
+    public DuplexStreamingServerCallHandler`2(Method`2<TRequest, TResponse> method, DuplexStreamingServerMethod`2<TRequest, TResponse> handler);
+    private static DuplexStreamingServerCallHandler`2();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.DuplexStreamingServerCallHandler`2/<HandleCall>d__4")]
+public sealed virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal class Grpc.Core.Internal.GprLogDelegate : MulticastDelegate {
+    public GprLogDelegate(object object, IntPtr method);
+    public virtual void Invoke(IntPtr fileStringPtr, int line, ulong threadId, IntPtr severityStringPtr, IntPtr msgPtr);
+    public virtual IAsyncResult BeginInvoke(IntPtr fileStringPtr, int line, ulong threadId, IntPtr severityStringPtr, IntPtr msgPtr, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.GrpcThreadPool : object {
+    private static ILogger Logger;
+    private static int FinishContinuationsSleepMillis;
+    private static int MaxFinishContinuationsSleepTotalMillis;
+    private GrpcEnvironment environment;
+    private object myLock;
+    private List`1<Thread> threads;
+    private int poolSize;
+    private int completionQueueCount;
+    private bool inlineHandlers;
+    private WaitCallback runCompletionQueueEventCallbackSuccess;
+    private WaitCallback runCompletionQueueEventCallbackFailure;
+    private AtomicCounter queuedContinuationCounter;
+    private List`1<BasicProfiler> threadProfilers;
+    private bool stopRequested;
+    private IReadOnlyCollection`1<CompletionQueueSafeHandle> completionQueues;
+    internal bool IsAlive { get; }
+    internal IReadOnlyCollection`1<CompletionQueueSafeHandle> CompletionQueues { get; }
+    public GrpcThreadPool(GrpcEnvironment environment, int poolSize, int completionQueueCount, bool inlineHandlers);
+    private static GrpcThreadPool();
+    public void Start();
+    public Task StopAsync();
+    internal bool get_IsAlive();
+    internal IReadOnlyCollection`1<CompletionQueueSafeHandle> get_CompletionQueues();
+    private Thread CreateAndStartThread(int threadIndex, IProfiler optionalProfiler);
+    private void RunHandlerLoop(CompletionQueueSafeHandle cq, IProfiler optionalProfiler);
+    private static IReadOnlyCollection`1<CompletionQueueSafeHandle> CreateCompletionQueueList(GrpcEnvironment environment, int completionQueueCount);
+    private void RunCompletionQueueEventCallback(IOpCompletionCallback callback, bool success);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__15_0(object callback);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__15_1(object callback);
+    [CompilerGeneratedAttribute]
+private void <StopAsync>b__17_0();
+}
+internal static class Grpc.Core.Internal.HandlerUtils : object {
+    public static Status GetStatusFromExceptionAndMergeTrailers(Exception e, Metadata callContextResponseTrailers);
+    public static WriteFlags GetWriteFlags(WriteOptions writeOptions);
+    public static ServerCallContext NewContext(ServerRpcNew newRpc, IServerResponseStream serverResponseStream, CancellationToken cancellationToken);
+}
+internal interface Grpc.Core.Internal.IBufferReader {
+    public Nullable`1<int> TotalLength { get; }
+    public abstract virtual Nullable`1<int> get_TotalLength();
+    public abstract virtual bool TryGetNextSlice(Slice& slice);
+}
+internal interface Grpc.Core.Internal.INativeCall {
+    public abstract virtual void Cancel();
+    public abstract virtual void CancelWithStatus(Status status);
+    public abstract virtual string GetPeer();
+    public abstract virtual void StartUnary(IUnaryResponseClientCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public abstract virtual void StartUnary(BatchContextSafeHandle ctx, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public abstract virtual void StartClientStreaming(IUnaryResponseClientCallback callback, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public abstract virtual void StartServerStreaming(IReceivedStatusOnClientCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public abstract virtual void StartDuplexStreaming(IReceivedStatusOnClientCallback callback, MetadataArraySafeHandle metadataArray, CallFlags callFlags);
+    public abstract virtual void StartReceiveMessage(IReceivedMessageCallback callback);
+    public abstract virtual void StartReceiveInitialMetadata(IReceivedResponseHeadersCallback callback);
+    public abstract virtual void StartSendInitialMetadata(ISendCompletionCallback callback, MetadataArraySafeHandle metadataArray);
+    public abstract virtual void StartSendMessage(ISendCompletionCallback callback, SliceBufferSafeHandle payload, WriteFlags writeFlags, bool sendEmptyInitialMetadata);
+    public abstract virtual void StartSendCloseFromClient(ISendCompletionCallback callback);
+    public abstract virtual void StartSendStatusFromServer(ISendStatusFromServerCompletionCallback callback, Status status, MetadataArraySafeHandle metadataArray, bool sendEmptyInitialMetadata, SliceBufferSafeHandle optionalPayload, WriteFlags writeFlags);
+    public abstract virtual void StartServerSide(IReceivedCloseOnServerCallback callback);
+}
+internal interface Grpc.Core.Internal.IObjectPool`1 {
+    public abstract virtual T Lease();
+    public abstract virtual void Return(T item);
+}
+internal interface Grpc.Core.Internal.IOpCompletionCallback {
+    public abstract virtual void OnComplete(bool success);
+}
+internal interface Grpc.Core.Internal.IPooledObject`1 {
+    public abstract virtual void SetReturnToPoolAction(Action`1<T> returnAction);
+}
+internal interface Grpc.Core.Internal.IReceivedCloseOnServerCallback {
+    public abstract virtual void OnReceivedCloseOnServer(bool success, bool cancelled);
+}
+internal interface Grpc.Core.Internal.IReceivedMessageCallback {
+    public abstract virtual void OnReceivedMessage(bool success, IBufferReader receivedMessageReader);
+}
+internal interface Grpc.Core.Internal.IReceivedResponseHeadersCallback {
+    public abstract virtual void OnReceivedResponseHeaders(bool success, Metadata responseHeaders);
+}
+internal interface Grpc.Core.Internal.IReceivedStatusOnClientCallback {
+    public abstract virtual void OnReceivedStatusOnClient(bool success, ClientSideStatus receivedStatus);
+}
+internal interface Grpc.Core.Internal.ISendCompletionCallback {
+    public abstract virtual void OnSendCompletion(bool success);
+}
+internal interface Grpc.Core.Internal.ISendStatusFromServerCompletionCallback {
+    public abstract virtual void OnSendStatusFromServerCompletion(bool success);
+}
+internal interface Grpc.Core.Internal.IServerCallHandler {
+    public abstract virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal interface Grpc.Core.Internal.IServerResponseStream {
+    public WriteOptions WriteOptions { get; public set; }
+    public abstract virtual Task WriteResponseHeadersAsync(Metadata responseHeaders);
+    public abstract virtual WriteOptions get_WriteOptions();
+    public abstract virtual void set_WriteOptions(WriteOptions value);
+}
+internal interface Grpc.Core.Internal.IUnaryResponseClientCallback {
+    public abstract virtual void OnUnaryResponseClient(bool success, ClientSideStatus receivedStatus, IBufferReader receivedMessageReader, Metadata responseHeaders);
+}
+internal static class Grpc.Core.Internal.MarshalUtils : object {
+    private static Encoding EncodingUTF8;
+    private static MarshalUtils();
+    public static string PtrToStringUTF8(IntPtr ptr, int len);
+    public static int GetBytesUTF8(string str, Byte* destination, int destinationLength);
+    public static int GetMaxByteCountUTF8(string str);
+    public static int GetByteCountUTF8(string str);
+}
+internal class Grpc.Core.Internal.MetadataArraySafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    internal IntPtr Handle { get; }
+    private static MetadataArraySafeHandle();
+    public static MetadataArraySafeHandle Create(Metadata metadata);
+    public static Metadata ReadMetadataFromPtrUnsafe(IntPtr metadataArray);
+    internal IntPtr get_Handle();
+    protected virtual bool ReleaseHandle();
+}
+[AttributeUsageAttribute("64")]
+internal class Grpc.Core.Internal.MonoPInvokeCallbackAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private Type <Type>k__BackingField;
+    public Type Type { get; private set; }
+    public MonoPInvokeCallbackAttribute(Type type);
+    [CompilerGeneratedAttribute]
+public Type get_Type();
+    [CompilerGeneratedAttribute]
+private void set_Type(Type value);
+}
+internal class Grpc.Core.Internal.NativeCallbackDispatcher : object {
+    private static ILogger Logger;
+    private static NativeCallbackDispatcherCallback dispatcherCallback;
+    private static NativeCallbackDispatcher();
+    public static void Init(NativeMethods native);
+    public static NativeCallbackRegistration RegisterCallback(UniversalNativeCallback callback);
+    [MonoPInvokeCallbackAttribute("Grpc.Core.Internal.NativeCallbackDispatcherCallback")]
+private static int HandleDispatcherCallback(IntPtr tag, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5);
+}
+internal class Grpc.Core.Internal.NativeCallbackDispatcherCallback : MulticastDelegate {
+    public NativeCallbackDispatcherCallback(object object, IntPtr method);
+    public virtual int Invoke(IntPtr tag, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5);
+    public virtual IAsyncResult BeginInvoke(IntPtr tag, IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, AsyncCallback callback, object object);
+    public virtual int EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.NativeCallbackRegistration : object {
+    private GCHandle handle;
+    public IntPtr Tag { get; }
+    public NativeCallbackRegistration(GCHandle handle);
+    public IntPtr get_Tag();
+    public sealed virtual void Dispose();
+}
+internal class Grpc.Core.Internal.NativeCallbackTestDelegate : MulticastDelegate {
+    public NativeCallbackTestDelegate(object object, IntPtr method);
+    public virtual void Invoke(bool success);
+    public virtual IAsyncResult BeginInvoke(bool success, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.NativeExtension : object {
+    private static string CsharpExtOverrideLocationEnvVarName;
+    private static ILogger Logger;
+    private static object staticLock;
+    private static NativeExtension modreq(System.Runtime.CompilerServices.IsVolatile) instance;
+    private NativeMethods nativeMethods;
+    public NativeMethods NativeMethods { get; }
+    private static NativeExtension();
+    public static NativeExtension Get();
+    public NativeMethods get_NativeMethods();
+    private static NativeMethods LoadNativeMethodsUsingExplicitLoad();
+    private static NativeMethods LoadNativeMethodsUsingDllImports();
+    private static NativeMethods LoadNativeMethods();
+    private static NativeMethods LoadNativeMethodsUnity();
+    private static NativeMethods LoadNativeMethodsXamarin();
+    private static string GetAssemblyDirectory();
+    private static bool IsNet5SingleFileApp();
+    private static bool IsFileUri(string uri);
+    private static string GetRuntimeIdString();
+    private static string GetArchitectureString();
+    private static string GetNativeLibraryFilename();
+}
+internal static class Grpc.Core.Internal.NativeLogRedirector : object {
+    private static object staticLock;
+    private static GprLogDelegate writeCallback;
+    private static NativeLogRedirector();
+    public static void Redirect(NativeMethods native);
+    [MonoPInvokeCallbackAttribute("Grpc.Core.Internal.GprLogDelegate")]
+private static void HandleWrite(IntPtr fileStringPtr, int line, ulong threadId, IntPtr severityStringPtr, IntPtr msgPtr);
+}
+internal class Grpc.Core.Internal.NativeMetadataCredentialsPlugin : object {
+    private static string GetMetadataExceptionStatusMsg;
+    private static string GetMetadataExceptionLogMsg;
+    private static ILogger Logger;
+    private static NativeMethods Native;
+    private AsyncAuthInterceptor interceptor;
+    private CallCredentialsSafeHandle credentials;
+    private NativeCallbackRegistration callbackRegistration;
+    public CallCredentialsSafeHandle Credentials { get; }
+    public NativeMetadataCredentialsPlugin(AsyncAuthInterceptor interceptor);
+    private static NativeMetadataCredentialsPlugin();
+    public CallCredentialsSafeHandle get_Credentials();
+    private int HandleUniversalCallback(IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5);
+    private void NativeMetadataInterceptorHandler(IntPtr serviceUrlPtr, IntPtr methodNamePtr, IntPtr callbackPtr, IntPtr userDataPtr, bool isDestroy);
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.NativeMetadataCredentialsPlugin/<GetMetadataAsync>d__12")]
+private Task GetMetadataAsync(AuthInterceptorContext context, IntPtr callbackPtr, IntPtr userDataPtr);
+}
+internal class Grpc.Core.Internal.NativeMethods : object {
+    public grpcsharp_init_delegate grpcsharp_init;
+    public grpcsharp_shutdown_delegate grpcsharp_shutdown;
+    public grpcsharp_version_string_delegate grpcsharp_version_string;
+    public grpcsharp_batch_context_create_delegate grpcsharp_batch_context_create;
+    public grpcsharp_batch_context_recv_initial_metadata_delegate grpcsharp_batch_context_recv_initial_metadata;
+    public grpcsharp_batch_context_recv_message_length_delegate grpcsharp_batch_context_recv_message_length;
+    public grpcsharp_batch_context_recv_message_next_slice_peek_delegate grpcsharp_batch_context_recv_message_next_slice_peek;
+    public grpcsharp_batch_context_recv_status_on_client_status_delegate grpcsharp_batch_context_recv_status_on_client_status;
+    public grpcsharp_batch_context_recv_status_on_client_details_delegate grpcsharp_batch_context_recv_status_on_client_details;
+    public grpcsharp_batch_context_recv_status_on_client_error_string_delegate grpcsharp_batch_context_recv_status_on_client_error_string;
+    public grpcsharp_batch_context_recv_status_on_client_trailing_metadata_delegate grpcsharp_batch_context_recv_status_on_client_trailing_metadata;
+    public grpcsharp_batch_context_recv_close_on_server_cancelled_delegate grpcsharp_batch_context_recv_close_on_server_cancelled;
+    public grpcsharp_batch_context_reset_delegate grpcsharp_batch_context_reset;
+    public grpcsharp_batch_context_destroy_delegate grpcsharp_batch_context_destroy;
+    public grpcsharp_request_call_context_create_delegate grpcsharp_request_call_context_create;
+    public grpcsharp_request_call_context_call_delegate grpcsharp_request_call_context_call;
+    public grpcsharp_request_call_context_method_delegate grpcsharp_request_call_context_method;
+    public grpcsharp_request_call_context_host_delegate grpcsharp_request_call_context_host;
+    public grpcsharp_request_call_context_deadline_delegate grpcsharp_request_call_context_deadline;
+    public grpcsharp_request_call_context_request_metadata_delegate grpcsharp_request_call_context_request_metadata;
+    public grpcsharp_request_call_context_reset_delegate grpcsharp_request_call_context_reset;
+    public grpcsharp_request_call_context_destroy_delegate grpcsharp_request_call_context_destroy;
+    public grpcsharp_composite_call_credentials_create_delegate grpcsharp_composite_call_credentials_create;
+    public grpcsharp_call_credentials_release_delegate grpcsharp_call_credentials_release;
+    public grpcsharp_call_cancel_delegate grpcsharp_call_cancel;
+    public grpcsharp_call_cancel_with_status_delegate grpcsharp_call_cancel_with_status;
+    public grpcsharp_call_start_unary_delegate grpcsharp_call_start_unary;
+    public grpcsharp_call_start_client_streaming_delegate grpcsharp_call_start_client_streaming;
+    public grpcsharp_call_start_server_streaming_delegate grpcsharp_call_start_server_streaming;
+    public grpcsharp_call_start_duplex_streaming_delegate grpcsharp_call_start_duplex_streaming;
+    public grpcsharp_call_send_message_delegate grpcsharp_call_send_message;
+    public grpcsharp_call_send_close_from_client_delegate grpcsharp_call_send_close_from_client;
+    public grpcsharp_call_send_status_from_server_delegate grpcsharp_call_send_status_from_server;
+    public grpcsharp_call_recv_message_delegate grpcsharp_call_recv_message;
+    public grpcsharp_call_recv_initial_metadata_delegate grpcsharp_call_recv_initial_metadata;
+    public grpcsharp_call_start_serverside_delegate grpcsharp_call_start_serverside;
+    public grpcsharp_call_send_initial_metadata_delegate grpcsharp_call_send_initial_metadata;
+    public grpcsharp_call_set_credentials_delegate grpcsharp_call_set_credentials;
+    public grpcsharp_call_get_peer_delegate grpcsharp_call_get_peer;
+    public grpcsharp_call_destroy_delegate grpcsharp_call_destroy;
+    public grpcsharp_channel_args_create_delegate grpcsharp_channel_args_create;
+    public grpcsharp_channel_args_set_string_delegate grpcsharp_channel_args_set_string;
+    public grpcsharp_channel_args_set_integer_delegate grpcsharp_channel_args_set_integer;
+    public grpcsharp_channel_args_destroy_delegate grpcsharp_channel_args_destroy;
+    public grpcsharp_override_default_ssl_roots_delegate grpcsharp_override_default_ssl_roots;
+    public grpcsharp_ssl_credentials_create_delegate grpcsharp_ssl_credentials_create;
+    public grpcsharp_composite_channel_credentials_create_delegate grpcsharp_composite_channel_credentials_create;
+    public grpcsharp_channel_credentials_release_delegate grpcsharp_channel_credentials_release;
+    public grpcsharp_insecure_channel_create_delegate grpcsharp_insecure_channel_create;
+    public grpcsharp_secure_channel_create_delegate grpcsharp_secure_channel_create;
+    public grpcsharp_channel_create_call_delegate grpcsharp_channel_create_call;
+    public grpcsharp_channel_check_connectivity_state_delegate grpcsharp_channel_check_connectivity_state;
+    public grpcsharp_channel_watch_connectivity_state_delegate grpcsharp_channel_watch_connectivity_state;
+    public grpcsharp_channel_get_target_delegate grpcsharp_channel_get_target;
+    public grpcsharp_channel_destroy_delegate grpcsharp_channel_destroy;
+    public grpcsharp_sizeof_grpc_event_delegate grpcsharp_sizeof_grpc_event;
+    public grpcsharp_completion_queue_create_async_delegate grpcsharp_completion_queue_create_async;
+    public grpcsharp_completion_queue_create_sync_delegate grpcsharp_completion_queue_create_sync;
+    public grpcsharp_completion_queue_shutdown_delegate grpcsharp_completion_queue_shutdown;
+    public grpcsharp_completion_queue_next_delegate grpcsharp_completion_queue_next;
+    public grpcsharp_completion_queue_pluck_delegate grpcsharp_completion_queue_pluck;
+    public grpcsharp_completion_queue_destroy_delegate grpcsharp_completion_queue_destroy;
+    public gprsharp_free_delegate gprsharp_free;
+    public grpcsharp_metadata_array_create_delegate grpcsharp_metadata_array_create;
+    public grpcsharp_metadata_array_add_delegate grpcsharp_metadata_array_add;
+    public grpcsharp_metadata_array_count_delegate grpcsharp_metadata_array_count;
+    public grpcsharp_metadata_array_get_key_delegate grpcsharp_metadata_array_get_key;
+    public grpcsharp_metadata_array_get_value_delegate grpcsharp_metadata_array_get_value;
+    public grpcsharp_metadata_array_destroy_full_delegate grpcsharp_metadata_array_destroy_full;
+    public grpcsharp_redirect_log_delegate grpcsharp_redirect_log;
+    public grpcsharp_native_callback_dispatcher_init_delegate grpcsharp_native_callback_dispatcher_init;
+    public grpcsharp_metadata_credentials_create_from_plugin_delegate grpcsharp_metadata_credentials_create_from_plugin;
+    public grpcsharp_metadata_credentials_notify_from_plugin_delegate grpcsharp_metadata_credentials_notify_from_plugin;
+    public grpcsharp_ssl_server_credentials_create_delegate grpcsharp_ssl_server_credentials_create;
+    public grpcsharp_server_credentials_release_delegate grpcsharp_server_credentials_release;
+    public grpcsharp_server_create_delegate grpcsharp_server_create;
+    public grpcsharp_server_register_completion_queue_delegate grpcsharp_server_register_completion_queue;
+    public grpcsharp_server_add_insecure_http2_port_delegate grpcsharp_server_add_insecure_http2_port;
+    public grpcsharp_server_add_secure_http2_port_delegate grpcsharp_server_add_secure_http2_port;
+    public grpcsharp_server_start_delegate grpcsharp_server_start;
+    public grpcsharp_server_request_call_delegate grpcsharp_server_request_call;
+    public grpcsharp_server_cancel_all_calls_delegate grpcsharp_server_cancel_all_calls;
+    public grpcsharp_server_shutdown_and_notify_callback_delegate grpcsharp_server_shutdown_and_notify_callback;
+    public grpcsharp_server_destroy_delegate grpcsharp_server_destroy;
+    public grpcsharp_call_auth_context_delegate grpcsharp_call_auth_context;
+    public grpcsharp_auth_context_peer_identity_property_name_delegate grpcsharp_auth_context_peer_identity_property_name;
+    public grpcsharp_auth_context_property_iterator_delegate grpcsharp_auth_context_property_iterator;
+    public grpcsharp_auth_property_iterator_next_delegate grpcsharp_auth_property_iterator_next;
+    public grpcsharp_auth_context_release_delegate grpcsharp_auth_context_release;
+    public grpcsharp_slice_buffer_create_delegate grpcsharp_slice_buffer_create;
+    public grpcsharp_slice_buffer_adjust_tail_space_delegate grpcsharp_slice_buffer_adjust_tail_space;
+    public grpcsharp_slice_buffer_slice_count_delegate grpcsharp_slice_buffer_slice_count;
+    public grpcsharp_slice_buffer_slice_peek_delegate grpcsharp_slice_buffer_slice_peek;
+    public grpcsharp_slice_buffer_reset_and_unref_delegate grpcsharp_slice_buffer_reset_and_unref;
+    public grpcsharp_slice_buffer_destroy_delegate grpcsharp_slice_buffer_destroy;
+    public gprsharp_now_delegate gprsharp_now;
+    public gprsharp_inf_future_delegate gprsharp_inf_future;
+    public gprsharp_inf_past_delegate gprsharp_inf_past;
+    public gprsharp_convert_clock_type_delegate gprsharp_convert_clock_type;
+    public gprsharp_sizeof_timespec_delegate gprsharp_sizeof_timespec;
+    public grpcsharp_test_callback_delegate grpcsharp_test_callback;
+    public grpcsharp_test_nop_delegate grpcsharp_test_nop;
+    public grpcsharp_test_override_method_delegate grpcsharp_test_override_method;
+    public grpcsharp_test_call_start_unary_echo_delegate grpcsharp_test_call_start_unary_echo;
+    public NativeMethods(UnmanagedLibrary library);
+    public NativeMethods(DllImportsFromStaticLib unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib_x86 unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib_x64 unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib_arm64 unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib_x86_dll unusedInstance);
+    public NativeMethods(DllImportsFromSharedLib_x64_dll unusedInstance);
+    public static NativeMethods Get();
+    private static T GetMethodDelegate(UnmanagedLibrary library);
+    private static string RemoveStringSuffix(string str, string toRemove);
+}
+internal static class Grpc.Core.Internal.PlatformApis : object {
+    private static string UnityEngineAssemblyName;
+    private static string UnityEngineApplicationClassName;
+    private static string UnityIPhonePlayer;
+    private static string XamarinAndroidObjectClassName;
+    private static string XamarinIOSObjectClassName;
+    private static bool isLinux;
+    private static bool isMacOSX;
+    private static bool isWindows;
+    private static bool isMono;
+    private static bool isNet5OrHigher;
+    private static bool isNetCore;
+    private static string frameworkDescription;
+    private static string clrVersion;
+    private static string unityApplicationPlatform;
+    private static bool isXamarin;
+    private static bool isXamarinIOS;
+    private static bool isXamarinAndroid;
+    public static bool IsLinux { get; }
+    public static bool IsMacOSX { get; }
+    public static bool IsWindows { get; }
+    public static bool IsMono { get; }
+    public static bool IsUnity { get; }
+    public static bool IsUnityIOS { get; }
+    public static bool IsXamarin { get; }
+    public static bool IsXamarinIOS { get; }
+    public static bool IsXamarinAndroid { get; }
+    public static bool IsNet5OrHigher { get; }
+    public static string FrameworkDescription { get; }
+    public static string ClrVersion { get; }
+    public static bool IsNetCore { get; }
+    public static bool Is64Bit { get; }
+    public static CpuArchitecture ProcessArchitecture { get; }
+    private static PlatformApis();
+    public static bool get_IsLinux();
+    public static bool get_IsMacOSX();
+    public static bool get_IsWindows();
+    public static bool get_IsMono();
+    public static bool get_IsUnity();
+    public static bool get_IsUnityIOS();
+    public static bool get_IsXamarin();
+    public static bool get_IsXamarinIOS();
+    public static bool get_IsXamarinAndroid();
+    public static bool get_IsNet5OrHigher();
+    public static string get_FrameworkDescription();
+    public static string get_ClrVersion();
+    public static bool get_IsNetCore();
+    public static bool get_Is64Bit();
+    public static CpuArchitecture get_ProcessArchitecture();
+    public static string GetUnityApplicationPlatform();
+    private static string TryGetUnityApplicationPlatform();
+    private static string TryGetFrameworkDescription();
+    private static string TryGetClrVersion();
+    public static string GetGrpcCoreTargetFrameworkMoniker();
+}
+internal class Grpc.Core.Internal.RequestCallCompletionDelegate : MulticastDelegate {
+    public RequestCallCompletionDelegate(object object, IntPtr method);
+    public virtual void Invoke(bool success, RequestCallContextSafeHandle ctx);
+    public virtual IAsyncResult BeginInvoke(bool success, RequestCallContextSafeHandle ctx, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.RequestCallContextSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ILogger Logger;
+    private Action`1<RequestCallContextSafeHandle> returnToPoolAction;
+    [CompilerGeneratedAttribute]
+private RequestCallCompletionDelegate <CompletionCallback>k__BackingField;
+    public IntPtr Handle { get; }
+    public RequestCallCompletionDelegate CompletionCallback { get; public set; }
+    private static RequestCallContextSafeHandle();
+    public static RequestCallContextSafeHandle Create();
+    public IntPtr get_Handle();
+    public sealed virtual void SetReturnToPoolAction(Action`1<RequestCallContextSafeHandle> returnAction);
+    [CompilerGeneratedAttribute]
+public RequestCallCompletionDelegate get_CompletionCallback();
+    [CompilerGeneratedAttribute]
+public void set_CompletionCallback(RequestCallCompletionDelegate value);
+    public ServerRpcNew GetServerRpcNew(Server server);
+    public void Recycle();
+    protected virtual bool ReleaseHandle();
+    private sealed virtual override void Grpc.Core.Internal.IOpCompletionCallback.OnComplete(bool success);
+}
+internal class Grpc.Core.Internal.ReusableSliceBuffer : object {
+    public static int MaxCachedSegments;
+    private SliceSegment[] cachedSegments;
+    private int populatedSegmentCount;
+    public ReadOnlySequence`1<byte> PopulateFrom(IBufferReader bufferReader);
+    public void Invalidate();
+}
+internal abstract class Grpc.Core.Internal.SafeHandleZeroIsInvalid : SafeHandle {
+    public bool IsInvalid { get; }
+    public virtual bool get_IsInvalid();
+}
+internal static class Grpc.Core.Internal.ServerCalls : object {
+    public static IServerCallHandler UnaryCall(Method`2<TRequest, TResponse> method, UnaryServerMethod`2<TRequest, TResponse> handler);
+    public static IServerCallHandler ClientStreamingCall(Method`2<TRequest, TResponse> method, ClientStreamingServerMethod`2<TRequest, TResponse> handler);
+    public static IServerCallHandler ServerStreamingCall(Method`2<TRequest, TResponse> method, ServerStreamingServerMethod`2<TRequest, TResponse> handler);
+    public static IServerCallHandler DuplexStreamingCall(Method`2<TRequest, TResponse> method, DuplexStreamingServerMethod`2<TRequest, TResponse> handler);
+}
+internal class Grpc.Core.Internal.ServerCredentialsSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ServerCredentialsSafeHandle();
+    public static ServerCredentialsSafeHandle CreateSslCredentials(string pemRootCerts, String[] keyCertPairCertChainArray, String[] keyCertPairPrivateKeyArray, SslClientCertificateRequestType clientCertificateRequest);
+    protected virtual bool ReleaseHandle();
+}
+internal class Grpc.Core.Internal.ServerRequestStream`2 : object {
+    private AsyncCallServer`2<TRequest, TResponse> call;
+    private TRequest current;
+    public TRequest Current { get; }
+    public ServerRequestStream`2(AsyncCallServer`2<TRequest, TResponse> call);
+    public sealed virtual TRequest get_Current();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.ServerRequestStream`2/<MoveNext>d__5")]
+public sealed virtual Task`1<bool> MoveNext(CancellationToken token);
+    public void Dispose();
+}
+internal class Grpc.Core.Internal.ServerResponseStream`2 : object {
+    private AsyncCallServer`2<TRequest, TResponse> call;
+    private WriteOptions writeOptions;
+    public WriteOptions WriteOptions { get; public set; }
+    public ServerResponseStream`2(AsyncCallServer`2<TRequest, TResponse> call);
+    public sealed virtual Task WriteAsync(TResponse message);
+    public sealed virtual Task WriteResponseHeadersAsync(Metadata responseHeaders);
+    public sealed virtual WriteOptions get_WriteOptions();
+    public sealed virtual void set_WriteOptions(WriteOptions value);
+    private WriteFlags GetWriteFlags();
+}
+internal class Grpc.Core.Internal.ServerRpcNew : ValueType {
+    private Server server;
+    private CallSafeHandle call;
+    private string method;
+    private string host;
+    private Timespec deadline;
+    private Metadata requestMetadata;
+    public Server Server { get; }
+    public CallSafeHandle Call { get; }
+    public string Method { get; }
+    public string Host { get; }
+    public Timespec Deadline { get; }
+    public Metadata RequestMetadata { get; }
+    public ServerRpcNew(Server server, CallSafeHandle call, string method, string host, Timespec deadline, Metadata requestMetadata);
+    public Server get_Server();
+    public CallSafeHandle get_Call();
+    public string get_Method();
+    public string get_Host();
+    public Timespec get_Deadline();
+    public Metadata get_RequestMetadata();
+}
+internal class Grpc.Core.Internal.ServerSafeHandle : SafeHandleZeroIsInvalid {
+    private static NativeMethods Native;
+    private static ServerSafeHandle();
+    public static ServerSafeHandle NewServer(ChannelArgsSafeHandle args);
+    public void RegisterCompletionQueue(CompletionQueueSafeHandle cq);
+    public int AddInsecurePort(string addr);
+    public int AddSecurePort(string addr, ServerCredentialsSafeHandle credentials);
+    public void Start();
+    public void ShutdownAndNotify(BatchCompletionDelegate callback, CompletionQueueSafeHandle completionQueue);
+    public void RequestCall(RequestCallCompletionDelegate callback, CompletionQueueSafeHandle completionQueue);
+    protected virtual bool ReleaseHandle();
+    public void CancelAllCalls();
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Internal.ServerServiceDefinitionExtensions : object {
+    [ExtensionAttribute]
+internal static ReadOnlyDictionary`2<string, IServerCallHandler> GetCallHandlers(ServerServiceDefinition serviceDefinition);
+}
+internal class Grpc.Core.Internal.ServerStreamingServerCallHandler`2 : object {
+    private static ILogger Logger;
+    private Method`2<TRequest, TResponse> method;
+    private ServerStreamingServerMethod`2<TRequest, TResponse> handler;
+    public ServerStreamingServerCallHandler`2(Method`2<TRequest, TResponse> method, ServerStreamingServerMethod`2<TRequest, TResponse> handler);
+    private static ServerStreamingServerCallHandler`2();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.ServerStreamingServerCallHandler`2/<HandleCall>d__4")]
+public sealed virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal class Grpc.Core.Internal.Slice : ValueType {
+    private IntPtr dataPtr;
+    private int length;
+    public int Length { get; }
+    public Slice(IntPtr dataPtr, int length);
+    public int get_Length();
+    public Span`1<byte> ToSpanUnsafe();
+    public virtual string ToString();
+}
+internal class Grpc.Core.Internal.SliceBufferSafeHandle : SafeHandleZeroIsInvalid {
+    private static int DefaultTailSpaceSize;
+    private static NativeMethods Native;
+    private static ILogger Logger;
+    public static SliceBufferSafeHandle NullInstance;
+    private IntPtr tailSpacePtr;
+    private int tailSpaceLen;
+    private SliceMemoryManager memoryManagerLazy;
+    public IntPtr Handle { get; }
+    private static SliceBufferSafeHandle();
+    public static SliceBufferSafeHandle Create();
+    public IntPtr get_Handle();
+    public sealed virtual void Advance(int count);
+    public sealed virtual Memory`1<byte> GetMemory(int sizeHint);
+    public sealed virtual Span`1<byte> GetSpan(int sizeHint);
+    public void Complete();
+    public void Reset();
+    public Byte[] ToByteArray();
+    private void EnsureBufferSpace(int sizeHint);
+    private void AdjustTailSpace(int requestedSize);
+    protected virtual bool ReleaseHandle();
+}
+internal class Grpc.Core.Internal.SliceMemoryManager : MemoryManager`1<byte> {
+    private Slice slice;
+    public void Reset(Slice slice);
+    public void Reset();
+    public virtual Span`1<byte> GetSpan();
+    public virtual MemoryHandle Pin(int elementIndex);
+    public virtual void Unpin();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Grpc.Core.Internal.Timespec : ValueType {
+    private static long NanosPerSecond;
+    private static long NanosPerTick;
+    private static long TicksPerSecond;
+    private static NativeMethods Native;
+    private static DateTime UnixEpoch;
+    private long tv_sec;
+    private int tv_nsec;
+    private ClockType clock_type;
+    public static Timespec InfFuture { get; }
+    public static Timespec InfPast { get; }
+    public static Timespec Now { get; }
+    public long TimevalSeconds { get; }
+    public int TimevalNanos { get; }
+    internal static Timespec PreciseNow { get; }
+    internal static int NativeSize { get; }
+    internal static Timespec NativeInfFuture { get; }
+    public static Timespec NativeInfPast { get; }
+    public Timespec(long tv_sec, int tv_nsec);
+    public Timespec(long tv_sec, int tv_nsec, ClockType clock_type);
+    private static Timespec();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public sealed virtual bool Equals(Timespec other);
+    public static Timespec get_InfFuture();
+    public static Timespec get_InfPast();
+    public static Timespec get_Now();
+    public long get_TimevalSeconds();
+    public int get_TimevalNanos();
+    public Timespec ToClockType(ClockType targetClock);
+    public DateTime ToDateTime();
+    public static Timespec FromDateTime(DateTime dateTime);
+    internal static Timespec get_PreciseNow();
+    internal static int get_NativeSize();
+    internal static Timespec get_NativeInfFuture();
+    public static Timespec get_NativeInfPast();
+}
+internal class Grpc.Core.Internal.UnaryServerCallHandler`2 : object {
+    private static ILogger Logger;
+    private Method`2<TRequest, TResponse> method;
+    private UnaryServerMethod`2<TRequest, TResponse> handler;
+    public UnaryServerCallHandler`2(Method`2<TRequest, TResponse> method, UnaryServerMethod`2<TRequest, TResponse> handler);
+    private static UnaryServerCallHandler`2();
+    [AsyncStateMachineAttribute("Grpc.Core.Internal.UnaryServerCallHandler`2/<HandleCall>d__4")]
+public sealed virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal class Grpc.Core.Internal.UnimplementedCallInvoker : CallInvoker {
+    public virtual TResponse BlockingUnaryCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncUnaryCall`1<TResponse> AsyncUnaryCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncServerStreamingCall`1<TResponse> AsyncServerStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options, TRequest request);
+    public virtual AsyncClientStreamingCall`2<TRequest, TResponse> AsyncClientStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options);
+    public virtual AsyncDuplexStreamingCall`2<TRequest, TResponse> AsyncDuplexStreamingCall(Method`2<TRequest, TResponse> method, string host, CallOptions options);
+}
+internal class Grpc.Core.Internal.UnimplementedMethodCallHandler : object {
+    public static UnimplementedMethodCallHandler Instance;
+    private DuplexStreamingServerCallHandler`2<Byte[], Byte[]> callHandlerImpl;
+    private static UnimplementedMethodCallHandler();
+    private Task UnimplementedMethod(IAsyncStreamReader`1<Byte[]> requestStream, IServerStreamWriter`1<Byte[]> responseStream, ServerCallContext ctx);
+    public sealed virtual Task HandleCall(ServerRpcNew newRpc, CompletionQueueSafeHandle cq);
+}
+internal class Grpc.Core.Internal.UniversalNativeCallback : MulticastDelegate {
+    public UniversalNativeCallback(object object, IntPtr method);
+    public virtual int Invoke(IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5);
+    public virtual IAsyncResult BeginInvoke(IntPtr arg0, IntPtr arg1, IntPtr arg2, IntPtr arg3, IntPtr arg4, IntPtr arg5, AsyncCallback callback, object object);
+    public virtual int EndInvoke(IAsyncResult result);
+}
+internal class Grpc.Core.Internal.UnmanagedLibrary : object {
+    private static ILogger Logger;
+    private static int RTLD_LAZY;
+    private static int RTLD_GLOBAL;
+    private string libraryPath;
+    private IntPtr handle;
+    public UnmanagedLibrary(String[] libraryPathAlternatives);
+    private static UnmanagedLibrary();
+    private IntPtr LoadSymbol(string symbolName);
+    public T GetNativeMethodDelegate(string methodName);
+    private static IntPtr PlatformSpecificLoadLibrary(string libraryPath, String& errorMsg);
+    private static IntPtr LoadLibraryPosix(Func`3<string, int, IntPtr> dlopenFunc, Func`1<IntPtr> dlerrorFunc, string libraryPath, String& errorMsg);
+    private static string FirstValidLibraryPath(String[] libraryPathAlternatives);
+}
+internal class Grpc.Core.Internal.UserAgentStringProvider : object {
+    private static UserAgentStringProvider defaultInstance;
+    private string userAgentString;
+    public static UserAgentStringProvider DefaultInstance { get; }
+    public string GrpcCsharpUserAgentString { get; }
+    private static UserAgentStringProvider();
+    public UserAgentStringProvider(string grpcCsharpVersion, string frameworkDescription, string clrVersion, string tfm, CpuArchitecture arch);
+    public static UserAgentStringProvider get_DefaultInstance();
+    public string get_GrpcCsharpUserAgentString();
+    private static string TryGetArchitectureString(CpuArchitecture arch);
+    private static string SanitizeFrameworkDescription(string frameworkDescription);
+}
+internal static class Grpc.Core.Internal.WellKnownStrings : object {
+    private static ulong Coerce64(Byte* value);
+    private static UInt32 Coerce32(Byte* value);
+    private static ushort Coerce16(Byte* value);
+    public static string TryIdentify(IntPtr source, int length);
+    public static string TryIdentify(Byte* source, int length);
+}
+public class Grpc.Core.Logging.ConsoleLogger : TextWriterLogger {
+    private ConsoleLogger(Type forType);
+    public virtual ILogger ForType();
+}
+public interface Grpc.Core.Logging.ILogger {
+    public abstract virtual ILogger ForType();
+    public abstract virtual void Debug(string message);
+    public abstract virtual void Debug(string format, Object[] formatArgs);
+    public abstract virtual void Info(string message);
+    public abstract virtual void Info(string format, Object[] formatArgs);
+    public abstract virtual void Warning(string message);
+    public abstract virtual void Warning(string format, Object[] formatArgs);
+    public abstract virtual void Warning(Exception exception, string message);
+    public abstract virtual void Error(string message);
+    public abstract virtual void Error(string format, Object[] formatArgs);
+    public abstract virtual void Error(Exception exception, string message);
+}
+public enum Grpc.Core.Logging.LogLevel : Enum {
+    public int value__;
+    public static LogLevel Debug;
+    public static LogLevel Info;
+    public static LogLevel Warning;
+    public static LogLevel Error;
+    public static LogLevel Off;
+}
+public class Grpc.Core.Logging.LogLevelFilterLogger : object {
+    private static string CoreVerbosityEnvVarName;
+    private ILogger innerLogger;
+    private LogLevel logLevel;
+    public LogLevelFilterLogger(ILogger logger, LogLevel logLevel);
+    public LogLevelFilterLogger(ILogger logger, LogLevel defaultLogLevel, bool fromEnvironmentVariable);
+    public virtual ILogger ForType();
+    public sealed virtual void Debug(string message);
+    public sealed virtual void Debug(string format, Object[] formatArgs);
+    public sealed virtual void Info(string message);
+    public sealed virtual void Info(string format, Object[] formatArgs);
+    public sealed virtual void Warning(string message);
+    public sealed virtual void Warning(string format, Object[] formatArgs);
+    public sealed virtual void Warning(Exception exception, string message);
+    public sealed virtual void Error(string message);
+    public sealed virtual void Error(string format, Object[] formatArgs);
+    public sealed virtual void Error(Exception exception, string message);
+    private static LogLevel GetLogLevelFromEnvironment(LogLevel defaultLogLevel, bool fromEnvironmentVariable);
+}
+public class Grpc.Core.Logging.NullLogger : object {
+    public sealed virtual void Debug(string message);
+    public sealed virtual void Debug(string format, Object[] formatArgs);
+    public sealed virtual void Error(string message);
+    public sealed virtual void Error(Exception exception, string message);
+    public sealed virtual void Error(string format, Object[] formatArgs);
+    public sealed virtual ILogger ForType();
+    public sealed virtual void Info(string message);
+    public sealed virtual void Info(string format, Object[] formatArgs);
+    public sealed virtual void Warning(string message);
+    public sealed virtual void Warning(Exception exception, string message);
+    public sealed virtual void Warning(string format, Object[] formatArgs);
+}
+public class Grpc.Core.Logging.TextWriterLogger : object {
+    private static string DateTimeFormatString;
+    private Func`1<TextWriter> textWriterProvider;
+    private Type forType;
+    private string forTypeString;
+    protected Type AssociatedType { get; }
+    public TextWriterLogger(TextWriter textWriter);
+    public TextWriterLogger(Func`1<TextWriter> textWriterProvider);
+    protected TextWriterLogger(Func`1<TextWriter> textWriterProvider, Type forType);
+    public virtual ILogger ForType();
+    public sealed virtual void Debug(string message);
+    public sealed virtual void Debug(string format, Object[] formatArgs);
+    public sealed virtual void Info(string message);
+    public sealed virtual void Info(string format, Object[] formatArgs);
+    public sealed virtual void Warning(string message);
+    public sealed virtual void Warning(string format, Object[] formatArgs);
+    public sealed virtual void Warning(Exception exception, string message);
+    public sealed virtual void Error(string message);
+    public sealed virtual void Error(string format, Object[] formatArgs);
+    public sealed virtual void Error(Exception exception, string message);
+    protected Type get_AssociatedType();
+    private void Log(string severityString, string message);
+}
+internal class Grpc.Core.Profiling.BasicProfiler : object {
+    private ProfilerEntry[] entries;
+    private int count;
+    public BasicProfiler(int capacity);
+    public sealed virtual void Begin(string tag);
+    public sealed virtual void End(string tag);
+    public sealed virtual void Mark(string tag);
+    public void Reset();
+    public void Dump(string filepath);
+    public void Dump(TextWriter stream);
+    private void AddEntry(ProfilerEntry entry);
+}
+internal interface Grpc.Core.Profiling.IProfiler {
+    public abstract virtual void Begin(string tag);
+    public abstract virtual void End(string tag);
+    public abstract virtual void Mark(string tag);
+}
+internal class Grpc.Core.Profiling.NopProfiler : object {
+    public sealed virtual void Begin(string tag);
+    public sealed virtual void End(string tag);
+    public sealed virtual void Mark(string tag);
+}
+internal class Grpc.Core.Profiling.ProfilerEntry : ValueType {
+    public Timespec timespec;
+    public Type type;
+    public string tag;
+    public ProfilerEntry(Timespec timespec, Type type, string tag);
+    public virtual string ToString();
+    internal static string GetTypeAbbreviation(Type type);
+}
+[ExtensionAttribute]
+internal static class Grpc.Core.Profiling.Profilers : object {
+    private static NopProfiler DefaultProfiler;
+    private static ThreadLocal`1<IProfiler> profilers;
+    private static Profilers();
+    public static IProfiler ForCurrentThread();
+    public static void SetForCurrentThread(IProfiler profiler);
+    [ExtensionAttribute]
+public static ProfilerScope NewScope(IProfiler profiler, string tag);
+}
+internal class Grpc.Core.Profiling.ProfilerScope : ValueType {
+    private IProfiler profiler;
+    private string tag;
+    public ProfilerScope(IProfiler profiler, string tag);
+    public sealed virtual void Dispose();
+}
+public class Grpc.Core.Server : object {
+    private static int DefaultRequestCallTokensPerCq;
+    private static ILogger Logger;
+    private AtomicCounter activeCallCounter;
+    private ServiceDefinitionCollection serviceDefinitions;
+    private ServerPortCollection ports;
+    private GrpcEnvironment environment;
+    private List`1<ChannelOption> options;
+    private ServerSafeHandle handle;
+    private object myLock;
+    private List`1<ServerServiceDefinition> serviceDefinitionsList;
+    private List`1<ServerPort> serverPortList;
+    private Dictionary`2<string, IServerCallHandler> callHandlers;
+    private TaskCompletionSource`1<object> shutdownTcs;
+    private bool startRequested;
+    private Boolean modreq(System.Runtime.CompilerServices.IsVolatile) shutdownRequested;
+    private int requestCallTokensPerCq;
+    public ServiceDefinitionCollection Services { get; }
+    public ServerPortCollection Ports { get; }
+    public Task ShutdownTask { get; }
+    public int RequestCallTokensPerCompletionQueue { get; public set; }
+    public Server(IEnumerable`1<ChannelOption> options);
+    private static Server();
+    public ServiceDefinitionCollection get_Services();
+    public ServerPortCollection get_Ports();
+    public Task get_ShutdownTask();
+    public int get_RequestCallTokensPerCompletionQueue();
+    public void set_RequestCallTokensPerCompletionQueue(int value);
+    public void Start();
+    public Task ShutdownAsync();
+    public Task KillAsync();
+    internal void AddCallReference(object call);
+    internal void RemoveCallReference(object call);
+    [AsyncStateMachineAttribute("Grpc.Core.Server/<ShutdownInternalAsync>d__32")]
+private Task ShutdownInternalAsync(bool kill);
+    [AsyncStateMachineAttribute("Grpc.Core.Server/<ShutdownCompleteOrEnvironmentDeadAsync>d__33")]
+private Task ShutdownCompleteOrEnvironmentDeadAsync();
+    private void AddServiceDefinitionInternal(ServerServiceDefinition serviceDefinition);
+    private int AddPortInternal(ServerPort serverPort);
+    private void AllowOneRpc(CompletionQueueSafeHandle cq);
+    private void CheckPortsBoundSuccessfully();
+    private void DisposeHandle();
+    [AsyncStateMachineAttribute("Grpc.Core.Server/<HandleCallAsync>d__39")]
+private Task HandleCallAsync(ServerRpcNew newRpc, CompletionQueueSafeHandle cq, Action`2<Server, CompletionQueueSafeHandle> continuation);
+    private void HandleNewServerRpc(bool success, RequestCallContextSafeHandle ctx, CompletionQueueSafeHandle cq);
+    private void HandleServerShutdown(bool success, BatchContextSafeHandle ctx, object state);
+}
+public abstract class Grpc.Core.ServerCredentials : object {
+    private static ServerCredentials InsecureInstance;
+    public static ServerCredentials Insecure { get; }
+    private static ServerCredentials();
+    public static ServerCredentials get_Insecure();
+    internal abstract virtual ServerCredentialsSafeHandle ToNativeCredentials();
+}
+public class Grpc.Core.ServerPort : object {
+    public static int PickUnused;
+    private string host;
+    private int port;
+    private ServerCredentials credentials;
+    private int boundPort;
+    public string Host { get; }
+    public int Port { get; }
+    public ServerCredentials Credentials { get; }
+    public int BoundPort { get; }
+    public ServerPort(string host, int port, ServerCredentials credentials);
+    internal ServerPort(ServerPort serverPort, int boundPort);
+    public string get_Host();
+    public int get_Port();
+    public ServerCredentials get_Credentials();
+    public int get_BoundPort();
+}
+public enum Grpc.Core.SslClientCertificateRequestType : Enum {
+    public int value__;
+    public static SslClientCertificateRequestType DontRequest;
+    public static SslClientCertificateRequestType RequestButDontVerify;
+    public static SslClientCertificateRequestType RequestAndVerify;
+    public static SslClientCertificateRequestType RequestAndRequireButDontVerify;
+    public static SslClientCertificateRequestType RequestAndRequireAndVerify;
+}
+public class Grpc.Core.SslServerCredentials : ServerCredentials {
+    private IList`1<KeyCertificatePair> keyCertificatePairs;
+    private string rootCertificates;
+    private SslClientCertificateRequestType clientCertificateRequest;
+    public IList`1<KeyCertificatePair> KeyCertificatePairs { get; }
+    public string RootCertificates { get; }
+    public bool ForceClientAuthentication { get; }
+    public SslClientCertificateRequestType ClientCertificateRequest { get; }
+    public SslServerCredentials(IEnumerable`1<KeyCertificatePair> keyCertificatePairs, string rootCertificates, bool forceClientAuth);
+    public SslServerCredentials(IEnumerable`1<KeyCertificatePair> keyCertificatePairs, string rootCertificates, SslClientCertificateRequestType clientCertificateRequest);
+    public SslServerCredentials(IEnumerable`1<KeyCertificatePair> keyCertificatePairs);
+    public IList`1<KeyCertificatePair> get_KeyCertificatePairs();
+    public string get_RootCertificates();
+    public bool get_ForceClientAuthentication();
+    public SslClientCertificateRequestType get_ClientCertificateRequest();
+    internal virtual ServerCredentialsSafeHandle ToNativeCredentials();
+}
+[ExtensionAttribute]
+public static class Grpc.Core.Utils.AsyncStreamExtensions : object {
+    [AsyncStateMachineAttribute("Grpc.Core.Utils.AsyncStreamExtensions/<ForEachAsync>d__0`1")]
+[ExtensionAttribute]
+public static Task ForEachAsync(IAsyncStreamReader`1<T> streamReader, Func`2<T, Task> asyncAction);
+    [AsyncStateMachineAttribute("Grpc.Core.Utils.AsyncStreamExtensions/<ToListAsync>d__1`1")]
+[ExtensionAttribute]
+public static Task`1<List`1<T>> ToListAsync(IAsyncStreamReader`1<T> streamReader);
+    [AsyncStateMachineAttribute("Grpc.Core.Utils.AsyncStreamExtensions/<WriteAllAsync>d__2`1")]
+[ExtensionAttribute]
+public static Task WriteAllAsync(IClientStreamWriter`1<T> streamWriter, IEnumerable`1<T> elements, bool complete);
+    [AsyncStateMachineAttribute("Grpc.Core.Utils.AsyncStreamExtensions/<WriteAllAsync>d__3`1")]
+[ExtensionAttribute]
+public static Task WriteAllAsync(IServerStreamWriter`1<T> streamWriter, IEnumerable`1<T> elements);
+}
+public static class Grpc.Core.Utils.BenchmarkUtil : object {
+    public static void RunBenchmark(int warmupIterations, int benchmarkIterations, Action action);
+}
+public static class Grpc.Core.Utils.TaskUtils : object {
+    public static Task CompletedTask { get; }
+    public static Task get_CompletedTask();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class System.Runtime.CompilerServices.IsReadOnlyAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
