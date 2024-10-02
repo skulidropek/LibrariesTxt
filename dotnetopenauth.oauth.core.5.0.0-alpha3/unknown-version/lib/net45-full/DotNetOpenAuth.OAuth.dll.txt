@@ -1,0 +1,661 @@
+internal class DotNetOpenAuth.Configuration.OAuthConsumerElement : ConfigurationElement {
+    private static string SecuritySettingsConfigName;
+    [ConfigurationPropertyAttribute("security")]
+public OAuthConsumerSecuritySettingsElement SecuritySettings { get; public set; }
+    public OAuthConsumerSecuritySettingsElement get_SecuritySettings();
+    public void set_SecuritySettings(OAuthConsumerSecuritySettingsElement value);
+}
+internal class DotNetOpenAuth.Configuration.OAuthConsumerSecuritySettingsElement : ConfigurationElement {
+    internal ConsumerSecuritySettings CreateSecuritySettings();
+}
+internal class DotNetOpenAuth.Configuration.OAuthElement : ConfigurationSection {
+    private static string SectionName;
+    private static string ConsumerElementName;
+    private static string ServiceProviderElementName;
+    public static OAuthElement Configuration { get; }
+    [ConfigurationPropertyAttribute("consumer")]
+internal OAuthConsumerElement Consumer { get; internal set; }
+    [ConfigurationPropertyAttribute("serviceProvider")]
+internal OAuthServiceProviderElement ServiceProvider { get; internal set; }
+    public static OAuthElement get_Configuration();
+    internal OAuthConsumerElement get_Consumer();
+    internal void set_Consumer(OAuthConsumerElement value);
+    internal OAuthServiceProviderElement get_ServiceProvider();
+    internal void set_ServiceProvider(OAuthServiceProviderElement value);
+}
+internal class DotNetOpenAuth.Configuration.OAuthServiceProviderElement : ConfigurationElement {
+    private static string StoreConfigName;
+    private static string SecuritySettingsConfigName;
+    [ConfigurationPropertyAttribute("store")]
+public TypeConfigurationElement`1<INonceStore> ApplicationStore { get; public set; }
+    [ConfigurationPropertyAttribute("security")]
+public OAuthServiceProviderSecuritySettingsElement SecuritySettings { get; public set; }
+    public TypeConfigurationElement`1<INonceStore> get_ApplicationStore();
+    public void set_ApplicationStore(TypeConfigurationElement`1<INonceStore> value);
+    public OAuthServiceProviderSecuritySettingsElement get_SecuritySettings();
+    public void set_SecuritySettings(OAuthServiceProviderSecuritySettingsElement value);
+}
+internal class DotNetOpenAuth.Configuration.OAuthServiceProviderSecuritySettingsElement : ConfigurationElement {
+    private static string MinimumRequiredOAuthVersionConfigName;
+    private static string MaximumRequestTokenTimeToLiveConfigName;
+    [ConfigurationPropertyAttribute("minimumRequiredOAuthVersion")]
+public ProtocolVersion MinimumRequiredOAuthVersion { get; public set; }
+    [PositiveTimeSpanValidatorAttribute]
+[ConfigurationPropertyAttribute("maxAuthorizationTime")]
+public TimeSpan MaximumRequestTokenTimeToLive { get; public set; }
+    public ProtocolVersion get_MinimumRequiredOAuthVersion();
+    public void set_MinimumRequiredOAuthVersion(ProtocolVersion value);
+    public TimeSpan get_MaximumRequestTokenTimeToLive();
+    public void set_MaximumRequestTokenTimeToLive(TimeSpan value);
+    internal ServiceProviderSecuritySettings CreateSecuritySettings();
+}
+public interface DotNetOpenAuth.Messaging.ITamperProtectionChannelBindingElement {
+    public Action`1<ITamperResistantOAuthMessage> SignatureCallback { get; public set; }
+    public abstract virtual Action`1<ITamperResistantOAuthMessage> get_SignatureCallback();
+    public abstract virtual void set_SignatureCallback(Action`1<ITamperResistantOAuthMessage> value);
+    public abstract virtual ITamperProtectionChannelBindingElement Clone();
+}
+public class DotNetOpenAuth.OAuth.ChannelElements.HmacSha1SigningBindingElement : SigningBindingElementBase {
+    protected virtual string GetSignature(ITamperResistantOAuthMessage message);
+    protected virtual ITamperProtectionChannelBindingElement Clone();
+}
+public interface DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage {
+    public string SignatureMethod { get; public set; }
+    public string TokenSecret { get; public set; }
+    public string ConsumerKey { get; public set; }
+    public string ConsumerSecret { get; public set; }
+    public HttpMethod HttpMethod { get; public set; }
+    public Uri Recipient { get; public set; }
+    public abstract virtual string get_SignatureMethod();
+    public abstract virtual void set_SignatureMethod(string value);
+    public abstract virtual string get_TokenSecret();
+    public abstract virtual void set_TokenSecret(string value);
+    public abstract virtual string get_ConsumerKey();
+    public abstract virtual void set_ConsumerKey(string value);
+    public abstract virtual string get_ConsumerSecret();
+    public abstract virtual void set_ConsumerSecret(string value);
+    public abstract virtual HttpMethod get_HttpMethod();
+    public abstract virtual void set_HttpMethod(HttpMethod value);
+    public abstract virtual Uri get_Recipient();
+    public abstract virtual void set_Recipient(Uri value);
+}
+public interface DotNetOpenAuth.OAuth.ChannelElements.ITokenManager {
+    public abstract virtual string GetTokenSecret(string token);
+    public abstract virtual void StoreNewRequestToken(UnauthorizedTokenRequest request, ITokenSecretContainingMessage response);
+    public abstract virtual void ExpireRequestTokenAndStoreNewAccessToken(string consumerKey, string requestToken, string accessToken, string accessTokenSecret);
+    public abstract virtual TokenType GetTokenType(string token);
+}
+internal abstract class DotNetOpenAuth.OAuth.ChannelElements.OAuthChannel : Channel {
+    [CompilerGeneratedAttribute]
+private Uri <Realm>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITokenManager <TokenManager>k__BackingField;
+    internal Uri Realm { get; internal set; }
+    protected internal ITokenManager TokenManager { get; private set; }
+    protected OAuthChannel(ITamperProtectionChannelBindingElement signingBindingElement, ITokenManager tokenManager, SecuritySettings securitySettings, IMessageFactory messageTypeProvider, IChannelBindingElement[] bindingElements, IHostFactories hostFactories);
+    [CompilerGeneratedAttribute]
+internal Uri get_Realm();
+    [CompilerGeneratedAttribute]
+internal void set_Realm(Uri value);
+    [CompilerGeneratedAttribute]
+protected internal ITokenManager get_TokenManager();
+    [CompilerGeneratedAttribute]
+private void set_TokenManager(ITokenManager value);
+    internal static IDictionary`2<string, string> GetUriEscapedParameters(IEnumerable`1<KeyValuePair`2<string, string>> message);
+    [AsyncStateMachineAttribute("DotNetOpenAuth.OAuth.ChannelElements.OAuthChannel/<InitializeRequestAsync>d__0")]
+[DebuggerStepThroughAttribute]
+internal Task`1<HttpRequestMessage> InitializeRequestAsync(IDirectedProtocolMessage request, CancellationToken cancellationToken);
+    protected static List`1<IChannelBindingElement> InitializeBindingElements(ITamperProtectionChannelBindingElement signingBindingElement, INonceStore store);
+    [AsyncStateMachineAttribute("DotNetOpenAuth.OAuth.ChannelElements.OAuthChannel/<ReadFromRequestCoreAsync>d__4")]
+[DebuggerStepThroughAttribute]
+protected virtual Task`1<IDirectedProtocolMessage> ReadFromRequestCoreAsync(HttpRequestMessage request, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("DotNetOpenAuth.OAuth.ChannelElements.OAuthChannel/<ReadFromResponseCoreAsync>d__d")]
+[DebuggerStepThroughAttribute]
+protected virtual Task`1<IDictionary`2<string, string>> ReadFromResponseCoreAsync(HttpResponseMessage response, CancellationToken cancellationToken);
+    protected virtual HttpRequestMessage CreateHttpRequest(IDirectedProtocolMessage request);
+    protected virtual HttpResponseMessage PrepareDirectResponse(IProtocolMessage response);
+    protected abstract virtual string GetConsumerSecret(string consumerKey);
+    private static void UriEscapeParameters(IEnumerable`1<KeyValuePair`2<string, string>> source, IDictionary`2<string, string> destination);
+    private static HttpMethod GetHttpMethod(IDirectedProtocolMessage message);
+    private HttpRequestMessage InitializeRequestAsAuthHeader(IDirectedProtocolMessage requestMessage);
+    private void SignatureCallback(ITamperResistantProtocolMessage message);
+}
+internal class DotNetOpenAuth.OAuth.ChannelElements.OAuthHttpMethodBindingElement : object {
+    [CompilerGeneratedAttribute]
+private Channel <Channel>k__BackingField;
+    public MessageProtections Protection { get; }
+    public Channel Channel { get; public set; }
+    public sealed virtual MessageProtections get_Protection();
+    [CompilerGeneratedAttribute]
+public sealed virtual Channel get_Channel();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Channel(Channel value);
+    public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessOutgoingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+    public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessIncomingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+}
+public class DotNetOpenAuth.OAuth.ChannelElements.PlaintextSigningBindingElement : SigningBindingElementBase {
+    protected virtual string GetSignature(ITamperResistantOAuthMessage message);
+    protected virtual bool IsMessageApplicable(ITamperResistantOAuthMessage message);
+    protected virtual ITamperProtectionChannelBindingElement Clone();
+}
+public abstract class DotNetOpenAuth.OAuth.ChannelElements.RsaSha1SigningBindingElement : SigningBindingElementBase {
+    protected static string HashAlgorithmName;
+}
+public abstract class DotNetOpenAuth.OAuth.ChannelElements.SigningBindingElementBase : object {
+    private string signatureMethod;
+    [CompilerGeneratedAttribute]
+private Channel <Channel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<ITamperResistantOAuthMessage> <SignatureCallback>k__BackingField;
+    public MessageProtections Protection { get; }
+    public Channel Channel { get; public set; }
+    public Action`1<ITamperResistantOAuthMessage> SignatureCallback { get; public set; }
+    internal SigningBindingElementBase(string signatureMethod);
+    public sealed virtual MessageProtections get_Protection();
+    [CompilerGeneratedAttribute]
+public sealed virtual Channel get_Channel();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Channel(Channel value);
+    [CompilerGeneratedAttribute]
+public sealed virtual Action`1<ITamperResistantOAuthMessage> get_SignatureCallback();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_SignatureCallback(Action`1<ITamperResistantOAuthMessage> value);
+    private sealed virtual override ITamperProtectionChannelBindingElement DotNetOpenAuth.Messaging.ITamperProtectionChannelBindingElement.Clone();
+    public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessOutgoingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+    public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessIncomingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+    internal static string ConstructSignatureBaseString(ITamperResistantOAuthMessage message, MessageDictionary messageDictionary);
+    internal string GetSignatureTestHook(ITamperResistantOAuthMessage message);
+    protected static string GetConsumerAndTokenSecretString(ITamperResistantOAuthMessage message);
+    protected virtual bool IsSignatureValid(ITamperResistantOAuthMessage message);
+    protected abstract virtual ITamperProtectionChannelBindingElement Clone();
+    protected abstract virtual string GetSignature(ITamperResistantOAuthMessage message);
+    protected virtual bool IsMessageApplicable(ITamperResistantOAuthMessage message);
+    private static int SignatureBaseStringParameterComparer(KeyValuePair`2<string, string> left, KeyValuePair`2<string, string> right);
+}
+internal class DotNetOpenAuth.OAuth.ChannelElements.SigningBindingElementChain : object {
+    private ITamperProtectionChannelBindingElement[] signers;
+    [CompilerGeneratedAttribute]
+private static Func`2<ITamperProtectionChannelBindingElement, MessageProtections> CS$<>9__CachedAnonymousMethodDelegate1;
+    [CompilerGeneratedAttribute]
+private static Func`2<ITamperProtectionChannelBindingElement, ITamperProtectionChannelBindingElement> CS$<>9__CachedAnonymousMethodDelegate11;
+    public Action`1<ITamperResistantOAuthMessage> SignatureCallback { get; public set; }
+    public MessageProtections Protection { get; }
+    public Channel Channel { get; public set; }
+    internal SigningBindingElementChain(ITamperProtectionChannelBindingElement[] signers);
+    public sealed virtual Action`1<ITamperResistantOAuthMessage> get_SignatureCallback();
+    public sealed virtual void set_SignatureCallback(Action`1<ITamperResistantOAuthMessage> value);
+    public sealed virtual MessageProtections get_Protection();
+    public sealed virtual Channel get_Channel();
+    public sealed virtual void set_Channel(Channel value);
+    [DebuggerStepThroughAttribute]
+[AsyncStateMachineAttribute("DotNetOpenAuth.OAuth.ChannelElements.SigningBindingElementChain/<ProcessOutgoingMessageAsync>d__2")]
+public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessOutgoingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+    [DebuggerStepThroughAttribute]
+[AsyncStateMachineAttribute("DotNetOpenAuth.OAuth.ChannelElements.SigningBindingElementChain/<ProcessIncomingMessageAsync>d__9")]
+public sealed virtual Task`1<Nullable`1<MessageProtections>> ProcessIncomingMessageAsync(IProtocolMessage message, CancellationToken cancellationToken);
+    private sealed virtual override ITamperProtectionChannelBindingElement DotNetOpenAuth.Messaging.ITamperProtectionChannelBindingElement.Clone();
+    [CompilerGeneratedAttribute]
+private static MessageProtections <.ctor>b__0(ITamperProtectionChannelBindingElement s);
+    [CompilerGeneratedAttribute]
+private static ITamperProtectionChannelBindingElement <DotNetOpenAuth.Messaging.ITamperProtectionChannelBindingElement.Clone>b__10(ITamperProtectionChannelBindingElement el);
+}
+public enum DotNetOpenAuth.OAuth.ChannelElements.TokenType : Enum {
+    public int value__;
+    public static TokenType RequestToken;
+    public static TokenType AccessToken;
+    public static TokenType InvalidToken;
+}
+internal class DotNetOpenAuth.OAuth.ChannelElements.UriOrOobEncoding : object {
+    private static string OutOfBandConfiguration;
+    public string EncodedNullValue { get; }
+    public sealed virtual string get_EncodedNullValue();
+    public sealed virtual string Encode(object value);
+    public sealed virtual object Decode(string value);
+}
+internal class DotNetOpenAuth.OAuth.ConsumerSecuritySettings : SecuritySettings {
+}
+public class DotNetOpenAuth.OAuth.Messages.AccessProtectedResourceRequest : SignedMessageBase {
+    private List`1<MultipartContentMember> binaryData;
+    [CompilerGeneratedAttribute]
+private string <AccessToken>k__BackingField;
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    [MessagePartAttribute("oauth_token")]
+public string AccessToken { get; public set; }
+    public IList`1<MultipartContentMember> BinaryData { get; }
+    public bool SendAsMultipart { get; }
+    protected internal AccessProtectedResourceRequest(MessageReceivingEndpoint serviceProvider, Version version);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    [CompilerGeneratedAttribute]
+public string get_AccessToken();
+    [CompilerGeneratedAttribute]
+public void set_AccessToken(string value);
+    public sealed virtual IList`1<MultipartContentMember> get_BinaryData();
+    public sealed virtual bool get_SendAsMultipart();
+}
+public class DotNetOpenAuth.OAuth.Messages.AuthorizedTokenRequest : SignedMessageBase {
+    [CompilerGeneratedAttribute]
+private string <VerificationCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequestToken>k__BackingField;
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    [MessagePartAttribute("oauth_verifier")]
+public string VerificationCode { get; public set; }
+    [MessagePartAttribute("oauth_token")]
+internal string RequestToken { get; internal set; }
+    internal AuthorizedTokenRequest(MessageReceivingEndpoint serviceProvider, Version version);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    [CompilerGeneratedAttribute]
+public string get_VerificationCode();
+    [CompilerGeneratedAttribute]
+public void set_VerificationCode(string value);
+    [CompilerGeneratedAttribute]
+internal string get_RequestToken();
+    [CompilerGeneratedAttribute]
+internal void set_RequestToken(string value);
+    protected virtual void EnsureValidMessage();
+}
+public class DotNetOpenAuth.OAuth.Messages.AuthorizedTokenResponse : MessageBase {
+    [CompilerGeneratedAttribute]
+private string <AccessToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TokenSecret>k__BackingField;
+    [MessagePartAttribute("oauth_token")]
+public string AccessToken { get; public set; }
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    private string DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.TokenSecret { get; private set; }
+    public IDictionary`2<string, string> ExtraData { get; }
+    [MessagePartAttribute("oauth_token_secret")]
+protected internal string TokenSecret { get; protected internal set; }
+    protected internal AuthorizedTokenResponse(AuthorizedTokenRequest originatingRequest);
+    [CompilerGeneratedAttribute]
+public string get_AccessToken();
+    [CompilerGeneratedAttribute]
+public void set_AccessToken(string value);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.get_TokenSecret();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.set_TokenSecret(string value);
+    public IDictionary`2<string, string> get_ExtraData();
+    [CompilerGeneratedAttribute]
+protected internal string get_TokenSecret();
+    [CompilerGeneratedAttribute]
+protected internal void set_TokenSecret(string value);
+}
+public interface DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage {
+    public string Token { get; public set; }
+    public abstract virtual string get_Token();
+    public abstract virtual void set_Token(string value);
+}
+public interface DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage {
+    public string TokenSecret { get; public set; }
+    public abstract virtual string get_TokenSecret();
+    public abstract virtual void set_TokenSecret(string value);
+}
+public abstract class DotNetOpenAuth.OAuth.Messages.MessageBase : object {
+    private Dictionary`2<string, string> extraData;
+    private MessageProtections protectionRequired;
+    private MessageTransport transport;
+    private MessageReceivingEndpoint recipient;
+    private IDirectedProtocolMessage originatingRequest;
+    private bool incoming;
+    [CompilerGeneratedAttribute]
+private static bool <LowSecurityMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Version <Version>k__BackingField;
+    private Version DotNetOpenAuth.Messaging.IMessage.Version { get; }
+    private MessageProtections DotNetOpenAuth.Messaging.IProtocolMessage.RequiredProtection { get; }
+    private MessageTransport DotNetOpenAuth.Messaging.IProtocolMessage.Transport { get; }
+    private IDictionary`2<string, string> DotNetOpenAuth.Messaging.IMessage.ExtraData { get; }
+    private Uri DotNetOpenAuth.Messaging.IDirectedProtocolMessage.Recipient { get; }
+    private HttpDeliveryMethods DotNetOpenAuth.Messaging.IDirectedProtocolMessage.HttpMethods { get; }
+    private IDirectedProtocolMessage DotNetOpenAuth.Messaging.IDirectResponseProtocolMessage.OriginatingRequest { get; }
+    internal static bool LowSecurityMode { get; internal set; }
+    protected internal bool Incoming { get; }
+    protected internal Version Version { get; private set; }
+    protected MessageProtections RequiredProtection { get; }
+    protected MessageTransport Transport { get; }
+    protected IDictionary`2<string, string> ExtraData { get; }
+    protected HttpDeliveryMethods HttpMethods { get; }
+    protected Uri Recipient { get; protected set; }
+    protected IDirectedProtocolMessage OriginatingRequest { get; }
+    protected MessageBase(MessageProtections protectionRequired, IDirectedProtocolMessage originatingRequest, Version version);
+    protected MessageBase(MessageProtections protectionRequired, MessageTransport transport, MessageReceivingEndpoint recipient, Version version);
+    private sealed virtual override Version DotNetOpenAuth.Messaging.IMessage.get_Version();
+    private sealed virtual override MessageProtections DotNetOpenAuth.Messaging.IProtocolMessage.get_RequiredProtection();
+    private sealed virtual override MessageTransport DotNetOpenAuth.Messaging.IProtocolMessage.get_Transport();
+    private sealed virtual override IDictionary`2<string, string> DotNetOpenAuth.Messaging.IMessage.get_ExtraData();
+    private sealed virtual override Uri DotNetOpenAuth.Messaging.IDirectedProtocolMessage.get_Recipient();
+    private sealed virtual override HttpDeliveryMethods DotNetOpenAuth.Messaging.IDirectedProtocolMessage.get_HttpMethods();
+    private sealed virtual override IDirectedProtocolMessage DotNetOpenAuth.Messaging.IDirectResponseProtocolMessage.get_OriginatingRequest();
+    [CompilerGeneratedAttribute]
+internal static bool get_LowSecurityMode();
+    [CompilerGeneratedAttribute]
+internal static void set_LowSecurityMode(bool value);
+    protected internal bool get_Incoming();
+    [CompilerGeneratedAttribute]
+protected internal Version get_Version();
+    [CompilerGeneratedAttribute]
+private void set_Version(Version value);
+    protected MessageProtections get_RequiredProtection();
+    protected MessageTransport get_Transport();
+    protected IDictionary`2<string, string> get_ExtraData();
+    protected HttpDeliveryMethods get_HttpMethods();
+    protected Uri get_Recipient();
+    protected void set_Recipient(Uri value);
+    protected IDirectedProtocolMessage get_OriginatingRequest();
+    private sealed virtual override void DotNetOpenAuth.Messaging.IMessage.EnsureValidMessage();
+    internal virtual string ToString(Channel channel);
+    internal void SetAsIncoming();
+    protected virtual void EnsureValidMessage();
+}
+public class DotNetOpenAuth.OAuth.Messages.SignedMessageBase : MessageBase {
+    private static DateTime epoch;
+    [MessagePartAttribute("oauth_timestamp")]
+private long timestamp;
+    [CompilerGeneratedAttribute]
+private string <ConsumerKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.Nonce>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <OriginalPayload>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SignatureMethod>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TokenSecret>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConsumerSecret>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HttpMethod <HttpMethod>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Signature>k__BackingField;
+    private string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.SignatureMethod { get; private set; }
+    private string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.TokenSecret { get; private set; }
+    [MessagePartAttribute("oauth_consumer_key")]
+public string ConsumerKey { get; public set; }
+    private string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.ConsumerSecret { get; private set; }
+    private HttpMethod DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.HttpMethod { get; private set; }
+    private Uri DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.Recipient { get; private set; }
+    private string DotNetOpenAuth.Messaging.ITamperResistantProtocolMessage.Signature { get; private set; }
+    private DateTime DotNetOpenAuth.Messaging.Bindings.IExpiringProtocolMessage.UtcCreationDate { get; private set; }
+    private string DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.NonceContext { get; }
+    [MessagePartAttribute("oauth_nonce")]
+private string DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.Nonce { get; private set; }
+    private IDictionary`2<string, string> DotNetOpenAuth.Messaging.IMessageOriginalPayload.OriginalPayload { get; private set; }
+    protected IDictionary`2<string, string> OriginalPayload { get; protected set; }
+    [MessagePartAttribute("oauth_signature_method")]
+protected string SignatureMethod { get; protected set; }
+    protected string TokenSecret { get; protected set; }
+    protected string ConsumerSecret { get; protected set; }
+    protected HttpMethod HttpMethod { get; protected set; }
+    [MessagePartAttribute("oauth_signature")]
+protected string Signature { get; protected set; }
+    [MessagePartAttribute("oauth_version")]
+private string OAuthVersion { get; private set; }
+    internal SignedMessageBase(MessageTransport transport, MessageReceivingEndpoint recipient, Version version);
+    private static SignedMessageBase();
+    private sealed virtual override string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.get_SignatureMethod();
+    private sealed virtual override void DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.set_SignatureMethod(string value);
+    private sealed virtual override string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.get_TokenSecret();
+    private sealed virtual override void DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.set_TokenSecret(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConsumerKey();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ConsumerKey(string value);
+    private sealed virtual override string DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.get_ConsumerSecret();
+    private sealed virtual override void DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.set_ConsumerSecret(string value);
+    private sealed virtual override HttpMethod DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.get_HttpMethod();
+    private sealed virtual override void DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.set_HttpMethod(HttpMethod value);
+    private sealed virtual override Uri DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.get_Recipient();
+    private sealed virtual override void DotNetOpenAuth.OAuth.ChannelElements.ITamperResistantOAuthMessage.set_Recipient(Uri value);
+    private sealed virtual override string DotNetOpenAuth.Messaging.ITamperResistantProtocolMessage.get_Signature();
+    private sealed virtual override void DotNetOpenAuth.Messaging.ITamperResistantProtocolMessage.set_Signature(string value);
+    private sealed virtual override DateTime DotNetOpenAuth.Messaging.Bindings.IExpiringProtocolMessage.get_UtcCreationDate();
+    private sealed virtual override void DotNetOpenAuth.Messaging.Bindings.IExpiringProtocolMessage.set_UtcCreationDate(DateTime value);
+    private sealed virtual override string DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.get_NonceContext();
+    [CompilerGeneratedAttribute]
+private sealed virtual override string DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.get_Nonce();
+    [CompilerGeneratedAttribute]
+private sealed virtual override void DotNetOpenAuth.Messaging.Bindings.IReplayProtectedProtocolMessage.set_Nonce(string value);
+    private sealed virtual override IDictionary`2<string, string> DotNetOpenAuth.Messaging.IMessageOriginalPayload.get_OriginalPayload();
+    private sealed virtual override void DotNetOpenAuth.Messaging.IMessageOriginalPayload.set_OriginalPayload(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+protected IDictionary`2<string, string> get_OriginalPayload();
+    [CompilerGeneratedAttribute]
+protected void set_OriginalPayload(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+protected string get_SignatureMethod();
+    [CompilerGeneratedAttribute]
+protected void set_SignatureMethod(string value);
+    [CompilerGeneratedAttribute]
+protected string get_TokenSecret();
+    [CompilerGeneratedAttribute]
+protected void set_TokenSecret(string value);
+    [CompilerGeneratedAttribute]
+protected string get_ConsumerSecret();
+    [CompilerGeneratedAttribute]
+protected void set_ConsumerSecret(string value);
+    [CompilerGeneratedAttribute]
+protected HttpMethod get_HttpMethod();
+    [CompilerGeneratedAttribute]
+protected void set_HttpMethod(HttpMethod value);
+    [CompilerGeneratedAttribute]
+protected string get_Signature();
+    [CompilerGeneratedAttribute]
+protected void set_Signature(string value);
+    private string get_OAuthVersion();
+    private void set_OAuthVersion(string value);
+}
+public class DotNetOpenAuth.OAuth.Messages.UnauthorizedTokenRequest : SignedMessageBase {
+    [CompilerGeneratedAttribute]
+private Uri <Callback>k__BackingField;
+    [MessagePartAttribute("oauth_callback")]
+public Uri Callback { get; public set; }
+    public IDictionary`2<string, string> ExtraData { get; }
+    protected internal UnauthorizedTokenRequest(MessageReceivingEndpoint serviceProvider, Version version);
+    [CompilerGeneratedAttribute]
+public Uri get_Callback();
+    [CompilerGeneratedAttribute]
+public void set_Callback(Uri value);
+    public IDictionary`2<string, string> get_ExtraData();
+}
+public class DotNetOpenAuth.OAuth.Messages.UnauthorizedTokenResponse : MessageBase {
+    [CompilerGeneratedAttribute]
+private string <RequestToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TokenSecret>k__BackingField;
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    private string DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.TokenSecret { get; private set; }
+    public IDictionary`2<string, string> ExtraData { get; }
+    [MessagePartAttribute("oauth_token")]
+internal string RequestToken { get; internal set; }
+    internal UnauthorizedTokenRequest RequestMessage { get; }
+    [MessagePartAttribute("oauth_token_secret")]
+protected internal string TokenSecret { get; protected internal set; }
+    [MessagePartAttribute("oauth_callback_confirmed")]
+private bool CallbackConfirmed { get; }
+    protected internal UnauthorizedTokenResponse(UnauthorizedTokenRequest requestMessage, string requestToken, string tokenSecret);
+    protected internal UnauthorizedTokenResponse(UnauthorizedTokenRequest originatingRequest, Version version);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.get_TokenSecret();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenSecretContainingMessage.set_TokenSecret(string value);
+    public IDictionary`2<string, string> get_ExtraData();
+    [CompilerGeneratedAttribute]
+internal string get_RequestToken();
+    [CompilerGeneratedAttribute]
+internal void set_RequestToken(string value);
+    internal UnauthorizedTokenRequest get_RequestMessage();
+    [CompilerGeneratedAttribute]
+protected internal string get_TokenSecret();
+    [CompilerGeneratedAttribute]
+protected internal void set_TokenSecret(string value);
+    private bool get_CallbackConfirmed();
+}
+public class DotNetOpenAuth.OAuth.Messages.UserAuthorizationRequest : MessageBase {
+    [CompilerGeneratedAttribute]
+private string <RequestToken>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <Callback>k__BackingField;
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    public IDictionary`2<string, string> ExtraData { get; }
+    public bool IsUnsafeRequest { get; }
+    [MessagePartAttribute("oauth_token")]
+public string RequestToken { get; internal set; }
+    [MessagePartAttribute("oauth_callback")]
+internal Uri Callback { get; internal set; }
+    internal UserAuthorizationRequest(MessageReceivingEndpoint serviceProvider, string requestToken, Version version);
+    internal UserAuthorizationRequest(MessageReceivingEndpoint serviceProvider, Version version);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    public IDictionary`2<string, string> get_ExtraData();
+    public bool get_IsUnsafeRequest();
+    [CompilerGeneratedAttribute]
+public string get_RequestToken();
+    [CompilerGeneratedAttribute]
+internal void set_RequestToken(string value);
+    [CompilerGeneratedAttribute]
+internal Uri get_Callback();
+    [CompilerGeneratedAttribute]
+internal void set_Callback(Uri value);
+}
+public class DotNetOpenAuth.OAuth.Messages.UserAuthorizationResponse : MessageBase {
+    [CompilerGeneratedAttribute]
+private string <VerificationCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RequestToken>k__BackingField;
+    private string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.Token { get; private set; }
+    [MessagePartAttribute("oauth_verifier")]
+public string VerificationCode { get; public set; }
+    [MessagePartAttribute("oauth_token")]
+internal string RequestToken { get; internal set; }
+    internal UserAuthorizationResponse(Uri consumer, Version version);
+    private sealed virtual override string DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.get_Token();
+    private sealed virtual override void DotNetOpenAuth.OAuth.Messages.ITokenContainingMessage.set_Token(string value);
+    [CompilerGeneratedAttribute]
+public string get_VerificationCode();
+    [CompilerGeneratedAttribute]
+public void set_VerificationCode(string value);
+    [CompilerGeneratedAttribute]
+internal string get_RequestToken();
+    [CompilerGeneratedAttribute]
+internal void set_RequestToken(string value);
+}
+[CompilerGeneratedAttribute]
+[DebuggerNonUserCodeAttribute]
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+internal class DotNetOpenAuth.OAuth.OAuthStrings : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string AccessTokenNotAuthorized { get; }
+    internal static string BadAccessTokenInProtectedResourceRequest { get; }
+    internal static string ConsumerOrTokenSecretNotFound { get; }
+    internal static string IncorrectVerifier { get; }
+    internal static string InvalidIncomingMessage { get; }
+    internal static string MessageNotAllowedExtraParameters { get; }
+    internal static string MinimumConsumerVersionRequirementNotMet { get; }
+    internal static string MultipartPostMustBeUsedWithAuthHeader { get; }
+    internal static string OpenIdOAuthExtensionRequiresSpecialTokenManagerInterface { get; }
+    internal static string OpenIdOAuthRealmConsumerKeyDoNotMatch { get; }
+    internal static string RequestUrlMustNotHaveOAuthParameters { get; }
+    internal static string SigningElementAlreadyAssociatedWithChannel { get; }
+    internal static string SigningElementsMustShareSameProtection { get; }
+    internal static string TokenNotFound { get; }
+    internal static string X509CertificateNotProvidedForSigning { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_AccessTokenNotAuthorized();
+    internal static string get_BadAccessTokenInProtectedResourceRequest();
+    internal static string get_ConsumerOrTokenSecretNotFound();
+    internal static string get_IncorrectVerifier();
+    internal static string get_InvalidIncomingMessage();
+    internal static string get_MessageNotAllowedExtraParameters();
+    internal static string get_MinimumConsumerVersionRequirementNotMet();
+    internal static string get_MultipartPostMustBeUsedWithAuthHeader();
+    internal static string get_OpenIdOAuthExtensionRequiresSpecialTokenManagerInterface();
+    internal static string get_OpenIdOAuthRealmConsumerKeyDoNotMatch();
+    internal static string get_RequestUrlMustNotHaveOAuthParameters();
+    internal static string get_SigningElementAlreadyAssociatedWithChannel();
+    internal static string get_SigningElementsMustShareSameProtection();
+    internal static string get_TokenNotFound();
+    internal static string get_X509CertificateNotProvidedForSigning();
+}
+[DebuggerDisplayAttribute("OAuth {Version}")]
+internal class DotNetOpenAuth.OAuth.Protocol : object {
+    internal static string DataContractNamespaceV10;
+    internal static string ParameterPrefix;
+    internal static string V10aVersion;
+    internal static string AuthorizationHeaderScheme;
+    internal static string CallbackParameter;
+    internal static string CallbackConfirmedParameter;
+    internal static string TokenParameter;
+    internal static string TokenSecretParameter;
+    internal static string VerifierParameter;
+    internal static Protocol V10;
+    internal static Protocol V10a;
+    internal static List`1<Protocol> AllVersions;
+    internal static Protocol Default;
+    private string dataContractNamespace;
+    [CompilerGeneratedAttribute]
+private Version <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PublishedVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ProtocolVersion <ProtocolVersion>k__BackingField;
+    internal Version Version { get; private set; }
+    internal string PublishedVersion { get; private set; }
+    internal ProtocolVersion ProtocolVersion { get; private set; }
+    internal string DataContractNamespace { get; }
+    private static Protocol();
+    [CompilerGeneratedAttribute]
+internal Version get_Version();
+    [CompilerGeneratedAttribute]
+private void set_Version(Version value);
+    [CompilerGeneratedAttribute]
+internal string get_PublishedVersion();
+    [CompilerGeneratedAttribute]
+private void set_PublishedVersion(string value);
+    [CompilerGeneratedAttribute]
+internal ProtocolVersion get_ProtocolVersion();
+    [CompilerGeneratedAttribute]
+private void set_ProtocolVersion(ProtocolVersion value);
+    internal string get_DataContractNamespace();
+    public static Protocol Lookup(ProtocolVersion version);
+    internal static Protocol Lookup(Version version);
+}
+public enum DotNetOpenAuth.OAuth.ProtocolVersion : Enum {
+    public int value__;
+    public static ProtocolVersion V10;
+    public static ProtocolVersion V10a;
+}
+public class DotNetOpenAuth.OAuth.SecuritySettings : object {
+}
+public class DotNetOpenAuth.OAuth.ServiceProviderSecuritySettings : SecuritySettings {
+    [CompilerGeneratedAttribute]
+private ProtocolVersion <MinimumRequiredOAuthVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <MaximumRequestTokenTimeToLive>k__BackingField;
+    public ProtocolVersion MinimumRequiredOAuthVersion { get; public set; }
+    public TimeSpan MaximumRequestTokenTimeToLive { get; public set; }
+    [CompilerGeneratedAttribute]
+public ProtocolVersion get_MinimumRequiredOAuthVersion();
+    [CompilerGeneratedAttribute]
+public void set_MinimumRequiredOAuthVersion(ProtocolVersion value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_MaximumRequestTokenTimeToLive();
+    [CompilerGeneratedAttribute]
+public void set_MaximumRequestTokenTimeToLive(TimeSpan value);
+}
+internal class ThisAssembly : object {
+    internal static string AssemblyVersion;
+    internal static string AssemblyFileVersion;
+    internal static string AssemblyInformationalVersion;
+    internal static string AssemblyTitle;
+    internal static string AssemblyProduct;
+}

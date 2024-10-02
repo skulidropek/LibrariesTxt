@@ -1,0 +1,1671 @@
+public class Microsoft.DocAsCode.Common.AggregatedLogListener : object {
+    private LogLevel _threshold;
+    private ILoggerListener _innerListener;
+    private SortedList`2<LogLevel, List`1<ILogItem>> _aggregatedList;
+    public AggregatedLogListener(AggregatedLogListener other);
+    public AggregatedLogListener(LogLevel threshold);
+    public sealed virtual void Flush();
+    public sealed virtual void Dispose();
+    public sealed virtual void WriteLine(ILogItem item);
+    private void WriteHeader(BuildStatus status);
+    private void WriteFooter(BuildStatus status);
+    private void WriteLineCore(ILogItem item);
+    private static void WriteToConsole(string message, BuildStatus status);
+    private static void WriteToConsole(string message, ConsoleColor color);
+    private static BuildStatus GetBuildStatusFromLogLevel(LogLevel level);
+}
+public class Microsoft.DocAsCode.Common.AggregatedPerformanceScope : object {
+    private ConcurrentDictionary`2<string, Lazy`1<AggregatedPerformance>> _aggregatedPerformanceByPhase;
+    private LogLevel _logLevel;
+    public AggregatedPerformanceScope(Nullable`1<LogLevel> logLevel);
+    public void Log(TimeSpan elapsedTime);
+    public sealed virtual void Dispose();
+}
+public class Microsoft.DocAsCode.Common.AmbientContext : ValueType {
+    private static string AMBCTX_NAME;
+    private Int64[] _counterRef;
+    private Object[] _originalAmbientContext;
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    public string Id { get; private set; }
+    public static Nullable`1<AmbientContext> CurrentContext { get; }
+    private AmbientContext(string id);
+    internal AmbientContext(AmbientContext context);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+private void set_Id(string value);
+    public static Nullable`1<AmbientContext> get_CurrentContext();
+    public static AmbientContext GetOrCreateAmbientContext();
+    public static AmbientContext InitializeAmbientContext(string id);
+    public string GenerateNextCorrelationId();
+    public AmbientContext CreateBranch();
+    public sealed virtual void Dispose();
+    private static Nullable`1<AmbientContext> GetCurrentContext();
+    private static Object[] GetCurrentContextRaw();
+    private static void SetCurrentContextRaw(Object[] raw);
+    private static void RemoveAmbientContext();
+    private Object[] ToObjectArray();
+    private static Nullable`1<AmbientContext> ToAmbientContext(Object[] objs);
+}
+public class Microsoft.DocAsCode.Common.AsyncConcurrentCache`2 : object {
+    private ConcurrentDictionary`2<TKey, Lazy`1<Task`1<TValue>>> _cache;
+    public List`1<Task`1<TValue>> Values { get; }
+    public AsyncConcurrentCache`2(IEqualityComparer`1<TKey> comparer);
+    public Task`1<TValue> GetOrAdd(TKey key, Func`2<TKey, Task`1<TValue>> valueFactory, bool removeKeyOnFaulted);
+    public bool TryGetValue(TKey key, Task`1& value);
+    public List`1<Task`1<TValue>> get_Values();
+}
+public class Microsoft.DocAsCode.Common.AsyncLogListener : object {
+    private BlockingCollection`1<ILogItem> _logQueue;
+    private ManualResetEvent _signal;
+    private CompositeLogListener _inner;
+    private Lazy`1<Task> _loggingTask;
+    private int TimeoutMilliseconds;
+    public AsyncLogListener(IEnumerable`1<ILoggerListener> listeners);
+    public AsyncLogListener(CompositeLogListener compositeLogListener);
+    public void AddListener(ILoggerListener listener);
+    public void AddListeners(IEnumerable`1<ILoggerListener> listeners);
+    public ILoggerListener FindListener(Predicate`1<ILoggerListener> predicate);
+    public void RemoveListener(ILoggerListener listener);
+    public void RemoveAllListeners();
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Flush();
+    public sealed virtual void Dispose();
+    private void WaitForLoggingComplete();
+    private void AddLogToQueue(ILogItem item);
+    private Task InitTask();
+    private Task CreateLoggingTask();
+    private void LoggingTask();
+    private void LogCore(ILogItem item);
+}
+public class Microsoft.DocAsCode.Common.CircularBuffer`1 : object {
+    private T[] _buffer;
+    private int _index;
+    private int _count;
+    public int Count { get; }
+    private int WriteIndex { get; }
+    public CircularBuffer`1(int capacity);
+    public void Write(T item);
+    public void Write(T[] items);
+    public void Write(T[] items, int startIndex, int count);
+    public T Read();
+    public int Read(T[] buffer, int startIndex, int count);
+    public int get_Count();
+    private int get_WriteIndex();
+    private void EnsureCapacity(int count);
+    private void Resize(int capacity);
+}
+public class Microsoft.DocAsCode.Common.CircularStream : object {
+    private CircularBuffer`1<byte> _buffer;
+    private object _syncRoot;
+    private bool _eof;
+    private int Read(Byte[] buffer, int offset, int count);
+    private void Write(Byte[] buffer, int offset, int count);
+    private void Eof();
+    public Stream CreateReaderView();
+    public Stream CreateWriterView();
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.CollectionExtensions : object {
+    [IteratorStateMachineAttribute("Microsoft.DocAsCode.Common.CollectionExtensions/<Merge>d__0`2")]
+[ExtensionAttribute]
+public static IEnumerable`1<TResult> Merge(IReadOnlyList`1<IEnumerable`1<TItem>> sources, IComparer`1<TItem> comparer, Func`2<List`1<TItem>, TResult> merger);
+    private static bool MoveNext(EnumeratorInfo`1[] enumerators, List`1<int> indexes, IComparer`1<TItem> comparer, Func`2<List`1<TItem>, TResult> merger, TResult& result);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.CollectionUtility : object {
+    [ExtensionAttribute]
+public static Dictionary`2<string, List`1<T>> Merge(IDictionary`2<string, List`1<T>> left, IEnumerable`1<KeyValuePair`2<string, IEnumerable`1<T>>> right);
+    [ExtensionAttribute]
+public static void Merge(Dictionary`2<string, List`1<T>> left, IEnumerable`1<KeyValuePair`2<string, ImmutableList`1<T>>> right);
+    [ExtensionAttribute]
+public static ImmutableDictionary`2<string, ImmutableList`1<T>> Merge(ImmutableDictionary`2<string, ImmutableList`1<T>> left, IEnumerable`1<KeyValuePair`2<string, TRight>> right);
+    [ExtensionAttribute]
+public static ImmutableArray`1<T> GetLongestCommonSequence(ImmutableArray`1<T> leftItems, ImmutableArray`1<T> rightItems);
+}
+public class Microsoft.DocAsCode.Common.CommandInfo : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WorkingDirectory>k__BackingField;
+    public string Name { get; public set; }
+    public string Arguments { get; public set; }
+    public string WorkingDirectory { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(string value);
+    [CompilerGeneratedAttribute]
+public string get_WorkingDirectory();
+    [CompilerGeneratedAttribute]
+public void set_WorkingDirectory(string value);
+}
+public static class Microsoft.DocAsCode.Common.CommandUtility : object {
+    public static int RunCommand(CommandInfo commandInfo, StreamWriter stdoutWriter, StreamWriter stderrWriter, int timeoutInMilliseconds);
+    public static bool ExistCommand(string commandName, Action`1<string> processOutput, Action`1<string> processError);
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.DocAsCode.Common.CompositeDictionary : object {
+    private ImmutableArray`1<Entry> _entries;
+    public object Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<object> Values { get; }
+    private CompositeDictionary(ImmutableArray`1<Entry> entries);
+    public sealed virtual object get_Item(string key);
+    public sealed virtual void set_Item(string key, object value);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual ICollection`1<string> get_Keys();
+    public sealed virtual ICollection`1<object> get_Values();
+    private sealed virtual override void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Add(KeyValuePair`2<string, object> item);
+    public sealed virtual void Add(string key, object value);
+    public sealed virtual void Clear();
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Contains(KeyValuePair`2<string, object> item);
+    public sealed virtual bool ContainsKey(string key);
+    private sealed virtual override void System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    [IteratorStateMachineAttribute("Microsoft.DocAsCode.Common.CompositeDictionary/<GetEnumerator>d__20")]
+public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Remove(KeyValuePair`2<string, object> item);
+    public sealed virtual bool Remove(string key);
+    public sealed virtual bool TryGetValue(string key, Object& value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public static Builder CreateBuilder();
+}
+public class Microsoft.DocAsCode.Common.CompositeLogListener : object {
+    private object _sync;
+    private List`1<ILoggerListener> _listeners;
+    public int Count { get; }
+    public CompositeLogListener(IEnumerable`1<ILoggerListener> listeners);
+    public int get_Count();
+    public void AddListener(ILoggerListener listener);
+    public void AddListeners(IEnumerable`1<ILoggerListener> listeners);
+    public ILoggerListener FindListener(Predicate`1<ILoggerListener> predicate);
+    public void RemoveListener(ILoggerListener listener);
+    public void RemoveAllListeners();
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Flush();
+    public sealed virtual void Dispose();
+}
+public class Microsoft.DocAsCode.Common.CompositeStream : Stream {
+    private Stream[] _streams;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public CompositeStream(Stream[] streams);
+    public CompositeStream(IEnumerable`1<Stream> streams);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Flush();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void Close();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual int ReadByte();
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void WriteByte(byte value);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+}
+public class Microsoft.DocAsCode.Common.ComputerResource : object {
+    private static ComputerResourceCollection _resources;
+    private ComputerResource _outer;
+    private ComputerResourceType _type;
+    private ComputerResource(ComputerResourceType type, bool freeSlot);
+    private static ComputerResource();
+    public static void SetResources(ComputerResourceCollection resources);
+    public static ComputerResource Require(ComputerResourceType type);
+    public static ComputerResource NewThread();
+    private static void SetResourceType(ComputerResource resource);
+    private static ComputerResource GetResourceType();
+    public static int GetAvailableCpuResource();
+    public static int GetAvailableDiskIOResource();
+    public static int GetAvailableNetworkIOResource();
+    public sealed virtual void Dispose();
+}
+public class Microsoft.DocAsCode.Common.ComputerResourceCollection : object {
+    public static int DefaultDiskIOThreshold;
+    public static int DefaultNetworkIOThreshold;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <CpuResource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <DiskIOResource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SemaphoreSlim <NetworkIOResource>k__BackingField;
+    public SemaphoreSlim CpuResource { get; }
+    public SemaphoreSlim DiskIOResource { get; }
+    public SemaphoreSlim NetworkIOResource { get; }
+    public ComputerResourceCollection(int cpu, int diskIO, int networkIO);
+    [CompilerGeneratedAttribute]
+public SemaphoreSlim get_CpuResource();
+    [CompilerGeneratedAttribute]
+public SemaphoreSlim get_DiskIOResource();
+    [CompilerGeneratedAttribute]
+public SemaphoreSlim get_NetworkIOResource();
+    public void RequireResource(ComputerResourceType current, ComputerResourceType target);
+}
+[FlagsAttribute]
+public enum Microsoft.DocAsCode.Common.ComputerResourceType : Enum {
+    public int value__;
+    public static ComputerResourceType None;
+    public static ComputerResourceType Cpu;
+    public static ComputerResourceType DiskIO;
+    public static ComputerResourceType NetworkIO;
+}
+public class Microsoft.DocAsCode.Common.ConsoleLogListener : object {
+    private static LogLevel LogLevelThreshold;
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Dispose();
+    public sealed virtual void Flush();
+    private ConsoleColor GetConsoleColor(LogLevel level);
+}
+public static class Microsoft.DocAsCode.Common.ConsoleUtility : object {
+    public static void Write(string message, ConsoleColor color);
+    public static void WriteLine(string message, ConsoleColor color);
+}
+public static class Microsoft.DocAsCode.Common.ConvertToObjectHelper : object {
+    public static object ConvertExpandoObjectToObject(object raw);
+    public static object ConvertJObjectToObject(object raw);
+    public static object ConvertStrongTypeToObject(object raw);
+    public static object ConvertStrongTypeToJObject(object raw);
+    public static object ConvertToDynamic(object obj);
+    private static object ConvertExpandoObjectToObjectCore(object obj, Dictionary`2<object, object> cache);
+    private static object ConvertToDynamicCore(object obj, Dictionary`2<object, object> cache);
+}
+public class Microsoft.DocAsCode.Common.CrossAppDomainListener : MarshalByRefObject {
+    public LogLevel LogLevelThreshold { get; public set; }
+    public LogLevel get_LogLevelThreshold();
+    public void set_LogLevelThreshold(LogLevel value);
+    public sealed virtual void Dispose();
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Flush();
+}
+internal class Microsoft.DocAsCode.Common.EmptyFileReader : object {
+    public static EmptyFileReader Instance;
+    private static EmptyFileReader();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.DictionaryMerger : MergerDecorator {
+    public DictionaryMerger(IMerger inner);
+    public virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+}
+[DefaultMemberAttribute("Item")]
+public interface Microsoft.DocAsCode.Common.EntityMergers.IMergeContext {
+    public IMerger Merger { get; }
+    public object Item { get; }
+    public abstract virtual IMerger get_Merger();
+    public abstract virtual object get_Item(string key);
+}
+public interface Microsoft.DocAsCode.Common.EntityMergers.IMergeHandler {
+    public abstract virtual void Merge(Object& source, object overrides, IMergeContext context);
+}
+public interface Microsoft.DocAsCode.Common.EntityMergers.IMerger {
+    public abstract virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+    public abstract virtual bool TestKey(object source, object overrides, Type type, IMergeContext context);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.JArrayMerger : MergerDecorator {
+    public JArrayMerger(IMerger inner);
+    public virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+    private static void Merge(JArray source, List`1<object> overridesList, IMergeContext context);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.JObjectMerger : MergerDecorator {
+    public JObjectMerger(IMerger inner);
+    public virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+    private static void Merge(JObject source, Dictionary`2<object, object> overridesDict, IMergeContext context);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.KeyedListMerger : MergerDecorator {
+    public KeyedListMerger(IMerger inner);
+    public virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.DocAsCode.Common.EntityMergers.MergeContext : object {
+    private IReadOnlyDictionary`2<string, object> Data;
+    [CompilerGeneratedAttribute]
+private IMerger <Merger>k__BackingField;
+    public IMerger Merger { get; }
+    public object Item { get; }
+    public MergeContext(IMerger merger, IReadOnlyDictionary`2<string, object> data);
+    [CompilerGeneratedAttribute]
+public sealed virtual IMerger get_Merger();
+    public sealed virtual object get_Item(string key);
+}
+public enum Microsoft.DocAsCode.Common.EntityMergers.MergeOption : Enum {
+    public int value__;
+    public static MergeOption MergeKey;
+    public static MergeOption Ignore;
+    public static MergeOption Merge;
+    public static MergeOption MergeNullOrDefault;
+    public static MergeOption Replace;
+    public static MergeOption ReplaceNullOrDefault;
+}
+[AttributeUsageAttribute("128")]
+public class Microsoft.DocAsCode.Common.EntityMergers.MergeOptionAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private MergeOption <Option>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMergeHandler <Handler>k__BackingField;
+    public MergeOption Option { get; }
+    public IMergeHandler Handler { get; }
+    public MergeOptionAttribute(MergeOption option);
+    public MergeOptionAttribute(Type handlerType);
+    [CompilerGeneratedAttribute]
+public MergeOption get_Option();
+    [CompilerGeneratedAttribute]
+public IMergeHandler get_Handler();
+}
+public abstract class Microsoft.DocAsCode.Common.EntityMergers.MergerDecorator : object {
+    private IMerger _inner;
+    protected MergerDecorator(IMerger inner);
+    public virtual void Merge(Object& source, object overrides, Type type, IMergeContext context);
+    public virtual bool TestKey(object source, object overrides, Type type, IMergeContext context);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.MergerFacade : object {
+    private IMerger _merger;
+    public MergerFacade(IMerger merger);
+    public void Merge(T& source, T overrides, IReadOnlyDictionary`2<string, object> data);
+}
+public class Microsoft.DocAsCode.Common.EntityMergers.ReflectionEntityMerger : object {
+    private ConcurrentDictionary`2<Type, PropertyMergerImpl> _cache;
+    private void Merge(Object& source, object overrides, Type type, IMergeContext context);
+    private sealed virtual override void Microsoft.DocAsCode.Common.EntityMergers.IMerger.Merge(Object& source, object overrides, Type type, IMergeContext context);
+    private sealed virtual override bool Microsoft.DocAsCode.Common.EntityMergers.IMerger.TestKey(object source, object overrides, Type type, IMergeContext context);
+}
+public static class Microsoft.DocAsCode.Common.ErrorCodes : object {
+}
+internal class Microsoft.DocAsCode.Common.FallbackFileReader : object {
+    [CompilerGeneratedAttribute]
+private ImmutableArray`1<IFileReader> <Readers>k__BackingField;
+    public ImmutableArray`1<IFileReader> Readers { get; }
+    public FallbackFileReader(ImmutableArray`1<IFileReader> readers);
+    [CompilerGeneratedAttribute]
+public ImmutableArray`1<IFileReader> get_Readers();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.FileAbstractLayer : object {
+    [CompilerGeneratedAttribute]
+private IFileReader <Reader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IFileWriter <Writer>k__BackingField;
+    private bool _disposed;
+    public IFileReader Reader { get; }
+    public IFileWriter Writer { get; }
+    public bool CanRead { get; }
+    public bool CanWrite { get; }
+    public FileAbstractLayer(IFileReader reader, IFileWriter writer);
+    [CompilerGeneratedAttribute]
+public IFileReader get_Reader();
+    [CompilerGeneratedAttribute]
+public IFileWriter get_Writer();
+    public sealed virtual bool get_CanRead();
+    public sealed virtual bool get_CanWrite();
+    public IEnumerable`1<RelativePath> GetAllInputFiles();
+    public bool Exists(RelativePath file);
+    public Stream OpenRead(RelativePath file);
+    public Stream Create(RelativePath file);
+    public void Copy(RelativePath sourceFileName, RelativePath destFileName);
+    public ImmutableDictionary`2<string, string> GetProperties(RelativePath file);
+    public string GetPhysicalPath(RelativePath file);
+    public IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+    public string CreateRandomFileName();
+    public Tuple`2<string, Stream> CreateRandomFile();
+    private sealed virtual override IEnumerable`1<string> Microsoft.DocAsCode.Plugins.IFileAbstractLayer.GetAllInputFiles();
+    public sealed virtual bool Exists(string file);
+    public sealed virtual Stream OpenRead(string file);
+    public sealed virtual Stream Create(string file);
+    public sealed virtual void Copy(string sourceFileName, string destFileName);
+    public sealed virtual ImmutableDictionary`2<string, string> GetProperties(string file);
+    public sealed virtual string GetPhysicalPath(string file);
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(string file);
+    protected virtual void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+    private PathMapping FindPhysicalPath(RelativePath file);
+    private void EnsureNotDisposed();
+}
+public class Microsoft.DocAsCode.Common.FileAbstractLayerBuilder : object {
+    public static FileAbstractLayerBuilder Default;
+    private IFileReader _reader;
+    private IFileWriter _writer;
+    private FileAbstractLayerBuilder(IFileReader reader, IFileWriter writer);
+    private static FileAbstractLayerBuilder();
+    public FileAbstractLayerBuilder ReadFromRealFileSystem(string folder);
+    public FileAbstractLayerBuilder ReadFromRealFileSystem(string folder, ImmutableDictionary`2<string, string> properties);
+    public FileAbstractLayerBuilder ReadFromLink(PathMapping[] mappings);
+    public FileAbstractLayerBuilder ReadFromManifest(Manifest manifest, string manifestFolder);
+    public FileAbstractLayerBuilder WriteToManifest(Manifest manifest, string manifestFolder, string outputFolder);
+    public FileAbstractLayerBuilder FallbackReadFromInput(FileAbstractLayer fal);
+    public FileAbstractLayerBuilder FallbackReadFromOutput(FileAbstractLayer fal);
+    public FileAbstractLayerBuilder ReadFromOutput(FileAbstractLayer fal);
+    public FileAbstractLayerBuilder ReadWithFolderRedirection(FolderRedirectionManager frm);
+    public FileAbstractLayerBuilder WriteToRealFileSystem(string folder);
+    public FileAbstractLayerBuilder WriteToLink(string folder);
+    public FileAbstractLayer Create();
+    public static FileAbstractLayerBuilder CreateBuilder(FileAbstractLayer fal);
+    private static IFileReader CreateFallback(IFileReader first, IFileReader second);
+    private static IFileReader CreateFallbackReader(IFileReader first, IFileReader second);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.FileAbstractLayerExtensions : object {
+    [ExtensionAttribute]
+public static bool Exists(FileAbstractLayer fal, string file);
+    [ExtensionAttribute]
+public static StreamReader OpenReadText(FileAbstractLayer fal, RelativePath file);
+    [ExtensionAttribute]
+public static StreamReader OpenReadText(FileAbstractLayer fal, string file);
+    [ExtensionAttribute]
+public static string ReadAllText(FileAbstractLayer fal, RelativePath file);
+    [ExtensionAttribute]
+public static string ReadAllText(FileAbstractLayer fal, string file);
+    [ExtensionAttribute]
+public static StreamWriter CreateText(FileAbstractLayer fal, RelativePath file);
+    [ExtensionAttribute]
+public static StreamWriter CreateText(FileAbstractLayer fal, string file);
+    [ExtensionAttribute]
+public static void WriteAllText(FileAbstractLayer fal, RelativePath file, string content);
+    [ExtensionAttribute]
+public static void WriteAllText(FileAbstractLayer fal, string file, string content);
+    [ExtensionAttribute]
+public static bool HasProperty(FileAbstractLayer fal, RelativePath file, string propertyName);
+    [ExtensionAttribute]
+public static bool HasProperty(FileAbstractLayer fal, string file, string propertyName);
+    [ExtensionAttribute]
+public static string GetProperty(FileAbstractLayer fal, RelativePath file, string propertyName);
+    [ExtensionAttribute]
+public static string GetProperty(FileAbstractLayer fal, string file, string propertyName);
+    [ExtensionAttribute]
+public static IEnumerable`1<KeyValuePair`2<RelativePath, string>> GetAllPhysicalPaths(FileAbstractLayer fal);
+    [ExtensionAttribute]
+public static string GetOutputPhysicalPath(FileAbstractLayer fal, string file);
+    [ExtensionAttribute]
+public static string GetOutputPhysicalPath(FileAbstractLayer fal, RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.FileLinkInfo : ValueType {
+    [CompilerGeneratedAttribute]
+private string <Href>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FromFileInDest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FromFileInSource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ToFileInDest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ToFileInSource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FileLinkInSource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FileLinkInDest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private GroupInfo <GroupInfo>k__BackingField;
+    public string Href { get; public set; }
+    public string FromFileInDest { get; public set; }
+    public string FromFileInSource { get; public set; }
+    public string ToFileInDest { get; public set; }
+    public string ToFileInSource { get; public set; }
+    public string FileLinkInSource { get; public set; }
+    public string FileLinkInDest { get; public set; }
+    public bool IsResolved { get; }
+    public GroupInfo GroupInfo { get; public set; }
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_Href();
+    [CompilerGeneratedAttribute]
+public void set_Href(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_FromFileInDest();
+    [CompilerGeneratedAttribute]
+public void set_FromFileInDest(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_FromFileInSource();
+    [CompilerGeneratedAttribute]
+public void set_FromFileInSource(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_ToFileInDest();
+    [CompilerGeneratedAttribute]
+public void set_ToFileInDest(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_ToFileInSource();
+    [CompilerGeneratedAttribute]
+public void set_ToFileInSource(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_FileLinkInSource();
+    [CompilerGeneratedAttribute]
+public void set_FileLinkInSource(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_FileLinkInDest();
+    [CompilerGeneratedAttribute]
+public void set_FileLinkInDest(string value);
+    public sealed virtual bool get_IsResolved();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual GroupInfo get_GroupInfo();
+    [CompilerGeneratedAttribute]
+public void set_GroupInfo(GroupInfo value);
+    public static FileLinkInfo Create(string fromFileInSource, string fromFileInDest, string href, IDocumentBuildContext context);
+}
+public class Microsoft.DocAsCode.Common.FilePathComparer : object {
+    private bool _ignoreToFullPath;
+    private static StringComparer _stringComparer;
+    public static FilePathComparer OSPlatformSensitiveComparer;
+    public static FilePathComparer OSPlatformSensitiveRelativePathComparer;
+    public static StringComparer OSPlatformSensitiveStringComparer;
+    public FilePathComparer(bool ignoreToFullPath);
+    private static FilePathComparer();
+    public sealed virtual bool Equals(string x, string y);
+    public sealed virtual int GetHashCode(string obj);
+    private static StringComparer GetStringComparer();
+}
+public class Microsoft.DocAsCode.Common.FilePathComparerWithEnvironmentVariable : object {
+    private FilePathComparer _inner;
+    public static FilePathComparerWithEnvironmentVariable OSPlatformSensitiveComparer;
+    public static FilePathComparerWithEnvironmentVariable OSPlatformSensitiveRelativePathComparer;
+    public FilePathComparerWithEnvironmentVariable(FilePathComparer inner);
+    private static FilePathComparerWithEnvironmentVariable();
+    public sealed virtual bool Equals(string x, string y);
+    public sealed virtual int GetHashCode(string obj);
+}
+public class Microsoft.DocAsCode.Common.FileReaderWithFolderRedirection : object {
+    private IFileReader _inner;
+    private FolderRedirectionManager _folderRedirectionManager;
+    public FileReaderWithFolderRedirection(IFileReader reader, FolderRedirectionManager fdm);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public abstract class Microsoft.DocAsCode.Common.FileWriterBase : object {
+    private static int MaxRetry;
+    [CompilerGeneratedAttribute]
+private string <OutputFolder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ExpandedOutputFolder>k__BackingField;
+    public string OutputFolder { get; }
+    public string ExpandedOutputFolder { get; }
+    public FileWriterBase(string outputFolder);
+    [CompilerGeneratedAttribute]
+public string get_OutputFolder();
+    [CompilerGeneratedAttribute]
+public string get_ExpandedOutputFolder();
+    public abstract virtual void Copy(PathMapping sourceFileName, RelativePath destFileName);
+    public abstract virtual Stream Create(RelativePath filePath);
+    public abstract virtual IFileReader CreateReader();
+    protected internal static void EnsureFolder(string folder);
+    protected string GetRandomEntry();
+    protected Tuple`2<string, FileStream> CreateRandomFileStream();
+    protected static T RetryIO(Func`1<T> func);
+    protected static void RetryIO(Action action);
+    [CompilerGeneratedAttribute]
+private Tuple`2<string, FileStream> <CreateRandomFileStream>b__13_0();
+}
+public class Microsoft.DocAsCode.Common.FolderRedirectionManager : object {
+    private List`1<Rule> _rules;
+    public FolderRedirectionManager(IEnumerable`1<FolderRedirectionRule> rules);
+    private void AddFolderRedirectionRule(string from, string to);
+    public RelativePath GetRedirectedPath(RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.FolderRedirectionRule : object {
+    [CompilerGeneratedAttribute]
+private string <From>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <To>k__BackingField;
+    public string From { get; public set; }
+    public string To { get; public set; }
+    public FolderRedirectionRule(string from, string to);
+    [CompilerGeneratedAttribute]
+public string get_From();
+    [CompilerGeneratedAttribute]
+public void set_From(string value);
+    [CompilerGeneratedAttribute]
+public string get_To();
+    [CompilerGeneratedAttribute]
+public void set_To(string value);
+}
+public class Microsoft.DocAsCode.Common.Git.GitDetail : object {
+    [CompilerGeneratedAttribute]
+private string <RelativePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteBranch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteRepositoryUrl>k__BackingField;
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("path")]
+public string RelativePath { get; public set; }
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("branch")]
+public string RemoteBranch { get; public set; }
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("repo")]
+public string RemoteRepositoryUrl { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_RelativePath();
+    [CompilerGeneratedAttribute]
+public void set_RelativePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_RemoteBranch();
+    [CompilerGeneratedAttribute]
+public void set_RemoteBranch(string value);
+    [CompilerGeneratedAttribute]
+public string get_RemoteRepositoryUrl();
+    [CompilerGeneratedAttribute]
+public void set_RemoteRepositoryUrl(string value);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class Microsoft.DocAsCode.Common.Git.GitException : Exception {
+    public GitException(string message);
+    public GitException(string message, Exception innerException);
+    protected GitException(SerializationInfo info, StreamingContext context);
+}
+public class Microsoft.DocAsCode.Common.Git.GitRepoInfo : object {
+    [CompilerGeneratedAttribute]
+private RepoType <RepoType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RepoAccount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RepoName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RepoProject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Uri <NormalizedRepoUrl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RepoRootPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LocalBranch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteBranch>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteOriginUrl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RemoteHeadCommitId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LocalHeadCommitId>k__BackingField;
+    public RepoType RepoType { get; public set; }
+    public string RepoAccount { get; public set; }
+    public string RepoName { get; public set; }
+    public string RepoProject { get; public set; }
+    public Uri NormalizedRepoUrl { get; public set; }
+    public string RepoRootPath { get; public set; }
+    public string LocalBranch { get; public set; }
+    public string RemoteBranch { get; public set; }
+    public string RemoteOriginUrl { get; public set; }
+    public string RemoteHeadCommitId { get; public set; }
+    public string LocalHeadCommitId { get; public set; }
+    [CompilerGeneratedAttribute]
+public RepoType get_RepoType();
+    [CompilerGeneratedAttribute]
+public void set_RepoType(RepoType value);
+    [CompilerGeneratedAttribute]
+public string get_RepoAccount();
+    [CompilerGeneratedAttribute]
+public void set_RepoAccount(string value);
+    [CompilerGeneratedAttribute]
+public string get_RepoName();
+    [CompilerGeneratedAttribute]
+public void set_RepoName(string value);
+    [CompilerGeneratedAttribute]
+public string get_RepoProject();
+    [CompilerGeneratedAttribute]
+public void set_RepoProject(string value);
+    [CompilerGeneratedAttribute]
+public Uri get_NormalizedRepoUrl();
+    [CompilerGeneratedAttribute]
+public void set_NormalizedRepoUrl(Uri value);
+    [CompilerGeneratedAttribute]
+public string get_RepoRootPath();
+    [CompilerGeneratedAttribute]
+public void set_RepoRootPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_LocalBranch();
+    [CompilerGeneratedAttribute]
+public void set_LocalBranch(string value);
+    [CompilerGeneratedAttribute]
+public string get_RemoteBranch();
+    [CompilerGeneratedAttribute]
+public void set_RemoteBranch(string value);
+    [CompilerGeneratedAttribute]
+public string get_RemoteOriginUrl();
+    [CompilerGeneratedAttribute]
+public void set_RemoteOriginUrl(string value);
+    [CompilerGeneratedAttribute]
+public string get_RemoteHeadCommitId();
+    [CompilerGeneratedAttribute]
+public void set_RemoteHeadCommitId(string value);
+    [CompilerGeneratedAttribute]
+public string get_LocalHeadCommitId();
+    [CompilerGeneratedAttribute]
+public void set_LocalHeadCommitId(string value);
+}
+public static class Microsoft.DocAsCode.Common.Git.GitUtility : object {
+    private static string CommandName;
+    private static int GitTimeOut;
+    private static string GetRepoRootCommand;
+    private static string GetLocalBranchCommand;
+    private static string GetLocalBranchCommitIdCommand;
+    private static string GetRemoteBranchCommand;
+    private static Regex GitHubRepoUrlRegex;
+    private static Regex VsoGitRepoUrlRegex;
+    private static string GitHubNormalizedRepoUrlTemplate;
+    private static string VsoNormalizedRepoUrlTemplate;
+    private static string GetOriginUrlCommand;
+    private static String[] BuildSystemBranchName;
+    private static ConcurrentDictionary`2<string, GitRepoInfo> Cache;
+    private static Nullable`1<bool> GitCommandExists;
+    private static object SyncRoot;
+    private static GitUtility();
+    public static GitDetail TryGetFileDetail(string filePath);
+    [ObsoleteAttribute("Docfx parses repoUrl in template preprocessor. This method is never used.")]
+public static GitRepoInfo Parse(string repoUrl);
+    public static Uri CombineUrl(string normalizedRepoUrl, string refName, string relativePathToRepoRoot, RepoType repoType);
+    private static GitDetail GetFileDetail(string filePath);
+    private static GitRepoInfo GetRepoInfo(string directory);
+    private static bool IsGitRoot(string directory);
+    private static GitDetail GetFileDetailCore(string filePath);
+    private static GitRepoInfo GetRepoInfoCore(string directory);
+    private static Tuple`2<string, string> GetBranchNames(string repoRootPath);
+    private static Tuple`2<string, string> GetBranchNamesFromDetachedHead(string repoRootPath);
+    private static void ProcessErrorMessage(string message);
+    private static string TryRunGitCommand(string repoPath, string arguments);
+    private static string TryRunGitCommandAndGetLastLine(string repoPath, string arguments);
+    private static string RunGitCommandAndGetLastLine(string repoPath, string arguments);
+    private static void RunGitCommand(string repoPath, string arguments, Action`1<string> processOutput);
+    private static bool ExistGitCommand();
+}
+public enum Microsoft.DocAsCode.Common.Git.RepoType : Enum {
+    public int value__;
+    public static RepoType Unknown;
+    public static RepoType GitHub;
+    public static RepoType Vso;
+}
+public static class Microsoft.DocAsCode.Common.HashUtility : object {
+    public static Byte[] GetSha256Hash(Stream stream);
+    public static Byte[] GetSha256Hash(string content);
+    public static string GetSha256HashString(string content);
+    public static string GetSha256HashString(Stream stream);
+}
+public class Microsoft.DocAsCode.Common.HtmlLogListener : object {
+    private StreamWriter _writer;
+    private static LogLevel LogLevelThreshold;
+    private static Regex EscapeWithEncode;
+    private static Regex EscapeWithoutEncode;
+    public HtmlLogListener(string reportPath);
+    public HtmlLogListener(StreamWriter writer);
+    private static HtmlLogListener();
+    public void WriteCommonHeader();
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Dispose();
+    private MessageSeverity GetSeverity(LogLevel level);
+    public sealed virtual void Flush();
+    public string Escape(string html, bool encode);
+    public string ReplaceRegex(string input, Regex pattern, string replacement);
+}
+public interface Microsoft.DocAsCode.Common.IFileReader {
+    public abstract virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public abstract virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public abstract virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public interface Microsoft.DocAsCode.Common.IFileWriter {
+    public abstract virtual Stream Create(RelativePath file);
+    public abstract virtual void Copy(PathMapping sourceFileName, RelativePath destFileName);
+    public abstract virtual IFileReader CreateReader();
+}
+public class Microsoft.DocAsCode.Common.IgnoreStrongTypeObjectJsonReader : JsonReader {
+    private Node _currentNode;
+    private Node _parentNode;
+    private object _current { get; }
+    public IgnoreStrongTypeObjectJsonReader(object obj);
+    private object get__current();
+    public virtual bool Read();
+    private bool MoveToNext();
+    private Nullable`1<JsonToken> GetJsonToken(object obj);
+    private Nullable`1<JsonToken> GetJsonToken(TypeCode code);
+}
+public interface Microsoft.DocAsCode.Common.ILoggerListener {
+    public abstract virtual void WriteLine(ILogItem item);
+    public abstract virtual void Flush();
+}
+public interface Microsoft.DocAsCode.Common.ILogItem {
+    public LogLevel LogLevel { get; }
+    public string Message { get; }
+    public string Phase { get; }
+    public string File { get; }
+    public string Line { get; }
+    public string Code { get; }
+    public string CorrelationId { get; }
+    public abstract virtual LogLevel get_LogLevel();
+    public abstract virtual string get_Message();
+    public abstract virtual string get_Phase();
+    public abstract virtual string get_File();
+    public abstract virtual string get_Line();
+    public abstract virtual string get_Code();
+    public abstract virtual string get_CorrelationId();
+}
+internal class Microsoft.DocAsCode.Common.IndexedLinkFileReader : object {
+    private Dictionary`2<RelativePath, PathMapping> _mappings;
+    public IndexedLinkFileReader(Dictionary`2<RelativePath, PathMapping> mappings);
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public static class Microsoft.DocAsCode.Common.InfoCodes : object {
+}
+public interface Microsoft.DocAsCode.Common.ISupportRandomFileWriter {
+    public abstract virtual string CreateRandomFileName();
+    public abstract virtual Tuple`2<string, Stream> CreateRandomFile();
+}
+public class Microsoft.DocAsCode.Common.JObjectDictionaryToObjectDictionaryConverter : JsonConverter {
+    public virtual bool CanConvert(Type objectType);
+    public virtual object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer);
+    public virtual void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.JsonUtility : object {
+    public static ThreadLocal`1<JsonSerializer> DefaultSerializer;
+    private static JsonUtility();
+    public static void Serialize(TextWriter writer, object graph, Formatting formatting, JsonSerializer serializer);
+    public static string Serialize(object graph, Formatting formatting, JsonSerializer serializer);
+    public static void Serialize(string path, object graph, Formatting formatting, JsonSerializer serializer);
+    public static T Deserialize(string path, JsonSerializer serializer);
+    public static T Deserialize(TextReader reader, JsonSerializer serializer);
+    [ExtensionAttribute]
+public static string ToJsonString(object graph, Formatting formatting, JsonSerializer serializer);
+    [ExtensionAttribute]
+public static T FromJsonString(string json, JsonSerializer serializer);
+}
+public class Microsoft.DocAsCode.Common.LinkFileReader : object {
+    [CompilerGeneratedAttribute]
+private ImmutableArray`1<PathMapping> <Mappings>k__BackingField;
+    public ImmutableArray`1<PathMapping> Mappings { get; }
+    public LinkFileReader(IEnumerable`1<PathMapping> mappings);
+    [CompilerGeneratedAttribute]
+public ImmutableArray`1<PathMapping> get_Mappings();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    [IteratorStateMachineAttribute("Microsoft.DocAsCode.Common.LinkFileReader/<GetExpectedPhysicalPath>d__6")]
+public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.LinkFileWriter : FileWriterBase {
+    private Dictionary`2<RelativePath, PathMapping> _mapping;
+    public LinkFileWriter(string outputFolder);
+    public virtual void Copy(PathMapping sourceFilePath, RelativePath destFilePath);
+    public virtual Stream Create(RelativePath file);
+    public virtual IFileReader CreateReader();
+}
+public class Microsoft.DocAsCode.Common.LogCodesLogListener : object {
+    [CompilerGeneratedAttribute]
+private ConcurrentDictionary`2<string, ImmutableHashSet`1<string>> <Codes>k__BackingField;
+    public ConcurrentDictionary`2<string, ImmutableHashSet`1<string>> Codes { get; }
+    [CompilerGeneratedAttribute]
+public ConcurrentDictionary`2<string, ImmutableHashSet`1<string>> get_Codes();
+    public sealed virtual void Dispose();
+    public sealed virtual void Flush();
+    public sealed virtual void WriteLine(ILogItem item);
+}
+public static class Microsoft.DocAsCode.Common.Logger : object {
+    public static int WarningThrottling;
+    [CompilerGeneratedAttribute]
+private static bool <HasError>k__BackingField;
+    private static CompositeLogListener _syncListener;
+    private static AsyncLogListener _asyncListener;
+    private static int _warningCount;
+    public static LogLevel modreq(System.Runtime.CompilerServices.IsVolatile) LogLevelThreshold;
+    public static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) WarningsAsErrors;
+    public static bool HasError { get; private set; }
+    public static int WarningCount { get; }
+    private static Logger();
+    [CompilerGeneratedAttribute]
+public static bool get_HasError();
+    [CompilerGeneratedAttribute]
+private static void set_HasError(bool value);
+    public static int get_WarningCount();
+    public static void RegisterListener(ILoggerListener listener);
+    public static ILoggerListener FindListener(Predicate`1<ILoggerListener> predicate);
+    public static void UnregisterListener(ILoggerListener listener);
+    public static void RegisterAsyncListener(ILoggerListener listener);
+    public static ILoggerListener FindAsyncListener(Predicate`1<ILoggerListener> predicate);
+    public static void UnregisterAsyncListener(ILoggerListener listener);
+    public static void UnregisterAllListeners();
+    public static void Log(ILogItem item);
+    [ObsoleteAttribute]
+public static void Log(LogLevel level, string message, string phase, string file, string line);
+    public static void Log(LogLevel level, string message, string phase, string file, string line, string code);
+    public static ILogItem GetLogItem(LogLevel level, string message, string phase, string file, string line, string code);
+    [ObsoleteAttribute]
+public static void LogDiagnostic(string message, string phase, string file, string line);
+    public static void LogDiagnostic(string message, string phase, string file, string line, string code);
+    [ObsoleteAttribute]
+public static void LogVerbose(string message, string phase, string file, string line);
+    public static void LogVerbose(string message, string phase, string file, string line, string code);
+    [ObsoleteAttribute]
+public static void LogInfo(string message, string phase, string file, string line);
+    public static void LogInfo(string message, string phase, string file, string line, string code);
+    public static void LogSuggestion(string message, string phase, string file, string line, string code);
+    [ObsoleteAttribute]
+public static void LogWarning(string message, string phase, string file, string line);
+    public static void LogWarning(string message, string phase, string file, string line, string code);
+    [ObsoleteAttribute]
+public static void LogError(string message, string phase, string file, string line);
+    public static void LogError(string message, string phase, string file, string line, string code);
+    public static void Log(object result);
+    public static void Flush();
+}
+public class Microsoft.DocAsCode.Common.LoggerFileScope : object {
+    private string _originFileName;
+    public LoggerFileScope(string fileName);
+    public sealed virtual void Dispose();
+    internal static string GetFileName();
+    private static void SetFileName(string fileName);
+    public static object Capture();
+    public static LoggerFileScope Restore(object captured);
+}
+public class Microsoft.DocAsCode.Common.LoggerPhaseScope : object {
+    private string _originPhaseName;
+    private PerformanceScope _performanceScope;
+    private Nullable`1<AmbientContext> _ac;
+    public LoggerPhaseScope(string phaseName);
+    public LoggerPhaseScope(string phaseName, LogLevel perfLogLevel);
+    public LoggerPhaseScope(string phaseName, LogLevel perfLogLevel, AggregatedPerformanceScope aggregatedPerformanceLogger);
+    private LoggerPhaseScope(string phaseName, Nullable`1<LogLevel> perfLogLevel, AggregatedPerformanceScope aggregatedPerformanceLogger);
+    private LoggerPhaseScope(CapturedLoggerPhaseScope captured, Nullable`1<LogLevel> perfLogLevel);
+    public static T WithScope(string phaseName, Func`1<T> func);
+    public static T WithScope(string phaseName, LogLevel perfLogLevel, Func`1<T> func);
+    public sealed virtual void Dispose();
+    internal static string GetPhaseName();
+    private void SetPhaseName(string phaseName);
+    public static object Capture();
+    public static LoggerPhaseScope Restore(object captured);
+    public static LoggerPhaseScope Restore(object captured, LogLevel perfLogLevel);
+    private static LoggerPhaseScope Restore(object captured, Nullable`1<LogLevel> perfLogLevel);
+}
+public static class Microsoft.DocAsCode.Common.LogicalCallContext : object {
+    private static ConcurrentDictionary`2<string, AsyncLocal`1<object>> _data;
+    private static LogicalCallContext();
+    public static void SetData(string key, object data);
+    public static object GetData(string key);
+    public static void FreeData(string key);
+}
+public enum Microsoft.DocAsCode.Common.LogLevel : Enum {
+    public int value__;
+    public static LogLevel Diagnostic;
+    public static LogLevel Verbose;
+    public static LogLevel Info;
+    public static LogLevel Suggestion;
+    public static LogLevel Warning;
+    public static LogLevel Error;
+}
+public class Microsoft.DocAsCode.Common.LruList`1 : object {
+    private LinkedList`1<T> _cache;
+    private Dictionary`2<T, LinkedListNode`1<T>> _index;
+    private int _capacity;
+    private Action`1<T> _onRemoving;
+    protected LruList`1(int capacity, Action`1<T> onRemoving, IEqualityComparer`1<T> comparer);
+    public static LruList`1<T> Create(int capacity, Action`1<T> onRemoving, IEqualityComparer`1<T> comparer);
+    public static LruList`1<T> CreateSynchronized(int capacity, Action`1<T> onRemoving, IEqualityComparer`1<T> comparer);
+    protected virtual void AccessNoCheck(T item);
+    public void Access(T item);
+    public virtual bool TryFind(Func`2<T, bool> func, T& item);
+    public virtual bool Contains(T item);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.ManifestFileHelper : object {
+    [ExtensionAttribute]
+public static bool AddFile(Manifest manifest, string sourceFilePath, string extension, string targetRelativePath);
+    [ExtensionAttribute]
+public static void AddFile(Manifest manifest, ManifestItem item, string extension, string targetRelativePath);
+    private static void AddFileCore(ManifestItem item, string extension, string targetRelativePath);
+    [ExtensionAttribute]
+public static bool RemoveFile(Manifest manifest, string sourceFilePath, string extension);
+    [ExtensionAttribute]
+public static bool RemoveFile(Manifest manifest, ManifestItem item, string extension);
+    private static bool RemoveFileCore(ManifestItem item, string extension);
+    [ExtensionAttribute]
+public static void Modify(Manifest manifest, Action`1<Manifest> action);
+    [ExtensionAttribute]
+public static T Modify(Manifest manifest, Func`2<Manifest, T> func);
+    [ExtensionAttribute]
+public static void Dereference(Manifest manifest, string manifestFolder, int parallelism);
+    [ExtensionAttribute]
+public static void Shrink(IEnumerable`1<ManifestItem> items, string incrementalFolder, int parallism);
+}
+public class Microsoft.DocAsCode.Common.ManifestFileReader : object {
+    [CompilerGeneratedAttribute]
+private Manifest <Manifest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ManifestFolder>k__BackingField;
+    public Manifest Manifest { get; }
+    public string ManifestFolder { get; }
+    public ManifestFileReader(Manifest manifest, string manifestFolder);
+    [CompilerGeneratedAttribute]
+public Manifest get_Manifest();
+    [CompilerGeneratedAttribute]
+public string get_ManifestFolder();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+    private OutputFileInfo FindEntryInManifest(string file);
+}
+public class Microsoft.DocAsCode.Common.ManifestFileWriter : FileWriterBase {
+    private bool _noRandomFile;
+    [CompilerGeneratedAttribute]
+private Manifest <Manifest>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ManifestFolder>k__BackingField;
+    public Manifest Manifest { get; }
+    public string ManifestFolder { get; }
+    public ManifestFileWriter(Manifest manifest, string manifestFolder, string outputFolder);
+    [CompilerGeneratedAttribute]
+public Manifest get_Manifest();
+    [CompilerGeneratedAttribute]
+public string get_ManifestFolder();
+    public virtual void Copy(PathMapping sourceFileName, RelativePath destFileName);
+    public virtual Stream Create(RelativePath file);
+    public virtual IFileReader CreateReader();
+    private OutputFileInfo FindEntryInManifest(string file);
+}
+public class Microsoft.DocAsCode.Common.PathMapping : ValueType {
+    [CompilerGeneratedAttribute]
+private RelativePath <LogicalPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PhysicalPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowMoveOut>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, string> <Properties>k__BackingField;
+    public RelativePath LogicalPath { get; }
+    public string PhysicalPath { get; }
+    public bool IsFolder { get; }
+    public bool AllowMoveOut { get; public set; }
+    public ImmutableDictionary`2<string, string> Properties { get; public set; }
+    public PathMapping(RelativePath logicalPath, string physicalPath);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public RelativePath get_LogicalPath();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_PhysicalPath();
+    public bool get_IsFolder();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public bool get_AllowMoveOut();
+    [CompilerGeneratedAttribute]
+public void set_AllowMoveOut(bool value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public ImmutableDictionary`2<string, string> get_Properties();
+    [CompilerGeneratedAttribute]
+public void set_Properties(ImmutableDictionary`2<string, string> value);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.PathUtility : object {
+    private static Regex UriWithProtocol;
+    private static Char[] AdditionalInvalidChars;
+    public static Char[] InvalidFileNameChars;
+    public static Char[] InvalidPathChars;
+    private static string InvalidFileNameCharsRegexString;
+    private static string NeedUrlEncodeFileNameCharsRegexString;
+    private static string InvalidOrNeedUrlEncodeFileNameCharsRegexString;
+    private static Regex InvalidOrNeedUrlEncodeFileNameCharsRegex;
+    public static string ListFileExtension;
+    private static PathUtility();
+    public static bool IsPathCaseInsensitive();
+    [ExtensionAttribute]
+public static string ToValidFilePath(string input, char replacement);
+    [ExtensionAttribute]
+public static string ToCleanUrlFileName(string input, string replacement);
+    public static void SaveFileListToFile(List`1<string> fileList, string filePath);
+    public static List`1<string> GetFileListFromFile(string filePath);
+    public static bool IsVaildFilePath(string path);
+    public static string MakeRelativePath(string basePath, string absolutePath);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> CopyFilesToFolder(IEnumerable`1<string> files, string sourceFolder, string destinationFolder, bool overwrite, Action`1<string> messageHandler, Func`2<string, bool> errorHandler);
+    public static string GetFullPath(string folder, string href);
+    public static void CopyFile(string path, string targetPath, bool overwrite);
+    public static bool IsRelativePath(string path);
+    [ExtensionAttribute]
+public static string FormatPath(string path, UriKind kind, string basePath);
+    public static bool IsPathUnderSpecificFolder(string path, string folder);
+    public static string NormalizePath(string path);
+    public static bool IsDirectory(string path);
+}
+public class Microsoft.DocAsCode.Common.PerformanceScope : object {
+    private Stopwatch _stopwatch;
+    private AggregatedPerformanceScope _aggregatedPerformanceLogger;
+    private Action`1<TimeSpan> _logger;
+    public PerformanceScope(string content, LogLevel level);
+    public PerformanceScope(string content);
+    public PerformanceScope(string content, LogLevel level, AggregatedPerformanceScope aggregatedPerformanceLogger);
+    public PerformanceScope(Action`1<TimeSpan> logger);
+    public sealed virtual void Dispose();
+    private static string GetContent(string content, TimeSpan span);
+}
+public class Microsoft.DocAsCode.Common.ProcessDetail : object {
+    [CompilerGeneratedAttribute]
+private string <ExecutorPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WorkingDirectory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <StandardOutput>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <StandardError>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ExitCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ProcessId>k__BackingField;
+    public string ExecutorPath { get; public set; }
+    public string Arguments { get; public set; }
+    public string WorkingDirectory { get; public set; }
+    public string StandardOutput { get; public set; }
+    public string StandardError { get; public set; }
+    public int ExitCode { get; public set; }
+    public int ProcessId { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ExecutorPath();
+    [CompilerGeneratedAttribute]
+public void set_ExecutorPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(string value);
+    [CompilerGeneratedAttribute]
+public string get_WorkingDirectory();
+    [CompilerGeneratedAttribute]
+public void set_WorkingDirectory(string value);
+    [CompilerGeneratedAttribute]
+public string get_StandardOutput();
+    [CompilerGeneratedAttribute]
+public void set_StandardOutput(string value);
+    [CompilerGeneratedAttribute]
+public string get_StandardError();
+    [CompilerGeneratedAttribute]
+public void set_StandardError(string value);
+    [CompilerGeneratedAttribute]
+public int get_ExitCode();
+    [CompilerGeneratedAttribute]
+public void set_ExitCode(int value);
+    [CompilerGeneratedAttribute]
+public int get_ProcessId();
+    [CompilerGeneratedAttribute]
+public void set_ProcessId(int value);
+}
+public class Microsoft.DocAsCode.Common.RealFileReader : object {
+    private string _expandedInputFolder;
+    [CompilerGeneratedAttribute]
+private string <InputFolder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, string> <Properties>k__BackingField;
+    public string InputFolder { get; }
+    public ImmutableDictionary`2<string, string> Properties { get; }
+    public RealFileReader(string inputFolder, ImmutableDictionary`2<string, string> properties);
+    [CompilerGeneratedAttribute]
+public string get_InputFolder();
+    [CompilerGeneratedAttribute]
+public ImmutableDictionary`2<string, string> get_Properties();
+    public sealed virtual Nullable`1<PathMapping> FindFile(RelativePath file);
+    public sealed virtual IEnumerable`1<RelativePath> EnumerateFiles();
+    public sealed virtual IEnumerable`1<string> GetExpectedPhysicalPath(RelativePath file);
+}
+public class Microsoft.DocAsCode.Common.RealFileWriter : FileWriterBase {
+    public RealFileWriter(string outputFolder);
+    public virtual void Copy(PathMapping sourceFileName, RelativePath destFileName);
+    public virtual Stream Create(RelativePath file);
+    public virtual IFileReader CreateReader();
+    public sealed virtual string CreateRandomFileName();
+    public sealed virtual Tuple`2<string, Stream> CreateRandomFile();
+}
+public class Microsoft.DocAsCode.Common.RelativePath : object {
+    private static string ParentDirectory;
+    public static char WorkingFolderChar;
+    public static string WorkingFolderString;
+    public static string NormalizedWorkingFolder;
+    public static string AltWorkingFolder;
+    public static RelativePath Empty;
+    public static RelativePath WorkingFolder;
+    public static Char[] InvalidPartChars;
+    private static String[] EncodedInvalidPartChars;
+    private static Char[] UnsafeInvalidPartChars;
+    private static String[] EncodedUnsafeInvalidPartChars;
+    private static IDictionary`2<string, string> SpecialCharactersNeedToDecode;
+    private bool _isFromWorkingFolder;
+    private int _parentDirectoryCount;
+    private String[] _parts;
+    public int ParentDirectoryCount { get; }
+    public int SubdirectoryCount { get; }
+    public bool IsEmpty { get; }
+    public string FileName { get; }
+    private RelativePath(bool isFromWorkingFolder, int parentDirectoryCount, String[] parts);
+    private static RelativePath();
+    public static RelativePath FromUrl(string path);
+    public static bool IsRelativePath(string path);
+    public static RelativePath Parse(string path);
+    public static RelativePath TryParse(string path);
+    public static bool IsPathFromWorkingFolder(string path);
+    public static string GetPathWithoutWorkingFolderChar(string path);
+    public static bool TryGetPathWithoutWorkingFolderChar(string path, String& pathFromWorkingFolder);
+    public int get_ParentDirectoryCount();
+    public int get_SubdirectoryCount();
+    public bool get_IsEmpty();
+    public RelativePath BasedOn(RelativePath path);
+    public RelativePath MakeRelativeTo(RelativePath relativeTo);
+    public RelativePath Rebase(RelativePath from, RelativePath to);
+    public string get_FileName();
+    public bool IsFromWorkingFolder();
+    public string GetFileNameWithoutExtension();
+    public RelativePath ChangeFileName(string fileName);
+    public RelativePath GetDirectoryPath();
+    public RelativePath GetPathFromWorkingFolder();
+    public RelativePath RemoveWorkingFolder();
+    public RelativePath UrlEncode();
+    public RelativePath UrlDecode();
+    public RelativePath UrlDecodeUnsafe();
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(RelativePath other);
+    public virtual string ToString();
+    public bool InDirectory(RelativePath value);
+    private static RelativePath TryParseCore(string path, bool throwOnError);
+    private static RelativePath Create(bool isFromWorkingFolder, int parentDirectoryCount, IEnumerable`1<string> parts);
+    private IEnumerable`1<string> GetSubdirectories(int skip);
+    private RelativePath ChangeFileNameWithNoCheck(string fileName);
+    private String[] UrlDecodeCore(bool safe);
+    private static string DecodeSpecialCharacters(string url);
+    public static RelativePath op_Addition(RelativePath left, RelativePath right);
+    public static RelativePath op_Subtraction(RelativePath left, RelativePath right);
+    public static bool op_Equality(RelativePath left, RelativePath right);
+    public static bool op_Inequality(RelativePath left, RelativePath right);
+    public static string op_Implicit(RelativePath path);
+    public static RelativePath op_Explicit(string path);
+}
+[ObsoleteAttribute]
+public class Microsoft.DocAsCode.Common.ReplayLogListener : object {
+    private LogLevel _replayLevel;
+    private SortedList`2<LogLevel, List`1<ILogItem>> _replayList;
+    private ImmutableArray`1<ILoggerListener> _listeners;
+    [CompilerGeneratedAttribute]
+private bool <Replay>k__BackingField;
+    public bool Replay { get; public set; }
+    public ReplayLogListener(LogLevel replayLevel);
+    [CompilerGeneratedAttribute]
+public bool get_Replay();
+    [CompilerGeneratedAttribute]
+public void set_Replay(bool value);
+    public sealed virtual void Dispose();
+    public void AddListener(ILoggerListener listener);
+    public sealed virtual void Flush();
+    public sealed virtual void WriteLine(ILogItem item);
+    private void WriteHeader(BuildStatus status);
+    private void WriteFooter(BuildStatus status);
+    private void WriteLineCore(ILogItem item);
+    private static void WriteToConsole(string message, BuildStatus status);
+    private static void WriteToConsole(string message, ConsoleColor color);
+    private static BuildStatus GetBuildStatusFromLogLevel(LogLevel level);
+}
+public class Microsoft.DocAsCode.Common.ReportLogListener : object {
+    private string _repoRoot;
+    private string _root;
+    private StreamWriter _writer;
+    private static LogLevel LogLevelThreshold;
+    public ReportLogListener(string reportPath, string repoRoot, string root);
+    public ReportLogListener(StreamWriter writer, string repoRoot, string root);
+    public sealed virtual void WriteLine(ILogItem item);
+    public sealed virtual void Dispose();
+    private MessageSeverity GetSeverity(LogLevel level);
+    private string TransformFile(string fileFromRoot);
+    public sealed virtual void Flush();
+}
+public class Microsoft.DocAsCode.Common.ResourceLease`1 : object {
+    private Action`1<ResourceLease`1<T>> _callback;
+    [CompilerGeneratedAttribute]
+private T <Resource>k__BackingField;
+    public T Resource { get; private set; }
+    internal ResourceLease`1(Action`1<ResourceLease`1<T>> callback, T resource);
+    [CompilerGeneratedAttribute]
+public T get_Resource();
+    [CompilerGeneratedAttribute]
+private void set_Resource(T value);
+    public sealed virtual void Dispose();
+}
+public static class Microsoft.DocAsCode.Common.ResourcePool : object {
+    public static ResourcePoolManager`1<T> Create(Func`1<T> creator, int maxResourceCount);
+    public static ResourcePoolAsyncManager`1<T> Create(Func`1<Task`1<T>> creator, int maxResourceCount);
+}
+public class Microsoft.DocAsCode.Common.ResourcePoolAsyncManager`1 : object {
+    private ConcurrentBag`1<TResource> _resources;
+    private ConcurrentStack`1<TResource> _stack;
+    private Func`1<Task`1<TResource>> _creator;
+    private SemaphoreSlim _semaphore;
+    public ResourcePoolAsyncManager`1(Func`1<Task`1<TResource>> creator, int maxResourceCount);
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.ResourcePoolAsyncManager`1/<RentAsync>d__5")]
+public Task`1<ResourceLease`1<TResource>> RentAsync();
+    private void GiveBack(ResourceLease`1<TResource> lease);
+    public sealed virtual void Dispose();
+    protected virtual override void Finalize();
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.DocAsCode.Common.ResourcePoolManager`1 : object {
+    private object _syncRoot;
+    private List`1<TResource> _resources;
+    private Stack`1<TResource> _stack;
+    private Func`1<TResource> _creator;
+    private int _maxResourceCount;
+    public ResourcePoolManager`1(Func`1<TResource> creator, int maxResourceCount);
+    public ResourceLease`1<TResource> Rent();
+    private void GiveBack(ResourceLease`1<TResource> lease);
+    public sealed virtual void Dispose();
+    protected virtual override void Finalize();
+    protected virtual void Dispose(bool disposing);
+}
+public class Microsoft.DocAsCode.Common.SharedObjectManager`2 : object {
+    private Func`2<TState, SharedObjectNode`2<TState, TEvent>> _creator;
+    private Func`3<TState, TEvent, TState> _transit;
+    private ConcurrentDictionary`2<TState, SharedObjectNode`2<TState, TEvent>> _states;
+    [CompilerGeneratedAttribute]
+private SharedObjectNode`2<TState, TEvent> <Node>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IEqualityComparer`1<TEvent> <EventComparer>k__BackingField;
+    public SharedObjectNode`2<TState, TEvent> Node { get; }
+    internal IEqualityComparer`1<TEvent> EventComparer { get; }
+    public SharedObjectManager`2(TState initialState, Func`3<TState, TEvent, TState> transit, IEqualityComparer`1<TState> stateComparer, IEqualityComparer`1<TEvent> eventComparer);
+    [CompilerGeneratedAttribute]
+public SharedObjectNode`2<TState, TEvent> get_Node();
+    [CompilerGeneratedAttribute]
+internal IEqualityComparer`1<TEvent> get_EventComparer();
+    internal SharedObjectNode`2<TState, TEvent> Transit(TState value, TEvent event);
+    private SharedObjectNode`2<TState, TEvent> CreateNewNode(TState value);
+}
+public class Microsoft.DocAsCode.Common.SharedObjectNode`2 : object {
+    private SharedObjectManager`2<TState, TEvent> _manager;
+    private ConcurrentDictionary`2<TEvent, SharedObjectNode`2<TState, TEvent>> _path;
+    private Func`2<TEvent, SharedObjectNode`2<TState, TEvent>> _creator;
+    [CompilerGeneratedAttribute]
+private TState <Value>k__BackingField;
+    public TState Value { get; }
+    internal SharedObjectNode`2(SharedObjectManager`2<TState, TEvent> manager, TState value);
+    [CompilerGeneratedAttribute]
+public TState get_Value();
+    public SharedObjectNode`2<TState, TEvent> Transit(TEvent event);
+    [CompilerGeneratedAttribute]
+private SharedObjectNode`2<TState, TEvent> <.ctor>b__3_0(TEvent c);
+}
+public class Microsoft.DocAsCode.Common.StreamSegmentSerialization.StreamDeserializer : object {
+    [CompilerGeneratedAttribute]
+private Stream <UnderlyingStream>k__BackingField;
+    private BinaryReader _reader;
+    public Stream UnderlyingStream { get; }
+    public StreamDeserializer(Stream underlyingStream);
+    [CompilerGeneratedAttribute]
+public Stream get_UnderlyingStream();
+    public object Read();
+    public StreamSegment ReadSegment();
+    public StreamSegment ReadSegment(int startOffset);
+    public StreamSegment ReadNext(StreamSegment current);
+    public object ReadValue(StreamSegment current);
+    public string ReadInteger(StreamSegment current);
+    public string ReadString(StreamSegment current);
+    public Byte[] ReadBinary(StreamSegment current);
+    public Stream ReadBinaryAsStream(StreamSegment current);
+    public Object[] ReadArray(StreamSegment current);
+    public Dictionary`2<string, object> ReadDictionary(StreamSegment current);
+    public Dictionary`2<string, Lazy`1<object>> ReadDictionaryLazy(StreamSegment current);
+    private int ReadIntegerCore(StreamSegment current);
+    private string ReadStringCore(StreamSegment current);
+    private Byte[] ReadBinaryCore(StreamSegment current);
+    private Object[] ReadArrayCore(StreamSegment current);
+    private Dictionary`2<string, object> ReadDictionaryCore(StreamSegment current);
+    private Dictionary`2<string, Lazy`1<object>> ReadDictionaryLazyCore(StreamSegment current);
+}
+public class Microsoft.DocAsCode.Common.StreamSegmentSerialization.StreamSegment : object {
+    [CompilerGeneratedAttribute]
+private Stream <UnderlyingStream>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <StartOffset>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Length>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Next>k__BackingField;
+    [CompilerGeneratedAttribute]
+private StreamSegmentType <ContentType>k__BackingField;
+    public Stream UnderlyingStream { get; }
+    public int StartOffset { get; }
+    public int Length { get; }
+    public int Next { get; public set; }
+    public StreamSegmentType ContentType { get; }
+    public int ContentStartOffset { get; }
+    public int ContentLength { get; }
+    public StreamSegment(Stream underlyingStream, int startOffset, int length, int next, StreamSegmentType contentType);
+    [CompilerGeneratedAttribute]
+public Stream get_UnderlyingStream();
+    [CompilerGeneratedAttribute]
+public int get_StartOffset();
+    [CompilerGeneratedAttribute]
+public int get_Length();
+    [CompilerGeneratedAttribute]
+public int get_Next();
+    [CompilerGeneratedAttribute]
+public void set_Next(int value);
+    [CompilerGeneratedAttribute]
+public StreamSegmentType get_ContentType();
+    public int get_ContentStartOffset();
+    public int get_ContentLength();
+}
+public enum Microsoft.DocAsCode.Common.StreamSegmentSerialization.StreamSegmentType : Enum {
+    public byte value__;
+    public static StreamSegmentType Null;
+    public static StreamSegmentType Integer;
+    public static StreamSegmentType String;
+    public static StreamSegmentType Binary;
+    public static StreamSegmentType Array;
+    public static StreamSegmentType Dictionary;
+}
+public class Microsoft.DocAsCode.Common.StreamSegmentSerialization.StreamSerializer : object {
+    [CompilerGeneratedAttribute]
+private Stream <UnderlyingStream>k__BackingField;
+    private BinaryWriter _writer;
+    public Stream UnderlyingStream { get; }
+    public StreamSerializer(Stream underlyingStream);
+    [CompilerGeneratedAttribute]
+public Stream get_UnderlyingStream();
+    public StreamSegment WriteNull();
+    public StreamSegment Write(int value);
+    public StreamSegment Write(string value);
+    public StreamSegment Write(Byte[] value);
+    public StreamSegment Write(Action`1<Stream> writeAction);
+    public StreamSegment Write(IReadOnlyList`1<object> value);
+    public StreamSegment Write(IReadOnlyCollection`1<KeyValuePair`2<string, object>> value);
+    public StreamSegment Write(object value);
+    private StreamSegment WriteString(string value);
+    private StreamSegment WriteBytes(Byte[] bytes);
+    private StreamSegment WriteBytes(Action`1<Stream> writeAction);
+    private StreamSegment WriteArray(IReadOnlyCollection`1<object> value);
+    private StreamSegment WriteDictionary(IReadOnlyCollection`1<KeyValuePair`2<string, object>> value);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.StringExtension : object {
+    [ExtensionAttribute]
+public static string ForwardSlashCombine(string baseAddress, string relativeAddress);
+    [ExtensionAttribute]
+public static string BackSlashToForwardSlash(string input);
+    [ExtensionAttribute]
+public static string ToDelimitedString(IEnumerable`1<string> input, string delimiter);
+    [ExtensionAttribute]
+public static string GetNormalizedFullPathKey(IEnumerable`1<string> list);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> GetNormalizedFullPathList(IEnumerable`1<string> paths);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> GetNormalizedPathList(IEnumerable`1<string> paths);
+    [ExtensionAttribute]
+public static string ToNormalizedFullPath(string path);
+    [ExtensionAttribute]
+public static string ToNormalizedPath(string path);
+    [ExtensionAttribute]
+public static string ToDisplayPath(string path);
+    [ExtensionAttribute]
+public static string TrimEnd(string input, string suffixToRemove);
+}
+public static class Microsoft.DocAsCode.Common.SuggestionCodes : object {
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.TaskHelper : object {
+    public static Task Completed;
+    private static TaskHelper();
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.TaskHelper/<ForEachInParallelAsync>d__0`1")]
+[ExtensionAttribute]
+public static Task ForEachInParallelAsync(IEnumerable`1<T> source, Func`2<T, Task> body, int maxParallelism);
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.TaskHelper/<ForEachCoreAsync>d__1`1")]
+private static Task ForEachCoreAsync(Func`2<T, Task> body, SemaphoreSlim semaphore, T s);
+    [ExtensionAttribute]
+public static Task ForEachInParallelAsync(IEnumerable`1<T> source, Func`2<T, Task> body);
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.TaskHelper/<SelectInParallelAsync>d__3`2")]
+[ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<TResult>> SelectInParallelAsync(IEnumerable`1<TSource> source, Func`2<TSource, Task`1<TResult>> body, int maxParallelism);
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.TaskHelper/<SelectCoreAsync>d__4`2")]
+private static Task`1<TResult> SelectCoreAsync(Func`2<TSource, Task`1<TResult>> body, SemaphoreSlim semaphore, TSource s);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<TResult>> SelectInParallelAsync(IEnumerable`1<TSource> source, Func`2<TSource, Task`1<TResult>> body);
+}
+public static class Microsoft.DocAsCode.Common.TreeIterator : object {
+    [AsyncStateMachineAttribute("Microsoft.DocAsCode.Common.TreeIterator/<PreorderAsync>d__0`1")]
+public static Task PreorderAsync(T current, T parent, Func`2<T, IEnumerable`1<T>> childrenGetter, Func`3<T, T, Task`1<bool>> action);
+    public static void Preorder(T current, T parent, Func`2<T, IEnumerable`1<T>> childrenGetter, Func`3<T, T, bool> action);
+    public static T PreorderFirstOrDefault(T current, Func`2<T, IEnumerable`1<T>> childrenGetter, Func`2<T, bool> predicate);
+}
+public static class Microsoft.DocAsCode.Common.UriTemplate : object {
+    public static UriTemplate`1<T> Create(string template, Func`2<string, T> func, Func`2<string, IUriTemplatePipeline`1<T>> pipelineProvider);
+}
+public class Microsoft.DocAsCode.Common.UriTemplate`1 : object {
+    private static Regex _marcoRegex;
+    private static Regex _pipelineRegex;
+    [CompilerGeneratedAttribute]
+private string <Template>k__BackingField;
+    private Func`2<string, T> _func;
+    private IUriTemplatePipeline`1[] _pipeline;
+    private String[][] _parameters;
+    public string Template { get; }
+    private UriTemplate`1(string template, Func`2<string, T> func, IUriTemplatePipeline`1[] pipeline, String[][] parameters);
+    private static UriTemplate`1();
+    [CompilerGeneratedAttribute]
+public string get_Template();
+    public static UriTemplate`1<T> Parse(string template, Func`2<string, T> func, Func`2<string, IUriTemplatePipeline`1<T>> pipelineProvider);
+    public T Evaluate(IDictionary`2<string, string> variables);
+    private string EvaluateUri(IDictionary`2<string, string> variables);
+    private T RunPostPipeline(T value);
+}
+public static class Microsoft.DocAsCode.Common.UriUtility : object {
+    private static char QueryMarker;
+    private static char FragmentMarker;
+    private static Char[] QueryAndFragmentMarkers;
+    private static UriUtility();
+    public static bool HasFragment(string uriString);
+    public static bool HasQueryString(string uriString);
+    public static string GetFragment(string uriString);
+    public static string GetNonFragment(string uriString);
+    public static string GetQueryString(string uriString);
+    public static string GetPath(string uriString);
+    public static string GetQueryStringAndFragment(string uriString);
+    public static string MergeHref(string target, string source);
+    public static ValueTuple`3<string, string, string> Split(string uri);
+    [CompilerGeneratedAttribute]
+internal static ValueTuple`2<string, string> <Split>g__SplitPart|11_0(string partial, char marker);
+}
+public static class Microsoft.DocAsCode.Common.WarningCodes : object {
+}
+public class Microsoft.DocAsCode.Common.XHtmlWriter : XmlWriter {
+    private static HashSet`1<string> _voidElements;
+    private string _currentElement;
+    private XmlWriter _writer;
+    [CompilerGeneratedAttribute]
+private WriteState <WriteState>k__BackingField;
+    public WriteState WriteState { get; }
+    public XHtmlWriter(TextWriter writer);
+    [CompilerGeneratedAttribute]
+public virtual WriteState get_WriteState();
+    public virtual void WriteEndElement();
+    public virtual void WriteFullEndElement();
+    public virtual void WriteStartAttribute(string prefix, string localName, string ns);
+    public virtual void WriteEndAttribute();
+    public virtual void WriteCData(string text);
+    public virtual void WriteComment(string text);
+    public virtual void WriteProcessingInstruction(string name, string text);
+    public virtual void WriteEntityRef(string name);
+    public virtual void WriteCharEntity(char ch);
+    public virtual void WriteWhitespace(string ws);
+    public virtual void WriteString(string text);
+    public virtual void WriteSurrogateCharEntity(char lowChar, char highChar);
+    public virtual void WriteChars(Char[] buffer, int index, int count);
+    public virtual void WriteRaw(Char[] buffer, int index, int count);
+    public virtual void WriteRaw(string data);
+    public virtual void WriteBase64(Byte[] buffer, int index, int count);
+    public virtual void Flush();
+    public virtual string LookupPrefix(string ns);
+    public virtual void WriteStartDocument();
+    public virtual void WriteStartDocument(bool standalone);
+    public virtual void WriteEndDocument();
+    public virtual void WriteDocType(string name, string pubid, string sysid, string subset);
+    public virtual void WriteStartElement(string prefix, string localName, string ns);
+}
+[ExtensionAttribute]
+public static class Microsoft.DocAsCode.Common.XrefUtility : object {
+    [ExtensionAttribute]
+public static bool TryGetXrefStringValue(XRefSpec spec, string key, String& value);
+}
+public class Microsoft.DocAsCode.Common.YamlDeserializerWithFallback : object {
+    private Func`2<Func`1<TextReader>, object> _textReaderDeserialize;
+    private Func`2<string, object> _filePathDeserialize;
+    private YamlDeserializerWithFallback(Func`2<Func`1<TextReader>, object> textReaderDeserialize, Func`2<string, object> filePathDeserialize);
+    public static YamlDeserializerWithFallback Create();
+    public YamlDeserializerWithFallback WithFallback();
+    public object Deserialize(Func`1<TextReader> reader);
+    public object Deserialize(string filePath);
+    private static Func`2<T1, object> Fallback(Func`2<T1, object> first, Func`2<T1, object> second);
+}
+public static class Microsoft.DocAsCode.Common.YamlMime : object {
+    public static string YamlMimePrefix;
+    public static string ManagedReference;
+    public static string TableOfContent;
+    public static string XRefMap;
+    public static string ReadMime(TextReader reader);
+    public static string ReadMime(string file);
+}
+public static class Microsoft.DocAsCode.Common.YamlUtility : object {
+    private static ThreadLocal`1<YamlSerializer> serializer;
+    private static ThreadLocal`1<YamlDeserializer> deserializer;
+    private static YamlUtility();
+    public static void Serialize(TextWriter writer, object graph);
+    public static void Serialize(TextWriter writer, object graph, string comments);
+    public static void Serialize(string path, object graph);
+    public static void Serialize(string path, object graph, string comments);
+    public static T Deserialize(TextReader reader);
+    public static T Deserialize(string path);
+    public static T ConvertTo(object obj);
+}
+public class Microsoft.DocAsCode.Exceptions.DocfxException : Exception {
+    private static string DefaultMessage;
+    public DocfxException(string message);
+    public DocfxException(string message, Exception innerException);
+    protected DocfxException(SerializationInfo info, StreamingContext context);
+}

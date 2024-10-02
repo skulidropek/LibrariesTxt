@@ -1,0 +1,623 @@
+internal static class Microsoft.Owin.Host.HttpListener.Constants : object {
+    internal static string VersionKey;
+    internal static string OwinVersion;
+    internal static string CallCancelledKey;
+    internal static string ServerCapabilitiesKey;
+    internal static string RequestBodyKey;
+    internal static string RequestHeadersKey;
+    internal static string RequestSchemeKey;
+    internal static string RequestMethodKey;
+    internal static string RequestPathBaseKey;
+    internal static string RequestPathKey;
+    internal static string RequestQueryStringKey;
+    internal static string HttpRequestProtocolKey;
+    internal static string HttpResponseProtocolKey;
+    internal static string ResponseStatusCodeKey;
+    internal static string ResponseReasonPhraseKey;
+    internal static string ResponseHeadersKey;
+    internal static string ResponseBodyKey;
+    internal static string ClientCertifiateKey;
+    internal static string LoadClientCertAsyncKey;
+    internal static string RemoteIpAddressKey;
+    internal static string RemotePortKey;
+    internal static string LocalIpAddressKey;
+    internal static string LocalPortKey;
+    internal static string IsLocalKey;
+    internal static string ServerOnSendingHeadersKey;
+    internal static string ServerUserKey;
+    internal static string ServerLoggerFactoryKey;
+    internal static string HostAddressesKey;
+    internal static string WebSocketVersionKey;
+    internal static string WebSocketVersion;
+    internal static string WebSocketAcceptKey;
+    internal static string WebSocketSubProtocolKey;
+    internal static string WebSocketReceiveBufferSizeKey;
+    internal static string WebSocketKeepAliveIntervalKey;
+    internal static string WebSocketBufferKey;
+    internal static string HostHeader;
+    internal static string WwwAuthenticateHeader;
+    internal static string ContentLengthHeader;
+    internal static string TransferEncodingHeader;
+    internal static string KeepAliveHeader;
+    internal static string ConnectionHeader;
+    internal static string SecWebSocketProtocol;
+    internal static string SecWebSocketVersion;
+    internal static int ErrorConnectionNoLongerValid;
+}
+internal class Microsoft.Owin.Host.HttpListener.DisconnectHandler : object {
+    private static bool SkipIOCPCallbackOnSuccess;
+    private ConcurrentDictionary`2<ulong, ConnectionCancellation> _connectionCancellationTokens;
+    private HttpListener _listener;
+    private CriticalHandle _requestQueueHandle;
+    private FieldInfo _connectionIdField;
+    private Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> _logger;
+    internal DisconnectHandler(HttpListener listener, Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> logger);
+    private static DisconnectHandler();
+    internal CancellationToken GetDisconnectToken(HttpListenerContext context);
+    private ConnectionCancellation GetConnectionCancellation(ulong connectionId);
+    private ConnectionCancellation GetCreatedConnectionCancellation(ulong connectionId);
+    private CancellationToken CreateToken(ulong connectionId);
+    private void CancelToken(object state);
+}
+internal static class Microsoft.Owin.Host.HttpListener.LogHelper : object {
+    private static Func`3<object, Exception, string> LogState;
+    private static Func`3<object, Exception, string> LogStateAndError;
+    private static LogHelper();
+    internal static Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> CreateLogger(Func`2<string, Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool>> factory, Type type);
+    internal static void LogInfo(Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> logger, string data);
+    internal static void LogException(Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> logger, string location, Exception exception);
+}
+[SuppressUnmanagedCodeSecurityAttribute]
+internal static class Microsoft.Owin.Host.HttpListener.NativeMethods : object {
+    internal static UInt32 HttpSetRequestQueueProperty(CriticalHandle requestQueueHandle, HTTP_SERVER_PROPERTY serverProperty, IntPtr pPropertyInfo, UInt32 propertyInfoLength, UInt32 reserved, IntPtr pReserved);
+    internal static void SetRequestQueueLength(HttpListener listener, long length);
+    internal static UInt32 HttpWaitForDisconnectEx(CriticalHandle requestQueueHandle, ulong connectionId, UInt32 reserved, NativeOverlapped* pOverlapped);
+}
+public class Microsoft.Owin.Host.HttpListener.OwinHttpListener : object {
+    private static int DefaultMaxRequests;
+    private static long DefaultRequestQueueLength;
+    private static int DefaultMaxAccepts;
+    private static bool IsMono;
+    private static FieldInfo CookedPathField;
+    private static FieldInfo CookedQueryField;
+    private Action _startNextRequestAsync;
+    private Action`1<Task> _startNextRequestError;
+    private HttpListener _listener;
+    private IList`1<string> _basePaths;
+    private Func`2<IDictionary`2<string, object>, Task> _appFunc;
+    private DisconnectHandler _disconnectHandler;
+    private IDictionary`2<string, object> _capabilities;
+    private PumpLimits _pumpLimits;
+    private int _currentOutstandingAccepts;
+    private int _currentOutstandingRequests;
+    private Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool> _logger;
+    private Nullable`1<long> _requestQueueLength;
+    public HttpListener Listener { get; }
+    private bool CanAcceptMoreRequests { get; }
+    private static OwinHttpListener();
+    public HttpListener get_Listener();
+    private bool get_CanAcceptMoreRequests();
+    public void SetRequestProcessingLimits(int maxAccepts, int maxRequests);
+    public void GetRequestProcessingLimits(Int32& maxAccepts, Int32& maxRequests);
+    public void SetRequestQueueLimit(long limit);
+    private void SetRequestQueueLimit();
+    internal void Start(HttpListener listener, Func`2<IDictionary`2<string, object>, Task> appFunc, IList`1<IDictionary`2<string, object>> addresses, IDictionary`2<string, object> capabilities, Func`2<string, Func`6<TraceEventType, int, object, Exception, Func`3<object, Exception, string>, bool>> loggerFactory);
+    private void OffloadStartNextRequest();
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.OwinHttpListener/<ProcessRequestsAsync>d__29")]
+private void ProcessRequestsAsync();
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.OwinHttpListener/<ProcessRequestAsync>d__30")]
+private Task ProcessRequestAsync(HttpListenerContext context);
+    private void StartNextRequestError(Task faultedTask);
+    private void GetPathAndQuery(HttpListenerRequest request, String& pathBase, String& path, String& query);
+    private void PopulateServerKeys(CallEnvironment env);
+    internal void Stop();
+    public sealed virtual void Dispose();
+}
+public static class Microsoft.Owin.Host.HttpListener.OwinServerFactory : object {
+    public static void Initialize(IDictionary`2<string, object> properties);
+    private static void DetectWebSocketSupport(IDictionary`2<string, object> properties);
+    public static IDisposable Create(Func`2<IDictionary`2<string, object>, Task> app, IDictionary`2<string, object> properties);
+}
+internal class Microsoft.Owin.Host.HttpListener.PumpLimits : object {
+    [CompilerGeneratedAttribute]
+private int <MaxOutstandingAccepts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxOutstandingRequests>k__BackingField;
+    internal int MaxOutstandingAccepts { get; private set; }
+    internal int MaxOutstandingRequests { get; private set; }
+    internal PumpLimits(int maxAccepts, int maxRequests);
+    [CompilerGeneratedAttribute]
+internal int get_MaxOutstandingAccepts();
+    [CompilerGeneratedAttribute]
+private void set_MaxOutstandingAccepts(int value);
+    [CompilerGeneratedAttribute]
+internal int get_MaxOutstandingRequests();
+    [CompilerGeneratedAttribute]
+private void set_MaxOutstandingRequests(int value);
+}
+[DefaultMemberAttribute("Item")]
+[GeneratedCodeAttribute("TextTemplatingFileGenerator", "")]
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.CallEnvironment : object {
+    private UInt32 _flag0;
+    private UInt32 _flag1;
+    private UInt32 _initFlag0;
+    private string _RequestPath;
+    private IDictionary`2<string, String[]> _ResponseHeaders;
+    private IDictionary`2<string, String[]> _RequestHeaders;
+    private Stream _ResponseBody;
+    private Stream _RequestBody;
+    private string _RequestId;
+    private int _ResponseStatusCode;
+    private string _ResponseReasonPhrase;
+    private string _RequestQueryString;
+    private CancellationToken _CallCancelled;
+    private string _RequestMethod;
+    private string _RequestScheme;
+    private string _RequestPathBase;
+    private string _RequestProtocol;
+    private string _OwinVersion;
+    private TextWriter _HostTraceOutput;
+    private string _HostAppName;
+    private string _HostAppMode;
+    private CancellationToken _OnAppDisposing;
+    private Action`2<Action`1<object>, object> _OnSendingHeaders;
+    private IDictionary`2<string, object> _ServerCapabilities;
+    private string _ServerRemoteIpAddress;
+    private string _ServerRemotePort;
+    private string _ServerLocalIpAddress;
+    private string _ServerLocalPort;
+    private bool _ServerIsLocal;
+    private X509Certificate _ClientCert;
+    private Exception _ClientCertErrors;
+    private Func`1<Task> _LoadClientCert;
+    private Action`2<IDictionary`2<string, object>, Func`2<IDictionary`2<string, object>, Task>> _WebSocketAccept;
+    private Func`5<string, long, Nullable`1<long>, CancellationToken, Task> _SendFileAsync;
+    private HttpListenerContext _RequestContext;
+    private HttpListener _Listener;
+    private OwinHttpListener _OwinHttpListener;
+    private static IDictionary`2<string, object> WeakNilEnvironment;
+    private IPropertySource _propertySource;
+    private IDictionary`2<string, object> _extra;
+    internal bool ClientCertNeedsInit { get; }
+    internal bool ClientCertErrorsNeedsInit { get; }
+    internal bool WebSocketAcceptNeedsInit { get; }
+    internal string RequestPath { get; internal set; }
+    internal IDictionary`2<string, String[]> ResponseHeaders { get; internal set; }
+    internal IDictionary`2<string, String[]> RequestHeaders { get; internal set; }
+    internal Stream ResponseBody { get; internal set; }
+    internal Stream RequestBody { get; internal set; }
+    internal string RequestId { get; internal set; }
+    internal int ResponseStatusCode { get; internal set; }
+    internal string ResponseReasonPhrase { get; internal set; }
+    internal string RequestQueryString { get; internal set; }
+    internal CancellationToken CallCancelled { get; internal set; }
+    internal string RequestMethod { get; internal set; }
+    internal string RequestScheme { get; internal set; }
+    internal string RequestPathBase { get; internal set; }
+    internal string RequestProtocol { get; internal set; }
+    internal string OwinVersion { get; internal set; }
+    internal TextWriter HostTraceOutput { get; internal set; }
+    internal string HostAppName { get; internal set; }
+    internal string HostAppMode { get; internal set; }
+    internal CancellationToken OnAppDisposing { get; internal set; }
+    internal IPrincipal ServerUser { get; internal set; }
+    internal Action`2<Action`1<object>, object> OnSendingHeaders { get; internal set; }
+    internal IDictionary`2<string, object> ServerCapabilities { get; internal set; }
+    internal string ServerRemoteIpAddress { get; internal set; }
+    internal string ServerRemotePort { get; internal set; }
+    internal string ServerLocalIpAddress { get; internal set; }
+    internal string ServerLocalPort { get; internal set; }
+    internal bool ServerIsLocal { get; internal set; }
+    internal X509Certificate ClientCert { get; internal set; }
+    internal Exception ClientCertErrors { get; internal set; }
+    internal Func`1<Task> LoadClientCert { get; internal set; }
+    internal Action`2<IDictionary`2<string, object>, Func`2<IDictionary`2<string, object>, Task>> WebSocketAccept { get; internal set; }
+    internal Func`5<string, long, Nullable`1<long>, CancellationToken, Task> SendFileAsync { get; internal set; }
+    internal HttpListenerContext RequestContext { get; internal set; }
+    internal HttpListener Listener { get; internal set; }
+    internal OwinHttpListener OwinHttpListener { get; internal set; }
+    internal IDictionary`2<string, object> Extra { get; }
+    private IDictionary`2<string, object> StrongExtra { get; }
+    internal bool IsExtraDictionaryCreated { get; }
+    public object Item { get; public set; }
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<object> Values { get; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    internal CallEnvironment(IPropertySource propertySource);
+    private static CallEnvironment();
+    private bool InitPropertyClientCert();
+    private bool InitPropertyClientCertErrors();
+    private bool InitPropertyWebSocketAccept();
+    internal bool get_ClientCertNeedsInit();
+    internal bool get_ClientCertErrorsNeedsInit();
+    internal bool get_WebSocketAcceptNeedsInit();
+    internal string get_RequestPath();
+    internal void set_RequestPath(string value);
+    internal IDictionary`2<string, String[]> get_ResponseHeaders();
+    internal void set_ResponseHeaders(IDictionary`2<string, String[]> value);
+    internal IDictionary`2<string, String[]> get_RequestHeaders();
+    internal void set_RequestHeaders(IDictionary`2<string, String[]> value);
+    internal Stream get_ResponseBody();
+    internal void set_ResponseBody(Stream value);
+    internal Stream get_RequestBody();
+    internal void set_RequestBody(Stream value);
+    internal string get_RequestId();
+    internal void set_RequestId(string value);
+    internal int get_ResponseStatusCode();
+    internal void set_ResponseStatusCode(int value);
+    internal string get_ResponseReasonPhrase();
+    internal void set_ResponseReasonPhrase(string value);
+    internal string get_RequestQueryString();
+    internal void set_RequestQueryString(string value);
+    internal CancellationToken get_CallCancelled();
+    internal void set_CallCancelled(CancellationToken value);
+    internal string get_RequestMethod();
+    internal void set_RequestMethod(string value);
+    internal string get_RequestScheme();
+    internal void set_RequestScheme(string value);
+    internal string get_RequestPathBase();
+    internal void set_RequestPathBase(string value);
+    internal string get_RequestProtocol();
+    internal void set_RequestProtocol(string value);
+    internal string get_OwinVersion();
+    internal void set_OwinVersion(string value);
+    internal TextWriter get_HostTraceOutput();
+    internal void set_HostTraceOutput(TextWriter value);
+    internal string get_HostAppName();
+    internal void set_HostAppName(string value);
+    internal string get_HostAppMode();
+    internal void set_HostAppMode(string value);
+    internal CancellationToken get_OnAppDisposing();
+    internal void set_OnAppDisposing(CancellationToken value);
+    internal IPrincipal get_ServerUser();
+    internal void set_ServerUser(IPrincipal value);
+    internal Action`2<Action`1<object>, object> get_OnSendingHeaders();
+    internal void set_OnSendingHeaders(Action`2<Action`1<object>, object> value);
+    internal IDictionary`2<string, object> get_ServerCapabilities();
+    internal void set_ServerCapabilities(IDictionary`2<string, object> value);
+    internal string get_ServerRemoteIpAddress();
+    internal void set_ServerRemoteIpAddress(string value);
+    internal string get_ServerRemotePort();
+    internal void set_ServerRemotePort(string value);
+    internal string get_ServerLocalIpAddress();
+    internal void set_ServerLocalIpAddress(string value);
+    internal string get_ServerLocalPort();
+    internal void set_ServerLocalPort(string value);
+    internal bool get_ServerIsLocal();
+    internal void set_ServerIsLocal(bool value);
+    internal X509Certificate get_ClientCert();
+    internal void set_ClientCert(X509Certificate value);
+    internal Exception get_ClientCertErrors();
+    internal void set_ClientCertErrors(Exception value);
+    internal Func`1<Task> get_LoadClientCert();
+    internal void set_LoadClientCert(Func`1<Task> value);
+    internal Action`2<IDictionary`2<string, object>, Func`2<IDictionary`2<string, object>, Task>> get_WebSocketAccept();
+    internal void set_WebSocketAccept(Action`2<IDictionary`2<string, object>, Func`2<IDictionary`2<string, object>, Task>> value);
+    internal Func`5<string, long, Nullable`1<long>, CancellationToken, Task> get_SendFileAsync();
+    internal void set_SendFileAsync(Func`5<string, long, Nullable`1<long>, CancellationToken, Task> value);
+    internal HttpListenerContext get_RequestContext();
+    internal void set_RequestContext(HttpListenerContext value);
+    internal HttpListener get_Listener();
+    internal void set_Listener(HttpListener value);
+    internal OwinHttpListener get_OwinHttpListener();
+    internal void set_OwinHttpListener(OwinHttpListener value);
+    private bool PropertiesContainsKey(string key);
+    private bool PropertiesTryGetValue(string key, Object& value);
+    private bool PropertiesTrySetValue(string key, object value);
+    private bool PropertiesTryRemove(string key);
+    [IteratorStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.CallEnvironment/<PropertiesKeys>d__156")]
+private IEnumerable`1<string> PropertiesKeys();
+    [IteratorStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.CallEnvironment/<PropertiesValues>d__157")]
+private IEnumerable`1<object> PropertiesValues();
+    [IteratorStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.CallEnvironment/<PropertiesEnumerable>d__158")]
+private IEnumerable`1<KeyValuePair`2<string, object>> PropertiesEnumerable();
+    internal IDictionary`2<string, object> get_Extra();
+    private IDictionary`2<string, object> get_StrongExtra();
+    internal bool get_IsExtraDictionaryCreated();
+    public sealed virtual object get_Item(string key);
+    public sealed virtual void set_Item(string key, object value);
+    public sealed virtual void Add(string key, object value);
+    public sealed virtual bool ContainsKey(string key);
+    public sealed virtual ICollection`1<string> get_Keys();
+    public sealed virtual bool Remove(string key);
+    public sealed virtual bool TryGetValue(string key, Object& value);
+    public sealed virtual ICollection`1<object> get_Values();
+    public sealed virtual void Add(KeyValuePair`2<string, object> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<string, object> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual bool Remove(KeyValuePair`2<string, object> item);
+    private sealed virtual override IEnumerator`1<KeyValuePair`2<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+internal abstract class Microsoft.Owin.Host.HttpListener.RequestProcessing.ExceptionFilterStream : Stream {
+    private Stream _innerStream;
+    private OneTimeCallback _onFirstWrite;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public bool CanTimeout { get; }
+    public int ReadTimeout { get; public set; }
+    public int WriteTimeout { get; public set; }
+    protected ExceptionFilterStream(Stream innerStream);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual bool get_CanTimeout();
+    public virtual int get_ReadTimeout();
+    public virtual void set_ReadTimeout(int value);
+    public virtual int get_WriteTimeout();
+    public virtual void set_WriteTimeout(int value);
+    protected abstract virtual bool TryWrapException(Exception ex, Exception& wrapped);
+    private void FirstWrite();
+    public virtual void SetLength(long value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public void OnFirstWrite(Action`1<object> callback, object state);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.ExceptionFilterStream/<CopyToAsync>d__27")]
+public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    public virtual int ReadByte();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual IAsyncResult BeginRead(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual int EndRead(IAsyncResult asyncResult);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.ExceptionFilterStream/<ReadAsync>d__32")]
+public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual IAsyncResult BeginWrite(Byte[] buffer, int offset, int count, AsyncCallback callback, object state);
+    public virtual void EndWrite(IAsyncResult asyncResult);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.ExceptionFilterStream/<WriteAsync>d__36")]
+public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual void WriteByte(byte value);
+    public virtual void Flush();
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.ExceptionFilterStream/<FlushAsync>d__39")]
+public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual void Close();
+    protected virtual void Dispose(bool disposing);
+}
+[DefaultMemberAttribute("Item")]
+internal abstract class Microsoft.Owin.Host.HttpListener.RequestProcessing.HeadersDictionaryBase : object {
+    [CompilerGeneratedAttribute]
+private WebHeaderCollection <Headers>k__BackingField;
+    protected WebHeaderCollection Headers { get; protected set; }
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<String[]> Values { get; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public String[] Item { get; public set; }
+    [CompilerGeneratedAttribute]
+protected virtual WebHeaderCollection get_Headers();
+    [CompilerGeneratedAttribute]
+protected virtual void set_Headers(WebHeaderCollection value);
+    public virtual ICollection`1<string> get_Keys();
+    public virtual ICollection`1<String[]> get_Values();
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual String[] get_Item(string key);
+    public sealed virtual void set_Item(string key, String[] value);
+    public sealed virtual bool ContainsKey(string key);
+    public virtual bool Remove(string key);
+    protected virtual void RemoveSilent(string header);
+    protected virtual String[] Get(string key);
+    protected void Set(string key, String[] value);
+    protected virtual void Set(string key, string value);
+    public sealed virtual void Add(string key, String[] values);
+    protected virtual void Append(string key, string value);
+    public virtual bool TryGetValue(string key, String[]& value);
+    public sealed virtual void Add(KeyValuePair`2<string, String[]> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<string, String[]> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual bool Remove(KeyValuePair`2<string, String[]> item);
+    [IteratorStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.HeadersDictionaryBase/<GetEnumerator>d__30")]
+public virtual IEnumerator`1<KeyValuePair`2<string, String[]>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.HttpListenerStreamWrapper : ExceptionFilterStream {
+    internal HttpListenerStreamWrapper(Stream innerStream);
+    protected virtual bool TryWrapException(Exception ex, Exception& wrapped);
+    public virtual void Close();
+    protected virtual void Dispose(bool disposing);
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.NilDictionary : object {
+    private static String[] EmptyKeys;
+    private static Object[] EmptyValues;
+    private static IEnumerable`1<KeyValuePair`2<string, object>> EmptyKeyValuePairs;
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    public ICollection`1<string> Keys { get; }
+    public ICollection`1<object> Values { get; }
+    public object Item { get; public set; }
+    private static NilDictionary();
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual ICollection`1<string> get_Keys();
+    public sealed virtual ICollection`1<object> get_Values();
+    public sealed virtual object get_Item(string key);
+    public sealed virtual void set_Item(string key, object value);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual void Add(KeyValuePair`2<string, object> item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(KeyValuePair`2<string, object> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual bool Remove(KeyValuePair`2<string, object> item);
+    public sealed virtual bool ContainsKey(string key);
+    public sealed virtual void Add(string key, object value);
+    public sealed virtual bool Remove(string key);
+    public sealed virtual bool TryGetValue(string key, Object& value);
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.OwinHttpListenerContext : object {
+    private HttpListenerContext _httpListenerContext;
+    private OwinHttpListenerRequest _owinRequest;
+    private OwinHttpListenerResponse _owinResponse;
+    private CallEnvironment _environment;
+    private DisconnectHandler _disconnectHandler;
+    private CancellationTokenSource _cts;
+    private CancellationTokenRegistration _disconnectRegistration;
+    private IPrincipal _user;
+    internal CallEnvironment Environment { get; }
+    internal OwinHttpListenerRequest Request { get; }
+    internal OwinHttpListenerResponse Response { get; }
+    internal OwinHttpListenerContext(HttpListenerContext httpListenerContext, string basePath, string path, string query, DisconnectHandler disconnectHandler);
+    internal CallEnvironment get_Environment();
+    internal OwinHttpListenerRequest get_Request();
+    internal OwinHttpListenerResponse get_Response();
+    internal void End(Exception ex);
+    internal void End();
+    private static void SetDisconnected(object state);
+    public sealed virtual void Dispose();
+    public virtual void Dispose(bool disposing);
+    public sealed virtual CancellationToken GetCallCancelled();
+    public sealed virtual Stream GetRequestBody();
+    public sealed virtual string GetServerRemoteIpAddress();
+    public sealed virtual string GetServerRemotePort();
+    public sealed virtual string GetServerLocalIpAddress();
+    public sealed virtual string GetServerLocalPort();
+    public sealed virtual bool GetServerIsLocal();
+    public sealed virtual IPrincipal GetServerUser();
+    public sealed virtual void SetServerUser(IPrincipal user);
+    public sealed virtual bool TryGetClientCert(X509Certificate& value);
+    public sealed virtual bool TryGetClientCertErrors(Exception& value);
+    public sealed virtual bool TryGetWebSocketAccept(Action`2& websocketAccept);
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.OwinHttpListenerRequest : object {
+    private CallEnvironment _environment;
+    private HttpListenerRequest _request;
+    internal OwinHttpListenerRequest(HttpListenerRequest request, string basePath, string path, string query, CallEnvironment environment);
+    private static string GetProtocol(Version version);
+    internal bool TryGetClientCert(X509Certificate& value, Exception& errors);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.OwinHttpListenerRequest/<LoadClientCertAsync>d__5")]
+private Task LoadClientCertAsync();
+    internal Stream GetRequestBody();
+    internal string GetRemoteIpAddress();
+    internal string GetRemotePort();
+    internal string GetLocalIpAddress();
+    internal string GetLocalPort();
+    internal bool GetIsLocal();
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.OwinHttpListenerResponse : object {
+    private static int RequestInProgress;
+    private static int ResponseInProgress;
+    private static int Completed;
+    private static Action`1<object> _responseBodyStarted;
+    private CallEnvironment _environment;
+    private HttpListenerResponse _response;
+    private HttpListenerContext _context;
+    private bool _responsePrepared;
+    private IList`1<Tuple`2<Action`1<object>, object>> _onSendingHeadersActions;
+    private int _requestState;
+    private IDictionary`2<string, object> _acceptOptions;
+    private Func`2<IDictionary`2<string, object>, Task> _webSocketFunc;
+    private Task _webSocketAction;
+    internal OwinHttpListenerResponse(HttpListenerContext context, CallEnvironment environment);
+    private static OwinHttpListenerResponse();
+    private void DoWebSocketUpgrade(IDictionary`2<string, object> acceptOptions, Func`2<IDictionary`2<string, object>, Task> callback);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.OwinHttpListenerResponse/<WebSocketUpgrade>d__15")]
+private Task WebSocketUpgrade(string subProtocol, int receiveBufferSize, TimeSpan keepAliveInterval, Nullable`1<ArraySegment`1<byte>> internalBuffer);
+    private string GetWebSocketSubProtocol();
+    private int GetWebSocketReceiveBufferSize();
+    private TimeSpan GetWebSocketKeepAliveInterval();
+    private Nullable`1<ArraySegment`1<byte>> GetWebSocketBuffer();
+    internal bool TryStartResponse();
+    internal bool TryFinishResponse();
+    private static void OnResponseBodyStarted(object state);
+    private void ResponseBodyStarted();
+    internal Task CompleteResponseAsync();
+    public void Close();
+    private void PrepareResponse(bool mayHaveBody);
+    private void SetStatusCode();
+    private void SetReasonPhrase();
+    private void RegisterForOnSendingHeaders(Action`1<object> callback, object state);
+    private void NotifyOnSendingHeaders();
+    internal void End();
+    internal bool TryGetWebSocketAccept(Action`2& websocketAccept);
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.RequestHeadersDictionary : HeadersDictionaryBase {
+    private HttpListenerRequest _request;
+    protected WebHeaderCollection Headers { get; protected set; }
+    internal RequestHeadersDictionary(HttpListenerRequest request);
+    protected virtual WebHeaderCollection get_Headers();
+    protected virtual void set_Headers(WebHeaderCollection value);
+    public virtual bool TryGetValue(string key, String[]& value);
+}
+internal class Microsoft.Owin.Host.HttpListener.RequestProcessing.ResponseHeadersDictionary : HeadersDictionaryBase {
+    private HttpListenerResponse _response;
+    private bool HasContentLength { get; }
+    private String[] ContentLength { get; }
+    public ICollection`1<string> Keys { get; }
+    internal ResponseHeadersDictionary(HttpListenerResponse response);
+    private bool get_HasContentLength();
+    private String[] get_ContentLength();
+    public virtual ICollection`1<string> get_Keys();
+    public virtual bool TryGetValue(string header, String[]& value);
+    protected virtual String[] Get(string header);
+    protected virtual void Set(string header, string value);
+    protected virtual void Append(string header, string value);
+    public virtual bool Remove(string header);
+    protected virtual void RemoveSilent(string header);
+    [IteratorStateMachineAttribute("Microsoft.Owin.Host.HttpListener.RequestProcessing.ResponseHeadersDictionary/<GetEnumerator>d__14")]
+public virtual IEnumerator`1<KeyValuePair`2<string, String[]>> GetEnumerator();
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.Owin.Host.HttpListener.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string Exception_DuplicateKey { get; }
+    internal static string Exception_ResponseAlreadySent { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_Exception_DuplicateKey();
+    internal static string get_Exception_ResponseAlreadySent();
+}
+internal static class Microsoft.Owin.Host.HttpListener.WebSockets.Constants : object {
+    internal static string WebSocketAcceptKey;
+    internal static string WebSocketSubProtocolKey;
+    internal static string WebSocketSendAsyncKey;
+    internal static string WebSocketReceiveAyncKey;
+    internal static string WebSocketCloseAsyncKey;
+    internal static string WebSocketCallCancelledKey;
+    internal static string WebSocketVersionKey;
+    internal static string WebSocketVersion;
+    internal static string WebSocketCloseStatusKey;
+    internal static string WebSocketCloseDescriptionKey;
+}
+internal class Microsoft.Owin.Host.HttpListener.WebSockets.OwinWebSocketWrapper : object {
+    private WebSocket _webSocket;
+    private IDictionary`2<string, object> _environment;
+    private CancellationToken _cancellationToken;
+    private WebSocketContext _context;
+    internal IDictionary`2<string, object> Environment { get; }
+    internal OwinWebSocketWrapper(WebSocketContext context, CancellationToken ct);
+    internal IDictionary`2<string, object> get_Environment();
+    internal Task SendAsync(ArraySegment`1<byte> buffer, int messageType, bool endOfMessage, CancellationToken cancel);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.WebSockets.OwinWebSocketWrapper/<ReceiveAsync>d__8")]
+internal Task`1<Tuple`3<int, bool, int>> ReceiveAsync(ArraySegment`1<byte> buffer, CancellationToken cancel);
+    internal Task CloseAsync(int status, string description, CancellationToken cancel);
+    private Task RedirectSendToCloseAsync(ArraySegment`1<byte> buffer, CancellationToken cancel);
+    [AsyncStateMachineAttribute("Microsoft.Owin.Host.HttpListener.WebSockets.OwinWebSocketWrapper/<CleanupAsync>d__11")]
+internal Task CleanupAsync();
+    private static WebSocketMessageType OpCodeToEnum(int messageType);
+    private static int EnumToOpCode(WebSocketMessageType webSocketMessageType);
+}
+[ExtensionAttribute]
+internal static class System.Collections.Generic.DictionaryExtensions : object {
+    [ExtensionAttribute]
+internal static T Get(IDictionary`2<string, object> dictionary, string key);
+    [ExtensionAttribute]
+internal static T Get(IDictionary`2<string, object> dictionary, string subDictionaryKey, string key);
+}

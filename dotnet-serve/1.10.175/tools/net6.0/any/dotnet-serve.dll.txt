@@ -1,0 +1,376 @@
+internal class McMaster.DotNet.Serve.CertificateLoader : object {
+    private static string AspNetHttpsOid;
+    private static string AspNetHttpsOidFriendlyName;
+    public static string DefaultCertPemFileName;
+    public static string DefaultPrivateKeyFileName;
+    public static string DefaultCertPfxFileName;
+    public static bool TryLoadCertificate(CommandLineOptions options, string currentDirectory, X509Certificate2& cert, Exception& error);
+    private static X509Certificate2 LoadCertificate(CommandLineOptions options, string currentDirectory);
+    private static X509Certificate2 LoadFromPfxFile(string filepath, string password);
+    private static X509Certificate2 LoadFromPem(string certPath, string keyPath);
+    private static X509Certificate2 LoadDeveloperCertificate();
+}
+[CommandAttribute]
+[VersionOptionFromMemberAttribute]
+internal class McMaster.DotNet.Serve.CommandLineOptions : object {
+    private Nullable`1<LogLevel> _logLevel;
+    private Nullable`1<bool> _useTls;
+    [CompilerGeneratedAttribute]
+private string <Directory>k__BackingField;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private ValueTuple`2<bool, string> <OpenBrowser>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <Port>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IPAddress[] <Addresses>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PathBase>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <ReverseProxyMappings>k__BackingField;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private ValueTuple`2<bool, string> <DefaultExtensions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <Quiet>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <Verbose>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Headers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CertPemPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PrivateKeyPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CertPfxPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CertificatePassword>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <MimeMappings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <ExcludedFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <UseGzip>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <UseBrotli>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<CompressionLevel> <CompressionLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <EnableCors>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SaveOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConfigFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FallbackFile>k__BackingField;
+    [OptionAttribute("-d|--directory <DIR>")]
+[DirectoryExistsAttribute]
+public string Directory { get; internal set; }
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[OptionAttribute("-o|--open-browser[:<PATH>]", "2")]
+public ValueTuple`2<bool, string> OpenBrowser { get; internal set; }
+    [OptionAttribute]
+[RangeAttribute("0", "65535")]
+public Nullable`1<int> Port { get; internal set; }
+    [OptionAttribute("-a|--address <ADDRESS>")]
+public IPAddress[] Addresses { get; }
+    [OptionAttribute("--path-base <PATH>")]
+public string PathBase { get; internal set; }
+    [OptionAttribute("--reverse-proxy <MAPPING>", "0")]
+public String[] ReverseProxyMappings { get; internal set; }
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[OptionAttribute("--default-extensions:<EXTENSIONS>", "2")]
+public ValueTuple`2<bool, string> DefaultExtensions { get; }
+    [OptionAttribute]
+public Nullable`1<bool> Quiet { get; internal set; }
+    [OptionAttribute]
+public Nullable`1<bool> Verbose { get; internal set; }
+    [OptionAttribute("-h|--headers <HEADER_AND_VALUE>", "0")]
+[RegularExpressionAttribute("^([^:]+):([^:]*)$")]
+public String[] Headers { get; internal set; }
+    [OptionAttribute("--log <LEVEL>")]
+public LogLevel MinLogLevel { get; private set; }
+    [OptionAttribute("-S|--tls")]
+public bool UseTls { get; internal set; }
+    internal bool UseTlsSpecified { get; }
+    [OptionAttribute("--cert")]
+[FileExistsAttribute]
+public string CertPemPath { get; internal set; }
+    [OptionAttribute("--key")]
+[FileExistsAttribute]
+public string PrivateKeyPath { get; internal set; }
+    [OptionAttribute("--pfx")]
+[FileExistsAttribute]
+public string CertPfxPath { get; internal set; }
+    [OptionAttribute("--pfx-pwd")]
+public string CertificatePassword { get; internal set; }
+    [OptionAttribute("-m|--mime <MAPPING>", "0")]
+[RegularExpressionAttribute("^([^=]+)=(.*)$")]
+public String[] MimeMappings { get; internal set; }
+    [OptionAttribute("--exclude-file")]
+public List`1<string> ExcludedFiles { get; }
+    [OptionAttribute("-z|--gzip")]
+public Nullable`1<bool> UseGzip { get; internal set; }
+    [OptionAttribute("-b|--brotli")]
+public Nullable`1<bool> UseBrotli { get; internal set; }
+    [OptionAttribute("--compression-level")]
+public Nullable`1<CompressionLevel> CompressionLevel { get; internal set; }
+    [OptionAttribute("-c|--cors")]
+public Nullable`1<bool> EnableCors { get; internal set; }
+    [OptionAttribute("--save-options")]
+public bool SaveOptions { get; }
+    [OptionAttribute("--config-file")]
+public string ConfigFile { get; }
+    [OptionAttribute("--fallback-file")]
+[FileExistsAttribute]
+public string FallbackFile { get; internal set; }
+    [CompilerGeneratedAttribute]
+public string get_Directory();
+    [CompilerGeneratedAttribute]
+internal void set_Directory(string value);
+    [CompilerGeneratedAttribute]
+public ValueTuple`2<bool, string> get_OpenBrowser();
+    [CompilerGeneratedAttribute]
+internal void set_OpenBrowser(ValueTuple`2<bool, string> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_Port();
+    [CompilerGeneratedAttribute]
+internal void set_Port(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public IPAddress[] get_Addresses();
+    [CompilerGeneratedAttribute]
+public string get_PathBase();
+    [CompilerGeneratedAttribute]
+internal void set_PathBase(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_ReverseProxyMappings();
+    [CompilerGeneratedAttribute]
+internal void set_ReverseProxyMappings(String[] value);
+    [CompilerGeneratedAttribute]
+public ValueTuple`2<bool, string> get_DefaultExtensions();
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_Quiet();
+    [CompilerGeneratedAttribute]
+internal void set_Quiet(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_Verbose();
+    [CompilerGeneratedAttribute]
+internal void set_Verbose(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public String[] get_Headers();
+    [CompilerGeneratedAttribute]
+internal void set_Headers(String[] value);
+    public LogLevel get_MinLogLevel();
+    private void set_MinLogLevel(LogLevel value);
+    public virtual bool get_UseTls();
+    internal virtual void set_UseTls(bool value);
+    internal bool get_UseTlsSpecified();
+    [CompilerGeneratedAttribute]
+public string get_CertPemPath();
+    [CompilerGeneratedAttribute]
+internal void set_CertPemPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_PrivateKeyPath();
+    [CompilerGeneratedAttribute]
+internal void set_PrivateKeyPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_CertPfxPath();
+    [CompilerGeneratedAttribute]
+internal void set_CertPfxPath(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_CertificatePassword();
+    [CompilerGeneratedAttribute]
+internal virtual void set_CertificatePassword(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_MimeMappings();
+    [CompilerGeneratedAttribute]
+internal void set_MimeMappings(String[] value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_ExcludedFiles();
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_UseGzip();
+    [CompilerGeneratedAttribute]
+internal void set_UseGzip(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_UseBrotli();
+    [CompilerGeneratedAttribute]
+internal void set_UseBrotli(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<CompressionLevel> get_CompressionLevel();
+    [CompilerGeneratedAttribute]
+internal void set_CompressionLevel(Nullable`1<CompressionLevel> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<bool> get_EnableCors();
+    [CompilerGeneratedAttribute]
+internal void set_EnableCors(Nullable`1<bool> value);
+    [CompilerGeneratedAttribute]
+public bool get_SaveOptions();
+    [CompilerGeneratedAttribute]
+public string get_ConfigFile();
+    [CompilerGeneratedAttribute]
+public string get_FallbackFile();
+    [CompilerGeneratedAttribute]
+internal void set_FallbackFile(string value);
+    public string GetPathBase();
+    public bool ShouldUseLocalhost();
+    public String[] GetDefaultExtensions();
+    public IDictionary`2<string, string> GetMimeMappings();
+    public IDictionary`2<string, string> GetReverseProxyMappings();
+    public IDictionary`2<string, string> GetHeaders();
+    private static string GetVersion();
+}
+[ExtensionAttribute]
+internal static class McMaster.DotNet.Serve.ConsoleExtensions : object {
+    [ExtensionAttribute]
+public static void Write(IConsole console, ConsoleColor color, string message);
+    [ExtensionAttribute]
+public static void WriteLine(IConsole console, ConsoleColor color, string message);
+}
+[ExtensionAttribute]
+internal static class McMaster.DotNet.Serve.DefaultExtensions.DefaultExtensionsExtensions : object {
+    [ExtensionAttribute]
+public static IApplicationBuilder UseDefaultExtensions(IApplicationBuilder app, DefaultExtensionsOptions options);
+}
+internal class McMaster.DotNet.Serve.DefaultExtensions.DefaultExtensionsMiddleware : object {
+    private RequestDelegate _next;
+    private IFileProvider _fileProvider;
+    private DefaultExtensionsOptions _options;
+    private ILogger _logger;
+    public DefaultExtensionsMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions`1<DefaultExtensionsOptions> options, ILoggerFactory loggerFactory);
+    [AsyncStateMachineAttribute("McMaster.DotNet.Serve.DefaultExtensions.DefaultExtensionsMiddleware/<Invoke>d__5")]
+public Task Invoke(HttpContext context);
+    private static bool IsGetOrHeadMethod(string method);
+    private static bool PathEndsInSlash(PathString path);
+}
+internal class McMaster.DotNet.Serve.DefaultExtensions.DefaultExtensionsOptions : object {
+    [CompilerGeneratedAttribute]
+private String[] <Extensions>k__BackingField;
+    public String[] Extensions { get; public set; }
+    [CompilerGeneratedAttribute]
+public String[] get_Extensions();
+    [CompilerGeneratedAttribute]
+public void set_Extensions(String[] value);
+}
+[ExtensionAttribute]
+internal static class McMaster.DotNet.Serve.DotNetUtilities : object {
+    [ExtensionAttribute]
+public static RSA ToRSA(RsaPrivateCrtKeyParameters privKey);
+    [ExtensionAttribute]
+private static RSAParameters ToRSAParameters(RsaPrivateCrtKeyParameters privKey);
+    [ExtensionAttribute]
+private static Byte[] ConvertRSAParametersField(BigInteger n, int size);
+}
+internal class McMaster.DotNet.Serve.EphemeralXmlRepository : object {
+    private List`1<XElement> _storedElements;
+    public virtual IReadOnlyCollection`1<XElement> GetAllElements();
+    [IteratorStateMachineAttribute("McMaster.DotNet.Serve.EphemeralXmlRepository/<GetAllElementsCore>d__2")]
+private IEnumerable`1<XElement> GetAllElementsCore();
+    public virtual void StoreElement(XElement element, string friendlyName);
+}
+[ExtensionAttribute]
+internal static class McMaster.DotNet.Serve.Headers.HeadersExtensions : object {
+    [ExtensionAttribute]
+public static IApplicationBuilder UseHeaders(IApplicationBuilder app, HeadersOptions options);
+}
+public class McMaster.DotNet.Serve.Headers.HeadersMiddleware : object {
+    private RequestDelegate _next;
+    private ILogger`1<HeadersMiddleware> _logger;
+    private HeadersOptions _options;
+    public HeadersMiddleware(RequestDelegate next, IOptions`1<HeadersOptions> options, ILogger`1<HeadersMiddleware> logger);
+    [AsyncStateMachineAttribute("McMaster.DotNet.Serve.Headers.HeadersMiddleware/<Invoke>d__4")]
+public Task Invoke(HttpContext context);
+}
+public class McMaster.DotNet.Serve.Headers.HeadersOptions : object {
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <Headers>k__BackingField;
+    public IDictionary`2<string, string> Headers { get; public set; }
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_Headers();
+    [CompilerGeneratedAttribute]
+public void set_Headers(IDictionary`2<string, string> value);
+}
+internal class McMaster.DotNet.Serve.IPAddressParser : object {
+    public Type TargetType { get; }
+    public sealed virtual Type get_TargetType();
+    public sealed virtual IPAddress Parse(string argName, string value, CultureInfo culture);
+    private sealed virtual override object McMaster.Extensions.CommandLineUtils.Abstractions.IValueParser.Parse(string argName, string value, CultureInfo culture);
+}
+internal class McMaster.DotNet.Serve.KeyManager : object {
+    private XmlKeyManager _wrapped;
+    public KeyManager(IOptions`1<KeyManagementOptions> options, IActivator activator);
+    public sealed virtual IKey CreateNewKey(DateTimeOffset activationDate, DateTimeOffset expirationDate);
+    public sealed virtual IReadOnlyCollection`1<IKey> GetAllKeys();
+    public sealed virtual CancellationToken GetCacheExpirationToken();
+    public sealed virtual void RevokeAllKeys(DateTimeOffset revocationDate, string reason);
+    public sealed virtual void RevokeKey(Guid keyId, string reason);
+}
+internal class McMaster.DotNet.Serve.NullAuthPolicyProvider : object {
+    public sealed virtual Task`1<AuthorizationPolicy> GetDefaultPolicyAsync();
+    public sealed virtual Task`1<AuthorizationPolicy> GetFallbackPolicyAsync();
+    public sealed virtual Task`1<AuthorizationPolicy> GetPolicyAsync(string policyName);
+}
+internal class McMaster.DotNet.Serve.Program : object {
+    [CompilerGeneratedAttribute]
+private List`1<string> <Errors>k__BackingField;
+    public List`1<string> Errors { get; }
+    public static int Main(String[] args);
+    internal int Run(String[] args);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_Errors();
+    private void Error(string message);
+    protected virtual Task`1<int> OnRunAsync(CommandLineOptions options, CancellationToken ct);
+    private static void ReadConfig(ConfigSection config, CommandLineOptions model);
+    private static void WriteConfig(ConfigSection config, CommandLineOptions model);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+private void <Run>b__1_1(ValidationResult r);
+}
+internal class McMaster.DotNet.Serve.SimpleServer : object {
+    private CommandLineOptions _options;
+    private IConsole _console;
+    private string _currentDirectory;
+    private IReporter _reporter;
+    public SimpleServer(CommandLineOptions options, IConsole console, string currentDirectory);
+    [AsyncStateMachineAttribute("McMaster.DotNet.Serve.SimpleServer/<RunAsync>d__5")]
+public Task`1<int> RunAsync(CancellationToken cancellationToken);
+    private void AfterServerStart(IWebHost host, ILogger`1<SimpleServer> logger);
+    private void LaunchBrowser(string url);
+    [CompilerGeneratedAttribute]
+internal static string <AfterServerStart>g__GetListeningAddressText|6_0(IServerAddressesFeature addresses);
+    [CompilerGeneratedAttribute]
+internal static string <AfterServerStart>g__NormalizeToLoopbackAddress|6_1(string url);
+}
+internal class McMaster.DotNet.Serve.Startup : object {
+    private IWebHostEnvironment _environment;
+    private CommandLineOptions _options;
+    public Startup(IWebHostEnvironment environment, CommandLineOptions options);
+    public void ConfigureServices(IServiceCollection services);
+    public void Configure(IApplicationBuilder app, IHttpForwarder forwarder);
+    private void ConfigureReverseProxy(IApplicationBuilder app, IHttpForwarder forwarder);
+    private void ConfigureFileServer(IApplicationBuilder app);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+private void <ConfigureServices>b__3_1(ResponseCompressionOptions options);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+private void <ConfigureFileServer>b__6_0(IEndpointRouteBuilder endpoints);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

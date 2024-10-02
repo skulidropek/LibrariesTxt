@@ -1,0 +1,973 @@
+public abstract class Confluent.SchemaRegistry.AsyncDeserializer`2 : AsyncSerde`1<TParsedSchema> {
+    protected int headerSize;
+    protected AsyncDeserializer`2(ISchemaRegistryClient schemaRegistryClient, SerdeConfig config, IList`1<IRuleExecutor> ruleExecutors);
+    public abstract virtual Task`1<T> DeserializeAsync(ReadOnlyMemory`1<byte> data, bool isNull, SerializationContext context);
+}
+public abstract class Confluent.SchemaRegistry.AsyncSerde`1 : object {
+    protected ISchemaRegistryClient schemaRegistryClient;
+    protected IList`1<IRuleExecutor> ruleExecutors;
+    protected bool useLatestVersion;
+    protected bool latestCompatibilityStrict;
+    protected IDictionary`2<string, string> useLatestWithMetadata;
+    protected SubjectNameStrategyDelegate subjectNameStrategy;
+    protected SemaphoreSlim serdeMutex;
+    private IDictionary`2<Schema, TParsedSchema> parsedSchemaCache;
+    private SemaphoreSlim parsedSchemaMutex;
+    protected AsyncSerde`1(ISchemaRegistryClient schemaRegistryClient, SerdeConfig config, IList`1<IRuleExecutor> ruleExecutors);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<GetSchema>d__10")]
+protected Task`1<ValueTuple`2<Schema, TParsedSchema>> GetSchema(string subject, int writerId, string format);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<GetParsedSchema>d__11")]
+protected Task`1<TParsedSchema> GetParsedSchema(Schema schema);
+    protected abstract virtual Task`1<TParsedSchema> ParseSchema(Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<ResolveReferences>d__13")]
+protected Task`1<IDictionary`2<string, string>> ResolveReferences(Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<ResolveReferences>d__14")]
+private Task`1<IDictionary`2<string, string>> ResolveReferences(Schema schema, IDictionary`2<string, string> schemas, ISet`1<string> visited);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<GetMigrations>d__15")]
+protected Task`1<IList`1<Migration>> GetMigrations(string subject, Schema writerSchema, Schema readerSchema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<GetSchemasBetween>d__16")]
+private Task`1<IList`1<Schema>> GetSchemasBetween(string subject, Schema first, Schema last);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<GetReaderSchema>d__17")]
+protected Task`1<RegisteredSchema> GetReaderSchema(string subject, Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<ExecuteMigrations>d__18")]
+protected Task`1<object> ExecuteMigrations(IList`1<Migration> migrations, bool isKey, string subject, string topic, Headers headers, object message);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<ExecuteRules>d__19")]
+protected Task`1<object> ExecuteRules(bool isKey, string subject, string topic, Headers headers, RuleMode ruleMode, Schema source, Schema target, object message, FieldTransformer fieldTransformer);
+    private static IRuleExecutor GetRuleExecutor(IList`1<IRuleExecutor> ruleExecutors, string type);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.AsyncSerde`1/<RunAction>d__21")]
+private static Task RunAction(RuleContext ctx, RuleMode ruleMode, Rule rule, string action, object message, RuleException ex, string defaultAction);
+    private static string GetRuleActionName(Rule rule, RuleMode ruleMode, string actionName);
+    private static IRuleAction GetRuleAction(string actionName);
+}
+public abstract class Confluent.SchemaRegistry.AsyncSerializer`2 : AsyncSerde`1<TParsedSchema> {
+    private static int DefaultInitialBufferSize;
+    protected bool autoRegisterSchema;
+    protected bool normalizeSchemas;
+    protected int initialBufferSize;
+    protected HashSet`1<string> subjectsRegistered;
+    protected AsyncSerializer`2(ISchemaRegistryClient schemaRegistryClient, SerdeConfig config, IList`1<IRuleExecutor> ruleExecutors);
+    public abstract virtual Task`1<Byte[]> SerializeAsync(T value, SerializationContext context);
+}
+public enum Confluent.SchemaRegistry.AuthCredentialsSource : Enum {
+    public int value__;
+    public static AuthCredentialsSource UserInfo;
+    public static AuthCredentialsSource SaslInherit;
+}
+public class Confluent.SchemaRegistry.BasicAuthenticationHeaderValueProvider : object {
+    private AuthenticationHeaderValue authenticationHeader;
+    public BasicAuthenticationHeaderValueProvider(string username, string password);
+    public sealed virtual AuthenticationHeaderValue GetAuthenticationHeader();
+}
+public class Confluent.SchemaRegistry.CachedSchemaRegistryClient : object {
+    private List`1<SchemaReference> EmptyReferencesList;
+    private IEnumerable`1<KeyValuePair`2<string, string>> config;
+    private IRestService restService;
+    private int identityMapCapacity;
+    private int latestCacheTtlSecs;
+    private Dictionary`2<int, Schema> schemaById;
+    private Dictionary`2<string, Dictionary`2<string, int>> idBySchemaBySubject;
+    private Dictionary`2<string, Dictionary`2<int, RegisteredSchema>> schemaByVersionBySubject;
+    private MemoryCache latestVersionBySubject;
+    private MemoryCache latestWithMetadataBySubject;
+    private SemaphoreSlim cacheMutex;
+    private SubjectNameStrategyDelegate keySubjectNameStrategy;
+    private SubjectNameStrategyDelegate valueSubjectNameStrategy;
+    public static int DefaultTimeout;
+    public static int DefaultMaxCachedSchemas;
+    public static int DefaultLatestCacheTtlSecs;
+    public static bool DefaultEnableSslCertificateVerification;
+    public static SubjectNameStrategy DefaultKeySubjectNameStrategy;
+    public static SubjectNameStrategy DefaultValueSubjectNameStrategy;
+    public IEnumerable`1<KeyValuePair`2<string, string>> Config { get; }
+    public int MaxCachedSchemas { get; }
+    public CachedSchemaRegistryClient(IEnumerable`1<KeyValuePair`2<string, string>> config, IAuthenticationHeaderValueProvider authenticationHeaderValueProvider);
+    public CachedSchemaRegistryClient(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> get_Config();
+    public sealed virtual int get_MaxCachedSchemas();
+    [ObsoleteAttribute]
+private static SubjectNameStrategyDelegate GetKeySubjectNameStrategy(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    [ObsoleteAttribute]
+private static SubjectNameStrategyDelegate GetValueSubjectNameStrategy(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    private bool CleanCacheIfFull();
+    private List`1<X509Certificate2> SetSslConfig(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public sealed virtual Task`1<int> GetSchemaIdAsync(string subject, string avroSchema, bool normalize);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetSchemaIdAsync>d__30")]
+public sealed virtual Task`1<int> GetSchemaIdAsync(string subject, Schema schema, bool normalize);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<RegisterSchemaAsync>d__31")]
+public sealed virtual Task`1<int> RegisterSchemaAsync(string subject, Schema schema, bool normalize);
+    public sealed virtual Task`1<int> RegisterSchemaAsync(string subject, string avroSchema, bool normalize);
+    private bool checkSchemaMatchesFormat(string format, string schemaString);
+    public sealed virtual Task`1<RegisteredSchema> LookupSchemaAsync(string subject, Schema schema, bool ignoreDeletedSchemas, bool normalize);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetSchemaAsync>d__35")]
+public sealed virtual Task`1<Schema> GetSchemaAsync(int id, string format);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetSchemaBySubjectAndIdAsync>d__36")]
+public sealed virtual Task`1<Schema> GetSchemaBySubjectAndIdAsync(string subject, int id, string format);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetRegisteredSchemaAsync>d__37")]
+public sealed virtual Task`1<RegisteredSchema> GetRegisteredSchemaAsync(string subject, int version, bool ignoreDeletedSchemas);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetSchemaAsync>d__38")]
+[ObsoleteAttribute("Superseded by GetRegisteredSchemaAsync(string subject, int version). This method will be removed in a future release.")]
+public sealed virtual Task`1<string> GetSchemaAsync(string subject, int version);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetLatestSchemaAsync>d__39")]
+public sealed virtual Task`1<RegisteredSchema> GetLatestSchemaAsync(string subject);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetLatestWithMetadataAsync>d__40")]
+public sealed virtual Task`1<RegisteredSchema> GetLatestWithMetadataAsync(string subject, IDictionary`2<string, string> metadata, bool ignoreDeletedSchemas);
+    public sealed virtual Task`1<List`1<string>> GetAllSubjectsAsync();
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetSubjectVersionsAsync>d__42")]
+public sealed virtual Task`1<List`1<int>> GetSubjectVersionsAsync(string subject);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<IsCompatibleAsync>d__43")]
+public sealed virtual Task`1<bool> IsCompatibleAsync(string subject, Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<IsCompatibleAsync>d__44")]
+public sealed virtual Task`1<bool> IsCompatibleAsync(string subject, string avroSchema);
+    [ObsoleteAttribute("SubjectNameStrategy should now be specified via serializer configuration. This method will be removed in a future release.")]
+public sealed virtual string ConstructKeySubjectName(string topic, string recordType);
+    [ObsoleteAttribute("SubjectNameStrategy should now be specified via serializer configuration. This method will be removed in a future release.")]
+public sealed virtual string ConstructValueSubjectName(string topic, string recordType);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<GetCompatibilityAsync>d__47")]
+public sealed virtual Task`1<Compatibility> GetCompatibilityAsync(string subject);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.CachedSchemaRegistryClient/<UpdateCompatibilityAsync>d__48")]
+public sealed virtual Task`1<Compatibility> UpdateCompatibilityAsync(Compatibility compatibility, string subject);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+[DataContractAttribute]
+[JsonConverterAttribute("Newtonsoft.Json.Converters.StringEnumConverter")]
+public enum Confluent.SchemaRegistry.Compatibility : Enum {
+    public int value__;
+    [EnumMemberAttribute]
+public static Compatibility None;
+    [EnumMemberAttribute]
+public static Compatibility Forward;
+    [EnumMemberAttribute]
+public static Compatibility Backward;
+    [EnumMemberAttribute]
+public static Compatibility Full;
+    [EnumMemberAttribute]
+public static Compatibility ForwardTransitive;
+    [EnumMemberAttribute]
+public static Compatibility BackwardTransitive;
+    [EnumMemberAttribute]
+public static Compatibility FullTransitive;
+}
+[DataContractAttribute]
+internal class Confluent.SchemaRegistry.CompatibilityCheck : object {
+    [CompilerGeneratedAttribute]
+private bool <IsCompatible>k__BackingField;
+    [DataMemberAttribute]
+public bool IsCompatible { get; public set; }
+    public CompatibilityCheck(bool isCompatible);
+    [CompilerGeneratedAttribute]
+public bool get_IsCompatible();
+    [CompilerGeneratedAttribute]
+public void set_IsCompatible(bool value);
+}
+public class Confluent.SchemaRegistry.ErrorAction : object {
+    public static string ActionType;
+    private static ErrorAction();
+    public sealed virtual void Configure(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public sealed virtual string Type();
+    public sealed virtual Task Run(RuleContext ctx, object message, RuleException exception);
+    public sealed virtual void Dispose();
+}
+[DataContractAttribute]
+internal class Confluent.SchemaRegistry.ErrorMessage : object {
+    [CompilerGeneratedAttribute]
+private int <ErrorCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [DataMemberAttribute]
+public int ErrorCode { get; public set; }
+    [DataMemberAttribute]
+public string Message { get; public set; }
+    public ErrorMessage(int errorCode, string message);
+    [CompilerGeneratedAttribute]
+public int get_ErrorCode();
+    [CompilerGeneratedAttribute]
+public void set_ErrorCode(int value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    public virtual string ToString();
+}
+public abstract class Confluent.SchemaRegistry.FieldRuleExecutor : object {
+    public abstract virtual void Configure(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public abstract virtual string Type();
+    public abstract virtual IFieldTransform NewTransform(RuleContext ctx);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.FieldRuleExecutor/<Transform>d__3")]
+public sealed virtual Task`1<object> Transform(RuleContext ctx, object message);
+    public abstract virtual void Dispose();
+}
+public class Confluent.SchemaRegistry.FieldTransformer : MulticastDelegate {
+    public FieldTransformer(object object, IntPtr method);
+    public virtual Task`1<object> Invoke(RuleContext ctx, IFieldTransform fieldTransform, object message);
+    public virtual IAsyncResult BeginInvoke(RuleContext ctx, IFieldTransform fieldTransform, object message, AsyncCallback callback, object object);
+    public virtual Task`1<object> EndInvoke(IAsyncResult result);
+}
+public interface Confluent.SchemaRegistry.IAuthenticationHeaderValueProvider {
+    public abstract virtual AuthenticationHeaderValue GetAuthenticationHeader();
+}
+public interface Confluent.SchemaRegistry.IFieldTransform {
+    public abstract virtual void Init(RuleContext ctx);
+    public abstract virtual Task`1<object> Transform(RuleContext ctx, FieldContext fieldCtx, object fieldValue);
+}
+internal interface Confluent.SchemaRegistry.IRestService {
+    public abstract virtual Task`1<Compatibility> GetCompatibilityAsync(string subject);
+    public abstract virtual Task`1<Compatibility> UpdateCompatibilityAsync(string subject, Compatibility compatibility);
+    public abstract virtual Task`1<RegisteredSchema> GetLatestSchemaAsync(string subject);
+    public abstract virtual Task`1<RegisteredSchema> GetLatestWithMetadataAsync(string subject, IDictionary`2<string, string> metadata, bool ignoreDeletedSchemas);
+    public abstract virtual Task`1<Schema> GetSchemaAsync(int id, string format);
+    public abstract virtual Task`1<Schema> GetSchemaBySubjectAndIdAsync(string subject, int id, string format);
+    public abstract virtual Task`1<RegisteredSchema> GetSchemaAsync(string subject, int version, bool ignoreDeletedSchemas);
+    public abstract virtual Task`1<List`1<string>> GetSubjectsAsync();
+    public abstract virtual Task`1<List`1<int>> GetSubjectVersionsAsync(string subject);
+    public abstract virtual Task`1<int> RegisterSchemaAsync(string subject, Schema schema, bool normalize);
+    public abstract virtual Task`1<bool> TestCompatibilityAsync(string subject, int versionId, Schema schema);
+    public abstract virtual Task`1<bool> TestLatestCompatibilityAsync(string subject, Schema schema);
+    public abstract virtual Task`1<RegisteredSchema> LookupSchemaAsync(string subject, Schema schema, bool ignoreDeletedSchemas, bool normalize);
+}
+public interface Confluent.SchemaRegistry.IRuleAction {
+    public abstract virtual Task Run(RuleContext ctx, object message, RuleException exception);
+}
+public interface Confluent.SchemaRegistry.IRuleBase {
+    public abstract virtual void Configure(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public abstract virtual string Type();
+}
+public interface Confluent.SchemaRegistry.IRuleExecutor {
+    public abstract virtual Task`1<object> Transform(RuleContext ctx, object message);
+}
+public interface Confluent.SchemaRegistry.ISchemaRegistryClient {
+    public IEnumerable`1<KeyValuePair`2<string, string>> Config { get; }
+    public int MaxCachedSchemas { get; }
+    public abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> get_Config();
+    public abstract virtual int get_MaxCachedSchemas();
+    [ObsoleteAttribute("Superseded by RegisterSchemaAsync(string, Schema, bool)")]
+public abstract virtual Task`1<int> RegisterSchemaAsync(string subject, string avroSchema, bool normalize);
+    public abstract virtual Task`1<int> RegisterSchemaAsync(string subject, Schema schema, bool normalize);
+    [ObsoleteAttribute("Superseded by GetSchemaIdAsync(string, Schema, bool)")]
+public abstract virtual Task`1<int> GetSchemaIdAsync(string subject, string avroSchema, bool normalize);
+    public abstract virtual Task`1<int> GetSchemaIdAsync(string subject, Schema schema, bool normalize);
+    public abstract virtual Task`1<Schema> GetSchemaAsync(int id, string format);
+    public abstract virtual Task`1<Schema> GetSchemaBySubjectAndIdAsync(string subject, int id, string format);
+    public abstract virtual Task`1<RegisteredSchema> LookupSchemaAsync(string subject, Schema schema, bool ignoreDeletedSchemas, bool normalize);
+    public abstract virtual Task`1<RegisteredSchema> GetRegisteredSchemaAsync(string subject, int version, bool ignoreDeletedSchemas);
+    [ObsoleteAttribute("Superseded by GetRegisteredSchemaAsync(string subject, int version). This method will be removed in a future release.")]
+public abstract virtual Task`1<string> GetSchemaAsync(string subject, int version);
+    public abstract virtual Task`1<RegisteredSchema> GetLatestSchemaAsync(string subject);
+    public abstract virtual Task`1<RegisteredSchema> GetLatestWithMetadataAsync(string subject, IDictionary`2<string, string> metadata, bool ignoreDeletedSchemas);
+    public abstract virtual Task`1<List`1<string>> GetAllSubjectsAsync();
+    public abstract virtual Task`1<List`1<int>> GetSubjectVersionsAsync(string subject);
+    [ObsoleteAttribute("Superseded by IsCompatibleAsync(string, Schema)")]
+public abstract virtual Task`1<bool> IsCompatibleAsync(string subject, string avroSchema);
+    public abstract virtual Task`1<bool> IsCompatibleAsync(string subject, Schema schema);
+    [ObsoleteAttribute("SubjectNameStrategy should now be specified via serializer configuration. This method will be removed in a future release.")]
+public abstract virtual string ConstructKeySubjectName(string topic, string recordType);
+    [ObsoleteAttribute("SubjectNameStrategy should now be specified via serializer configuration. This method will be removed in a future release.")]
+public abstract virtual string ConstructValueSubjectName(string topic, string recordType);
+    public abstract virtual Task`1<Compatibility> GetCompatibilityAsync(string subject);
+    public abstract virtual Task`1<Compatibility> UpdateCompatibilityAsync(Compatibility compatibility, string subject);
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.Metadata : object {
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, ISet`1<string>> <Tags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <Properties>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISet`1<string> <Sensitive>k__BackingField;
+    [DataMemberAttribute]
+public IDictionary`2<string, ISet`1<string>> Tags { get; public set; }
+    [DataMemberAttribute]
+public IDictionary`2<string, string> Properties { get; public set; }
+    [DataMemberAttribute]
+public ISet`1<string> Sensitive { get; public set; }
+    public Metadata(IDictionary`2<string, ISet`1<string>> tags, IDictionary`2<string, string> properties, ISet`1<string> sensitive);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, ISet`1<string>> get_Tags();
+    [CompilerGeneratedAttribute]
+public void set_Tags(IDictionary`2<string, ISet`1<string>> value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_Properties();
+    [CompilerGeneratedAttribute]
+public void set_Properties(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public ISet`1<string> get_Sensitive();
+    [CompilerGeneratedAttribute]
+public void set_Sensitive(ISet`1<string> value);
+    public sealed virtual bool Equals(Metadata other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Confluent.SchemaRegistry.Migration : object {
+    [CompilerGeneratedAttribute]
+private RuleMode <RuleMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Schema <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Schema <Target>k__BackingField;
+    public RuleMode RuleMode { get; public set; }
+    public Schema Source { get; public set; }
+    public Schema Target { get; public set; }
+    public Migration(RuleMode ruleMode, Schema source, Schema target);
+    [CompilerGeneratedAttribute]
+public RuleMode get_RuleMode();
+    [CompilerGeneratedAttribute]
+public void set_RuleMode(RuleMode value);
+    [CompilerGeneratedAttribute]
+public Schema get_Source();
+    [CompilerGeneratedAttribute]
+public void set_Source(Schema value);
+    [CompilerGeneratedAttribute]
+public Schema get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(Schema value);
+    public sealed virtual bool Equals(Migration other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Confluent.SchemaRegistry.NoneAction : object {
+    public static string ActionType;
+    private static NoneAction();
+    public sealed virtual void Configure(IEnumerable`1<KeyValuePair`2<string, string>> config);
+    public sealed virtual string Type();
+    public sealed virtual Task Run(RuleContext ctx, object message, RuleException exception);
+    public sealed virtual void Dispose();
+}
+public enum Confluent.SchemaRegistry.ReferenceSubjectNameStrategy : Enum {
+    public int value__;
+    public static ReferenceSubjectNameStrategy ReferenceName;
+}
+public class Confluent.SchemaRegistry.ReferenceSubjectNameStrategyDelegate : MulticastDelegate {
+    public ReferenceSubjectNameStrategyDelegate(object object, IntPtr method);
+    public virtual string Invoke(SerializationContext context, string referenceName);
+    public virtual IAsyncResult BeginInvoke(SerializationContext context, string referenceName, AsyncCallback callback, object object);
+    public virtual string EndInvoke(IAsyncResult result);
+}
+[ExtensionAttribute]
+public static class Confluent.SchemaRegistry.ReferenceSubjectNameStrategyExtensions : object {
+    [ExtensionAttribute]
+public static ReferenceSubjectNameStrategyDelegate ToDelegate(ReferenceSubjectNameStrategy strategy);
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.RegisteredSchema : Schema {
+    private Nullable`1<int> hashCode;
+    [CompilerGeneratedAttribute]
+private string <Subject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Id>k__BackingField;
+    [DataMemberAttribute]
+public string Subject { get; public set; }
+    [DataMemberAttribute]
+public int Version { get; public set; }
+    [DataMemberAttribute]
+public int Id { get; public set; }
+    public Schema Schema { get; }
+    public RegisteredSchema(string subject, int version, int id, string schemaString, SchemaType schemaType, List`1<SchemaReference> references);
+    [CompilerGeneratedAttribute]
+public virtual string get_Subject();
+    [CompilerGeneratedAttribute]
+public virtual void set_Subject(string value);
+    [CompilerGeneratedAttribute]
+public virtual int get_Version();
+    [CompilerGeneratedAttribute]
+public virtual void set_Version(int value);
+    [CompilerGeneratedAttribute]
+public virtual int get_Id();
+    [CompilerGeneratedAttribute]
+public virtual void set_Id(int value);
+    public Schema get_Schema();
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public sealed virtual int CompareTo(RegisteredSchema other);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(RegisteredSchema other);
+}
+public class Confluent.SchemaRegistry.RestService : object {
+    private List`1<SchemaReference> EmptyReferencesList;
+    private static string acceptHeader;
+    private int lastClientUsed;
+    private object lastClientUsedLock;
+    private List`1<HttpClient> clients;
+    private IAuthenticationHeaderValueProvider authenticationHeaderValueProvider;
+    public RestService(string schemaRegistryUrl, int timeoutMs, IAuthenticationHeaderValueProvider authenticationHeaderValueProvider, List`1<X509Certificate2> certificates, bool enableSslCertificateVerification);
+    private static RestService();
+    private static string SanitizeUri(string uri);
+    private static HttpClientHandler CreateHandler(List`1<X509Certificate2> certificates, bool enableSslCertificateVerification);
+    private RegisteredSchema SanitizeRegisteredSchema(RegisteredSchema schema);
+    private Schema SanitizeSchema(Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<ExecuteOnOneInstanceAsync>d__11")]
+private Task`1<HttpResponseMessage> ExecuteOnOneInstanceAsync(Func`1<HttpRequestMessage> createRequest);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<RequestAsync>d__12`1")]
+protected Task`1<T> RequestAsync(string endPoint, HttpMethod method, Object[] jsonBody);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<RequestListOfAsync>d__13`1")]
+protected Task`1<List`1<T>> RequestListOfAsync(string endPoint, HttpMethod method, Object[] jsonBody);
+    private HttpRequestMessage CreateRequest(string endPoint, HttpMethod method, Object[] jsonBody);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetSchemaAsync>d__15")]
+public sealed virtual Task`1<Schema> GetSchemaAsync(int id, string format);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetSchemaBySubjectAndIdAsync>d__16")]
+public sealed virtual Task`1<Schema> GetSchemaBySubjectAndIdAsync(string subject, int id, string format);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetSubjectsAsync>d__17")]
+public sealed virtual Task`1<List`1<string>> GetSubjectsAsync();
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetSubjectVersionsAsync>d__18")]
+public sealed virtual Task`1<List`1<int>> GetSubjectVersionsAsync(string subject);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetSchemaAsync>d__19")]
+public sealed virtual Task`1<RegisteredSchema> GetSchemaAsync(string subject, int version, bool ignoreDeletedSchemas);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetLatestSchemaAsync>d__20")]
+public sealed virtual Task`1<RegisteredSchema> GetLatestSchemaAsync(string subject);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetLatestWithMetadataAsync>d__21")]
+public sealed virtual Task`1<RegisteredSchema> GetLatestWithMetadataAsync(string subject, IDictionary`2<string, string> metadata, bool ignoreDeletedSchemas);
+    private string getKeyValuePairs(IDictionary`2<string, string> metadata);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<RegisterSchemaAsync>d__23")]
+public sealed virtual Task`1<int> RegisterSchemaAsync(string subject, Schema schema, bool normalize);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<LookupSchemaAsync>d__24")]
+public sealed virtual Task`1<RegisteredSchema> LookupSchemaAsync(string subject, Schema schema, bool ignoreDeletedSchemas, bool normalize);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<TestCompatibilityAsync>d__25")]
+public sealed virtual Task`1<bool> TestCompatibilityAsync(string subject, int versionId, Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<TestLatestCompatibilityAsync>d__26")]
+public sealed virtual Task`1<bool> TestLatestCompatibilityAsync(string subject, Schema schema);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<UpdateCompatibilityAsync>d__27")]
+public sealed virtual Task`1<Compatibility> UpdateCompatibilityAsync(string subject, Compatibility compatibility);
+    [AsyncStateMachineAttribute("Confluent.SchemaRegistry.RestService/<GetCompatibilityAsync>d__28")]
+public sealed virtual Task`1<Compatibility> GetCompatibilityAsync(string subject);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.Rule : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Doc>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RuleKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RuleMode <Mode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ISet`1<string> <Tags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, string> <Params>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Expr>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OnSuccess>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OnFailure>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Disabled>k__BackingField;
+    [DataMemberAttribute]
+public string Name { get; public set; }
+    [DataMemberAttribute]
+public string Doc { get; public set; }
+    [DataMemberAttribute]
+public RuleKind Kind { get; public set; }
+    [DataMemberAttribute]
+public RuleMode Mode { get; public set; }
+    [DataMemberAttribute]
+public string Type { get; public set; }
+    [DataMemberAttribute]
+public ISet`1<string> Tags { get; public set; }
+    [DataMemberAttribute]
+public IDictionary`2<string, string> Params { get; public set; }
+    [DataMemberAttribute]
+public string Expr { get; public set; }
+    [DataMemberAttribute]
+public string OnSuccess { get; public set; }
+    [DataMemberAttribute]
+public string OnFailure { get; public set; }
+    [DataMemberAttribute]
+public bool Disabled { get; public set; }
+    public Rule(string name, RuleKind kind, RuleMode mode, string type, ISet`1<string> tags, IDictionary`2<string, string> parameters);
+    public Rule(string name, RuleKind kind, RuleMode mode, string type, ISet`1<string> tags, IDictionary`2<string, string> parameters, string expr, string onSuccess, string onFailure, bool disabled);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Doc();
+    [CompilerGeneratedAttribute]
+public void set_Doc(string value);
+    [CompilerGeneratedAttribute]
+public RuleKind get_Kind();
+    [CompilerGeneratedAttribute]
+public void set_Kind(RuleKind value);
+    [CompilerGeneratedAttribute]
+public RuleMode get_Mode();
+    [CompilerGeneratedAttribute]
+public void set_Mode(RuleMode value);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    [CompilerGeneratedAttribute]
+public ISet`1<string> get_Tags();
+    [CompilerGeneratedAttribute]
+public void set_Tags(ISet`1<string> value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_Params();
+    [CompilerGeneratedAttribute]
+public void set_Params(IDictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public string get_Expr();
+    [CompilerGeneratedAttribute]
+public void set_Expr(string value);
+    [CompilerGeneratedAttribute]
+public string get_OnSuccess();
+    [CompilerGeneratedAttribute]
+public void set_OnSuccess(string value);
+    [CompilerGeneratedAttribute]
+public string get_OnFailure();
+    [CompilerGeneratedAttribute]
+public void set_OnFailure(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Disabled();
+    [CompilerGeneratedAttribute]
+public void set_Disabled(bool value);
+    public sealed virtual bool Equals(Rule other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Confluent.SchemaRegistry.RuleConditionException : RuleException {
+    public RuleConditionException(Rule rule);
+    private static string getErrorMessage(Rule rule);
+}
+public class Confluent.SchemaRegistry.RuleContext : object {
+    [CompilerGeneratedAttribute]
+private Schema <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Schema <Target>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Subject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Topic>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Headers <Headers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RuleMode <RuleMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Rule <Rule>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Index>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Rule> <Rules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FieldTransformer <FieldTransformer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<object, object> <CustomData>k__BackingField;
+    private Stack`1<FieldContext> fieldContexts;
+    public Schema Source { get; public set; }
+    public Schema Target { get; public set; }
+    public string Subject { get; public set; }
+    public string Topic { get; public set; }
+    public Headers Headers { get; public set; }
+    public bool IsKey { get; public set; }
+    public RuleMode RuleMode { get; public set; }
+    public Rule Rule { get; public set; }
+    public int Index { get; public set; }
+    public IList`1<Rule> Rules { get; public set; }
+    public FieldTransformer FieldTransformer { get; public set; }
+    public IDictionary`2<object, object> CustomData { get; }
+    public RuleContext(Schema source, Schema target, string subject, string topic, Headers headers, bool isKey, RuleMode ruleMode, Rule rule, int index, IList`1<Rule> rules, FieldTransformer fieldTransformer);
+    [CompilerGeneratedAttribute]
+public Schema get_Source();
+    [CompilerGeneratedAttribute]
+public void set_Source(Schema value);
+    [CompilerGeneratedAttribute]
+public Schema get_Target();
+    [CompilerGeneratedAttribute]
+public void set_Target(Schema value);
+    [CompilerGeneratedAttribute]
+public string get_Subject();
+    [CompilerGeneratedAttribute]
+public void set_Subject(string value);
+    [CompilerGeneratedAttribute]
+public string get_Topic();
+    [CompilerGeneratedAttribute]
+public void set_Topic(string value);
+    [CompilerGeneratedAttribute]
+public Headers get_Headers();
+    [CompilerGeneratedAttribute]
+public void set_Headers(Headers value);
+    [CompilerGeneratedAttribute]
+public bool get_IsKey();
+    [CompilerGeneratedAttribute]
+public void set_IsKey(bool value);
+    [CompilerGeneratedAttribute]
+public RuleMode get_RuleMode();
+    [CompilerGeneratedAttribute]
+public void set_RuleMode(RuleMode value);
+    [CompilerGeneratedAttribute]
+public Rule get_Rule();
+    [CompilerGeneratedAttribute]
+public void set_Rule(Rule value);
+    [CompilerGeneratedAttribute]
+public int get_Index();
+    [CompilerGeneratedAttribute]
+public void set_Index(int value);
+    [CompilerGeneratedAttribute]
+public IList`1<Rule> get_Rules();
+    [CompilerGeneratedAttribute]
+public void set_Rules(IList`1<Rule> value);
+    [CompilerGeneratedAttribute]
+public FieldTransformer get_FieldTransformer();
+    [CompilerGeneratedAttribute]
+public void set_FieldTransformer(FieldTransformer value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<object, object> get_CustomData();
+    public ISet`1<string> GetTags(string fullName);
+    public string GetParameter(string key);
+    public FieldContext CurrentField();
+    public FieldContext EnterField(object containingMessage, string fullName, string name, Type type, ISet`1<string> tags);
+}
+public class Confluent.SchemaRegistry.RuleException : Exception {
+    public RuleException(string message);
+    public RuleException(string message, Exception inner);
+}
+[DataContractAttribute]
+[JsonConverterAttribute("Newtonsoft.Json.Converters.StringEnumConverter")]
+public enum Confluent.SchemaRegistry.RuleKind : Enum {
+    public int value__;
+    [EnumMemberAttribute]
+public static RuleKind Transform;
+    [EnumMemberAttribute]
+public static RuleKind Condition;
+}
+[DataContractAttribute]
+[JsonConverterAttribute("Newtonsoft.Json.Converters.StringEnumConverter")]
+public enum Confluent.SchemaRegistry.RuleMode : Enum {
+    public int value__;
+    [EnumMemberAttribute]
+public static RuleMode Upgrade;
+    [EnumMemberAttribute]
+public static RuleMode Downgrade;
+    [EnumMemberAttribute]
+public static RuleMode UpDown;
+    [EnumMemberAttribute]
+public static RuleMode Read;
+    [EnumMemberAttribute]
+public static RuleMode Write;
+    [EnumMemberAttribute]
+public static RuleMode WriteRead;
+}
+public static class Confluent.SchemaRegistry.RuleRegistry : object {
+    private static SemaphoreSlim ruleExecutorsMutex;
+    private static SemaphoreSlim ruleActionsMutex;
+    private static IDictionary`2<string, IRuleExecutor> ruleExecutors;
+    private static IDictionary`2<string, IRuleAction> ruleActions;
+    private static RuleRegistry();
+    public static void RegisterRuleExecutor(IRuleExecutor executor);
+    public static bool TryGetRuleExecutor(string name, IRuleExecutor& executor);
+    public static List`1<IRuleExecutor> GetRuleExecutors();
+    public static void RegisterRuleAction(IRuleAction action);
+    public static bool TryGetRuleAction(string name, IRuleAction& action);
+    public static List`1<IRuleAction> GetRuleActions();
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.RuleSet : object {
+    [CompilerGeneratedAttribute]
+private IList`1<Rule> <MigrationRules>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<Rule> <DomainRules>k__BackingField;
+    [DataMemberAttribute]
+public IList`1<Rule> MigrationRules { get; public set; }
+    [DataMemberAttribute]
+public IList`1<Rule> DomainRules { get; public set; }
+    public RuleSet(IList`1<Rule> migrationRules, IList`1<Rule> domainRules);
+    [CompilerGeneratedAttribute]
+public IList`1<Rule> get_MigrationRules();
+    [CompilerGeneratedAttribute]
+public void set_MigrationRules(IList`1<Rule> value);
+    [CompilerGeneratedAttribute]
+public IList`1<Rule> get_DomainRules();
+    [CompilerGeneratedAttribute]
+public void set_DomainRules(IList`1<Rule> value);
+    public bool HasRules(RuleMode mode);
+    public sealed virtual bool Equals(RuleSet other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.Schema : object {
+    [CompilerGeneratedAttribute]
+private string <Subject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SchemaString>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<SchemaReference> <References>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SchemaType_String>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Metadata <Metadata>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RuleSet <RuleSet>k__BackingField;
+    public string Subject { get; public set; }
+    public int Version { get; public set; }
+    public int Id { get; public set; }
+    [DataMemberAttribute]
+public string SchemaString { get; public set; }
+    [DataMemberAttribute]
+public List`1<SchemaReference> References { get; public set; }
+    [DataMemberAttribute]
+internal string SchemaType_String { get; internal set; }
+    [DataMemberAttribute]
+public Metadata Metadata { get; public set; }
+    [DataMemberAttribute]
+public RuleSet RuleSet { get; public set; }
+    public SchemaType SchemaType { get; public set; }
+    [ObsoleteAttribute("Included to maintain API backwards compatibility only. Use RegisteredSchema instead. This property will be removed in a future version of the library.")]
+public Schema(string subject, int version, int id, string schemaString);
+    public Schema(string schemaString, List`1<SchemaReference> references, SchemaType schemaType, Metadata metadata, RuleSet ruleSet);
+    public Schema(string schemaString, List`1<SchemaReference> references, SchemaType schemaType);
+    public Schema(string schemaString, SchemaType schemaType);
+    [CompilerGeneratedAttribute]
+public virtual string get_Subject();
+    [CompilerGeneratedAttribute]
+public virtual void set_Subject(string value);
+    [CompilerGeneratedAttribute]
+public virtual int get_Version();
+    [CompilerGeneratedAttribute]
+public virtual void set_Version(int value);
+    [CompilerGeneratedAttribute]
+public virtual int get_Id();
+    [CompilerGeneratedAttribute]
+public virtual void set_Id(int value);
+    [CompilerGeneratedAttribute]
+public string get_SchemaString();
+    [CompilerGeneratedAttribute]
+public void set_SchemaString(string value);
+    [CompilerGeneratedAttribute]
+public List`1<SchemaReference> get_References();
+    [CompilerGeneratedAttribute]
+public void set_References(List`1<SchemaReference> value);
+    [CompilerGeneratedAttribute]
+internal string get_SchemaType_String();
+    [CompilerGeneratedAttribute]
+internal void set_SchemaType_String(string value);
+    [CompilerGeneratedAttribute]
+public Metadata get_Metadata();
+    [CompilerGeneratedAttribute]
+public void set_Metadata(Metadata value);
+    [CompilerGeneratedAttribute]
+public RuleSet get_RuleSet();
+    [CompilerGeneratedAttribute]
+public void set_RuleSet(RuleSet value);
+    public SchemaType get_SchemaType();
+    public void set_SchemaType(SchemaType value);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(Schema other);
+    public virtual int GetHashCode();
+    public sealed virtual int CompareTo(Schema other);
+    public virtual string ToString();
+    [ObsoleteAttribute("Included to maintain API backwards compatibility only. This method will be removed in a future release.")]
+public static string op_Implicit(Schema s);
+}
+[DataContractAttribute]
+internal class Confluent.SchemaRegistry.SchemaId : object {
+    [CompilerGeneratedAttribute]
+private int <Id>k__BackingField;
+    [DataMemberAttribute]
+public int Id { get; public set; }
+    public SchemaId(int schemaId);
+    [CompilerGeneratedAttribute]
+public int get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(int value);
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.SchemaReference : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Subject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Version>k__BackingField;
+    [DataMemberAttribute]
+public string Name { get; public set; }
+    [DataMemberAttribute]
+public string Subject { get; public set; }
+    [DataMemberAttribute]
+public int Version { get; public set; }
+    public SchemaReference(string name, string subject, int version);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Subject();
+    [CompilerGeneratedAttribute]
+public void set_Subject(string value);
+    [CompilerGeneratedAttribute]
+public int get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(int value);
+    public virtual string ToString();
+    public virtual int GetHashCode();
+    public sealed virtual int CompareTo(SchemaReference other);
+    public virtual bool Equals(object obj);
+    public sealed virtual bool Equals(SchemaReference other);
+}
+public class Confluent.SchemaRegistry.SchemaRegistryConfig : object {
+    protected Dictionary`2<string, string> properties;
+    public Nullable`1<AuthCredentialsSource> BasicAuthCredentialsSource { get; public set; }
+    public string Url { get; public set; }
+    public Nullable`1<int> RequestTimeoutMs { get; public set; }
+    public string SslCaLocation { get; public set; }
+    public string SslKeystoreLocation { get; public set; }
+    public string SslKeystorePassword { get; public set; }
+    public Nullable`1<bool> EnableSslCertificateVerification { get; public set; }
+    public Nullable`1<int> MaxCachedSchemas { get; public set; }
+    public Nullable`1<int> LatestCacheTtlSecs { get; public set; }
+    public string BasicAuthUserInfo { get; public set; }
+    [ObsoleteAttribute("Subject name strategies should now be configured using the serializer's configuration. In the future, this configuration property will be removed from SchemaRegistryConfig")]
+public Nullable`1<SubjectNameStrategy> KeySubjectNameStrategy { get; public set; }
+    [ObsoleteAttribute("Subject name strategies should now be configured using the serializer's configuration. In the future, this configuration property will be removed from SchemaRegistryConfig")]
+public Nullable`1<SubjectNameStrategy> ValueSubjectNameStrategy { get; public set; }
+    public Nullable`1<AuthCredentialsSource> get_BasicAuthCredentialsSource();
+    public void set_BasicAuthCredentialsSource(Nullable`1<AuthCredentialsSource> value);
+    public string get_Url();
+    public void set_Url(string value);
+    public Nullable`1<int> get_RequestTimeoutMs();
+    public void set_RequestTimeoutMs(Nullable`1<int> value);
+    public string get_SslCaLocation();
+    public void set_SslCaLocation(string value);
+    public string get_SslKeystoreLocation();
+    public void set_SslKeystoreLocation(string value);
+    public string get_SslKeystorePassword();
+    public void set_SslKeystorePassword(string value);
+    public Nullable`1<bool> get_EnableSslCertificateVerification();
+    public void set_EnableSslCertificateVerification(Nullable`1<bool> value);
+    public Nullable`1<int> get_MaxCachedSchemas();
+    public void set_MaxCachedSchemas(Nullable`1<int> value);
+    public Nullable`1<int> get_LatestCacheTtlSecs();
+    public void set_LatestCacheTtlSecs(Nullable`1<int> value);
+    public string get_BasicAuthUserInfo();
+    public void set_BasicAuthUserInfo(string value);
+    public Nullable`1<SubjectNameStrategy> get_KeySubjectNameStrategy();
+    public void set_KeySubjectNameStrategy(Nullable`1<SubjectNameStrategy> value);
+    public Nullable`1<SubjectNameStrategy> get_ValueSubjectNameStrategy();
+    public void set_ValueSubjectNameStrategy(Nullable`1<SubjectNameStrategy> value);
+    public void Set(string key, string val);
+    protected void SetObject(string name, object val);
+    public string Get(string key);
+    protected Nullable`1<int> GetInt(string key);
+    protected Nullable`1<bool> GetBool(string key);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, string>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class Confluent.SchemaRegistry.SchemaRegistryException : HttpRequestException {
+    [CompilerGeneratedAttribute]
+private int <ErrorCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HttpStatusCode <Status>k__BackingField;
+    public int ErrorCode { get; }
+    public HttpStatusCode Status { get; }
+    public SchemaRegistryException(string message, HttpStatusCode status, int errorCode);
+    [CompilerGeneratedAttribute]
+public int get_ErrorCode();
+    [CompilerGeneratedAttribute]
+public HttpStatusCode get_Status();
+}
+[DataContractAttribute]
+internal class Confluent.SchemaRegistry.SchemaString : object {
+    [CompilerGeneratedAttribute]
+private string <Schema>k__BackingField;
+    [DataMemberAttribute]
+public string Schema { get; public set; }
+    public SchemaString(string schema);
+    [CompilerGeneratedAttribute]
+public string get_Schema();
+    [CompilerGeneratedAttribute]
+public void set_Schema(string value);
+}
+public enum Confluent.SchemaRegistry.SchemaType : Enum {
+    public int value__;
+    public static SchemaType Avro;
+    public static SchemaType Protobuf;
+    public static SchemaType Json;
+}
+public class Confluent.SchemaRegistry.SerdeConfig : Config {
+    public SerdeConfig(SerdeConfig config);
+    public SerdeConfig(IDictionary`2<string, string> config);
+    protected IDictionary`2<string, string> GetDictionaryProperty(string key);
+    protected void SetDictionaryProperty(string key, IDictionary`2<string, string> value);
+}
+[DataContractAttribute]
+public class Confluent.SchemaRegistry.ServerConfig : object {
+    [CompilerGeneratedAttribute]
+private Compatibility <CompatibilityLevel>k__BackingField;
+    [DataMemberAttribute]
+public Compatibility CompatibilityLevel { get; }
+    public ServerConfig(Compatibility compatibilityLevel);
+    [CompilerGeneratedAttribute]
+public Compatibility get_CompatibilityLevel();
+    public virtual string ToString();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public enum Confluent.SchemaRegistry.SubjectNameStrategy : Enum {
+    public int value__;
+    public static SubjectNameStrategy Topic;
+    public static SubjectNameStrategy Record;
+    public static SubjectNameStrategy TopicRecord;
+}
+public class Confluent.SchemaRegistry.SubjectNameStrategyDelegate : MulticastDelegate {
+    public SubjectNameStrategyDelegate(object object, IntPtr method);
+    public virtual string Invoke(SerializationContext context, string recordType);
+    public virtual IAsyncResult BeginInvoke(SerializationContext context, string recordType, AsyncCallback callback, object object);
+    public virtual string EndInvoke(IAsyncResult result);
+}
+[ExtensionAttribute]
+public static class Confluent.SchemaRegistry.SubjectNameStrategyExtensions : object {
+    [ExtensionAttribute]
+public static SubjectNameStrategyDelegate ToDelegate(SubjectNameStrategy strategy);
+    [ExtensionAttribute]
+public static string ConstructKeySubjectName(SubjectNameStrategy strategy, string topic, string recordType);
+    [ExtensionAttribute]
+public static string ConstructValueSubjectName(SubjectNameStrategy strategy, string topic, string recordType);
+}
+public class Confluent.SchemaRegistry.Utils : object {
+    public static bool DictEquals(IDictionary`2<string, string> a, IDictionary`2<string, string> b);
+    public static bool DictEquals(IDictionary`2<string, ISet`1<string>> a, IDictionary`2<string, ISet`1<string>> b);
+    public static bool SetEquals(ISet`1<T> a, ISet`1<T> b);
+    public static bool ListEquals(IList`1<T> a, IList`1<T> b);
+}
+internal static class Confluent.SchemaRegistry.Versions : object {
+    public static string SchemaRegistry_V1_JSON;
+    public static string SchemaRegistry_Default_JSON;
+    public static string JSON;
+    public static IReadOnlyList`1<string> PreferredResponseTypes;
+    public static string GenericRequest;
+    private static Versions();
+}
+public class Confluent.SchemaRegistry.WildcardMatcher : object {
+    public static bool Match(string str, string wildcardMatcher);
+    private static string WildcardToRegexp(string globExp, char separator);
+    private static int DoubleSlashes(StringBuilder dst, Char[] src, int i);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

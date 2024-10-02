@@ -1,0 +1,2133 @@
+public class DotNetHeapDumpGraphReader : object {
+    private Module m_lastModule;
+    private Dictionary`2<ulong, NodeTypeIndex> m_typeID2TypeIndex;
+    private Dictionary`2<ulong, string> m_moduleID2Name;
+    private Dictionary`2<string, NodeTypeIndex> m_arrayNametoIndex;
+    private Dictionary`2<ulong, RCWInfo> m_objectToRCW;
+    private Queue`1<GCBulkTypeTraceData> m_typeBlocks;
+    private Queue`1<GCBulkRootStaticVarTraceData> m_staticVarBlocks;
+    private Queue`1<GCBulkRootCCWTraceData> m_ccwBlocks;
+    private Queue`1<GCBulkNodeTraceData> m_nodeBlocks;
+    private GCBulkNodeTraceData m_curNodeBlock;
+    private int m_curNodeIdx;
+    private Queue`1<GCBulkEdgeTraceData> m_edgeBlocks;
+    private int m_curEdgeIdx;
+    private GCBulkEdgeTraceData m_curEdgeBlock;
+    private Dictionary`2<string, NodeTypeIndex> m_typeIntern;
+    private GrowableArray`1<NodeIndex> m_children;
+    private NodeType m_typeStorage;
+    private Dictionary`2<ulong, Module> m_modules;
+    private bool IsProjectN;
+    private string m_etlFilePath;
+    private double m_ignoreUntilMSec;
+    private int m_processId;
+    private string m_processName;
+    private TextWriter m_log;
+    private bool m_converted;
+    private bool m_seenStart;
+    private bool m_ignoreEvents;
+    private int m_gcID;
+    private MemoryGraph m_graph;
+    private MemoryNodeBuilder m_root;
+    private DotNetHeapInfo m_dotNetHeapInfo;
+    public DotNetHeapInfo DotNetHeapInfo { get; public set; }
+    public DotNetHeapDumpGraphReader(TextWriter log);
+    public MemoryGraph Read(string etlFilePath, string processNameOrId, double startTimeRelativeMSec);
+    public MemoryGraph Read(TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    public void Append(MemoryGraph memoryGraph, string etlName, string processNameOrId, double startTimeRelativeMSec);
+    public void Append(MemoryGraph memoryGraph, TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    public DotNetHeapInfo get_DotNetHeapInfo();
+    public void set_DotNetHeapInfo(DotNetHeapInfo value);
+    internal void SetupCallbacks(MemoryGraph memoryGraph, TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    internal void ConvertHeapDataToGraph();
+    private Module GetModuleForImageBase(ulong moduleBaseAddress);
+    private Module GetModuleForAddress(ulong addressInModule);
+    private GCBulkNodeUnsafeNodes* GetNextNode(GCBulkNodeUnsafeNodes* buffer);
+    private ulong GetNextEdge();
+    private NodeTypeIndex GetTypeIndex(ulong typeID, int objSize);
+    private static string GetObjectSizeSuffix(int objSize);
+    private NodeTypeIndex CreateType(string typeName, string moduleName);
+}
+public class DotNetHeapInfo : object {
+    [CompilerGeneratedAttribute]
+private int <CorruptedObject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <UndumpedSegementRegion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <SizeOfAllSegments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<GCHeapDumpSegment> <Segments>k__BackingField;
+    private GCHeapDumpSegment m_lastSegment;
+    public int CorruptedObject { get; internal set; }
+    public long UndumpedSegementRegion { get; internal set; }
+    public long SizeOfAllSegments { get; internal set; }
+    public List`1<GCHeapDumpSegment> Segments { get; internal set; }
+    [CompilerGeneratedAttribute]
+public int get_CorruptedObject();
+    [CompilerGeneratedAttribute]
+internal void set_CorruptedObject(int value);
+    [CompilerGeneratedAttribute]
+public long get_UndumpedSegementRegion();
+    [CompilerGeneratedAttribute]
+internal void set_UndumpedSegementRegion(long value);
+    [CompilerGeneratedAttribute]
+public long get_SizeOfAllSegments();
+    [CompilerGeneratedAttribute]
+internal void set_SizeOfAllSegments(long value);
+    [CompilerGeneratedAttribute]
+public List`1<GCHeapDumpSegment> get_Segments();
+    [CompilerGeneratedAttribute]
+internal void set_Segments(List`1<GCHeapDumpSegment> value);
+    public int GenerationFor(ulong obj);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class GCHeapDump : object {
+    [CompilerGeneratedAttribute]
+private float <AverageCountMultiplier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <AverageSizeMultiplier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Single[] <CountMultipliersByType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DotNetHeapInfo <DotNetHeapInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JSHeapInfo <JSHeapInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CollectionLog>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <TimeCollected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MachineName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProcessName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ProcessID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <TotalProcessCommit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <TotalProcessWorkingSet>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreationTool>k__BackingField;
+    private MemoryGraph m_graph;
+    private InteropInfo m_interop;
+    public MemoryGraph MemoryGraph { get; internal set; }
+    public InteropInfo InteropInfo { get; internal set; }
+    public bool Is64Bit { get; }
+    public float AverageCountMultiplier { get; internal set; }
+    public float AverageSizeMultiplier { get; internal set; }
+    public Single[] CountMultipliersByType { get; internal set; }
+    public DotNetHeapInfo DotNetHeapInfo { get; internal set; }
+    public JSHeapInfo JSHeapInfo { get; internal set; }
+    public string CollectionLog { get; internal set; }
+    public DateTime TimeCollected { get; internal set; }
+    public string MachineName { get; internal set; }
+    public string ProcessName { get; internal set; }
+    public int ProcessID { get; internal set; }
+    public long TotalProcessCommit { get; internal set; }
+    public long TotalProcessWorkingSet { get; internal set; }
+    public string CreationTool { get; public set; }
+    private int FastSerialization.IFastSerializableVersion.Version { get; }
+    private int FastSerialization.IFastSerializableVersion.MinimumVersionCanRead { get; }
+    private int FastSerialization.IFastSerializableVersion.MinimumReaderVersion { get; }
+    public GCHeapDump(string inputFileName);
+    public GCHeapDump(Stream inputStream, string streamName);
+    internal GCHeapDump(MemoryGraph graph);
+    private GCHeapDump(Deserializer deserializer);
+    public static void WriteMemoryGraph(MemoryGraph graph, string outputFileName, string toolName);
+    public MemoryGraph get_MemoryGraph();
+    internal void set_MemoryGraph(MemoryGraph value);
+    public InteropInfo get_InteropInfo();
+    internal void set_InteropInfo(InteropInfo value);
+    public bool get_Is64Bit();
+    [CompilerGeneratedAttribute]
+public float get_AverageCountMultiplier();
+    [CompilerGeneratedAttribute]
+internal void set_AverageCountMultiplier(float value);
+    [CompilerGeneratedAttribute]
+public float get_AverageSizeMultiplier();
+    [CompilerGeneratedAttribute]
+internal void set_AverageSizeMultiplier(float value);
+    [CompilerGeneratedAttribute]
+public Single[] get_CountMultipliersByType();
+    [CompilerGeneratedAttribute]
+internal void set_CountMultipliersByType(Single[] value);
+    [CompilerGeneratedAttribute]
+public DotNetHeapInfo get_DotNetHeapInfo();
+    [CompilerGeneratedAttribute]
+internal void set_DotNetHeapInfo(DotNetHeapInfo value);
+    [CompilerGeneratedAttribute]
+public JSHeapInfo get_JSHeapInfo();
+    [CompilerGeneratedAttribute]
+internal void set_JSHeapInfo(JSHeapInfo value);
+    [CompilerGeneratedAttribute]
+public string get_CollectionLog();
+    [CompilerGeneratedAttribute]
+internal void set_CollectionLog(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_TimeCollected();
+    [CompilerGeneratedAttribute]
+internal void set_TimeCollected(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_MachineName();
+    [CompilerGeneratedAttribute]
+internal void set_MachineName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ProcessName();
+    [CompilerGeneratedAttribute]
+internal void set_ProcessName(string value);
+    [CompilerGeneratedAttribute]
+public int get_ProcessID();
+    [CompilerGeneratedAttribute]
+internal void set_ProcessID(int value);
+    [CompilerGeneratedAttribute]
+public long get_TotalProcessCommit();
+    [CompilerGeneratedAttribute]
+internal void set_TotalProcessCommit(long value);
+    [CompilerGeneratedAttribute]
+public long get_TotalProcessWorkingSet();
+    [CompilerGeneratedAttribute]
+internal void set_TotalProcessWorkingSet(long value);
+    [CompilerGeneratedAttribute]
+public string get_CreationTool();
+    [CompilerGeneratedAttribute]
+public void set_CreationTool(string value);
+    public static Dictionary`2<int, ProcessInfo> GetProcessesWithGCHeaps();
+    private void Write(string outputFileName);
+    private static void GetProcessesWithGCHeapsFromHeapDump(Dictionary`2<int, ProcessInfo> ret);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+    private void PreVersion8FromStream(Deserializer deserializer);
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_Version();
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_MinimumVersionCanRead();
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_MinimumReaderVersion();
+    [CompilerGeneratedAttribute]
+private IFastSerializable <.ctor>b__68_3();
+}
+public class GCHeapDumpSegment : object {
+    [CompilerGeneratedAttribute]
+private ulong <Start>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen0End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen1End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen2End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen3End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen4End>k__BackingField;
+    public ulong Start { get; internal set; }
+    public ulong End { get; internal set; }
+    public ulong Gen0End { get; internal set; }
+    public ulong Gen1End { get; internal set; }
+    public ulong Gen2End { get; internal set; }
+    public ulong Gen3End { get; internal set; }
+    public ulong Gen4End { get; internal set; }
+    public int Version { get; }
+    public int MinimumVersionCanRead { get; }
+    public int MinimumReaderVersion { get; }
+    [CompilerGeneratedAttribute]
+public ulong get_Start();
+    [CompilerGeneratedAttribute]
+internal void set_Start(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_End();
+    [CompilerGeneratedAttribute]
+internal void set_End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen0End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen0End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen1End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen1End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen2End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen2End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen3End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen3End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen4End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen4End(ulong value);
+    public sealed virtual int get_Version();
+    public sealed virtual int get_MinimumVersionCanRead();
+    public sealed virtual int get_MinimumReaderVersion();
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class Graphs.Graph : object {
+    protected static int SegmentSize;
+    public NodeIndex RootIndex;
+    [CompilerGeneratedAttribute]
+private Func`3<int, Module, string> <ResolveTypeName>k__BackingField;
+    private long m_expectedNodeCount;
+    private long m_totalSize;
+    internal int m_totalRefs;
+    internal GrowableArray`1<TypeInfo> m_types;
+    internal GrowableArray`1<DeferedTypeInfo> m_deferedTypes;
+    internal SegmentedList`1<StreamLabel> m_nodes;
+    internal SegmentedMemoryStreamReader m_reader;
+    internal StreamLabel m_undefinedObjDef;
+    internal SegmentedMemoryStreamWriter m_writer;
+    protected bool m_isVeryLargeGraph;
+    public NodeIndex NodeIndexLimit { get; }
+    public long NodeCount { get; }
+    public NodeTypeIndex NodeTypeIndexLimit { get; }
+    public int NodeTypeCount { get; }
+    public long TotalSize { get; }
+    public int TotalNumberOfReferences { get; }
+    public Func`3<int, Module, string> ResolveTypeName { get; public set; }
+    public bool HasDeferedTypeNames { get; }
+    public int Version { get; }
+    public int MinimumVersionCanRead { get; }
+    public int MinimumReaderVersion { get; }
+    public Graph(int expectedNodeCount, bool isVeryLargeGraph);
+    public Node GetNode(NodeIndex nodeIndex, Node storage);
+    public bool IsDefined(NodeIndex nodeIndex);
+    public NodeType GetType(NodeTypeIndex nodeTypeIndex, NodeType storage);
+    public virtual Node AllocNodeStorage();
+    public virtual NodeType AllocTypeNodeStorage();
+    public NodeIndex get_NodeIndexLimit();
+    public long get_NodeCount();
+    public NodeTypeIndex get_NodeTypeIndexLimit();
+    public int get_NodeTypeCount();
+    public long get_TotalSize();
+    public int get_TotalNumberOfReferences();
+    public virtual NodeTypeIndex CreateType(string name, string moduleName, int size);
+    public virtual NodeIndex CreateNode();
+    public void SetNode(NodeIndex nodeIndex, NodeTypeIndex typeIndex, int sizeInBytes, GrowableArray`1<NodeIndex> children);
+    public virtual void AllowReading();
+    public virtual string ToString();
+    public virtual long SizeOfGraphDescription();
+    public NodeTypeIndex CreateType(int typeID, Module module, int size, string typeNameSuffix);
+    [CompilerGeneratedAttribute]
+public Func`3<int, Module, string> get_ResolveTypeName();
+    [CompilerGeneratedAttribute]
+public void set_ResolveTypeName(Func`3<int, Module, string> value);
+    public bool get_HasDeferedTypeNames();
+    public void BreadthFirstVisit(Action`1<Node> visitor);
+    public SizeAndCount[] GetHistogramByType();
+    public string HistogramByTypeXml(long minSize);
+    internal void SetNodeTypeAndSize(NodeIndex nodeIndex, NodeTypeIndex typeIndex, int sizeInBytes);
+    protected virtual void Clear();
+    private void ClearWorker();
+    public virtual void ToStream(Serializer serializer);
+    public sealed virtual void FromStream(Deserializer deserializer);
+    public sealed virtual int get_Version();
+    public sealed virtual int get_MinimumVersionCanRead();
+    public sealed virtual int get_MinimumReaderVersion();
+}
+[ExtensionAttribute]
+public static class Graphs.GraphUtils : object {
+    [ExtensionAttribute]
+public static string PrintGraph(Graph graph);
+    [ExtensionAttribute]
+public static string PrintNode(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static string PrintNode(Graph graph, int nodeIndex);
+    [ExtensionAttribute]
+public static string PrintNodes(Graph graph, List`1<NodeIndex> nodes);
+    [ExtensionAttribute]
+public static string PrintChildren(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static string PrintChildren(Graph graph, int nodeIndex);
+    [ExtensionAttribute]
+public static void WriteXml(Graph graph, TextWriter writer);
+    [ExtensionAttribute]
+public static void DumpNormalized(MemoryGraph graph, TextWriter writer);
+    [ExtensionAttribute]
+public static List`1<NodeIndex> NodeChildren(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static List`1<NodeIndex> NodesOfType(Graph graph, string regExpression);
+}
+public class Graphs.MemoryGraph : Graph {
+    [CompilerGeneratedAttribute]
+private bool <Is64Bit>k__BackingField;
+    protected IDictionary`2<ulong, NodeIndex> m_addressToNodeIndex;
+    protected SegmentedList`1<ulong> m_nodeAddresses;
+    public bool Is64Bit { get; public set; }
+    public int DistinctRefCount { get; }
+    public MemoryGraph(int expectedSize, bool isVeryLargeGraph);
+    public void WriteAsBinaryFile(string outputFileName);
+    public static MemoryGraph ReadFromBinaryFile(string inputFileName);
+    [CompilerGeneratedAttribute]
+public bool get_Is64Bit();
+    [CompilerGeneratedAttribute]
+public void set_Is64Bit(bool value);
+    public ulong GetAddress(NodeIndex nodeIndex);
+    public void SetAddress(NodeIndex nodeIndex, ulong nodeAddress);
+    public virtual NodeIndex CreateNode();
+    public virtual Node AllocNodeStorage();
+    public virtual long SizeOfGraphDescription();
+    public int get_DistinctRefCount();
+    protected virtual void Clear();
+    public virtual void AllowReading();
+    public NodeIndex GetNodeIndex(ulong objectAddress);
+    public bool IsInGraph(ulong objectAddress);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class Graphs.MemoryNode : Node {
+    private MemoryGraph m_memoryGraph;
+    public ulong Address { get; }
+    internal MemoryNode(MemoryGraph graph);
+    public ulong get_Address();
+    public virtual void WriteXml(TextWriter writer, bool includeChildren, string prefix, NodeType typeStorage, string additinalAttribs);
+}
+public class Graphs.MemoryNodeBuilder : object {
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ModuleName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Size>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NodeIndex <Index>k__BackingField;
+    private NodeTypeIndex m_typeIndex;
+    private List`1<MemoryNodeBuilder> m_mutableChildren;
+    private GrowableArray`1<NodeIndex> m_unmutableChildren;
+    private MemoryGraph m_graph;
+    public string TypeName { get; private set; }
+    public string ModuleName { get; private set; }
+    public int Size { get; public set; }
+    public NodeIndex Index { get; private set; }
+    public MemoryNodeBuilder(MemoryGraph graph, string typeName, string moduleName, NodeIndex nodeIndex);
+    [CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+private void set_TypeName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ModuleName();
+    [CompilerGeneratedAttribute]
+private void set_ModuleName(string value);
+    [CompilerGeneratedAttribute]
+public int get_Size();
+    [CompilerGeneratedAttribute]
+public void set_Size(int value);
+    [CompilerGeneratedAttribute]
+public NodeIndex get_Index();
+    [CompilerGeneratedAttribute]
+private void set_Index(NodeIndex value);
+    public MemoryNodeBuilder FindOrCreateChild(string childTypeName, string childModuleName);
+    public void AddChild(MemoryNodeBuilder child);
+    public void AddChild(NodeIndex child);
+    public void AllocateTypeIndexes();
+    public NodeIndex Build();
+    private void AllocateTypeIndexes(Dictionary`2<string, NodeTypeIndex> types);
+}
+public class Graphs.Module : object {
+    public string Path;
+    public ulong ImageBase;
+    public int Size;
+    public DateTime BuildTime;
+    public string PdbName;
+    public Guid PdbGuid;
+    public int PdbAge;
+    public Module(ulong imageBase);
+    public sealed virtual void ToStream(Serializer serializer);
+    public sealed virtual void FromStream(Deserializer deserializer);
+}
+public class Graphs.Node : object {
+    internal NodeIndex m_index;
+    internal Graph m_graph;
+    private StreamLabel m_current;
+    private int m_numChildrenLeft;
+    public int Size { get; }
+    public bool Defined { get; }
+    public int ChildCount { get; }
+    public NodeTypeIndex TypeIndex { get; }
+    public NodeIndex Index { get; }
+    public Graph Graph { get; }
+    protected internal Node(Graph graph);
+    public int get_Size();
+    public bool get_Defined();
+    public NodeType GetType(NodeType storage);
+    public void ResetChildrenEnumeration();
+    public NodeIndex GetFirstChildIndex();
+    public NodeIndex GetNextChildIndex();
+    public int get_ChildCount();
+    public NodeTypeIndex get_TypeIndex();
+    public NodeIndex get_Index();
+    public Graph get_Graph();
+    public bool Contains(NodeIndex nodeIndex);
+    public virtual string ToString();
+    public virtual void WriteXml(TextWriter writer, bool includeChildren, string prefix, NodeType typeStorage, string additinalAttribs);
+    internal static int ReadCompressedInt(SegmentedMemoryStreamReader reader);
+    internal static void WriteCompressedInt(SegmentedMemoryStreamWriter writer, int value);
+}
+public enum Graphs.NodeIndex : Enum {
+    public int value__;
+    public static NodeIndex Invalid;
+}
+public class Graphs.NodeType : object {
+    internal Graph m_graph;
+    internal NodeTypeIndex m_index;
+    public string Name { get; }
+    public string FullName { get; }
+    public int Size { get; }
+    public NodeTypeIndex Index { get; }
+    public Graph Graph { get; }
+    public string ModuleName { get; public set; }
+    public Module Module { get; }
+    public int RawTypeID { get; }
+    protected internal NodeType(Graph graph);
+    public string get_Name();
+    public string get_FullName();
+    public int get_Size();
+    public NodeTypeIndex get_Index();
+    public Graph get_Graph();
+    public string get_ModuleName();
+    public void set_ModuleName(string value);
+    public Module get_Module();
+    public int get_RawTypeID();
+    public virtual string ToString();
+    public void WriteXml(TextWriter writer, string prefix);
+}
+public enum Graphs.NodeTypeIndex : Enum {
+    public int value__;
+    public static NodeTypeIndex Invalid;
+}
+public class GraphSampler : object {
+    private static NodeIndex RejectedNode;
+    private static NodeIndex PotentialNode;
+    private MemoryGraph m_graph;
+    private int m_targetNodeCount;
+    private TextWriter m_log;
+    private Node m_nodeStorage;
+    private Node m_childNodeStorage;
+    private NodeType m_nodeTypeStorage;
+    private float m_filteringRatio;
+    private SampleStats[] m_statsByType;
+    private int m_numDistictTypesWithSamples;
+    private int m_numDistictTypes;
+    private NodeIndex[] m_newIndex;
+    private NodeTypeIndex[] m_newTypeIndexes;
+    private SpanningTree m_spanningTree;
+    private MemoryGraph m_newGraph;
+    public Single[] CountScalingByType { get; }
+    public GraphSampler(MemoryGraph graph, int targetNodeCount, TextWriter log);
+    public MemoryGraph GetSampledGraph();
+    public Single[] get_CountScalingByType();
+    public NodeTypeIndex MapTypeIndex(NodeTypeIndex oldTypeIndex);
+    public NodeIndex MapNodeIndex(NodeIndex oldNodeIndex);
+    private void VisitNode(NodeIndex nodeIdx, bool mustAdd, bool dontAddAncestors);
+    private NodeTypeIndex GetNewTypeIndex(NodeTypeIndex oldTypeIndex);
+    [ConditionalAttribute("DEBUG")]
+private void ValidateStats(bool allNodesVisited, bool completed);
+    private static bool IsSampledNode(NodeIndex nodeIdx);
+    [CompilerGeneratedAttribute]
+private int <GetSampledGraph>b__1_0(int x, int y);
+}
+public class InteropInfo : object {
+    internal int m_countRCWs;
+    internal int m_countCCWs;
+    internal int m_countInterfaces;
+    internal int m_countRCWInterfaces;
+    internal int m_countModules;
+    internal List`1<RCWInfo> m_listRCWInfo;
+    internal List`1<CCWInfo> m_listCCWInfo;
+    internal List`1<ComInterfaceInfo> m_listComInterfaceInfo;
+    internal List`1<InteropModuleInfo> m_listModules;
+    public int currentRCWCount { get; }
+    public int currentCCWCount { get; }
+    public int currentInterfaceCount { get; }
+    public int currentModuleCount { get; }
+    public InteropInfo(bool fInitLater);
+    public int get_currentRCWCount();
+    public int get_currentCCWCount();
+    public int get_currentInterfaceCount();
+    public int get_currentModuleCount();
+    public void AddRCW(RCWInfo rcwInfo);
+    public void AddCCW(CCWInfo ccwInfo);
+    public void AddComInterface(ComInterfaceInfo interfaceInfo);
+    public void AddModule(InteropModuleInfo moduleInfo);
+    public bool InteropInfoExists();
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class JSHeapInfo : object {
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.AggregatePercentilePayload : MeterPayload {
+    [CompilerGeneratedAttribute]
+private Quantile[] <Quantiles>k__BackingField;
+    public Quantile[] Quantiles { get; }
+    public AggregatePercentilePayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, IEnumerable`1<Quantile> quantiles, DateTime timestamp);
+    [CompilerGeneratedAttribute]
+public Quantile[] get_Quantiles();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.AggregateSourceConfiguration : MonitoringSourceConfiguration {
+    private IList`1<MonitoringSourceConfiguration> _configurations;
+    public long RundownKeyword { get; public set; }
+    public RetryStrategy RetryStrategy { get; public set; }
+    public AggregateSourceConfiguration(MonitoringSourceConfiguration[] configurations);
+    public virtual IList`1<EventPipeProvider> GetProviders();
+    public virtual long get_RundownKeyword();
+    public virtual void set_RundownKeyword(long value);
+    public virtual RetryStrategy get_RetryStrategy();
+    public virtual void set_RetryStrategy(RetryStrategy value);
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.AspNetTriggerSourceConfiguration : MonitoringSourceConfiguration {
+    private Nullable`1<float> _heartbeatIntervalSeconds;
+    public AspNetTriggerSourceConfiguration(Nullable`1<float> heartbeatIntervalSeconds);
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.BeginInstrumentReportingPayload : MeterPayload {
+    public BeginInstrumentReportingPayload(CounterMetadata counterMetadata, DateTime timestamp);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.CounterConfiguration : object {
+    [CompilerGeneratedAttribute]
+private CounterFilter <CounterFilter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxHistograms>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxTimeseries>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseCounterRateAndValuePayload>k__BackingField;
+    public CounterFilter CounterFilter { get; }
+    public string SessionId { get; public set; }
+    public string ClientId { get; public set; }
+    public int MaxHistograms { get; public set; }
+    public int MaxTimeseries { get; public set; }
+    public bool UseCounterRateAndValuePayload { get; public set; }
+    public CounterConfiguration(CounterFilter filter);
+    [CompilerGeneratedAttribute]
+public CounterFilter get_CounterFilter();
+    [CompilerGeneratedAttribute]
+public string get_SessionId();
+    [CompilerGeneratedAttribute]
+public void set_SessionId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public void set_ClientId(string value);
+    [CompilerGeneratedAttribute]
+public int get_MaxHistograms();
+    [CompilerGeneratedAttribute]
+public void set_MaxHistograms(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxTimeseries();
+    [CompilerGeneratedAttribute]
+public void set_MaxTimeseries(int value);
+    [CompilerGeneratedAttribute]
+public bool get_UseCounterRateAndValuePayload();
+    [CompilerGeneratedAttribute]
+public void set_UseCounterRateAndValuePayload(bool value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.CounterEndedPayload : MeterPayload {
+    public CounterEndedPayload(CounterMetadata counterMetadata, DateTime timestamp);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.CounterFilter : object {
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private Dictionary`2<string, ValueTuple`2<Nullable`1<int>, List`1<string>>> _enabledCounters;
+    private int _defaultIntervalMilliseconds;
+    public int DefaultIntervalSeconds { get; }
+    public CounterFilter(float defaultIntervalSeconds);
+    public static CounterFilter AllCounters(float defaultIntervalSeconds);
+    public void AddFilter(string providerName);
+    public void AddFilter(string providerName, String[] counters, Nullable`1<float> intervalSeconds);
+    public IEnumerable`1<string> GetProviders();
+    public int get_DefaultIntervalSeconds();
+    public bool IsIncluded(string providerName, string counterName, int intervalMilliseconds);
+    public bool IsIncluded(string providerName, string counterName);
+    private static int SecondsToMilliseconds(float intervalSeconds);
+}
+[FlagsAttribute]
+internal enum Microsoft.Diagnostics.Monitoring.EventPipe.CounterGroupType : Enum {
+    public int value__;
+    public static CounterGroupType EventCounter;
+    public static CounterGroupType Meter;
+    public static CounterGroupType All;
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.CounterMetadata : object {
+    [CompilerGeneratedAttribute]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CounterName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MeterTags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InstrumentTags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ScopeHash>k__BackingField;
+    public string ProviderName { get; private set; }
+    public string CounterName { get; private set; }
+    public string MeterTags { get; private set; }
+    public string InstrumentTags { get; private set; }
+    public string ScopeHash { get; private set; }
+    public CounterMetadata(string providerName, string counterName, string meterTags, string instrumentTags, string scopeHash);
+    [CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+private void set_ProviderName(string value);
+    [CompilerGeneratedAttribute]
+public string get_CounterName();
+    [CompilerGeneratedAttribute]
+private void set_CounterName(string value);
+    [CompilerGeneratedAttribute]
+public string get_MeterTags();
+    [CompilerGeneratedAttribute]
+private void set_MeterTags(string value);
+    [CompilerGeneratedAttribute]
+public string get_InstrumentTags();
+    [CompilerGeneratedAttribute]
+private void set_InstrumentTags(string value);
+    [CompilerGeneratedAttribute]
+public string get_ScopeHash();
+    [CompilerGeneratedAttribute]
+private void set_ScopeHash(string value);
+}
+internal abstract class Microsoft.Diagnostics.Monitoring.EventPipe.CounterPayload : object {
+    [CompilerGeneratedAttribute]
+private string <DisplayName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Unit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <Timestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <Interval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CounterType <CounterType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CounterMetadata <CounterMetadata>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ValueTags>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventType <EventType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Series>k__BackingField;
+    public string DisplayName { get; protected set; }
+    public string Unit { get; }
+    public double Value { get; }
+    public DateTime Timestamp { get; }
+    public float Interval { get; }
+    public CounterType CounterType { get; }
+    public CounterMetadata CounterMetadata { get; }
+    public string ValueTags { get; }
+    public EventType EventType { get; public set; }
+    public bool IsMeter { get; }
+    public int Series { get; }
+    protected CounterPayload(DateTime timestamp, CounterMetadata counterMetadata, string displayName, string unit, double value, CounterType counterType, float interval, int series, string valueTags, EventType eventType);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_DisplayName();
+    [CompilerGeneratedAttribute]
+protected void set_DisplayName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Unit();
+    [CompilerGeneratedAttribute]
+public sealed virtual double get_Value();
+    [CompilerGeneratedAttribute]
+public sealed virtual DateTime get_Timestamp();
+    [CompilerGeneratedAttribute]
+public sealed virtual float get_Interval();
+    [CompilerGeneratedAttribute]
+public sealed virtual CounterType get_CounterType();
+    [CompilerGeneratedAttribute]
+public sealed virtual CounterMetadata get_CounterMetadata();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ValueTags();
+    [CompilerGeneratedAttribute]
+public sealed virtual EventType get_EventType();
+    [CompilerGeneratedAttribute]
+public void set_EventType(EventType value);
+    public virtual bool get_IsMeter();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Series();
+}
+[ExtensionAttribute]
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.CounterPayloadExtensions : object {
+    [ExtensionAttribute]
+public static string CombineTags(ICounterPayload counterPayload);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.CounterRateAndValuePayload : MeterPayload {
+    [CompilerGeneratedAttribute]
+private double <Rate>k__BackingField;
+    public double Rate { get; private set; }
+    public CounterRateAndValuePayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, double rate, double value, DateTime timestamp);
+    [CompilerGeneratedAttribute]
+public double get_Rate();
+    [CompilerGeneratedAttribute]
+private void set_Rate(double value);
+}
+internal enum Microsoft.Diagnostics.Monitoring.EventPipe.CounterType : Enum {
+    public int value__;
+    public static CounterType Metric;
+    public static CounterType Rate;
+}
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.CounterUtilities : object {
+    public static IDictionary`2<string, string> GetMetadata(string metadataPayload, char kvSeparator);
+    public static int CreatePercentile(double quantile);
+    public static string AppendPercentile(string tags, double quantile);
+    private static string AppendPercentile(string tags, string percentile);
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.CpuProfileConfiguration : MonitoringSourceConfiguration {
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.DiagnosticsEventPipeProcessor : object {
+    private MonitoringSourceConfiguration _configuration;
+    private Func`4<EventPipeEventSource, Func`1<Task>, CancellationToken, Task> _onEventSourceAvailable;
+    private object _lock;
+    private TaskCompletionSource`1<bool> _initialized;
+    private TaskCompletionSource`1<bool> _sessionStarted;
+    private EventPipeEventSource _eventSource;
+    private Func`1<Task> _stopFunc;
+    private bool _disposed;
+    internal Task SessionStarted { get; }
+    public DiagnosticsEventPipeProcessor(MonitoringSourceConfiguration configuration, Func`4<EventPipeEventSource, Func`1<Task>, CancellationToken, Task> onEventSourceAvailable);
+    internal Task get_SessionStarted();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.DiagnosticsEventPipeProcessor/<Process>d__11")]
+public Task Process(DiagnosticsClient client, TimeSpan duration, bool resumeRuntime, CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.DiagnosticsEventPipeProcessor/<StopProcessing>d__12")]
+public Task StopProcessing();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.DiagnosticsEventPipeProcessor/<DisposeAsync>d__13")]
+public sealed virtual ValueTask DisposeAsync();
+    private bool TryFailCompletionSourcesReturnFalse(Exception ex);
+    private void TryCancelCompletionSources(CancellationToken token);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.ErrorPayload : MeterPayload {
+    [CompilerGeneratedAttribute]
+private string <ErrorMessage>k__BackingField;
+    public string ErrorMessage { get; }
+    public ErrorPayload(string errorMessage, DateTime timestamp, EventType eventType);
+    [CompilerGeneratedAttribute]
+public string get_ErrorMessage();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventCounterPayload : CounterPayload {
+    public EventCounterPayload(DateTime timestamp, string providerName, string name, string displayName, string unit, double value, CounterType counterType, float interval, int series, string valueTags);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventGCDumpPipeline : EventSourcePipeline`1<EventGCPipelineSettings> {
+    private MemoryGraph _gcGraph;
+    public EventGCDumpPipeline(DiagnosticsClient client, EventGCPipelineSettings settings, MemoryGraph gcGraph);
+    protected virtual MonitoringSourceConfiguration CreateConfiguration();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventGCDumpPipeline/<OnEventSourceAvailable>d__3")]
+protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventGCPipelineSettings : EventSourcePipelineSettings {
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventLogsPipeline : EventSourcePipeline`1<EventLogsPipelineSettings> {
+    private ILoggerFactory _factory;
+    private static Func`3<object, Exception, string> _messageFormatter;
+    public EventLogsPipeline(DiagnosticsClient client, EventLogsPipelineSettings settings, ILoggerFactory factory);
+    private static EventLogsPipeline();
+    protected virtual MonitoringSourceConfiguration CreateConfiguration();
+    protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+    private static string MessageFormatter(object state, Exception error);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventLogsPipelineSettings : EventSourcePipelineSettings {
+    [CompilerGeneratedAttribute]
+private LogLevel <LogLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDictionary`2<string, Nullable`1<LogLevel>> <FilterSpecs>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseAppFilters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CollectScopes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ScopeLimit>k__BackingField;
+    public LogLevel LogLevel { get; public set; }
+    public IDictionary`2<string, Nullable`1<LogLevel>> FilterSpecs { get; public set; }
+    public bool UseAppFilters { get; public set; }
+    public bool CollectScopes { get; public set; }
+    public int ScopeLimit { get; public set; }
+    [CompilerGeneratedAttribute]
+public LogLevel get_LogLevel();
+    [CompilerGeneratedAttribute]
+public void set_LogLevel(LogLevel value);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, Nullable`1<LogLevel>> get_FilterSpecs();
+    [CompilerGeneratedAttribute]
+public void set_FilterSpecs(IDictionary`2<string, Nullable`1<LogLevel>> value);
+    [CompilerGeneratedAttribute]
+public bool get_UseAppFilters();
+    [CompilerGeneratedAttribute]
+public void set_UseAppFilters(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_CollectScopes();
+    [CompilerGeneratedAttribute]
+public void set_CollectScopes(bool value);
+    [CompilerGeneratedAttribute]
+public int get_ScopeLimit();
+    [CompilerGeneratedAttribute]
+public void set_ScopeLimit(int value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventMonitor : object {
+    private Action`1<TraceEvent> _onPayloadFilterMismatch;
+    private Action`1<TraceEvent> _onEvent;
+    private bool _callOnEventOnlyOnce;
+    private Stream _eventStream;
+    private bool _leaveEventStreamOpen;
+    private EventPipeEventSource _eventSource;
+    private TraceEventParser _eventParser;
+    private string _providerName;
+    private string _eventName;
+    private IDictionary`2<string, string> _payloadFilter;
+    private Dictionary`2<int, string> _payloadFilterIndexCache;
+    public EventMonitor(string providerName, string eventName, IDictionary`2<string, string> payloadFilter, Action`1<TraceEvent> onEvent, Action`1<TraceEvent> onPayloadFilterMismatch, Stream eventStream, bool callOnEventOnlyOnce, bool leaveEventStreamOpen);
+    public Task ProcessAsync(CancellationToken token);
+    private void StopMonitoringForEvent();
+    private void TraceEventCallback(TraceEvent obj);
+    private bool HydratePayloadFilterCache(TraceEvent obj);
+    private bool DoesPayloadMatch(TraceEvent obj);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventMonitor/<DisposeAsync>d__17")]
+public sealed virtual ValueTask DisposeAsync();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeCounterGroup : object {
+    [CompilerGeneratedAttribute]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <CounterNames>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CounterGroupType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<float> <IntervalSeconds>k__BackingField;
+    public string ProviderName { get; public set; }
+    public String[] CounterNames { get; public set; }
+    public CounterGroupType Type { get; public set; }
+    public Nullable`1<float> IntervalSeconds { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public void set_ProviderName(string value);
+    [CompilerGeneratedAttribute]
+public String[] get_CounterNames();
+    [CompilerGeneratedAttribute]
+public void set_CounterNames(String[] value);
+    [CompilerGeneratedAttribute]
+public CounterGroupType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(CounterGroupType value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<float> get_IntervalSeconds();
+    [CompilerGeneratedAttribute]
+public void set_IntervalSeconds(Nullable`1<float> value);
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeProviderSourceConfiguration : MonitoringSourceConfiguration {
+    private IEnumerable`1<EventPipeProvider> _providers;
+    private int _bufferSizeInMB;
+    public int BufferSizeInMB { get; }
+    public EventPipeProviderSourceConfiguration(long rundownKeyword, int bufferSizeInMB, EventPipeProvider[] providers);
+    public virtual IList`1<EventPipeProvider> GetProviders();
+    public virtual int get_BufferSizeInMB();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeStreamProvider : object {
+    private MonitoringSourceConfiguration _sourceConfig;
+    private TaskCompletionSource`1<object> _stopProcessingSource;
+    private Task _currentTask;
+    public EventPipeStreamProvider(MonitoringSourceConfiguration sourceConfig);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeStreamProvider/<ProcessEvents>d__4")]
+public Task`1<Stream> ProcessEvents(DiagnosticsClient client, TimeSpan duration, bool resumeRuntime, CancellationToken cancellationToken);
+    public void StopProcessing();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeStreamProvider/<StopSessionAsync>d__6")]
+private static Task StopSessionAsync(EventPipeSession session);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventPipeStreamProvider/<DisposeAsync>d__7")]
+public sealed virtual ValueTask DisposeAsync();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventProcessInfoPipeline : EventSourcePipeline`1<EventProcessInfoPipelineSettings> {
+    private Func`3<string, CancellationToken, Task> _onCommandLine;
+    public EventProcessInfoPipeline(DiagnosticsClient client, EventProcessInfoPipelineSettings settings, Func`3<string, CancellationToken, Task> onCommandLine);
+    protected virtual MonitoringSourceConfiguration CreateConfiguration();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventProcessInfoPipeline/<OnEventSourceAvailable>d__3")]
+protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventProcessInfoPipelineSettings : EventSourcePipelineSettings {
+}
+internal abstract class Microsoft.Diagnostics.Monitoring.EventPipe.EventSourcePipeline`1 : Pipeline {
+    private Lazy`1<DiagnosticsEventPipeProcessor> _processor;
+    [CompilerGeneratedAttribute]
+private DiagnosticsClient <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private T <Settings>k__BackingField;
+    public DiagnosticsClient Client { get; }
+    public T Settings { get; }
+    protected EventSourcePipeline`1(DiagnosticsClient client, T settings);
+    [CompilerGeneratedAttribute]
+public DiagnosticsClient get_Client();
+    [CompilerGeneratedAttribute]
+public T get_Settings();
+    protected abstract virtual MonitoringSourceConfiguration CreateConfiguration();
+    private DiagnosticsEventPipeProcessor CreateProcessor();
+    protected virtual Task OnRun(CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventSourcePipeline`1/<OnCleanup>d__11")]
+protected virtual Task OnCleanup();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventSourcePipeline`1/<OnStop>d__12")]
+protected virtual Task OnStop(CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventSourcePipeline`1/<StartAsync>d__13")]
+public Task`1<Task> StartAsync(CancellationToken token);
+    protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task <>n__0();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventSourcePipelineSettings : object {
+    [CompilerGeneratedAttribute]
+private TimeSpan <Duration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ResumeRuntime>k__BackingField;
+    public TimeSpan Duration { get; public set; }
+    public bool ResumeRuntime { get; public set; }
+    [CompilerGeneratedAttribute]
+public TimeSpan get_Duration();
+    [CompilerGeneratedAttribute]
+public void set_Duration(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_ResumeRuntime();
+    [CompilerGeneratedAttribute]
+public void set_ResumeRuntime(bool value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventTaskSource`1 : object {
+    private IDisposable _cancellationRegistration;
+    private THandler _completeHandler;
+    private TaskCompletionSource`1<object> _completionSource;
+    private Action`1<THandler> _removeHandler;
+    public Task Task { get; }
+    public EventTaskSource`1(Func`2<Action, THandler> createHandler, Action`1<THandler> addHandler, Action`1<THandler> removeHandler, CancellationToken token);
+    public sealed virtual void Dispose();
+    public Task get_Task();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventTracePipeline : Pipeline {
+    private Lazy`1<EventPipeStreamProvider> _provider;
+    private Func`3<Stream, CancellationToken, Task> _onStreamAvailable;
+    [CompilerGeneratedAttribute]
+private DiagnosticsClient <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventTracePipelineSettings <Settings>k__BackingField;
+    public DiagnosticsClient Client { get; }
+    public EventTracePipelineSettings Settings { get; }
+    public EventTracePipeline(DiagnosticsClient client, EventTracePipelineSettings settings, Func`3<Stream, CancellationToken, Task> onStreamAvailable);
+    [CompilerGeneratedAttribute]
+public DiagnosticsClient get_Client();
+    [CompilerGeneratedAttribute]
+public EventTracePipelineSettings get_Settings();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventTracePipeline/<OnRun>d__9")]
+protected virtual Task OnRun(CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.EventTracePipeline/<OnCleanup>d__10")]
+protected virtual Task OnCleanup();
+    protected virtual Task OnStop(CancellationToken token);
+    private EventPipeStreamProvider CreateProvider();
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task <>n__0();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.EventTracePipelineSettings : EventSourcePipelineSettings {
+    [CompilerGeneratedAttribute]
+private MonitoringSourceConfiguration <Configuration>k__BackingField;
+    public MonitoringSourceConfiguration Configuration { get; public set; }
+    [CompilerGeneratedAttribute]
+public MonitoringSourceConfiguration get_Configuration();
+    [CompilerGeneratedAttribute]
+public void set_Configuration(MonitoringSourceConfiguration value);
+}
+internal enum Microsoft.Diagnostics.Monitoring.EventPipe.EventType : Enum {
+    public int value__;
+    public static EventType Rate;
+    public static EventType Gauge;
+    public static EventType Histogram;
+    public static EventType UpDownCounter;
+    public static EventType BeginInstrumentReporting;
+    public static EventType CounterEnded;
+    public static EventType HistogramLimitError;
+    public static EventType TimeSeriesLimitError;
+    public static EventType ErrorTargetProcess;
+    public static EventType MultipleSessionsNotSupportedError;
+    public static EventType MultipleSessionsConfiguredIncorrectlyError;
+    public static EventType ObservableInstrumentCallbackError;
+}
+[ExtensionAttribute]
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.EventTypeExtensions : object {
+    [ExtensionAttribute]
+public static bool IsValuePublishedEvent(EventType eventType);
+    [ExtensionAttribute]
+public static bool IsError(EventType eventType);
+    [ExtensionAttribute]
+public static bool IsNonFatalError(EventType eventType);
+    [ExtensionAttribute]
+public static bool IsTracingError(EventType eventType);
+    [ExtensionAttribute]
+public static bool IsSessionStartupError(EventType eventType);
+}
+[IsReadOnlyAttribute]
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.FormattedLogValues : ValueType {
+    internal static int MaxCachedFormatters;
+    private static string NullFormat;
+    private static int _count;
+    private static ConcurrentDictionary`2<string, LogValuesFormatter> _formatters;
+    private LogValuesFormatter _formatter;
+    private Object[] _values;
+    private string _originalMessage;
+    private DateTime _timestamp;
+    internal LogValuesFormatter Formatter { get; }
+    public KeyValuePair`2<string, object> Item { get; }
+    public int Count { get; }
+    public DateTime Timestamp { get; }
+    public FormattedLogValues(DateTime timestamp, string format, Object[] values);
+    private static FormattedLogValues();
+    internal LogValuesFormatter get_Formatter();
+    public sealed virtual KeyValuePair`2<string, object> get_Item(int index);
+    public sealed virtual int get_Count();
+    public sealed virtual DateTime get_Timestamp();
+    [IteratorStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.FormattedLogValues/<GetEnumerator>d__17")]
+public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    public virtual string ToString();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.GaugePayload : MeterPayload {
+    public GaugePayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, double value, DateTime timestamp);
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.GcCollectConfiguration : MonitoringSourceConfiguration {
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.GCDumpSourceConfiguration : MonitoringSourceConfiguration {
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.HttpRequestSourceConfiguration : MonitoringSourceConfiguration {
+    internal static string DiagnosticFilterString;
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+internal interface Microsoft.Diagnostics.Monitoring.EventPipe.ICounterPayload {
+    public double Value { get; }
+    public CounterType CounterType { get; }
+    public CounterMetadata CounterMetadata { get; }
+    public string DisplayName { get; }
+    public string Unit { get; }
+    public DateTime Timestamp { get; }
+    public float Interval { get; }
+    public string ValueTags { get; }
+    public EventType EventType { get; }
+    public bool IsMeter { get; }
+    public int Series { get; }
+    public abstract virtual double get_Value();
+    public abstract virtual CounterType get_CounterType();
+    public abstract virtual CounterMetadata get_CounterMetadata();
+    public abstract virtual string get_DisplayName();
+    public abstract virtual string get_Unit();
+    public abstract virtual DateTime get_Timestamp();
+    public abstract virtual float get_Interval();
+    public abstract virtual string get_ValueTags();
+    public abstract virtual EventType get_EventType();
+    public abstract virtual bool get_IsMeter();
+    public abstract virtual int get_Series();
+}
+internal interface Microsoft.Diagnostics.Monitoring.EventPipe.ICountersLogger {
+    public abstract virtual void Log(ICounterPayload counter);
+    public abstract virtual Task PipelineStarted(CancellationToken token);
+    public abstract virtual Task PipelineStopped(CancellationToken token);
+}
+internal interface Microsoft.Diagnostics.Monitoring.EventPipe.IStateWithTimestamp {
+    public DateTime Timestamp { get; }
+    public abstract virtual DateTime get_Timestamp();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.LoggerException : Exception {
+    private JsonElement _exceptionMessage;
+    public string Message { get; }
+    public string StackTrace { get; }
+    public LoggerException(JsonElement exceptionMessage);
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+    public virtual string get_Message();
+    public virtual string get_StackTrace();
+    public virtual string ToString();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.LoggingSourceConfiguration : MonitoringSourceConfiguration {
+    private string _filterSpecs;
+    private long _keywords;
+    private EventLevel _level;
+    private bool _collectScopes;
+    public LoggingSourceConfiguration(LogLevel level, LogMessageType messageType, IDictionary`2<string, Nullable`1<LogLevel>> filterSpecs, bool useAppFilters, bool collectScopes);
+    public virtual IList`1<EventPipeProvider> GetProviders();
+    private static string ToFilterSpecsString(IDictionary`2<string, Nullable`1<LogLevel>> filterSpecs, bool useAppFilters);
+    private static EventLevel ToEventLevel(LogLevel logLevel);
+    private static EventKeywords ToKeywords(LogMessageType messageType);
+}
+[FlagsAttribute]
+public enum Microsoft.Diagnostics.Monitoring.EventPipe.LogMessageType : Enum {
+    public int value__;
+    public static LogMessageType Message;
+    public static LogMessageType FormattedMessage;
+    public static LogMessageType JsonMessage;
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.Diagnostics.Monitoring.EventPipe.LogObject : object {
+    public static Func`3<object, Exception, string> Callback;
+    private string _formattedMessage;
+    private List`1<KeyValuePair`2<string, object>> _items;
+    [CompilerGeneratedAttribute]
+private DateTime <Timestamp>k__BackingField;
+    public KeyValuePair`2<string, object> Item { get; }
+    public int Count { get; }
+    public DateTime Timestamp { get; internal set; }
+    public LogObject(JsonElement element, string formattedMessage);
+    private static LogObject();
+    public sealed virtual KeyValuePair`2<string, object> get_Item(int index);
+    public sealed virtual int get_Count();
+    [CompilerGeneratedAttribute]
+public sealed virtual DateTime get_Timestamp();
+    [CompilerGeneratedAttribute]
+internal void set_Timestamp(DateTime value);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual string ToString();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.LogValuesFormatter : object {
+    private static string NullValue;
+    private static Object[] EmptyArray;
+    private static Char[] FormatDelimiters;
+    private string _format;
+    private List`1<string> _valueNames;
+    [CompilerGeneratedAttribute]
+private string <OriginalFormat>k__BackingField;
+    public string OriginalFormat { get; private set; }
+    public List`1<string> ValueNames { get; }
+    public LogValuesFormatter(string format);
+    private static LogValuesFormatter();
+    [CompilerGeneratedAttribute]
+public string get_OriginalFormat();
+    [CompilerGeneratedAttribute]
+private void set_OriginalFormat(string value);
+    public List`1<string> get_ValueNames();
+    private static int FindBraceIndex(string format, char brace, int startIndex, int endIndex);
+    private static int FindIndexOfAny(string format, Char[] chars, int startIndex, int endIndex);
+    public string Format(Object[] values);
+    internal string Format();
+    internal string Format(object arg0);
+    internal string Format(object arg0, object arg1);
+    internal string Format(object arg0, object arg1, object arg2);
+    public KeyValuePair`2<string, object> GetValue(Object[] values, int index);
+    public IEnumerable`1<KeyValuePair`2<string, object>> GetValues(Object[] values);
+    private static object FormatArgument(object value);
+}
+internal abstract class Microsoft.Diagnostics.Monitoring.EventPipe.MeterPayload : CounterPayload {
+    public bool IsMeter { get; }
+    protected MeterPayload(DateTime timestamp, CounterMetadata counterMetadata, string displayName, string unit, double value, CounterType counterType, string valueTags, EventType eventType);
+    public virtual bool get_IsMeter();
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.MetricEventPipeProvider : object {
+    [CompilerGeneratedAttribute]
+private string <Provider>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<float> <IntervalSeconds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MetricType <Type>k__BackingField;
+    public string Provider { get; public set; }
+    public Nullable`1<float> IntervalSeconds { get; public set; }
+    public MetricType Type { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Provider();
+    [CompilerGeneratedAttribute]
+public void set_Provider(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<float> get_IntervalSeconds();
+    [CompilerGeneratedAttribute]
+public void set_IntervalSeconds(Nullable`1<float> value);
+    [CompilerGeneratedAttribute]
+public MetricType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(MetricType value);
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.MetricSourceConfiguration : MonitoringSourceConfiguration {
+    private static string SharedSessionId;
+    private IList`1<EventPipeProvider> _eventPipeProviders;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionId>k__BackingField;
+    public string ClientId { get; private set; }
+    public string SessionId { get; private set; }
+    public MetricSourceConfiguration(float metricIntervalSeconds, IEnumerable`1<string> eventCounterProviderNames);
+    public MetricSourceConfiguration(float metricIntervalSeconds, IEnumerable`1<MetricEventPipeProvider> providers, int maxHistograms, int maxTimeSeries, bool useSharedSession);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+private void set_ClientId(string value);
+    [CompilerGeneratedAttribute]
+public string get_SessionId();
+    [CompilerGeneratedAttribute]
+private void set_SessionId(string value);
+    internal static IEnumerable`1<MetricEventPipeProvider> CreateProviders(IEnumerable`1<string> providers, MetricType metricType);
+    public virtual IList`1<EventPipeProvider> GetProviders();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.MetricsPipeline : EventSourcePipeline`1<MetricsPipelineSettings> {
+    private IEnumerable`1<ICountersLogger> _loggers;
+    private CounterFilter _filter;
+    private string _clientId;
+    private string _sessionId;
+    private CounterConfiguration _counterConfiguration;
+    public MetricsPipeline(DiagnosticsClient client, MetricsPipelineSettings settings, IEnumerable`1<ICountersLogger> loggers);
+    protected virtual MonitoringSourceConfiguration CreateConfiguration();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.MetricsPipeline/<OnEventSourceAvailable>d__7")]
+protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.MetricsPipeline/<ExecuteCounterLoggerActionAsync>d__8")]
+private Task ExecuteCounterLoggerActionAsync(Func`2<ICountersLogger, Task> action);
+    private void ExecuteCounterLoggerAction(Action`1<ICountersLogger> action);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.MetricsPipelineSettings : EventSourcePipelineSettings {
+    [CompilerGeneratedAttribute]
+private EventPipeCounterGroup[] <CounterGroups>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <CounterIntervalSeconds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxHistograms>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxTimeSeries>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseSharedSession>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseCounterRateAndValuePayloads>k__BackingField;
+    public EventPipeCounterGroup[] CounterGroups { get; public set; }
+    public float CounterIntervalSeconds { get; public set; }
+    public int MaxHistograms { get; public set; }
+    public int MaxTimeSeries { get; public set; }
+    public bool UseSharedSession { get; public set; }
+    public bool UseCounterRateAndValuePayloads { get; public set; }
+    [CompilerGeneratedAttribute]
+public EventPipeCounterGroup[] get_CounterGroups();
+    [CompilerGeneratedAttribute]
+public void set_CounterGroups(EventPipeCounterGroup[] value);
+    [CompilerGeneratedAttribute]
+public float get_CounterIntervalSeconds();
+    [CompilerGeneratedAttribute]
+public void set_CounterIntervalSeconds(float value);
+    [CompilerGeneratedAttribute]
+public int get_MaxHistograms();
+    [CompilerGeneratedAttribute]
+public void set_MaxHistograms(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxTimeSeries();
+    [CompilerGeneratedAttribute]
+public void set_MaxTimeSeries(int value);
+    [CompilerGeneratedAttribute]
+public bool get_UseSharedSession();
+    [CompilerGeneratedAttribute]
+public void set_UseSharedSession(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_UseCounterRateAndValuePayloads();
+    [CompilerGeneratedAttribute]
+public void set_UseCounterRateAndValuePayloads(bool value);
+}
+[FlagsAttribute]
+public enum Microsoft.Diagnostics.Monitoring.EventPipe.MetricType : Enum {
+    public int value__;
+    public static MetricType EventCounter;
+    public static MetricType Meter;
+    public static MetricType All;
+}
+public abstract class Microsoft.Diagnostics.Monitoring.EventPipe.MonitoringSourceConfiguration : object {
+    public static long DiagnosticSourceEventSourceMessages;
+    public static long DiagnosticSourceEventSourceEvents;
+    public static string MicrosoftExtensionsLoggingProviderName;
+    public static string SystemRuntimeEventSourceName;
+    public static string MicrosoftAspNetCoreHostingEventSourceName;
+    public static string GrpcAspNetCoreServer;
+    public static string DiagnosticSourceEventSource;
+    public static string TplEventSource;
+    public static string SampleProfilerProviderName;
+    public static string EventPipeProviderName;
+    public static string SystemDiagnosticsMetricsProviderName;
+    [CompilerGeneratedAttribute]
+private long <RundownKeyword>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RetryStrategy <RetryStrategy>k__BackingField;
+    public static IEnumerable`1<string> DefaultMetricProviders { get; }
+    public long RundownKeyword { get; public set; }
+    public int BufferSizeInMB { get; }
+    public RetryStrategy RetryStrategy { get; public set; }
+    public static IEnumerable`1<string> get_DefaultMetricProviders();
+    public abstract virtual IList`1<EventPipeProvider> GetProviders();
+    [CompilerGeneratedAttribute]
+public virtual long get_RundownKeyword();
+    [CompilerGeneratedAttribute]
+public virtual void set_RundownKeyword(long value);
+    public virtual int get_BufferSizeInMB();
+    [CompilerGeneratedAttribute]
+public virtual RetryStrategy get_RetryStrategy();
+    [CompilerGeneratedAttribute]
+public virtual void set_RetryStrategy(RetryStrategy value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.PassthroughStream : Stream {
+    private Stream _sourceStream;
+    private Stream _destinationStream;
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public bool CanTimeout { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int ReadTimeout { get; public set; }
+    public PassthroughStream(Stream sourceStream, Stream destinationStream, int bufferSize, bool leaveDestinationStreamOpen);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual int Read(Span`1<byte> buffer);
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.PassthroughStream/<ReadAsync>d__6")]
+public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual bool get_CanTimeout();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual int get_ReadTimeout();
+    public virtual void set_ReadTimeout(int value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void CopyTo(Stream destination, int bufferSize);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    public virtual void Flush();
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.PassthroughStream/<DisposeAsync>d__30")]
+public virtual ValueTask DisposeAsync();
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__0();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.PercentilePayload : MeterPayload {
+    public PercentilePayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, double value, DateTime timestamp);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.ProviderAndCounter : ValueType {
+    [CompilerGeneratedAttribute]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CounterName>k__BackingField;
+    public string ProviderName { get; public set; }
+    public string CounterName { get; public set; }
+    public ProviderAndCounter(string ProviderName, string CounterName);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public void set_ProviderName(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public string get_CounterName();
+    [CompilerGeneratedAttribute]
+public void set_CounterName(string value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual string ToString();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+private bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(ProviderAndCounter left, ProviderAndCounter right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(ProviderAndCounter left, ProviderAndCounter right);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool Equals(ProviderAndCounter other);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public void Deconstruct(String& ProviderName, String& CounterName);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Quantile : ValueType {
+    [CompilerGeneratedAttribute]
+private double <Percentage>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <Value>k__BackingField;
+    public double Percentage { get; public set; }
+    public double Value { get; public set; }
+    public Quantile(double Percentage, double Value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public double get_Percentage();
+    [CompilerGeneratedAttribute]
+public void set_Percentage(double value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public double get_Value();
+    [CompilerGeneratedAttribute]
+public void set_Value(double value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual string ToString();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+private bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(Quantile left, Quantile right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(Quantile left, Quantile right);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public sealed virtual bool Equals(Quantile other);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public void Deconstruct(Double& Percentage, Double& Value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.RatePayload : MeterPayload {
+    public RatePayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, double rate, double intervalSecs, DateTime timestamp);
+}
+public enum Microsoft.Diagnostics.Monitoring.EventPipe.RetryStrategy : Enum {
+    public int value__;
+    public static RetryStrategy NothingToRetry;
+    public static RetryStrategy DropKeywordKeepRundown;
+    public static RetryStrategy DropKeywordDropRundown;
+    public static RetryStrategy ForbiddenToRetry;
+}
+public class Microsoft.Diagnostics.Monitoring.EventPipe.SampleProfilerConfiguration : MonitoringSourceConfiguration {
+    public int BufferSizeInMB { get; }
+    public virtual IList`1<EventPipeProvider> GetProviders();
+    public virtual int get_BufferSizeInMB();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.StreamLeaveOpenWrapper : Stream {
+    private Stream _baseStream;
+    public bool CanSeek { get; }
+    public bool CanTimeout { get; }
+    public bool CanRead { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public int ReadTimeout { get; public set; }
+    public int WriteTimeout { get; public set; }
+    public StreamLeaveOpenWrapper(Stream baseStream);
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanTimeout();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanWrite();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual int get_ReadTimeout();
+    public virtual void set_ReadTimeout(int value);
+    public virtual int get_WriteTimeout();
+    public virtual void set_WriteTimeout(int value);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    public virtual int Read(Span`1<byte> buffer);
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual int ReadByte();
+    public virtual Task`1<int> ReadAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual ValueTask`1<int> ReadAsync(Memory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual void Flush();
+    public virtual void SetLength(long value);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+    public virtual void Write(ReadOnlySpan`1<byte> buffer);
+    public virtual Task WriteAsync(Byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+    public virtual ValueTask WriteAsync(ReadOnlyMemory`1<byte> buffer, CancellationToken cancellationToken);
+    public virtual void WriteByte(byte value);
+    public virtual Task FlushAsync(CancellationToken cancellationToken);
+    public virtual void CopyTo(Stream destination, int bufferSize);
+    public virtual Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.StreamLeaveOpenWrapper/<DisposeAsync>d__37")]
+public virtual ValueTask DisposeAsync();
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private ValueTask <>n__0();
+}
+[ExtensionAttribute]
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.TraceEventExtensions : object {
+    private static Dictionary`2<ProviderAndCounter, CounterMetadata> counterMetadataByName;
+    private static Dictionary`2<int, CounterMetadata> counterMetadataById;
+    private static HashSet`1<string> inactiveSharedSessions;
+    private static TraceEventExtensions();
+    private static CounterMetadata AddCounterMetadata(string providerName, string counterName, Nullable`1<int> id, string meterTags, string instrumentTags, string scopeHash);
+    private static CounterMetadata GetCounterMetadata(string providerName, string counterName, Nullable`1<int> id);
+    [ExtensionAttribute]
+public static bool TryGetCounterPayload(TraceEvent traceEvent, CounterConfiguration counterConfiguration, ICounterPayload& payload);
+    private static void HandleGauge(TraceEvent obj, CounterConfiguration counterConfiguration, ICounterPayload& payload);
+    private static void HandleBeginInstrumentReporting(TraceEvent traceEvent, CounterConfiguration counterConfiguration, ICounterPayload& payload);
+    private static void HandleCounterRate(TraceEvent traceEvent, CounterConfiguration counterConfiguration, ICounterPayload& payload);
+    private static void HandleUpDownCounterValue(TraceEvent traceEvent, CounterConfiguration configuration, ICounterPayload& payload);
+    private static void HandleHistogram(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    private static void HandleHistogramLimitReached(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    private static void HandleTimeSeriesLimitReached(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    private static void HandleError(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    private static void HandleMultipleSessionsNotSupportedError(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    internal static bool TryCreateSharedSessionConfiguredIncorrectlyMessage(TraceEvent obj, string clientId, String& message);
+    private static void HandleMultipleSessionsConfiguredIncorrectlyError(TraceEvent obj, string clientId, ICounterPayload& payload);
+    private static void HandleObservableInstrumentCallbackError(TraceEvent obj, CounterConfiguration configuration, ICounterPayload& payload);
+    private static List`1<Quantile> ParseQuantiles(string quantileList);
+    private static int GetInterval(string series);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestCountTrigger : AspNetTrigger`1<AspNetRequestCountTriggerSettings> {
+    private SlidingWindow _window;
+    public AspNetRequestCountTrigger(AspNetRequestCountTriggerSettings settings);
+    protected virtual bool ActivityStart(DateTime timestamp, string activityId);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestCountTriggerFactory : object {
+    public sealed virtual ITraceEventTrigger Create(AspNetRequestCountTriggerSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestCountTriggerSettings : AspNetTriggerSettings {
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestDurationTrigger : AspNetTrigger`1<AspNetRequestDurationTriggerSettings> {
+    private long _durationTicks;
+    private static TimeSpan HeartbeatIntervalSeconds;
+    private SlidingWindow _window;
+    private Dictionary`2<string, DateTime> _requests;
+    private DateTime _lastHeartbeatProcessed;
+    public AspNetRequestDurationTrigger(AspNetRequestDurationTriggerSettings settings);
+    private static AspNetRequestDurationTrigger();
+    protected virtual bool ActivityStart(DateTime timestamp, string activityId);
+    protected virtual bool Heartbeat(DateTime timestamp);
+    protected virtual bool ActivityStop(DateTime timestamp, string activityId, long durationTicks, int statusCode);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestDurationTriggerFactory : object {
+    public sealed virtual ITraceEventTrigger Create(AspNetRequestDurationTriggerSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestDurationTriggerSettings : AspNetTriggerSettings {
+    public static string RequestDuration_MaxValue;
+    public static string RequestDuration_MinValue;
+    [CompilerGeneratedAttribute]
+private TimeSpan <RequestDuration>k__BackingField;
+    [RangeAttribute("System.TimeSpan", "00:00:00", "01:00:00")]
+public TimeSpan RequestDuration { get; public set; }
+    [CompilerGeneratedAttribute]
+public TimeSpan get_RequestDuration();
+    [CompilerGeneratedAttribute]
+public void set_RequestDuration(TimeSpan value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestStatusTrigger : AspNetTrigger`1<AspNetRequestStatusTriggerSettings> {
+    private SlidingWindow _window;
+    public AspNetRequestStatusTrigger(AspNetRequestStatusTriggerSettings settings);
+    protected virtual bool ActivityStop(DateTime timestamp, string activityId, long durationTicks, int statusCode);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestStatusTriggerFactory : object {
+    public sealed virtual ITraceEventTrigger Create(AspNetRequestStatusTriggerSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetRequestStatusTriggerSettings : AspNetTriggerSettings {
+    [CompilerGeneratedAttribute]
+private StatusCodeRange[] <StatusCodes>k__BackingField;
+    [RequiredAttribute]
+[MinLengthAttribute("1")]
+[CustomValidationAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.StatusCodeRangeValidator", "ValidateStatusCodes")]
+public StatusCodeRange[] StatusCodes { get; public set; }
+    [CompilerGeneratedAttribute]
+public StatusCodeRange[] get_StatusCodes();
+    [CompilerGeneratedAttribute]
+public void set_StatusCodes(StatusCodeRange[] value);
+}
+internal abstract class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetTrigger`1 : object {
+    private static string ActivityId;
+    private static string Path;
+    private static string StatusCode;
+    private static string ActivityDuration;
+    private static string Activity1Start;
+    private static string Activity1Stop;
+    private static Guid MicrosoftAspNetCoreHostingGuid;
+    private static Dictionary`2<string, IReadOnlyCollection`1<string>> _providerMap;
+    private GlobMatcher _matcher;
+    [CompilerGeneratedAttribute]
+private TSettings <Settings>k__BackingField;
+    public TSettings Settings { get; }
+    protected AspNetTrigger`1(TSettings settings);
+    private static AspNetTrigger`1();
+    private static void Validate(TSettings settings);
+    public sealed virtual IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> GetProviderEventMap();
+    [CompilerGeneratedAttribute]
+public TSettings get_Settings();
+    protected virtual bool ActivityStart(DateTime timestamp, string activityId);
+    protected virtual bool ActivityStop(DateTime timestamp, string activityId, long durationTicks, int statusCode);
+    protected virtual bool Heartbeat(DateTime timestamp);
+    public sealed virtual bool HasSatisfiedCondition(TraceEvent traceEvent);
+    internal bool HasSatisfiedCondition(DateTime timestamp, AspnetTriggerEventType eventType, string activityId, string path, Nullable`1<int> statusCode, Nullable`1<long> duration);
+}
+internal enum Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspnetTriggerEventType : Enum {
+    public int value__;
+    public static AspnetTriggerEventType Start;
+    public static AspnetTriggerEventType Stop;
+    public static AspnetTriggerEventType Heartbeat;
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.AspNetTriggerSettings : object {
+    public static string SlidingWindowDuration_MaxValue;
+    public static string SlidingWindowDuration_MinValue;
+    [CompilerGeneratedAttribute]
+private TimeSpan <SlidingWindowDuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <RequestCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <IncludePaths>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <ExcludePaths>k__BackingField;
+    [RangeAttribute("System.TimeSpan", "00:00:01", "1.00:00:00")]
+public TimeSpan SlidingWindowDuration { get; public set; }
+    [RangeAttribute("1", "9,223372036854776E+18")]
+public long RequestCount { get; public set; }
+    [CustomValidationAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.IncludesPathValidator", "ValidatePath")]
+public String[] IncludePaths { get; public set; }
+    [CustomValidationAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.ExcludesPathValidator", "ValidatePath")]
+public String[] ExcludePaths { get; public set; }
+    [CompilerGeneratedAttribute]
+public TimeSpan get_SlidingWindowDuration();
+    [CompilerGeneratedAttribute]
+public void set_SlidingWindowDuration(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public long get_RequestCount();
+    [CompilerGeneratedAttribute]
+public void set_RequestCount(long value);
+    [CompilerGeneratedAttribute]
+public String[] get_IncludePaths();
+    [CompilerGeneratedAttribute]
+public void set_IncludePaths(String[] value);
+    [CompilerGeneratedAttribute]
+public String[] get_ExcludePaths();
+    [CompilerGeneratedAttribute]
+public void set_ExcludePaths(String[] value);
+}
+public static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.ExcludesPathValidator : object {
+    private static String[] _validationMembers;
+    private static ExcludesPathValidator();
+    public static ValidationResult ValidatePath(String[] paths);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.GlobMatcher : object {
+    private Regex _includeRegex;
+    private Regex _excludeRegex;
+    private static string EscapedGlobstarDirectory;
+    private static string GlobstarDirectoryRegex;
+    private static string EscapedWildcard;
+    private static string WildcardRegex;
+    private static string StartRegex;
+    private static string EndRegex;
+    private static TimeSpan Timeout;
+    public GlobMatcher(String[] includes, String[] excludes);
+    private static GlobMatcher();
+    private static Regex CreateRegex(String[] paths);
+    private static string TransformPattern(string globPattern);
+    public bool Match(string input);
+}
+public static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.IncludesPathValidator : object {
+    private static String[] _validationMembers;
+    private static IncludesPathValidator();
+    public static ValidationResult ValidatePath(String[] paths);
+}
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.PathValidator : object {
+    public static ValidationResult ValidatePath(String[] paths, String[] members);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.StatusCodeRange : ValueType {
+    [CompilerGeneratedAttribute]
+private int <Min>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Max>k__BackingField;
+    public int Min { get; public set; }
+    public int Max { get; public set; }
+    public StatusCodeRange(int min);
+    public StatusCodeRange(int min, int max);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public int get_Min();
+    [CompilerGeneratedAttribute]
+public void set_Min(int value);
+    [IsReadOnlyAttribute]
+[CompilerGeneratedAttribute]
+public int get_Max();
+    [CompilerGeneratedAttribute]
+public void set_Max(int value);
+}
+public static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.AspNet.StatusCodeRangeValidator : object {
+    private static String[] _validationMembers;
+    private static StatusCodeRangeValidator();
+    public static ValidationResult ValidateStatusCodes(object statusCodes);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.EventCounter.EventCounterTrigger : object {
+    private static ConcurrentDictionary`2<string, IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>>> _eventMapCache;
+    private static IReadOnlyCollection`1<string> _eventProviderEvents;
+    private CounterFilter _filter;
+    private EventCounterTriggerImpl _impl;
+    private string _providerName;
+    private CounterConfiguration _counterConfiguration;
+    public EventCounterTrigger(EventCounterTriggerSettings settings);
+    private static EventCounterTrigger();
+    public sealed virtual IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> GetProviderEventMap();
+    public sealed virtual bool HasSatisfiedCondition(TraceEvent traceEvent);
+    public static MonitoringSourceConfiguration CreateConfiguration(EventCounterTriggerSettings settings);
+    private static void Validate(EventCounterTriggerSettings settings);
+    private IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> CreateEventMapForProvider(string providerName);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.EventCounter.EventCounterTriggerFactory : object {
+    public sealed virtual ITraceEventTrigger Create(EventCounterTriggerSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.EventCounter.EventCounterTriggerImpl : object {
+    private long _intervalTicks;
+    private Func`2<double, bool> _valueFilter;
+    private long _windowTicks;
+    private Nullable`1<long> _latestTicks;
+    private Nullable`1<long> _targetTicks;
+    public EventCounterTriggerImpl(EventCounterTriggerSettings settings);
+    public bool HasSatisfiedCondition(ICounterPayload payload);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.EventCounter.EventCounterTriggerSettings : object {
+    internal static float CounterIntervalSeconds_MaxValue;
+    internal static float CounterIntervalSeconds_MinValue;
+    internal static string EitherGreaterThanLessThanMessage;
+    internal static string GreaterThanMustBeLessThanLessThanMessage;
+    internal static string SlidingWindowDuration_MaxValue;
+    internal static string SlidingWindowDuration_MinValue;
+    [CompilerGeneratedAttribute]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CounterName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <GreaterThan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <LessThan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <SlidingWindowDuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <CounterIntervalSeconds>k__BackingField;
+    [RequiredAttribute]
+public string ProviderName { get; public set; }
+    [RequiredAttribute]
+public string CounterName { get; public set; }
+    public Nullable`1<double> GreaterThan { get; public set; }
+    public Nullable`1<double> LessThan { get; public set; }
+    [RangeAttribute("System.TimeSpan", "00:00:01", "1.00:00:00")]
+public TimeSpan SlidingWindowDuration { get; public set; }
+    [RangeAttribute("1", "86400")]
+public float CounterIntervalSeconds { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public void set_ProviderName(string value);
+    [CompilerGeneratedAttribute]
+public string get_CounterName();
+    [CompilerGeneratedAttribute]
+public void set_CounterName(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_GreaterThan();
+    [CompilerGeneratedAttribute]
+public void set_GreaterThan(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_LessThan();
+    [CompilerGeneratedAttribute]
+public void set_LessThan(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_SlidingWindowDuration();
+    [CompilerGeneratedAttribute]
+public void set_SlidingWindowDuration(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public float get_CounterIntervalSeconds();
+    [CompilerGeneratedAttribute]
+public void set_CounterIntervalSeconds(float value);
+    private sealed virtual override IEnumerable`1<ValidationResult> System.ComponentModel.DataAnnotations.IValidatableObject.Validate(ValidationContext validationContext);
+}
+internal interface Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.ITraceEventTrigger {
+    public abstract virtual IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> GetProviderEventMap();
+    public abstract virtual bool HasSatisfiedCondition(TraceEvent traceEvent);
+}
+internal interface Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.ITraceEventTriggerFactory`1 {
+    public abstract virtual ITraceEventTrigger Create(TSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.EventPipeTriggerPipeline`1 : EventSourcePipeline`1<EventPipeTriggerPipelineSettings`1<TSettings>> {
+    private Action`1<TraceEvent> _callback;
+    private TraceEventTriggerPipeline _pipeline;
+    private ITraceEventTrigger _trigger;
+    public EventPipeTriggerPipeline`1(DiagnosticsClient client, EventPipeTriggerPipelineSettings`1<TSettings> settings, Action`1<TraceEvent> callback);
+    protected virtual MonitoringSourceConfiguration CreateConfiguration();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.EventPipeTriggerPipeline`1/<OnEventSourceAvailable>d__5")]
+protected virtual Task OnEventSourceAvailable(EventPipeEventSource eventSource, Func`1<Task> stopSessionAsync, CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.EventPipeTriggerPipeline`1/<OnStop>d__6")]
+protected virtual Task OnStop(CancellationToken token);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.EventPipeTriggerPipeline`1/<OnCleanup>d__7")]
+protected virtual Task OnCleanup();
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task <>n__0(CancellationToken token);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task <>n__1();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.EventPipeTriggerPipelineSettings`1 : EventSourcePipelineSettings {
+    [CompilerGeneratedAttribute]
+private MonitoringSourceConfiguration <Configuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITraceEventTriggerFactory`1<TSettings> <TriggerFactory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TSettings <TriggerSettings>k__BackingField;
+    public MonitoringSourceConfiguration Configuration { get; public set; }
+    public ITraceEventTriggerFactory`1<TSettings> TriggerFactory { get; public set; }
+    public TSettings TriggerSettings { get; public set; }
+    [CompilerGeneratedAttribute]
+public MonitoringSourceConfiguration get_Configuration();
+    [CompilerGeneratedAttribute]
+public void set_Configuration(MonitoringSourceConfiguration value);
+    [CompilerGeneratedAttribute]
+public ITraceEventTriggerFactory`1<TSettings> get_TriggerFactory();
+    [CompilerGeneratedAttribute]
+public void set_TriggerFactory(ITraceEventTriggerFactory`1<TSettings> value);
+    [CompilerGeneratedAttribute]
+public TSettings get_TriggerSettings();
+    [CompilerGeneratedAttribute]
+public void set_TriggerSettings(TSettings value);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.TraceEventTriggerPipeline : Pipeline {
+    private Action`1<TraceEvent> _callback;
+    private TaskCompletionSource`1<object> _completionSource;
+    private TraceEventSource _eventSource;
+    private ITraceEventTrigger _trigger;
+    public TraceEventTriggerPipeline(TraceEventSource eventSource, ITraceEventTrigger trigger, Action`1<TraceEvent> callback);
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Pipelines.TraceEventTriggerPipeline/<OnRun>d__5")]
+protected virtual Task OnRun(CancellationToken token);
+    protected virtual Task OnStop(CancellationToken token);
+    protected virtual Task OnCleanup();
+    private void TraceEventCallback(TraceEvent obj);
+}
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Shared.SharedTriggerImplHelper : object {
+    public static bool HasSatisfiedCondition(Nullable`1& latestTicks, Nullable`1& targetTicks, long windowTicks, long intervalTicks, ICounterPayload payload, bool passesValueFilter);
+    public static void SetDefaultValueFilter(Func`2& valueFilter, Nullable`1<double> greaterThan, Nullable`1<double> lessThan);
+    public static void SetIntervalAndWindowTicks(Int64& intervalTicks, Int64& windowTicks, float counterIntervalSeconds, long slidingWindowDurationTicks);
+}
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Shared.SharedTriggerSettingsConstants : object {
+    internal static float CounterIntervalSeconds_MaxValue;
+    internal static float CounterIntervalSeconds_MinValue;
+    internal static int Percentage_MaxValue;
+    internal static int Percentage_MinValue;
+    internal static string EitherGreaterThanLessThanMessage;
+    internal static string GreaterThanMustBeLessThanLessThanMessage;
+    internal static string SlidingWindowDuration_MaxValue;
+    internal static string SlidingWindowDuration_MinValue;
+}
+internal static class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.Shared.SharedTriggerSettingsValidation : object {
+    public static IEnumerable`1<ValidationResult> Validate(Nullable`1<double> GreaterThan, Nullable`1<double> LessThan);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.SlidingWindow : object {
+    private TimeSpan _interval;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private LinkedList`1<ValueTuple`2<DateTime, int>> _timeData;
+    private TimeSpan _window;
+    [CompilerGeneratedAttribute]
+private int <Count>k__BackingField;
+    public int Count { get; private set; }
+    public SlidingWindow(TimeSpan slidingWindow);
+    [CompilerGeneratedAttribute]
+public int get_Count();
+    [CompilerGeneratedAttribute]
+private void set_Count(int value);
+    public void AddDataPoint(DateTime timestamp);
+    public void Clear();
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.SystemDiagnosticsMetrics.SystemDiagnosticsMetricsTrigger : object {
+    private static ConcurrentDictionary`2<string, IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>>> _eventMapCache;
+    private CounterFilter _filter;
+    private SystemDiagnosticsMetricsTriggerImpl _impl;
+    private string _meterName;
+    private string _clientId;
+    private string _sessionId;
+    private CounterConfiguration _counterConfiguration;
+    public SystemDiagnosticsMetricsTrigger(SystemDiagnosticsMetricsTriggerSettings settings);
+    private static SystemDiagnosticsMetricsTrigger();
+    public sealed virtual IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> GetProviderEventMap();
+    public sealed virtual bool HasSatisfiedCondition(TraceEvent traceEvent);
+    public static MetricSourceConfiguration CreateConfiguration(SystemDiagnosticsMetricsTriggerSettings settings);
+    private static void Validate(SystemDiagnosticsMetricsTriggerSettings settings);
+    private IReadOnlyDictionary`2<string, IReadOnlyCollection`1<string>> CreateEventMapForProvider(string providerName);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.SystemDiagnosticsMetrics.SystemDiagnosticsMetricsTriggerFactory : object {
+    public sealed virtual ITraceEventTrigger Create(SystemDiagnosticsMetricsTriggerSettings settings);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.SystemDiagnosticsMetrics.SystemDiagnosticsMetricsTriggerImpl : object {
+    private long _intervalTicks;
+    private Func`2<double, bool> _valueFilterDefault;
+    private Func`2<Dictionary`2<int, double>, bool> _valueFilterHistogram;
+    private long _windowTicks;
+    private Nullable`1<long> _latestTicks;
+    private Nullable`1<long> _targetTicks;
+    public SystemDiagnosticsMetricsTriggerImpl(SystemDiagnosticsMetricsTriggerSettings settings);
+    public bool HasSatisfiedCondition(ICounterPayload payload);
+    private static Dictionary`2<int, double> CreatePayloadDictionary(AggregatePercentilePayload aggregatePercentilePayload);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.Triggers.SystemDiagnosticsMetrics.SystemDiagnosticsMetricsTriggerSettings : object {
+    [CompilerGeneratedAttribute]
+private string <MeterName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InstrumentName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <GreaterThan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<double> <LessThan>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <HistogramPercentile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <SlidingWindowDuration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <CounterIntervalSeconds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxHistograms>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxTimeSeries>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SessionId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseSharedSession>k__BackingField;
+    [RequiredAttribute]
+public string MeterName { get; public set; }
+    [RequiredAttribute]
+public string InstrumentName { get; public set; }
+    public Nullable`1<double> GreaterThan { get; public set; }
+    public Nullable`1<double> LessThan { get; public set; }
+    [RangeAttribute("0", "100")]
+public Nullable`1<int> HistogramPercentile { get; public set; }
+    [RangeAttribute("System.TimeSpan", "00:00:01", "1.00:00:00")]
+public TimeSpan SlidingWindowDuration { get; public set; }
+    [RangeAttribute("1", "86400")]
+public float CounterIntervalSeconds { get; public set; }
+    public int MaxHistograms { get; public set; }
+    public int MaxTimeSeries { get; public set; }
+    public string ClientId { get; public set; }
+    public string SessionId { get; public set; }
+    public bool UseSharedSession { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_MeterName();
+    [CompilerGeneratedAttribute]
+public void set_MeterName(string value);
+    [CompilerGeneratedAttribute]
+public string get_InstrumentName();
+    [CompilerGeneratedAttribute]
+public void set_InstrumentName(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_GreaterThan();
+    [CompilerGeneratedAttribute]
+public void set_GreaterThan(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<double> get_LessThan();
+    [CompilerGeneratedAttribute]
+public void set_LessThan(Nullable`1<double> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_HistogramPercentile();
+    [CompilerGeneratedAttribute]
+public void set_HistogramPercentile(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_SlidingWindowDuration();
+    [CompilerGeneratedAttribute]
+public void set_SlidingWindowDuration(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public float get_CounterIntervalSeconds();
+    [CompilerGeneratedAttribute]
+public void set_CounterIntervalSeconds(float value);
+    [CompilerGeneratedAttribute]
+public int get_MaxHistograms();
+    [CompilerGeneratedAttribute]
+public void set_MaxHistograms(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxTimeSeries();
+    [CompilerGeneratedAttribute]
+public void set_MaxTimeSeries(int value);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public void set_ClientId(string value);
+    [CompilerGeneratedAttribute]
+public string get_SessionId();
+    [CompilerGeneratedAttribute]
+public void set_SessionId(string value);
+    [CompilerGeneratedAttribute]
+public bool get_UseSharedSession();
+    [CompilerGeneratedAttribute]
+public void set_UseSharedSession(bool value);
+    private sealed virtual override IEnumerable`1<ValidationResult> System.ComponentModel.DataAnnotations.IValidatableObject.Validate(ValidationContext validationContext);
+}
+internal class Microsoft.Diagnostics.Monitoring.EventPipe.UpDownCounterPayload : MeterPayload {
+    public UpDownCounterPayload(CounterMetadata counterMetadata, string displayName, string displayUnits, string valueTags, double value, DateTime timestamp);
+}
+internal class PriorityQueue : object {
+    private DataItem[] m_heap;
+    private int m_count;
+    public int Count { get; }
+    public PriorityQueue(int initialSize);
+    public int get_Count();
+    public void Enqueue(NodeIndex item, float priority);
+    public NodeIndex Dequeue(Single& priority);
+    [ConditionalAttribute("DEBUG")]
+private void CheckInvariant();
+}
+public class RefGraph : object {
+    internal NodeListIndex[] m_refsForNodes;
+    internal GrowableArray`1<RefElem> m_links;
+    public RefGraph(Graph graph);
+    public RefNode AllocNodeStorage();
+    public RefNode GetNode(NodeIndex nodeIndex, RefNode storage);
+    public RefNode GetNode(NodeIndex nodeIndex);
+    private void AddRefsTo(NodeIndex refTarget, NodeIndex refSource);
+    private int AddLink(NodeIndex refIdx, int nextIdx);
+}
+public class RefNode : object {
+    internal RefGraph m_graph;
+    internal NodeIndex m_index;
+    internal int m_cur;
+    public int ChildCount { get; }
+    public RefGraph Graph { get; }
+    public NodeIndex Index { get; }
+    internal RefNode(RefGraph refGraph);
+    public NodeIndex GetFirstChildIndex();
+    public NodeIndex GetNextChildIndex();
+    public int get_ChildCount();
+    public RefGraph get_Graph();
+    public NodeIndex get_Index();
+    public bool Contains(NodeIndex node);
+    public virtual string ToString();
+    public void WriteXml(TextWriter writer, string prefix);
+}
+public class SpanningTree : object {
+    private Graph m_graph;
+    private NodeIndex[] m_parent;
+    private string m_priorityRegExs;
+    private Single[] m_typePriorities;
+    private NodeType m_typeStorage;
+    private Node m_nodeStorage;
+    private Node m_childStorage;
+    private Node m_cachedNodeStorage;
+    private TextWriter m_log;
+    public Graph Graph { get; }
+    public string PriorityRegExs { get; public set; }
+    public static string DefaultPriorities { get; }
+    public SpanningTree(Graph graph, TextWriter log);
+    public Graph get_Graph();
+    public string get_PriorityRegExs();
+    public void set_PriorityRegExs(string value);
+    public static string get_DefaultPriorities();
+    public NodeIndex Parent(NodeIndex node);
+    public void ForEach(Action`1<NodeIndex> callback);
+    private void AddOrphansToQueue(PriorityQueue nodesToVisit);
+    private void MarkDecendentsIgnoringCycles(NodeIndex nodeIndex, int recursionCount);
+    private void FreeNodeStorage(Node node);
+    private Node AllocNodeStorage();
+    internal static string ToDotNetRegEx(string str);
+    private void SetTypePriorities(string priorityPats);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
+internal static class XmlGcHeapDump : object {
+    public static GCHeapDump ReadGCHeapDumpFromXml(string fileName);
+    public static GCHeapDump ReadGCHeapDumpFromXml(XmlReader reader);
+    public static MemoryGraph ReadMemoryGraphFromXml(XmlReader reader);
+    internal static void WriteGCDumpToXml(GCHeapDump gcDump, StreamWriter writer);
+    private static void ReadCountMultipliersByTypeFromXml(XmlReader reader, List`1<float> countMultipliers);
+    private static void ReadNodeTypesFromXml(XmlReader reader, MemoryGraph graph);
+    private static void ReadNodesFromXml(XmlReader reader, MemoryGraph graph);
+    private static int FetchInt(XmlReader reader, string attributeName, int defaultValue);
+    private static float FetchFloat(XmlReader reader, string attributeName, float defaultValue);
+}

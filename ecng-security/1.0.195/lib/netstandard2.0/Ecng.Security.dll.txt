@@ -1,0 +1,173 @@
+public enum Ecng.Security.AlgorithmTypes : Enum {
+    public int value__;
+    public static AlgorithmTypes Symmetric;
+    public static AlgorithmTypes Asymmetric;
+    public static AlgorithmTypes Hash;
+}
+public class Ecng.Security.AnonymousAuthorization : object {
+    public virtual ValueTask`1<string> ValidateCredentials(string login, SecureString password, IPAddress clientAddress, CancellationToken cancellationToken);
+}
+public class Ecng.Security.CryptoAlgorithm : object {
+    private SymmetricCryptographer _symmetric;
+    private AsymmetricCryptographer _asymmetric;
+    private HashCryptographer _hash;
+    public static string DefaultSymmetricAlgoName;
+    public static string DefaultAsymmetricAlgoName;
+    public static string DefaultHashAlgoName;
+    public CryptoAlgorithm(SymmetricCryptographer symmetric);
+    public CryptoAlgorithm(AsymmetricCryptographer asymmetric);
+    public CryptoAlgorithm(HashCryptographer hash);
+    public static CryptoAlgorithm CreateAssymetricVerifier(Byte[] publicKey);
+    public static CryptoAlgorithm Create(AlgorithmTypes type, Byte[][] keys);
+    public Byte[] Encrypt(Byte[] data);
+    public Byte[] Decrypt(Byte[] data);
+    public Byte[] CreateSignature(Byte[] data);
+    public bool VerifySignature(Byte[] data, Byte[] signature);
+    public sealed virtual void Dispose();
+}
+public class Ecng.Security.Cryptographers.AsymmetricCryptographer : Disposable {
+    private AsymmetricAlgorithmWrapper _encryptor;
+    private AsymmetricAlgorithmWrapper _decryptor;
+    public AsymmetricCryptographer(AsymmetricAlgorithm algorithm, Byte[] publicKey, Byte[] privateKey);
+    public AsymmetricCryptographer(AsymmetricAlgorithm algorithm, Byte[] publicKey);
+    protected AsymmetricCryptographer(AsymmetricAlgorithm encryptor, AsymmetricAlgorithm decryptor);
+    private AsymmetricCryptographer(AsymmetricAlgorithmWrapper encryptor, AsymmetricAlgorithmWrapper decryptor);
+    public static AsymmetricCryptographer CreateFromPublicKey(AsymmetricAlgorithm algorithm, Byte[] publicKey);
+    public static AsymmetricCryptographer CreateFromPrivateKey(AsymmetricAlgorithm algorithm, Byte[] privateKey);
+    public Byte[] Encrypt(Byte[] plainText);
+    public Byte[] Decrypt(Byte[] encryptedText);
+    protected virtual void DisposeManaged();
+    public Byte[] CreateSignature(Byte[] data);
+    public bool VerifySignature(Byte[] data, Byte[] signature);
+}
+public class Ecng.Security.Cryptographers.HashCryptographer : Disposable {
+    private HashAlgorithm _algorithm;
+    public HashCryptographer(HashAlgorithm algorithm, Byte[] key);
+    protected virtual void DisposeManaged();
+    public Byte[] ComputeHash(Byte[] plaintext);
+}
+public class Ecng.Security.Cryptographers.SymmetricCryptographer : Disposable {
+    private SymmetricAlgorithm _algorithm;
+    private int IVLength { get; }
+    public SymmetricCryptographer(SymmetricAlgorithm algorithm, Byte[] key);
+    protected virtual void DisposeManaged();
+    public Byte[] Encrypt(Byte[] plaintext);
+    public Byte[] Decrypt(Byte[] encryptedText);
+    private static Byte[] Transform(ICryptoTransform transform, Byte[] buffer);
+    public static void ZeroOutBytes(Byte[] bytes);
+    private int get_IVLength();
+    private Byte[] ExtractIV(Byte[] encryptedText);
+}
+public class Ecng.Security.Cryptographers.X509Cryptographer : AsymmetricCryptographer {
+    public X509Cryptographer(X509Certificate2 certificate);
+}
+[ExtensionAttribute]
+public static class Ecng.Security.CryptoHelper : object {
+    private static int _keySize;
+    private static int _derivationIterations;
+    [ExtensionAttribute]
+public static Byte[] FromRsa(RSAParameters param);
+    [ExtensionAttribute]
+public static RSAParameters ToRsa(Byte[] key);
+    private static void WriteByteArray(Stream stream, Byte[] array);
+    private static Byte[] ReadByteArray(Stream stream);
+    public static RSAParameters GenerateRsa();
+    [ExtensionAttribute]
+public static RSAParameters PublicPart(RSAParameters param);
+    private static SymmetricAlgorithm CreateRijndaelManaged();
+    [ExtensionAttribute]
+public static Byte[] Encrypt(Byte[] plain, string passPhrase, Byte[] salt, Byte[] iv);
+    [ExtensionAttribute]
+private static Byte[] ReadStream(CryptoStream stream, int maxLen);
+    [ExtensionAttribute]
+public static Byte[] Decrypt(Byte[] cipherText, string passPhrase, Byte[] salt, Byte[] iv);
+    private static Byte[] TransformAes(bool isEncrypt, Byte[] inputBytes, string passPhrase, Byte[] salt, Byte[] iv);
+    [ExtensionAttribute]
+public static Byte[] EncryptAes(Byte[] plain, string passPhrase, Byte[] salt, Byte[] iv);
+    [ExtensionAttribute]
+public static Byte[] DecryptAes(Byte[] cipherText, string passPhrase, Byte[] salt, Byte[] iv);
+    [ExtensionAttribute]
+private static string Hash(Byte[] value, HashAlgorithm algo);
+    [ExtensionAttribute]
+public static string Md5(Byte[] value);
+    [ExtensionAttribute]
+public static string Sha256(Byte[] value);
+    [ExtensionAttribute]
+public static string Sha512(Byte[] value);
+    [ExtensionAttribute]
+public static bool IsValid(Secret secret, SecureString password);
+    [ExtensionAttribute]
+public static bool IsValid(Secret secret, string password);
+    [ExtensionAttribute]
+public static Secret CreateSecret(SecureString plainText);
+    [ExtensionAttribute]
+public static Secret CreateSecret(string plainText);
+    [ExtensionAttribute]
+public static Secret CreateSecret(string plainText, Secret secret);
+    [ExtensionAttribute]
+public static Secret CreateSecret(string plainText, Byte[] salt, CryptoAlgorithm algo);
+}
+public interface Ecng.Security.IAuthorization {
+    public abstract virtual ValueTask`1<string> ValidateCredentials(string login, SecureString password, IPAddress clientAddress, CancellationToken cancellationToken);
+}
+public class Ecng.Security.Secret : Equatable`1<Secret> {
+    public static int DefaultSaltSize;
+    [CompilerGeneratedAttribute]
+private Byte[] <Salt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Byte[] <Hash>k__BackingField;
+    [CompilerGeneratedAttribute]
+private CryptoAlgorithm <Algo>k__BackingField;
+    private int _hashCode;
+    public Byte[] Salt { get; public set; }
+    public Byte[] Hash { get; public set; }
+    [JsonIgnoreAttribute]
+public CryptoAlgorithm Algo { get; }
+    public Secret(Byte[] passwordBytes, Byte[] salt, CryptoAlgorithm algo);
+    private static CryptoAlgorithm CreateDefaultAlgo();
+    [CompilerGeneratedAttribute]
+public Byte[] get_Salt();
+    [CompilerGeneratedAttribute]
+public void set_Salt(Byte[] value);
+    [CompilerGeneratedAttribute]
+public Byte[] get_Hash();
+    [CompilerGeneratedAttribute]
+public void set_Hash(Byte[] value);
+    [CompilerGeneratedAttribute]
+public CryptoAlgorithm get_Algo();
+    protected virtual bool OnEquals(Secret other);
+    private int EnsureGetHashCode();
+    public virtual int GetHashCode();
+    public virtual Secret Clone();
+}
+public class Ecng.Security.SimpleAuthorization : AnonymousAuthorization {
+    [CompilerGeneratedAttribute]
+private string <Login>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SecureString <Password>k__BackingField;
+    public string Login { get; public set; }
+    public SecureString Password { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Login();
+    [CompilerGeneratedAttribute]
+public void set_Login(string value);
+    [CompilerGeneratedAttribute]
+public SecureString get_Password();
+    [CompilerGeneratedAttribute]
+public void set_Password(SecureString value);
+    public virtual ValueTask`1<string> ValidateCredentials(string login, SecureString password, IPAddress clientAddress, CancellationToken cancellationToken);
+}
+public class Ecng.Security.UnauthorizedAuthorization : object {
+    private sealed virtual override ValueTask`1<string> Ecng.Security.IAuthorization.ValidateCredentials(string login, SecureString password, IPAddress clientAddress, CancellationToken cancellationToken);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

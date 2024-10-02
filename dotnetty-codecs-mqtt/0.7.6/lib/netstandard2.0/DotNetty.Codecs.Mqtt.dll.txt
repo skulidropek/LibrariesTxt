@@ -1,0 +1,389 @@
+public class DotNetty.Codecs.Mqtt.MqttDecoder : ReplayingDecoder`1<ParseState> {
+    private bool isServer;
+    private int maxMessageSize;
+    public MqttDecoder(bool isServer, int maxMessageSize);
+    protected virtual void Decode(IChannelHandlerContext context, IByteBuffer input, List`1<object> output);
+    private bool TryDecodePacket(IByteBuffer buffer, IChannelHandlerContext context, Packet& packet);
+    private Packet DecodePacketInternal(IByteBuffer buffer, int packetSignature, Int32& remainingLength, IChannelHandlerContext context);
+    private void ValidateServerPacketExpected(int signature);
+    private void ValidateClientPacketExpected(int signature);
+    private bool TryDecodeRemainingLength(IByteBuffer buffer, Int32& value);
+    private static void DecodeConnectPacket(IByteBuffer buffer, ConnectPacket packet, Int32& remainingLength, IChannelHandlerContext context);
+    private static void DecodeConnAckPacket(IByteBuffer buffer, ConnAckPacket packet, Int32& remainingLength);
+    private static void DecodePublishPacket(IByteBuffer buffer, PublishPacket packet, Int32& remainingLength);
+    private static void DecodePacketIdVariableHeader(IByteBuffer buffer, PacketWithId packet, Int32& remainingLength);
+    private static void DecodeSubscribePayload(IByteBuffer buffer, SubscribePacket packet, Int32& remainingLength);
+    private static void ValidateTopicFilter(string topicFilter);
+    private static void DecodeSubAckPayload(IByteBuffer buffer, SubAckPacket packet, Int32& remainingLength);
+    private static void DecodeUnsubscribePayload(IByteBuffer buffer, UnsubscribePacket packet, Int32& remainingLength);
+    private static int DecodeUnsignedShort(IByteBuffer buffer, Int32& remainingLength);
+    private static string DecodeString(IByteBuffer buffer, Int32& remainingLength);
+    private static string DecodeString(IByteBuffer buffer, Int32& remainingLength, int minBytes);
+    private static string DecodeString(IByteBuffer buffer, Int32& remainingLength, int minBytes, int maxBytes);
+    private static void DecreaseRemainingLength(Int32& remainingLength, int minExpectedLength);
+}
+public class DotNetty.Codecs.Mqtt.MqttEncoder : MessageToMessageEncoder`1<Packet> {
+    public static MqttEncoder Instance;
+    private static int PacketIdLength;
+    private static int StringSizeLength;
+    private static int MaxVariableLength;
+    public bool IsSharable { get; }
+    private static MqttEncoder();
+    protected virtual void Encode(IChannelHandlerContext context, Packet message, List`1<object> output);
+    public virtual bool get_IsSharable();
+    internal static void DoEncode(IByteBufferAllocator bufferAllocator, Packet packet, List`1<object> output);
+    private static void EncodeConnectMessage(IByteBufferAllocator bufferAllocator, ConnectPacket packet, List`1<object> output);
+    private static int CalculateConnectFlagsByte(ConnectPacket packet);
+    private static void EncodeConnAckMessage(IByteBufferAllocator bufferAllocator, ConnAckPacket message, List`1<object> output);
+    private static void EncodePublishMessage(IByteBufferAllocator bufferAllocator, PublishPacket packet, List`1<object> output);
+    private static void EncodePacketWithIdOnly(IByteBufferAllocator bufferAllocator, PacketWithId packet, List`1<object> output);
+    private static void EncodeSubscribeMessage(IByteBufferAllocator bufferAllocator, SubscribePacket packet, List`1<object> output);
+    private static void EncodeSubAckMessage(IByteBufferAllocator bufferAllocator, SubAckPacket message, List`1<object> output);
+    private static void EncodeUnsubscribeMessage(IByteBufferAllocator bufferAllocator, UnsubscribePacket packet, List`1<object> output);
+    private static void EncodePacketWithFixedHeaderOnly(IByteBufferAllocator bufferAllocator, Packet packet, List`1<object> output);
+    private static int CalculateFirstByteOfFixedHeader(Packet packet);
+    private static void WriteVariableLengthInt(IByteBuffer buffer, int value);
+    private static Byte[] EncodeStringInUtf8(string s);
+}
+public class DotNetty.Codecs.Mqtt.Packets.ConnAckPacket : Packet {
+    [CompilerGeneratedAttribute]
+private bool <SessionPresent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ConnectReturnCode <ReturnCode>k__BackingField;
+    public PacketType PacketType { get; }
+    public bool SessionPresent { get; public set; }
+    public ConnectReturnCode ReturnCode { get; public set; }
+    public virtual PacketType get_PacketType();
+    [CompilerGeneratedAttribute]
+public bool get_SessionPresent();
+    [CompilerGeneratedAttribute]
+public void set_SessionPresent(bool value);
+    [CompilerGeneratedAttribute]
+public ConnectReturnCode get_ReturnCode();
+    [CompilerGeneratedAttribute]
+public void set_ReturnCode(ConnectReturnCode value);
+}
+public class DotNetty.Codecs.Mqtt.Packets.ConnectPacket : Packet {
+    [CompilerGeneratedAttribute]
+private string <ProtocolName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ProtocolLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CleanSession>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasWill>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QualityOfService <WillQualityOfService>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <WillRetain>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasPassword>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <HasUsername>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <KeepAliveInSeconds>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Username>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Password>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <WillTopicName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IByteBuffer <WillMessage>k__BackingField;
+    public PacketType PacketType { get; }
+    public string ProtocolName { get; public set; }
+    public int ProtocolLevel { get; public set; }
+    public bool CleanSession { get; public set; }
+    public bool HasWill { get; public set; }
+    public QualityOfService WillQualityOfService { get; public set; }
+    public bool WillRetain { get; public set; }
+    public bool HasPassword { get; public set; }
+    public bool HasUsername { get; public set; }
+    public int KeepAliveInSeconds { get; public set; }
+    public string Username { get; public set; }
+    public string Password { get; public set; }
+    public string ClientId { get; public set; }
+    public string WillTopicName { get; public set; }
+    public IByteBuffer WillMessage { get; public set; }
+    public virtual PacketType get_PacketType();
+    [CompilerGeneratedAttribute]
+public string get_ProtocolName();
+    [CompilerGeneratedAttribute]
+public void set_ProtocolName(string value);
+    [CompilerGeneratedAttribute]
+public int get_ProtocolLevel();
+    [CompilerGeneratedAttribute]
+public void set_ProtocolLevel(int value);
+    [CompilerGeneratedAttribute]
+public bool get_CleanSession();
+    [CompilerGeneratedAttribute]
+public void set_CleanSession(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasWill();
+    [CompilerGeneratedAttribute]
+public void set_HasWill(bool value);
+    [CompilerGeneratedAttribute]
+public QualityOfService get_WillQualityOfService();
+    [CompilerGeneratedAttribute]
+public void set_WillQualityOfService(QualityOfService value);
+    [CompilerGeneratedAttribute]
+public bool get_WillRetain();
+    [CompilerGeneratedAttribute]
+public void set_WillRetain(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasPassword();
+    [CompilerGeneratedAttribute]
+public void set_HasPassword(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_HasUsername();
+    [CompilerGeneratedAttribute]
+public void set_HasUsername(bool value);
+    [CompilerGeneratedAttribute]
+public int get_KeepAliveInSeconds();
+    [CompilerGeneratedAttribute]
+public void set_KeepAliveInSeconds(int value);
+    [CompilerGeneratedAttribute]
+public string get_Username();
+    [CompilerGeneratedAttribute]
+public void set_Username(string value);
+    [CompilerGeneratedAttribute]
+public string get_Password();
+    [CompilerGeneratedAttribute]
+public void set_Password(string value);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public void set_ClientId(string value);
+    [CompilerGeneratedAttribute]
+public string get_WillTopicName();
+    [CompilerGeneratedAttribute]
+public void set_WillTopicName(string value);
+    [CompilerGeneratedAttribute]
+public IByteBuffer get_WillMessage();
+    [CompilerGeneratedAttribute]
+public void set_WillMessage(IByteBuffer value);
+}
+public enum DotNetty.Codecs.Mqtt.Packets.ConnectReturnCode : Enum {
+    public int value__;
+    public static ConnectReturnCode Accepted;
+    public static ConnectReturnCode RefusedUnacceptableProtocolVersion;
+    public static ConnectReturnCode RefusedIdentifierRejected;
+    public static ConnectReturnCode RefusedServerUnavailable;
+    public static ConnectReturnCode RefusedBadUsernameOrPassword;
+    public static ConnectReturnCode RefusedNotAuthorized;
+}
+public class DotNetty.Codecs.Mqtt.Packets.DisconnectPacket : Packet {
+    public static DisconnectPacket Instance;
+    public PacketType PacketType { get; }
+    private static DisconnectPacket();
+    public virtual PacketType get_PacketType();
+}
+public abstract class DotNetty.Codecs.Mqtt.Packets.Packet : object {
+    public PacketType PacketType { get; }
+    public bool Duplicate { get; }
+    public QualityOfService QualityOfService { get; }
+    public bool RetainRequested { get; }
+    public abstract virtual PacketType get_PacketType();
+    public virtual bool get_Duplicate();
+    public virtual QualityOfService get_QualityOfService();
+    public virtual bool get_RetainRequested();
+    public virtual string ToString();
+}
+public enum DotNetty.Codecs.Mqtt.Packets.PacketType : Enum {
+    public int value__;
+    public static PacketType CONNECT;
+    public static PacketType CONNACK;
+    public static PacketType PUBLISH;
+    public static PacketType PUBACK;
+    public static PacketType PUBREC;
+    public static PacketType PUBREL;
+    public static PacketType PUBCOMP;
+    public static PacketType SUBSCRIBE;
+    public static PacketType SUBACK;
+    public static PacketType UNSUBSCRIBE;
+    public static PacketType UNSUBACK;
+    public static PacketType PINGREQ;
+    public static PacketType PINGRESP;
+    public static PacketType DISCONNECT;
+}
+public abstract class DotNetty.Codecs.Mqtt.Packets.PacketWithId : Packet {
+    [CompilerGeneratedAttribute]
+private int <PacketId>k__BackingField;
+    public int PacketId { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_PacketId();
+    [CompilerGeneratedAttribute]
+public void set_PacketId(int value);
+}
+public class DotNetty.Codecs.Mqtt.Packets.PingReqPacket : Packet {
+    public static PingReqPacket Instance;
+    public PacketType PacketType { get; }
+    private static PingReqPacket();
+    public virtual PacketType get_PacketType();
+}
+public class DotNetty.Codecs.Mqtt.Packets.PingRespPacket : Packet {
+    public static PingRespPacket Instance;
+    public PacketType PacketType { get; }
+    private static PingRespPacket();
+    public virtual PacketType get_PacketType();
+}
+public class DotNetty.Codecs.Mqtt.Packets.PubAckPacket : PacketWithId {
+    public PacketType PacketType { get; }
+    public virtual PacketType get_PacketType();
+    public static PubAckPacket InResponseTo(PublishPacket publishPacket);
+}
+public class DotNetty.Codecs.Mqtt.Packets.PubCompPacket : PacketWithId {
+    public PacketType PacketType { get; }
+    public virtual PacketType get_PacketType();
+    public static PubCompPacket InResponseTo(PubRelPacket publishPacket);
+}
+public class DotNetty.Codecs.Mqtt.Packets.PublishPacket : PacketWithId {
+    private QualityOfService qos;
+    private bool duplicate;
+    private bool retainRequested;
+    [CompilerGeneratedAttribute]
+private string <TopicName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IByteBuffer <Payload>k__BackingField;
+    public PacketType PacketType { get; }
+    public bool Duplicate { get; }
+    public QualityOfService QualityOfService { get; }
+    public bool RetainRequested { get; }
+    public string TopicName { get; public set; }
+    public IByteBuffer Payload { get; public set; }
+    public int ReferenceCount { get; }
+    private IByteBuffer DotNetty.Buffers.IByteBufferHolder.Content { get; }
+    public PublishPacket(QualityOfService qos, bool duplicate, bool retain);
+    public virtual PacketType get_PacketType();
+    public virtual bool get_Duplicate();
+    public virtual QualityOfService get_QualityOfService();
+    public virtual bool get_RetainRequested();
+    [CompilerGeneratedAttribute]
+public string get_TopicName();
+    [CompilerGeneratedAttribute]
+public void set_TopicName(string value);
+    [CompilerGeneratedAttribute]
+public IByteBuffer get_Payload();
+    [CompilerGeneratedAttribute]
+public void set_Payload(IByteBuffer value);
+    public sealed virtual int get_ReferenceCount();
+    public sealed virtual IReferenceCounted Retain();
+    public sealed virtual IReferenceCounted Retain(int increment);
+    public sealed virtual IReferenceCounted Touch();
+    public sealed virtual IReferenceCounted Touch(object hint);
+    public sealed virtual bool Release();
+    public sealed virtual bool Release(int decrement);
+    private sealed virtual override IByteBuffer DotNetty.Buffers.IByteBufferHolder.get_Content();
+    public sealed virtual IByteBufferHolder Copy();
+    public sealed virtual IByteBufferHolder Replace(IByteBuffer content);
+    private sealed virtual override IByteBufferHolder DotNetty.Buffers.IByteBufferHolder.Duplicate();
+    public sealed virtual IByteBufferHolder RetainedDuplicate();
+}
+public class DotNetty.Codecs.Mqtt.Packets.PubRecPacket : PacketWithId {
+    public PacketType PacketType { get; }
+    public virtual PacketType get_PacketType();
+    public static PubRecPacket InResponseTo(PublishPacket publishPacket);
+}
+public class DotNetty.Codecs.Mqtt.Packets.PubRelPacket : PacketWithId {
+    public PacketType PacketType { get; }
+    public QualityOfService QualityOfService { get; }
+    public virtual PacketType get_PacketType();
+    public virtual QualityOfService get_QualityOfService();
+    public static PubRelPacket InResponseTo(PubRecPacket publishPacket);
+}
+public enum DotNetty.Codecs.Mqtt.Packets.QualityOfService : Enum {
+    public int value__;
+    public static QualityOfService AtMostOnce;
+    public static QualityOfService AtLeastOnce;
+    public static QualityOfService ExactlyOnce;
+    public static QualityOfService Reserved;
+    public static QualityOfService Failure;
+}
+public class DotNetty.Codecs.Mqtt.Packets.SubAckPacket : PacketWithId {
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<QualityOfService> <ReturnCodes>k__BackingField;
+    public PacketType PacketType { get; }
+    public IReadOnlyList`1<QualityOfService> ReturnCodes { get; public set; }
+    public virtual PacketType get_PacketType();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<QualityOfService> get_ReturnCodes();
+    [CompilerGeneratedAttribute]
+public void set_ReturnCodes(IReadOnlyList`1<QualityOfService> value);
+    public static SubAckPacket InResponseTo(SubscribePacket subscribePacket, QualityOfService maxQoS);
+}
+public class DotNetty.Codecs.Mqtt.Packets.SubscribePacket : PacketWithId {
+    [CompilerGeneratedAttribute]
+private IReadOnlyList`1<SubscriptionRequest> <Requests>k__BackingField;
+    public PacketType PacketType { get; }
+    public QualityOfService QualityOfService { get; }
+    public IReadOnlyList`1<SubscriptionRequest> Requests { get; public set; }
+    public SubscribePacket(int packetId, SubscriptionRequest[] requests);
+    public virtual PacketType get_PacketType();
+    public virtual QualityOfService get_QualityOfService();
+    [CompilerGeneratedAttribute]
+public IReadOnlyList`1<SubscriptionRequest> get_Requests();
+    [CompilerGeneratedAttribute]
+public void set_Requests(IReadOnlyList`1<SubscriptionRequest> value);
+}
+public class DotNetty.Codecs.Mqtt.Packets.SubscriptionRequest : object {
+    [CompilerGeneratedAttribute]
+private string <TopicFilter>k__BackingField;
+    [CompilerGeneratedAttribute]
+private QualityOfService <QualityOfService>k__BackingField;
+    public string TopicFilter { get; }
+    public QualityOfService QualityOfService { get; }
+    public SubscriptionRequest(string topicFilter, QualityOfService qualityOfService);
+    [CompilerGeneratedAttribute]
+public string get_TopicFilter();
+    [CompilerGeneratedAttribute]
+public QualityOfService get_QualityOfService();
+    public sealed virtual bool Equals(SubscriptionRequest other);
+    public virtual string ToString();
+}
+public class DotNetty.Codecs.Mqtt.Packets.UnsubAckPacket : PacketWithId {
+    public PacketType PacketType { get; }
+    public virtual PacketType get_PacketType();
+    public static UnsubAckPacket InResponseTo(UnsubscribePacket unsubscribePacket);
+}
+public class DotNetty.Codecs.Mqtt.Packets.UnsubscribePacket : PacketWithId {
+    [CompilerGeneratedAttribute]
+private IEnumerable`1<string> <TopicFilters>k__BackingField;
+    public PacketType PacketType { get; }
+    public QualityOfService QualityOfService { get; }
+    public IEnumerable`1<string> TopicFilters { get; public set; }
+    public UnsubscribePacket(int packetId, String[] topicFilters);
+    public virtual PacketType get_PacketType();
+    public virtual QualityOfService get_QualityOfService();
+    [CompilerGeneratedAttribute]
+public IEnumerable`1<string> get_TopicFilters();
+    [CompilerGeneratedAttribute]
+public void set_TopicFilters(IEnumerable`1<string> value);
+}
+internal static class DotNetty.Codecs.Mqtt.Signatures : object {
+    private static byte QoS1Signature;
+    public static byte PubAck;
+    public static byte PubRec;
+    public static byte PubRel;
+    public static byte PubComp;
+    public static byte Connect;
+    public static byte ConnAck;
+    public static byte Subscribe;
+    public static byte SubAck;
+    public static byte PingReq;
+    public static byte PingResp;
+    public static byte Disconnect;
+    public static byte Unsubscribe;
+    public static byte UnsubAck;
+    public static bool IsPublish(int signature);
+}
+internal static class DotNetty.Codecs.Mqtt.Util : object {
+    public static string ProtocolName;
+    public static int ProtocolLevel;
+    private static Char[] TopicWildcards;
+    private static Util();
+    public static void ValidateTopicName(string topicName);
+    public static void ValidatePacketId(int packetId);
+    public static void ValidateClientId(string clientId);
+}

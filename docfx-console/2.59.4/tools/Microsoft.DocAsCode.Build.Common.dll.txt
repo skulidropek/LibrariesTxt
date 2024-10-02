@@ -1,0 +1,408 @@
+public abstract class Microsoft.DocAsCode.Build.Common.ApplyOverwriteDocument : BaseDocumentBuildStep {
+    private MergerFacade _merger;
+    private IModelAttributeHandler _handler;
+    protected virtual IMerger GetMerger();
+    public virtual void Postbuild(ImmutableList`1<FileModel> models, IHostService host);
+    protected virtual void ApplyOverwrites(ImmutableList`1<FileModel> models, IHostService host);
+    protected abstract virtual void ApplyOverwrite(IHostService host, List`1<FileModel> overwrites, string uid, List`1<FileModel> articles);
+    protected void ApplyOverwrite(IHostService host, List`1<FileModel> overwrites, string uid, List`1<FileModel> articles, Func`4<FileModel, string, IHostService, IEnumerable`1<T>> getItemsFromOverwriteDocument, Func`4<FileModel, string, IHostService, IEnumerable`1<T>> getItemsToOverwrite);
+    protected IEnumerable`1<T> Transform(FileModel model, string uid, IHostService host);
+    private static List`1<OverwriteDocumentModel> GetOverwriteDocumentModelsByUid(FileModel overwriteFileModel, string uid);
+    private T Merge(T baseModel, T overrideModel, FileModel model);
+}
+public abstract class Microsoft.DocAsCode.Build.Common.BaseDocumentBuildStep : object {
+    public string Name { get; }
+    public int BuildOrder { get; }
+    public abstract virtual string get_Name();
+    public abstract virtual int get_BuildOrder();
+    public virtual IEnumerable`1<FileModel> Prebuild(ImmutableList`1<FileModel> models, IHostService host);
+    public virtual void Build(FileModel model, IHostService host);
+    public virtual void Postbuild(ImmutableList`1<FileModel> models, IHostService host);
+}
+public abstract class Microsoft.DocAsCode.Build.Common.BaseModelAttributeHandler`1 : object {
+    private static int MaximumNestedLevel;
+    private TypeInfo<T> _typeInfo;
+    protected IModelAttributeHandler Handler;
+    private Type _type;
+    protected BaseModelAttributeHandler`1(Type type, IModelAttributeHandler handler);
+    protected abstract virtual object HandleCurrent(object currentObj, object declaringObject, PropertyInfo currentPropertyInfo, HandleModelAttributesContext context);
+    public sealed virtual object Handle(object obj, HandleModelAttributesContext context);
+    protected virtual bool ShouldHandle(object currentObj, object declaringObject, PropInfo<T> currentPropInfo, HandleModelAttributesContext context);
+    protected virtual object HandleDictionaryType(object currentObj, HandleModelAttributesContext context);
+    protected virtual object HandleIEnumerableType(object currentObj, HandleModelAttributesContext context);
+    protected virtual object ProcessPrimitiveType(object currentObj, HandleModelAttributesContext context);
+    protected virtual object ProcessNonPrimitiveType(object currentObj, HandleModelAttributesContext context);
+    protected virtual IEnumerable`1<PropInfo<T>> GetProps(Type type);
+    private TypeInfo<T> GetTypeInfo(Type type);
+}
+public abstract class Microsoft.DocAsCode.Build.Common.BuildReferenceDocumentBase : BaseDocumentBuildStep {
+    private IModelAttributeHandler _defaultHandler;
+    public int BuildOrder { get; }
+    public virtual int get_BuildOrder();
+    public virtual void Build(FileModel model, IHostService host);
+    protected abstract virtual void BuildArticle(IHostService host, FileModel model);
+    protected virtual void BuildOverwrite(IHostService host, FileModel model);
+    protected virtual void BuildArticleCore(IHostService host, FileModel model, IModelAttributeHandler handlers, HandleModelAttributesContext handlerContext, bool shouldSkipMarkup);
+}
+public class Microsoft.DocAsCode.Build.Common.CompositeModelAttributeHandler : object {
+    private IModelAttributeHandler[] _handlers;
+    public CompositeModelAttributeHandler(IModelAttributeHandler[] handlers);
+    public sealed virtual object Handle(object obj, HandleModelAttributesContext context);
+}
+public abstract class Microsoft.DocAsCode.Build.Common.DisposableDocumentProcessor : object {
+    public string Name { get; }
+    public IEnumerable`1<IDocumentBuildStep> BuildSteps { get; public set; }
+    public abstract virtual string get_Name();
+    public abstract virtual IEnumerable`1<IDocumentBuildStep> get_BuildSteps();
+    public abstract virtual void set_BuildSteps(IEnumerable`1<IDocumentBuildStep> value);
+    public abstract virtual ProcessingPriority GetProcessingPriority(FileAndType file);
+    public abstract virtual FileModel Load(FileAndType file, ImmutableDictionary`2<string, object> metadata);
+    public abstract virtual SaveResult Save(FileModel model);
+    public sealed virtual void Dispose();
+    public virtual void UpdateHref(FileModel model, IDocumentBuildContext context);
+}
+public static class Microsoft.DocAsCode.Build.Common.FileModelPropertySerialization : object {
+    public static void Serialize(FileModel model, Stream stream, Action`2<object, Stream> contentSerializer, Action`2<IDictionary`2<string, object>, Stream> propertySerializer, Action`2<FileModel, Stream> otherSerializer);
+    public static FileModel Deserialize(Stream stream, IFormatter formatter, Func`2<Stream, object> contentDeserializer, Func`2<Stream, IDictionary`2<string, object>> propertyDeserializer, Action`2<Stream, FileModel> otherDeserializer);
+}
+public class Microsoft.DocAsCode.Build.Common.HandleGenericItemsHelper : object {
+    public static bool EnumerateIEnumerable(object currentObj, Func`2<object, object> handler);
+    public static bool EnumerateIDictionary(object currentObj, Func`2<object, object> handler);
+    public static bool EnumerateIReadonlyDictionary(object currentObj, Func`2<object, object> handler);
+    public static bool HandleIList(object currentObj, Func`2<object, object> handler);
+    public static bool HandleIDictionary(object currentObj, Func`2<object, object> handler);
+    private static bool HandleItems(Type genericInterface, Type implHandlerType, object currentObj, Func`2<object, object> handler);
+}
+public class Microsoft.DocAsCode.Build.Common.HandleModelAttributesContext : object {
+    [CompilerGeneratedAttribute]
+private int <NestedLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IHostService <Host>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SkipMarkup>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EnableContentPlaceholder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PlaceholderContent>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ContainsPlaceholder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <Dependency>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FileAndType <FileAndType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <LinkToFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <LinkToUids>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<UidDefinition> <Uids>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, List`1<LinkSourceInfo>> <UidLinkSources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, List`1<LinkSourceInfo>> <FileLinkSources>k__BackingField;
+    internal int NestedLevel { get; internal set; }
+    public IHostService Host { get; public set; }
+    public bool SkipMarkup { get; public set; }
+    public bool EnableContentPlaceholder { get; public set; }
+    public string PlaceholderContent { get; public set; }
+    public bool ContainsPlaceholder { get; public set; }
+    public HashSet`1<string> Dependency { get; public set; }
+    public FileAndType FileAndType { get; public set; }
+    public HashSet`1<string> LinkToFiles { get; public set; }
+    public HashSet`1<string> LinkToUids { get; public set; }
+    public List`1<UidDefinition> Uids { get; public set; }
+    public Dictionary`2<string, List`1<LinkSourceInfo>> UidLinkSources { get; public set; }
+    public Dictionary`2<string, List`1<LinkSourceInfo>> FileLinkSources { get; public set; }
+    [CompilerGeneratedAttribute]
+internal int get_NestedLevel();
+    [CompilerGeneratedAttribute]
+internal void set_NestedLevel(int value);
+    [CompilerGeneratedAttribute]
+public IHostService get_Host();
+    [CompilerGeneratedAttribute]
+public void set_Host(IHostService value);
+    [CompilerGeneratedAttribute]
+public bool get_SkipMarkup();
+    [CompilerGeneratedAttribute]
+public void set_SkipMarkup(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableContentPlaceholder();
+    [CompilerGeneratedAttribute]
+public void set_EnableContentPlaceholder(bool value);
+    [CompilerGeneratedAttribute]
+public string get_PlaceholderContent();
+    [CompilerGeneratedAttribute]
+public void set_PlaceholderContent(string value);
+    [CompilerGeneratedAttribute]
+public bool get_ContainsPlaceholder();
+    [CompilerGeneratedAttribute]
+public void set_ContainsPlaceholder(bool value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<string> get_Dependency();
+    [CompilerGeneratedAttribute]
+public void set_Dependency(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public FileAndType get_FileAndType();
+    [CompilerGeneratedAttribute]
+public void set_FileAndType(FileAndType value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<string> get_LinkToFiles();
+    [CompilerGeneratedAttribute]
+public void set_LinkToFiles(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<string> get_LinkToUids();
+    [CompilerGeneratedAttribute]
+public void set_LinkToUids(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public List`1<UidDefinition> get_Uids();
+    [CompilerGeneratedAttribute]
+public void set_Uids(List`1<UidDefinition> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> get_UidLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_UidLinkSources(Dictionary`2<string, List`1<LinkSourceInfo>> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> get_FileLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_FileLinkSources(Dictionary`2<string, List`1<LinkSourceInfo>> value);
+}
+public interface Microsoft.DocAsCode.Build.Common.IModelAttributeHandler {
+    public abstract virtual object Handle(object obj, HandleModelAttributesContext context);
+}
+public class Microsoft.DocAsCode.Build.Common.MarkdownContentHandler : object {
+    private ConcurrentDictionary`2<Type, MarkdownContentHandlerImpl> _cache;
+    public sealed virtual object Handle(object obj, HandleModelAttributesContext context);
+    [CompilerGeneratedAttribute]
+private MarkdownContentHandlerImpl <Handle>b__1_0(Type t);
+}
+public class Microsoft.DocAsCode.Build.Common.MarkdownReader : object {
+    private static ImmutableList`1<string> RequiredProperties;
+    private static MarkdownReader();
+    public static IEnumerable`1<OverwriteDocumentModel> ReadMarkdownAsOverwrite(IHostService host, FileAndType ft);
+    public static Dictionary`2<string, object> ReadMarkdownAsConceptual(string file);
+    private static OverwriteDocumentModel TransformModel(string filePath, YamlHtmlPart part);
+    private static IEnumerable`1<YamlHtmlPart> MarkupMultiple(IHostService host, string markdown, FileAndType ft);
+    private static Dictionary`2<string, object> RemoveRequiredProperties(ImmutableDictionary`2<string, object> properties, IEnumerable`1<string> requiredProperties);
+    private static bool CheckRequiredProperties(ImmutableDictionary`2<string, object> properties, IEnumerable`1<string> requiredKeys, String& message);
+}
+public class Microsoft.DocAsCode.Build.Common.OverwriteDocumentModel : object {
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Metadata>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Uid>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Conceptual>k__BackingField;
+    [CompilerGeneratedAttribute]
+private SourceDetail <Documentation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <LinkToFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <LinkToUids>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, List`1<LinkSourceInfo>> <FileLinkSources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, List`1<LinkSourceInfo>> <UidLinkSources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableArray`1<string> <Dependency>k__BackingField;
+    [ExtensibleMemberAttribute]
+[JsonExtensionDataAttribute]
+public Dictionary`2<string, object> Metadata { get; public set; }
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("uid")]
+public string Uid { get; public set; }
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("conceptual")]
+public string Conceptual { get; public set; }
+    [YamlMemberAttribute]
+[JsonPropertyAttribute("documentation")]
+public SourceDetail Documentation { get; public set; }
+    [YamlIgnoreAttribute]
+[JsonIgnoreAttribute]
+public HashSet`1<string> LinkToFiles { get; public set; }
+    [YamlIgnoreAttribute]
+[JsonIgnoreAttribute]
+public HashSet`1<string> LinkToUids { get; public set; }
+    [YamlIgnoreAttribute]
+[JsonIgnoreAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> FileLinkSources { get; public set; }
+    [YamlIgnoreAttribute]
+[JsonIgnoreAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> UidLinkSources { get; public set; }
+    [YamlIgnoreAttribute]
+[JsonIgnoreAttribute]
+public ImmutableArray`1<string> Dependency { get; public set; }
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Metadata();
+    [CompilerGeneratedAttribute]
+public void set_Metadata(Dictionary`2<string, object> value);
+    [CompilerGeneratedAttribute]
+public string get_Uid();
+    [CompilerGeneratedAttribute]
+public void set_Uid(string value);
+    [CompilerGeneratedAttribute]
+public string get_Conceptual();
+    [CompilerGeneratedAttribute]
+public void set_Conceptual(string value);
+    [CompilerGeneratedAttribute]
+public SourceDetail get_Documentation();
+    [CompilerGeneratedAttribute]
+public void set_Documentation(SourceDetail value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<string> get_LinkToFiles();
+    [CompilerGeneratedAttribute]
+public void set_LinkToFiles(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public HashSet`1<string> get_LinkToUids();
+    [CompilerGeneratedAttribute]
+public void set_LinkToUids(HashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> get_FileLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_FileLinkSources(Dictionary`2<string, List`1<LinkSourceInfo>> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, List`1<LinkSourceInfo>> get_UidLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_UidLinkSources(Dictionary`2<string, List`1<LinkSourceInfo>> value);
+    [CompilerGeneratedAttribute]
+public ImmutableArray`1<string> get_Dependency();
+    [CompilerGeneratedAttribute]
+public void set_Dependency(ImmutableArray`1<string> value);
+    public T ConvertTo();
+}
+public class Microsoft.DocAsCode.Build.Common.OverwriteDocumentReader : object {
+    public static FileModel Read(FileAndType file);
+    public static IEnumerable`1<T> Transform(FileModel model, string uid, Func`2<T, T> itemBuilder);
+    private static T ResolveContent(T item, Func`2<T, T> itemBuilder);
+}
+public abstract class Microsoft.DocAsCode.Build.Common.ReferenceDocumentProcessorBase : DisposableDocumentProcessor {
+    protected string ProcessedDocumentType { get; }
+    protected abstract virtual string get_ProcessedDocumentType();
+    public virtual FileModel Load(FileAndType file, ImmutableDictionary`2<string, object> metadata);
+    public virtual SaveResult Save(FileModel model);
+    protected abstract virtual FileModel LoadArticle(FileAndType file, ImmutableDictionary`2<string, object> metadata);
+    protected virtual FileModel LoadOverwrite(FileAndType file, ImmutableDictionary`2<string, object> metadata);
+}
+public static class Microsoft.DocAsCode.Build.Common.ReflectionHelper : object {
+    private static Func`2<Type, List`1<PropertyInfo>> _getGettableProperties;
+    private static Func`2<Type, List`1<PropertyInfo>> _getSettableProperties;
+    private static ConcurrentDictionary`2<Type, List`1<PropertyInfo>> _gettablePropertiesCache;
+    private static ConcurrentDictionary`2<Type, List`1<PropertyInfo>> _settablePropertiesCache;
+    private static ConcurrentDictionary`2<Type, bool> _isDictionaryCache;
+    private static ConcurrentDictionary`2<Tuple`2<Type, Type>, Type> _genericTypeCache;
+    private static ConcurrentDictionary`2<PropertyInfo, Func`2<object, object>> _propertyGetterCache;
+    private static ConcurrentDictionary`2<PropertyInfo, Action`2<object, object>> _propertySetterCache;
+    private static ConcurrentDictionary`2<Tuple`3<Type, Type[], Type[]>, Func`2<Object[], object>> _createInstanceCache;
+    private static ReflectionHelper();
+    public static object CreateInstance(Type type, Type[] typeArguments, Type[] argumentTypes, Object[] arguments);
+    private static Func`2<Object[], object> GetCreateInstanceFunc(Tuple`3<Type, Type[], Type[]> tuple);
+    private static Func`2<Object[], object> GetCreateInstanceFuncCore(ConstructorInfo ctor, Type[] argumentTypes);
+    public static List`1<PropertyInfo> GetSettableProperties(Type type);
+    public static List`1<PropertyInfo> GetGettableProperties(Type type);
+    public static IEnumerable`1<PropertyInfo> GetPublicProperties(Type type);
+    public static bool IsDictionaryType(Type type);
+    private static bool IsDictionaryTypeCore(Type type);
+    public static bool IsIEnumerableType(Type t);
+    public static Type GetGenericType(Type type, Type genericTypeDefinition);
+    private static Type GetGenericTypeNoCache(Type type, Type genericTypeDefinition);
+    public static bool TryGetGenericType(Type type, Type genericTypeDefinition, Type& genericType);
+    public static bool ImplementsGenericDefintion(Type type, Type genericTypeDefinition);
+    public static bool IsGenericType(Type type, Type genericTypeDefinition);
+    private static IEnumerable`1<PropertyInfo> GetProperties(Type type, BindingFlags bindingFlags);
+    public static object GetPropertyValue(object instance, PropertyInfo prop);
+    private static Func`2<object, object> CreateGetPropertyFunc(PropertyInfo prop);
+    public static void SetPropertyValue(object instance, PropertyInfo prop, object value);
+    private static Action`2<object, object> CreateSetPropertyFunc(PropertyInfo prop);
+}
+public class Microsoft.DocAsCode.Build.Common.UniqueIdentityReferenceHandler : object {
+    private ConcurrentDictionary`2<Type, UniqueIdentityHandlerImpl> _cache;
+    public sealed virtual object Handle(object obj, HandleModelAttributesContext context);
+    [CompilerGeneratedAttribute]
+private UniqueIdentityHandlerImpl <Handle>b__1_0(Type t);
+}
+public class Microsoft.DocAsCode.Build.Common.UrlContentHandler : object {
+    private ConcurrentDictionary`2<Type, UrlContentHandlerImpl> _cache;
+    public sealed virtual object Handle(object obj, HandleModelAttributesContext context);
+    [CompilerGeneratedAttribute]
+private UrlContentHandlerImpl <Handle>b__1_0(Type t);
+}
+public class Microsoft.DocAsCode.Build.Common.YamlHtmlPart : object {
+    [CompilerGeneratedAttribute]
+private MarkupResult <Origin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Html>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Conceptual>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SourceFile>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <StartLine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <EndLine>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableArray`1<string> <LinkToFiles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableHashSet`1<string> <LinkToUids>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, object> <YamlHeader>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> <UidLinkSources>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> <FileLinkSources>k__BackingField;
+    public MarkupResult Origin { get; public set; }
+    public string Html { get; public set; }
+    public string Conceptual { get; public set; }
+    public string SourceFile { get; public set; }
+    public int StartLine { get; public set; }
+    public int EndLine { get; public set; }
+    public ImmutableArray`1<string> LinkToFiles { get; public set; }
+    public ImmutableHashSet`1<string> LinkToUids { get; public set; }
+    public ImmutableDictionary`2<string, object> YamlHeader { get; public set; }
+    public ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> UidLinkSources { get; public set; }
+    public ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> FileLinkSources { get; public set; }
+    [CompilerGeneratedAttribute]
+public MarkupResult get_Origin();
+    [CompilerGeneratedAttribute]
+public void set_Origin(MarkupResult value);
+    [CompilerGeneratedAttribute]
+public string get_Html();
+    [CompilerGeneratedAttribute]
+public void set_Html(string value);
+    [CompilerGeneratedAttribute]
+public string get_Conceptual();
+    [CompilerGeneratedAttribute]
+public void set_Conceptual(string value);
+    [CompilerGeneratedAttribute]
+public string get_SourceFile();
+    [CompilerGeneratedAttribute]
+public void set_SourceFile(string value);
+    [CompilerGeneratedAttribute]
+public int get_StartLine();
+    [CompilerGeneratedAttribute]
+public void set_StartLine(int value);
+    [CompilerGeneratedAttribute]
+public int get_EndLine();
+    [CompilerGeneratedAttribute]
+public void set_EndLine(int value);
+    [CompilerGeneratedAttribute]
+public ImmutableArray`1<string> get_LinkToFiles();
+    [CompilerGeneratedAttribute]
+public void set_LinkToFiles(ImmutableArray`1<string> value);
+    [CompilerGeneratedAttribute]
+public ImmutableHashSet`1<string> get_LinkToUids();
+    [CompilerGeneratedAttribute]
+public void set_LinkToUids(ImmutableHashSet`1<string> value);
+    [CompilerGeneratedAttribute]
+public ImmutableDictionary`2<string, object> get_YamlHeader();
+    [CompilerGeneratedAttribute]
+public void set_YamlHeader(ImmutableDictionary`2<string, object> value);
+    [CompilerGeneratedAttribute]
+public ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> get_UidLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_UidLinkSources(ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> value);
+    [CompilerGeneratedAttribute]
+public ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> get_FileLinkSources();
+    [CompilerGeneratedAttribute]
+public void set_FileLinkSources(ImmutableDictionary`2<string, ImmutableList`1<LinkSourceInfo>> value);
+    public MarkupResult ToMarkupResult();
+    public static IList`1<YamlHtmlPart> SplitYamlHtml(MarkupResult origin);
+}

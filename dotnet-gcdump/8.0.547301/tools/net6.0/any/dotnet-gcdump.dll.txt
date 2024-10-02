@@ -1,0 +1,789 @@
+public class DotNetHeapDumpGraphReader : object {
+    private Module m_lastModule;
+    private Dictionary`2<ulong, NodeTypeIndex> m_typeID2TypeIndex;
+    private Dictionary`2<ulong, string> m_moduleID2Name;
+    private Dictionary`2<string, NodeTypeIndex> m_arrayNametoIndex;
+    private Dictionary`2<ulong, RCWInfo> m_objectToRCW;
+    private Queue`1<GCBulkTypeTraceData> m_typeBlocks;
+    private Queue`1<GCBulkRootStaticVarTraceData> m_staticVarBlocks;
+    private Queue`1<GCBulkRootCCWTraceData> m_ccwBlocks;
+    private Queue`1<GCBulkNodeTraceData> m_nodeBlocks;
+    private GCBulkNodeTraceData m_curNodeBlock;
+    private int m_curNodeIdx;
+    private Queue`1<GCBulkEdgeTraceData> m_edgeBlocks;
+    private int m_curEdgeIdx;
+    private GCBulkEdgeTraceData m_curEdgeBlock;
+    private Dictionary`2<string, NodeTypeIndex> m_typeIntern;
+    private GrowableArray`1<NodeIndex> m_children;
+    private NodeType m_typeStorage;
+    private Dictionary`2<ulong, Module> m_modules;
+    private bool IsProjectN;
+    private string m_etlFilePath;
+    private double m_ignoreUntilMSec;
+    private int m_processId;
+    private string m_processName;
+    private TextWriter m_log;
+    private bool m_converted;
+    private bool m_seenStart;
+    private bool m_ignoreEvents;
+    private int m_gcID;
+    private MemoryGraph m_graph;
+    private MemoryNodeBuilder m_root;
+    private DotNetHeapInfo m_dotNetHeapInfo;
+    public DotNetHeapInfo DotNetHeapInfo { get; public set; }
+    public DotNetHeapDumpGraphReader(TextWriter log);
+    public MemoryGraph Read(string etlFilePath, string processNameOrId, double startTimeRelativeMSec);
+    public MemoryGraph Read(TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    public void Append(MemoryGraph memoryGraph, string etlName, string processNameOrId, double startTimeRelativeMSec);
+    public void Append(MemoryGraph memoryGraph, TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    public DotNetHeapInfo get_DotNetHeapInfo();
+    public void set_DotNetHeapInfo(DotNetHeapInfo value);
+    internal void SetupCallbacks(MemoryGraph memoryGraph, TraceEventDispatcher source, string processNameOrId, double startTimeRelativeMSec);
+    internal void ConvertHeapDataToGraph();
+    private Module GetModuleForImageBase(ulong moduleBaseAddress);
+    private Module GetModuleForAddress(ulong addressInModule);
+    private GCBulkNodeUnsafeNodes* GetNextNode(GCBulkNodeUnsafeNodes* buffer);
+    private ulong GetNextEdge();
+    private NodeTypeIndex GetTypeIndex(ulong typeID, int objSize);
+    private static string GetObjectSizeSuffix(int objSize);
+    private NodeTypeIndex CreateType(string typeName, string moduleName);
+}
+public class DotNetHeapInfo : object {
+    [CompilerGeneratedAttribute]
+private int <CorruptedObject>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <UndumpedSegementRegion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <SizeOfAllSegments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<GCHeapDumpSegment> <Segments>k__BackingField;
+    private GCHeapDumpSegment m_lastSegment;
+    public int CorruptedObject { get; internal set; }
+    public long UndumpedSegementRegion { get; internal set; }
+    public long SizeOfAllSegments { get; internal set; }
+    public List`1<GCHeapDumpSegment> Segments { get; internal set; }
+    [CompilerGeneratedAttribute]
+public int get_CorruptedObject();
+    [CompilerGeneratedAttribute]
+internal void set_CorruptedObject(int value);
+    [CompilerGeneratedAttribute]
+public long get_UndumpedSegementRegion();
+    [CompilerGeneratedAttribute]
+internal void set_UndumpedSegementRegion(long value);
+    [CompilerGeneratedAttribute]
+public long get_SizeOfAllSegments();
+    [CompilerGeneratedAttribute]
+internal void set_SizeOfAllSegments(long value);
+    [CompilerGeneratedAttribute]
+public List`1<GCHeapDumpSegment> get_Segments();
+    [CompilerGeneratedAttribute]
+internal void set_Segments(List`1<GCHeapDumpSegment> value);
+    public int GenerationFor(ulong obj);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class GCHeapDump : object {
+    [CompilerGeneratedAttribute]
+private float <AverageCountMultiplier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private float <AverageSizeMultiplier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Single[] <CountMultipliersByType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DotNetHeapInfo <DotNetHeapInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private JSHeapInfo <JSHeapInfo>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CollectionLog>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <TimeCollected>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MachineName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProcessName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ProcessID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <TotalProcessCommit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <TotalProcessWorkingSet>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreationTool>k__BackingField;
+    private MemoryGraph m_graph;
+    private InteropInfo m_interop;
+    public MemoryGraph MemoryGraph { get; internal set; }
+    public InteropInfo InteropInfo { get; internal set; }
+    public bool Is64Bit { get; }
+    public float AverageCountMultiplier { get; internal set; }
+    public float AverageSizeMultiplier { get; internal set; }
+    public Single[] CountMultipliersByType { get; internal set; }
+    public DotNetHeapInfo DotNetHeapInfo { get; internal set; }
+    public JSHeapInfo JSHeapInfo { get; internal set; }
+    public string CollectionLog { get; internal set; }
+    public DateTime TimeCollected { get; internal set; }
+    public string MachineName { get; internal set; }
+    public string ProcessName { get; internal set; }
+    public int ProcessID { get; internal set; }
+    public long TotalProcessCommit { get; internal set; }
+    public long TotalProcessWorkingSet { get; internal set; }
+    public string CreationTool { get; public set; }
+    private int FastSerialization.IFastSerializableVersion.Version { get; }
+    private int FastSerialization.IFastSerializableVersion.MinimumVersionCanRead { get; }
+    private int FastSerialization.IFastSerializableVersion.MinimumReaderVersion { get; }
+    public GCHeapDump(string inputFileName);
+    public GCHeapDump(Stream inputStream, string streamName);
+    internal GCHeapDump(MemoryGraph graph);
+    private GCHeapDump(Deserializer deserializer);
+    public static void WriteMemoryGraph(MemoryGraph graph, string outputFileName, string toolName);
+    public MemoryGraph get_MemoryGraph();
+    internal void set_MemoryGraph(MemoryGraph value);
+    public InteropInfo get_InteropInfo();
+    internal void set_InteropInfo(InteropInfo value);
+    public bool get_Is64Bit();
+    [CompilerGeneratedAttribute]
+public float get_AverageCountMultiplier();
+    [CompilerGeneratedAttribute]
+internal void set_AverageCountMultiplier(float value);
+    [CompilerGeneratedAttribute]
+public float get_AverageSizeMultiplier();
+    [CompilerGeneratedAttribute]
+internal void set_AverageSizeMultiplier(float value);
+    [CompilerGeneratedAttribute]
+public Single[] get_CountMultipliersByType();
+    [CompilerGeneratedAttribute]
+internal void set_CountMultipliersByType(Single[] value);
+    [CompilerGeneratedAttribute]
+public DotNetHeapInfo get_DotNetHeapInfo();
+    [CompilerGeneratedAttribute]
+internal void set_DotNetHeapInfo(DotNetHeapInfo value);
+    [CompilerGeneratedAttribute]
+public JSHeapInfo get_JSHeapInfo();
+    [CompilerGeneratedAttribute]
+internal void set_JSHeapInfo(JSHeapInfo value);
+    [CompilerGeneratedAttribute]
+public string get_CollectionLog();
+    [CompilerGeneratedAttribute]
+internal void set_CollectionLog(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_TimeCollected();
+    [CompilerGeneratedAttribute]
+internal void set_TimeCollected(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_MachineName();
+    [CompilerGeneratedAttribute]
+internal void set_MachineName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ProcessName();
+    [CompilerGeneratedAttribute]
+internal void set_ProcessName(string value);
+    [CompilerGeneratedAttribute]
+public int get_ProcessID();
+    [CompilerGeneratedAttribute]
+internal void set_ProcessID(int value);
+    [CompilerGeneratedAttribute]
+public long get_TotalProcessCommit();
+    [CompilerGeneratedAttribute]
+internal void set_TotalProcessCommit(long value);
+    [CompilerGeneratedAttribute]
+public long get_TotalProcessWorkingSet();
+    [CompilerGeneratedAttribute]
+internal void set_TotalProcessWorkingSet(long value);
+    [CompilerGeneratedAttribute]
+public string get_CreationTool();
+    [CompilerGeneratedAttribute]
+public void set_CreationTool(string value);
+    public static Dictionary`2<int, ProcessInfo> GetProcessesWithGCHeaps();
+    private void Write(string outputFileName);
+    private static void GetProcessesWithGCHeapsFromHeapDump(Dictionary`2<int, ProcessInfo> ret);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+    private void PreVersion8FromStream(Deserializer deserializer);
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_Version();
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_MinimumVersionCanRead();
+    private sealed virtual override int FastSerialization.IFastSerializableVersion.get_MinimumReaderVersion();
+    [CompilerGeneratedAttribute]
+private IFastSerializable <.ctor>b__68_3();
+}
+public class GCHeapDumpSegment : object {
+    [CompilerGeneratedAttribute]
+private ulong <Start>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen0End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen1End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen2End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen3End>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ulong <Gen4End>k__BackingField;
+    public ulong Start { get; internal set; }
+    public ulong End { get; internal set; }
+    public ulong Gen0End { get; internal set; }
+    public ulong Gen1End { get; internal set; }
+    public ulong Gen2End { get; internal set; }
+    public ulong Gen3End { get; internal set; }
+    public ulong Gen4End { get; internal set; }
+    public int Version { get; }
+    public int MinimumVersionCanRead { get; }
+    public int MinimumReaderVersion { get; }
+    [CompilerGeneratedAttribute]
+public ulong get_Start();
+    [CompilerGeneratedAttribute]
+internal void set_Start(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_End();
+    [CompilerGeneratedAttribute]
+internal void set_End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen0End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen0End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen1End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen1End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen2End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen2End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen3End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen3End(ulong value);
+    [CompilerGeneratedAttribute]
+public ulong get_Gen4End();
+    [CompilerGeneratedAttribute]
+internal void set_Gen4End(ulong value);
+    public sealed virtual int get_Version();
+    public sealed virtual int get_MinimumVersionCanRead();
+    public sealed virtual int get_MinimumReaderVersion();
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class Graphs.Graph : object {
+    protected static int SegmentSize;
+    public NodeIndex RootIndex;
+    [CompilerGeneratedAttribute]
+private Func`3<int, Module, string> <ResolveTypeName>k__BackingField;
+    private long m_expectedNodeCount;
+    private long m_totalSize;
+    internal int m_totalRefs;
+    internal GrowableArray`1<TypeInfo> m_types;
+    internal GrowableArray`1<DeferedTypeInfo> m_deferedTypes;
+    internal SegmentedList`1<StreamLabel> m_nodes;
+    internal SegmentedMemoryStreamReader m_reader;
+    internal StreamLabel m_undefinedObjDef;
+    internal SegmentedMemoryStreamWriter m_writer;
+    protected bool m_isVeryLargeGraph;
+    public NodeIndex NodeIndexLimit { get; }
+    public long NodeCount { get; }
+    public NodeTypeIndex NodeTypeIndexLimit { get; }
+    public int NodeTypeCount { get; }
+    public long TotalSize { get; }
+    public int TotalNumberOfReferences { get; }
+    public Func`3<int, Module, string> ResolveTypeName { get; public set; }
+    public bool HasDeferedTypeNames { get; }
+    public int Version { get; }
+    public int MinimumVersionCanRead { get; }
+    public int MinimumReaderVersion { get; }
+    public Graph(int expectedNodeCount, bool isVeryLargeGraph);
+    public Node GetNode(NodeIndex nodeIndex, Node storage);
+    public bool IsDefined(NodeIndex nodeIndex);
+    public NodeType GetType(NodeTypeIndex nodeTypeIndex, NodeType storage);
+    public virtual Node AllocNodeStorage();
+    public virtual NodeType AllocTypeNodeStorage();
+    public NodeIndex get_NodeIndexLimit();
+    public long get_NodeCount();
+    public NodeTypeIndex get_NodeTypeIndexLimit();
+    public int get_NodeTypeCount();
+    public long get_TotalSize();
+    public int get_TotalNumberOfReferences();
+    public virtual NodeTypeIndex CreateType(string name, string moduleName, int size);
+    public virtual NodeIndex CreateNode();
+    public void SetNode(NodeIndex nodeIndex, NodeTypeIndex typeIndex, int sizeInBytes, GrowableArray`1<NodeIndex> children);
+    public virtual void AllowReading();
+    public virtual string ToString();
+    public virtual long SizeOfGraphDescription();
+    public NodeTypeIndex CreateType(int typeID, Module module, int size, string typeNameSuffix);
+    [CompilerGeneratedAttribute]
+public Func`3<int, Module, string> get_ResolveTypeName();
+    [CompilerGeneratedAttribute]
+public void set_ResolveTypeName(Func`3<int, Module, string> value);
+    public bool get_HasDeferedTypeNames();
+    public void BreadthFirstVisit(Action`1<Node> visitor);
+    public SizeAndCount[] GetHistogramByType();
+    public string HistogramByTypeXml(long minSize);
+    internal void SetNodeTypeAndSize(NodeIndex nodeIndex, NodeTypeIndex typeIndex, int sizeInBytes);
+    protected virtual void Clear();
+    private void ClearWorker();
+    public virtual void ToStream(Serializer serializer);
+    public sealed virtual void FromStream(Deserializer deserializer);
+    public sealed virtual int get_Version();
+    public sealed virtual int get_MinimumVersionCanRead();
+    public sealed virtual int get_MinimumReaderVersion();
+}
+[ExtensionAttribute]
+public static class Graphs.GraphUtils : object {
+    [ExtensionAttribute]
+public static string PrintGraph(Graph graph);
+    [ExtensionAttribute]
+public static string PrintNode(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static string PrintNode(Graph graph, int nodeIndex);
+    [ExtensionAttribute]
+public static string PrintNodes(Graph graph, List`1<NodeIndex> nodes);
+    [ExtensionAttribute]
+public static string PrintChildren(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static string PrintChildren(Graph graph, int nodeIndex);
+    [ExtensionAttribute]
+public static void WriteXml(Graph graph, TextWriter writer);
+    [ExtensionAttribute]
+public static void DumpNormalized(MemoryGraph graph, TextWriter writer);
+    [ExtensionAttribute]
+public static List`1<NodeIndex> NodeChildren(Graph graph, NodeIndex nodeIndex);
+    [ExtensionAttribute]
+public static List`1<NodeIndex> NodesOfType(Graph graph, string regExpression);
+}
+public class Graphs.MemoryGraph : Graph {
+    [CompilerGeneratedAttribute]
+private bool <Is64Bit>k__BackingField;
+    protected IDictionary`2<ulong, NodeIndex> m_addressToNodeIndex;
+    protected SegmentedList`1<ulong> m_nodeAddresses;
+    public bool Is64Bit { get; public set; }
+    public int DistinctRefCount { get; }
+    public MemoryGraph(int expectedSize, bool isVeryLargeGraph);
+    public void WriteAsBinaryFile(string outputFileName);
+    public static MemoryGraph ReadFromBinaryFile(string inputFileName);
+    [CompilerGeneratedAttribute]
+public bool get_Is64Bit();
+    [CompilerGeneratedAttribute]
+public void set_Is64Bit(bool value);
+    public ulong GetAddress(NodeIndex nodeIndex);
+    public void SetAddress(NodeIndex nodeIndex, ulong nodeAddress);
+    public virtual NodeIndex CreateNode();
+    public virtual Node AllocNodeStorage();
+    public virtual long SizeOfGraphDescription();
+    public int get_DistinctRefCount();
+    protected virtual void Clear();
+    public virtual void AllowReading();
+    public NodeIndex GetNodeIndex(ulong objectAddress);
+    public bool IsInGraph(ulong objectAddress);
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class Graphs.MemoryNode : Node {
+    private MemoryGraph m_memoryGraph;
+    public ulong Address { get; }
+    internal MemoryNode(MemoryGraph graph);
+    public ulong get_Address();
+    public virtual void WriteXml(TextWriter writer, bool includeChildren, string prefix, NodeType typeStorage, string additinalAttribs);
+}
+public class Graphs.MemoryNodeBuilder : object {
+    [CompilerGeneratedAttribute]
+private string <TypeName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ModuleName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Size>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NodeIndex <Index>k__BackingField;
+    private NodeTypeIndex m_typeIndex;
+    private List`1<MemoryNodeBuilder> m_mutableChildren;
+    private GrowableArray`1<NodeIndex> m_unmutableChildren;
+    private MemoryGraph m_graph;
+    public string TypeName { get; private set; }
+    public string ModuleName { get; private set; }
+    public int Size { get; public set; }
+    public NodeIndex Index { get; private set; }
+    public MemoryNodeBuilder(MemoryGraph graph, string typeName, string moduleName, NodeIndex nodeIndex);
+    [CompilerGeneratedAttribute]
+public string get_TypeName();
+    [CompilerGeneratedAttribute]
+private void set_TypeName(string value);
+    [CompilerGeneratedAttribute]
+public string get_ModuleName();
+    [CompilerGeneratedAttribute]
+private void set_ModuleName(string value);
+    [CompilerGeneratedAttribute]
+public int get_Size();
+    [CompilerGeneratedAttribute]
+public void set_Size(int value);
+    [CompilerGeneratedAttribute]
+public NodeIndex get_Index();
+    [CompilerGeneratedAttribute]
+private void set_Index(NodeIndex value);
+    public MemoryNodeBuilder FindOrCreateChild(string childTypeName, string childModuleName);
+    public void AddChild(MemoryNodeBuilder child);
+    public void AddChild(NodeIndex child);
+    public void AllocateTypeIndexes();
+    public NodeIndex Build();
+    private void AllocateTypeIndexes(Dictionary`2<string, NodeTypeIndex> types);
+}
+public class Graphs.Module : object {
+    public string Path;
+    public ulong ImageBase;
+    public int Size;
+    public DateTime BuildTime;
+    public string PdbName;
+    public Guid PdbGuid;
+    public int PdbAge;
+    public Module(ulong imageBase);
+    public sealed virtual void ToStream(Serializer serializer);
+    public sealed virtual void FromStream(Deserializer deserializer);
+}
+public class Graphs.Node : object {
+    internal NodeIndex m_index;
+    internal Graph m_graph;
+    private StreamLabel m_current;
+    private int m_numChildrenLeft;
+    public int Size { get; }
+    public bool Defined { get; }
+    public int ChildCount { get; }
+    public NodeTypeIndex TypeIndex { get; }
+    public NodeIndex Index { get; }
+    public Graph Graph { get; }
+    protected internal Node(Graph graph);
+    public int get_Size();
+    public bool get_Defined();
+    public NodeType GetType(NodeType storage);
+    public void ResetChildrenEnumeration();
+    public NodeIndex GetFirstChildIndex();
+    public NodeIndex GetNextChildIndex();
+    public int get_ChildCount();
+    public NodeTypeIndex get_TypeIndex();
+    public NodeIndex get_Index();
+    public Graph get_Graph();
+    public bool Contains(NodeIndex nodeIndex);
+    public virtual string ToString();
+    public virtual void WriteXml(TextWriter writer, bool includeChildren, string prefix, NodeType typeStorage, string additinalAttribs);
+    internal static int ReadCompressedInt(SegmentedMemoryStreamReader reader);
+    internal static void WriteCompressedInt(SegmentedMemoryStreamWriter writer, int value);
+}
+public enum Graphs.NodeIndex : Enum {
+    public int value__;
+    public static NodeIndex Invalid;
+}
+public class Graphs.NodeType : object {
+    internal Graph m_graph;
+    internal NodeTypeIndex m_index;
+    public string Name { get; }
+    public string FullName { get; }
+    public int Size { get; }
+    public NodeTypeIndex Index { get; }
+    public Graph Graph { get; }
+    public string ModuleName { get; public set; }
+    public Module Module { get; }
+    public int RawTypeID { get; }
+    protected internal NodeType(Graph graph);
+    public string get_Name();
+    public string get_FullName();
+    public int get_Size();
+    public NodeTypeIndex get_Index();
+    public Graph get_Graph();
+    public string get_ModuleName();
+    public void set_ModuleName(string value);
+    public Module get_Module();
+    public int get_RawTypeID();
+    public virtual string ToString();
+    public void WriteXml(TextWriter writer, string prefix);
+}
+public enum Graphs.NodeTypeIndex : Enum {
+    public int value__;
+    public static NodeTypeIndex Invalid;
+}
+public class GraphSampler : object {
+    private static NodeIndex RejectedNode;
+    private static NodeIndex PotentialNode;
+    private MemoryGraph m_graph;
+    private int m_targetNodeCount;
+    private TextWriter m_log;
+    private Node m_nodeStorage;
+    private Node m_childNodeStorage;
+    private NodeType m_nodeTypeStorage;
+    private float m_filteringRatio;
+    private SampleStats[] m_statsByType;
+    private int m_numDistictTypesWithSamples;
+    private int m_numDistictTypes;
+    private NodeIndex[] m_newIndex;
+    private NodeTypeIndex[] m_newTypeIndexes;
+    private SpanningTree m_spanningTree;
+    private MemoryGraph m_newGraph;
+    public Single[] CountScalingByType { get; }
+    public GraphSampler(MemoryGraph graph, int targetNodeCount, TextWriter log);
+    public MemoryGraph GetSampledGraph();
+    public Single[] get_CountScalingByType();
+    public NodeTypeIndex MapTypeIndex(NodeTypeIndex oldTypeIndex);
+    public NodeIndex MapNodeIndex(NodeIndex oldNodeIndex);
+    private void VisitNode(NodeIndex nodeIdx, bool mustAdd, bool dontAddAncestors);
+    private NodeTypeIndex GetNewTypeIndex(NodeTypeIndex oldTypeIndex);
+    [ConditionalAttribute("DEBUG")]
+private void ValidateStats(bool allNodesVisited, bool completed);
+    private static bool IsSampledNode(NodeIndex nodeIdx);
+    [CompilerGeneratedAttribute]
+private int <GetSampledGraph>b__1_0(int x, int y);
+}
+public class InteropInfo : object {
+    internal int m_countRCWs;
+    internal int m_countCCWs;
+    internal int m_countInterfaces;
+    internal int m_countRCWInterfaces;
+    internal int m_countModules;
+    internal List`1<RCWInfo> m_listRCWInfo;
+    internal List`1<CCWInfo> m_listCCWInfo;
+    internal List`1<ComInterfaceInfo> m_listComInterfaceInfo;
+    internal List`1<InteropModuleInfo> m_listModules;
+    public int currentRCWCount { get; }
+    public int currentCCWCount { get; }
+    public int currentInterfaceCount { get; }
+    public int currentModuleCount { get; }
+    public InteropInfo(bool fInitLater);
+    public int get_currentRCWCount();
+    public int get_currentCCWCount();
+    public int get_currentInterfaceCount();
+    public int get_currentModuleCount();
+    public void AddRCW(RCWInfo rcwInfo);
+    public void AddCCW(CCWInfo ccwInfo);
+    public void AddComInterface(ComInterfaceInfo interfaceInfo);
+    public void AddModule(InteropModuleInfo moduleInfo);
+    public bool InteropInfoExists();
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+public class JSHeapInfo : object {
+    private sealed virtual override void FastSerialization.IFastSerializable.ToStream(Serializer serializer);
+    private sealed virtual override void FastSerialization.IFastSerializable.FromStream(Deserializer deserializer);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+internal static class Microsoft.Diagnostics.Tools.GCDump.CollectCommandHandler : object {
+    public static int DefaultTimeout;
+    private static CollectCommandHandler();
+    [AsyncStateMachineAttribute("Microsoft.Diagnostics.Tools.GCDump.CollectCommandHandler/<Collect>d__1")]
+private static Task`1<int> Collect(CancellationToken ct, IConsole console, int processId, string output, int timeout, bool verbose, string name, string diagnosticPort);
+    internal static bool TryCollectMemoryGraph(CancellationToken ct, int processId, string diagnosticPort, int timeout, bool verbose, MemoryGraph& memoryGraph);
+    public static Command CollectCommand();
+    private static Option`1<int> ProcessIdOption();
+    private static Option`1<string> NameOption();
+    private static Option`1<string> OutputPathOption();
+    private static Option`1<bool> VerboseOption();
+    private static Option`1<int> TimeoutOption();
+    private static Option`1<string> DiagnosticPortOption();
+}
+[ExtensionAttribute]
+internal static class Microsoft.Diagnostics.Tools.GCDump.CommandLine.PrintReportHelper : object {
+    [ExtensionAttribute]
+internal static void WriteToStdOut(MemoryGraph memoryGraph);
+    [IteratorStateMachineAttribute("Microsoft.Diagnostics.Tools.GCDump.CommandLine.PrintReportHelper/<GetReportItem>d__2")]
+private static IEnumerable`1<ReportItem> GetReportItem(MemoryGraph memoryGraph);
+    [CompilerGeneratedAttribute]
+internal static ReadOnlySpan`1<char> <WriteToStdOut>g__GetDllName|0_2(ReadOnlySpan`1<char> input);
+    [CompilerGeneratedAttribute]
+internal static void <WriteToStdOut>g__WriteFixedWidth|0_3(long value);
+    [CompilerGeneratedAttribute]
+internal static void <WriteToStdOut>g__WriteSummaryRow|0_4(object value, string text);
+}
+internal static class Microsoft.Diagnostics.Tools.GCDump.ConvertCommandHandler : object {
+    public static int ConvertFile(FileInfo input, string output, bool verbose);
+    public static Command ConvertCommand();
+    private static Argument`1<FileInfo> InputPathArgument();
+    private static Option`1<string> OutputPathOption();
+    private static Option`1<bool> VerboseOption();
+}
+public static class Microsoft.Diagnostics.Tools.GCDump.EventPipeDotNetHeapDumper : object {
+    internal static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) eventPipeDataPresent;
+    internal static Boolean modreq(System.Runtime.CompilerServices.IsVolatile) dumpComplete;
+    public static bool DumpFromEventPipeFile(string path, MemoryGraph memoryGraph, TextWriter log, DotNetHeapInfo dotNetInfo);
+    public static bool DumpFromEventPipe(CancellationToken ct, int processId, string diagnosticPort, MemoryGraph memoryGraph, TextWriter log, int timeout, DotNetHeapInfo dotNetInfo);
+}
+internal class Microsoft.Diagnostics.Tools.GCDump.EventPipeSessionController : object {
+    private List`1<EventPipeProvider> _providers;
+    private DiagnosticsClient _client;
+    private EventPipeSession _session;
+    private EventPipeEventSource _source;
+    private int _pid;
+    private IpcEndpointConfig _diagnosticPort;
+    private bool disposedValue;
+    public IReadOnlyList`1<EventPipeProvider> Providers { get; }
+    public EventPipeEventSource Source { get; }
+    public bool UseWildcardProcessId { get; }
+    public EventPipeSessionController(int pid, string diagnosticPort, List`1<EventPipeProvider> providers, bool requestRundown);
+    public IReadOnlyList`1<EventPipeProvider> get_Providers();
+    public EventPipeEventSource get_Source();
+    public bool get_UseWildcardProcessId();
+    public void EndSession();
+    private void Dispose(bool disposing);
+    public sealed virtual void Dispose();
+}
+internal static class Microsoft.Diagnostics.Tools.GCDump.Program : object {
+    public static Task`1<int> Main(String[] args);
+    private static int <Main>(String[] args);
+}
+internal static class Microsoft.Diagnostics.Tools.GCDump.ReportCommandHandler : object {
+    public static Command ReportCommand();
+    private static Task`1<int> Report(CancellationToken ct, IConsole console, FileInfo gcdump_filename, Nullable`1<int> processId, ReportType type, string diagnosticPort);
+    private static Task`1<int> HandleUnknownParam();
+    private static Task`1<int> ReportFromProcess(int processId, string diagnosticPort, CancellationToken ct);
+    private static Task`1<int> ReportFromFile(FileSystemInfo file);
+    private static Argument`1<FileInfo> FileNameArgument();
+    private static Option`1<int> ProcessIdOption();
+    private static Option`1<ReportType> ReportTypeOption();
+    private static Option`1<string> DiagnosticPortOption();
+}
+[ExtensionAttribute]
+public static class Microsoft.Internal.Common.CommandExtensions : object {
+    [ExtensionAttribute]
+public static void Add(Command command, ICommandHandler handler);
+    [ExtensionAttribute]
+public static CommandLineBuilder UseToolsDefaults(CommandLineBuilder builder);
+}
+public class Microsoft.Internal.Common.Commands.ProcessStatusCommandHandler : object {
+    public static Command ProcessStatusCommand(string description);
+    private static void MakeFixedWidth(string text, int width, StringBuilder sb, bool leftPad, bool truncateFront);
+    public static void ProcessStatus(IConsole console);
+    private static Process GetProcessById(int processId);
+    private static string GetArgs(Process process);
+    [CompilerGeneratedAttribute]
+internal static int <ProcessStatus>g__GetColumnWidth|4_0(IEnumerable`1<int> fieldWidths);
+    [CompilerGeneratedAttribute]
+internal static void <ProcessStatus>g__FormatTableRows|4_1(List`1<ProcessDetails> rows, StringBuilder tableText);
+}
+internal static class Microsoft.Internal.Common.Utils.CommandUtils : object {
+    public static int FindProcessIdWithName(string name);
+    public static bool ValidateArgumentsForChildProcess(int processId, string name, string port);
+    public static bool ValidateArgumentsForAttach(int processId, string name, string port, Int32& resolvedProcessId);
+}
+internal class Microsoft.Internal.Common.Utils.LineRewriter : object {
+    [CompilerGeneratedAttribute]
+private int <LineToClear>k__BackingField;
+    private static Nullable`1<bool> _isSetCursorPositionSupported;
+    public int LineToClear { get; public set; }
+    public bool IsRewriteConsoleLineSupported { get; }
+    [CompilerGeneratedAttribute]
+public int get_LineToClear();
+    [CompilerGeneratedAttribute]
+public void set_LineToClear(int value);
+    public void RewriteConsoleLine();
+    private void SystemConsoleLineRewriter();
+    public bool get_IsRewriteConsoleLineSupported();
+    [CompilerGeneratedAttribute]
+private bool <get_IsRewriteConsoleLineSupported>g__EnsureInitialized|9_0();
+}
+internal static class Microsoft.Internal.Common.Utils.ProcessNativeMethods : object {
+    public static int ProcessBasicInformation;
+    public static int ProcessWow64Information;
+    public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, Byte[] lpBuffer, IntPtr dwSize, IntPtr& lpNumberOfBytesRead);
+    public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, Byte[] lpBuffer, IntPtr dwSize, IntPtr lpNumberOfBytesRead);
+    public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, IntPtr& lpPtr, IntPtr dwSize, IntPtr& lpNumberOfBytesRead);
+    public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, UNICODE_STRING& lpBuffer, IntPtr dwSize, IntPtr lpNumberOfBytesRead);
+    public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, UNICODE_STRING_32& lpBuffer, IntPtr dwSize, IntPtr lpNumberOfBytesRead);
+    public static bool OpenProcessToken(IntPtr hProcess, UInt32 dwDesiredAccess, IntPtr& processToken);
+    public static bool IsWow64Process(IntPtr hProcess, Boolean& wow64Process);
+    public static int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ProcessInformation& processInformation, int processInformationLength, Int32& returnLength);
+    public static int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, IntPtr& processInformation, int processInformationLength, Int32& returnLength);
+}
+internal enum Microsoft.Internal.Common.Utils.ReturnCode : Enum {
+    public int value__;
+    public static ReturnCode Ok;
+    public static ReturnCode SessionCreationError;
+    public static ReturnCode TracingError;
+    public static ReturnCode ArgumentError;
+    public static ReturnCode UnknownError;
+}
+internal static class Microsoft.Internal.Common.Utils.WindowsProcessExtension : object {
+    public static string GetCommandLine(Process process);
+    private static string GetCommandLineCore(IntPtr processHandle);
+    private static bool ReadIntPtr(IntPtr hProcess, IntPtr ptr, IntPtr& readPtr);
+    private static IntPtr GetPebNative(IntPtr hProcess);
+    private static IntPtr GetPeb64(IntPtr hProcess);
+    private static IntPtr GetPeb32(IntPtr hProcess);
+    private static int GetProcessBitness(IntPtr hProcess);
+}
+internal class PriorityQueue : object {
+    private DataItem[] m_heap;
+    private int m_count;
+    public int Count { get; }
+    public PriorityQueue(int initialSize);
+    public int get_Count();
+    public void Enqueue(NodeIndex item, float priority);
+    public NodeIndex Dequeue(Single& priority);
+    [ConditionalAttribute("DEBUG")]
+private void CheckInvariant();
+}
+public class RefGraph : object {
+    internal NodeListIndex[] m_refsForNodes;
+    internal GrowableArray`1<RefElem> m_links;
+    public RefGraph(Graph graph);
+    public RefNode AllocNodeStorage();
+    public RefNode GetNode(NodeIndex nodeIndex, RefNode storage);
+    public RefNode GetNode(NodeIndex nodeIndex);
+    private void AddRefsTo(NodeIndex refTarget, NodeIndex refSource);
+    private int AddLink(NodeIndex refIdx, int nextIdx);
+}
+public class RefNode : object {
+    internal RefGraph m_graph;
+    internal NodeIndex m_index;
+    internal int m_cur;
+    public int ChildCount { get; }
+    public RefGraph Graph { get; }
+    public NodeIndex Index { get; }
+    internal RefNode(RefGraph refGraph);
+    public NodeIndex GetFirstChildIndex();
+    public NodeIndex GetNextChildIndex();
+    public int get_ChildCount();
+    public RefGraph get_Graph();
+    public NodeIndex get_Index();
+    public bool Contains(NodeIndex node);
+    public virtual string ToString();
+    public void WriteXml(TextWriter writer, string prefix);
+}
+public class SpanningTree : object {
+    private Graph m_graph;
+    private NodeIndex[] m_parent;
+    private string m_priorityRegExs;
+    private Single[] m_typePriorities;
+    private NodeType m_typeStorage;
+    private Node m_nodeStorage;
+    private Node m_childStorage;
+    private Node m_cachedNodeStorage;
+    private TextWriter m_log;
+    public Graph Graph { get; }
+    public string PriorityRegExs { get; public set; }
+    public static string DefaultPriorities { get; }
+    public SpanningTree(Graph graph, TextWriter log);
+    public Graph get_Graph();
+    public string get_PriorityRegExs();
+    public void set_PriorityRegExs(string value);
+    public static string get_DefaultPriorities();
+    public NodeIndex Parent(NodeIndex node);
+    public void ForEach(Action`1<NodeIndex> callback);
+    private void AddOrphansToQueue(PriorityQueue nodesToVisit);
+    private void MarkDecendentsIgnoringCycles(NodeIndex nodeIndex, int recursionCount);
+    private void FreeNodeStorage(Node node);
+    private Node AllocNodeStorage();
+    internal static string ToDotNetRegEx(string str);
+    private void SetTypePriorities(string priorityPats);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
+internal static class XmlGcHeapDump : object {
+    public static GCHeapDump ReadGCHeapDumpFromXml(string fileName);
+    public static GCHeapDump ReadGCHeapDumpFromXml(XmlReader reader);
+    public static MemoryGraph ReadMemoryGraphFromXml(XmlReader reader);
+    internal static void WriteGCDumpToXml(GCHeapDump gcDump, StreamWriter writer);
+    private static void ReadCountMultipliersByTypeFromXml(XmlReader reader, List`1<float> countMultipliers);
+    private static void ReadNodeTypesFromXml(XmlReader reader, MemoryGraph graph);
+    private static void ReadNodesFromXml(XmlReader reader, MemoryGraph graph);
+    private static int FetchInt(XmlReader reader, string attributeName, int defaultValue);
+    private static float FetchFloat(XmlReader reader, string attributeName, float defaultValue);
+}

@@ -1,0 +1,158 @@
+internal static class Cake.NuGet.Constants : object {
+}
+internal class Cake.NuGet.InProcessInstaller : object {
+    private static ISet`1<string> _denyListPackages;
+    private IFileSystem _fileSystem;
+    private ICakeEnvironment _environment;
+    private INuGetContentResolver _contentResolver;
+    private ICakeLog _log;
+    private ICakeConfiguration _config;
+    private ISettings _nugetSettings;
+    private ILogger _nugetLogger;
+    private NuGetFramework _currentFramework;
+    private SourceCacheContext _sourceCacheContext;
+    private static InProcessInstaller();
+    public InProcessInstaller(IFileSystem fileSystem, ICakeEnvironment environment, INuGetContentResolver contentResolver, ICakeLog log, ICakeConfiguration config);
+    public bool CanInstall(PackageReference package, PackageType type);
+    public IReadOnlyCollection`1<IFile> Install(PackageReference package, PackageType type, DirectoryPath path);
+    private DependencyBehavior GetDependencyBehavior(PackageType type, PackageReference package);
+    private static string GetToolPath(ICakeEnvironment environment, ICakeConfiguration config);
+    private static PackageIdentity GetPackageId(PackageReference package, IEnumerable`1<SourceRepository> repositories, NuGetFramework targetFramework, SourceCacheContext sourceCacheContext, ILogger logger);
+    private static NuGetVersion GetNuGetVersion(PackageReference package, IEnumerable`1<SourceRepository> repositories, NuGetFramework targetFramework, SourceCacheContext sourceCacheContext, ILogger logger);
+    private static void GetPackageDependencies(PackageIdentity package, NuGetFramework framework, SourceCacheContext cacheContext, ILogger logger, IEnumerable`1<SourceRepository> repositories, ISet`1<SourcePackageDependencyInfo> availablePackages, DependencyBehavior dependencyBehavior, IEnumerable`1<SourceRepository> primaryRepositories);
+    private static Tuple`2<DirectoryPath, FilePath> GetNuGetConfigPath(ICakeEnvironment environment, ICakeConfiguration config, IFileSystem fileSystem);
+    public sealed virtual void Dispose();
+}
+public interface Cake.NuGet.INuGetContentResolver {
+    public abstract virtual IReadOnlyCollection`1<IFile> GetFiles(DirectoryPath path, PackageReference package, PackageType type);
+}
+public interface Cake.NuGet.INuGetPackageInstaller {
+}
+internal class Cake.NuGet.NuGetContentResolver : object {
+    private IFileSystem _fileSystem;
+    private ICakeEnvironment _environment;
+    private IGlobber _globber;
+    private ICakeLog _log;
+    private static Lazy`1<RuntimeGraph> RuntimeGraph;
+    public NuGetContentResolver(IFileSystem fileSystem, ICakeEnvironment environment, IGlobber globber, ICakeLog log);
+    private static NuGetContentResolver();
+    public sealed virtual IReadOnlyCollection`1<IFile> GetFiles(DirectoryPath path, PackageReference package, PackageType type);
+    private IReadOnlyCollection`1<IFile> GetAddinAssemblies(DirectoryPath path, PackageReference package);
+    private IReadOnlyCollection`1<IFile> GetToolFiles(DirectoryPath path, PackageReference package);
+    private IEnumerable`1<IFile> GetFiles(DirectoryPath path, PackageReference package, String[] patterns);
+    [CompilerGeneratedAttribute]
+private IFile <GetFiles>b__9_0(FilePath p);
+}
+internal class Cake.NuGet.NuGetLoadDirectiveProvider : object {
+    private ICakeEnvironment _environment;
+    private INuGetPackageInstaller _installer;
+    private ICakeConfiguration _configuration;
+    private ICakeLog _log;
+    public NuGetLoadDirectiveProvider(ICakeEnvironment environment, INuGetPackageInstaller installer, ICakeConfiguration configuration, ICakeLog log);
+    public sealed virtual bool CanLoad(IScriptAnalyzerContext context, LoadReference reference);
+    public sealed virtual void Load(IScriptAnalyzerContext context, LoadReference reference);
+    private DirectoryPath GetToolPath(DirectoryPath root);
+}
+internal class Cake.NuGet.NuGetLogger : object {
+    private ICakeLog _log;
+    public NuGetLogger(ICakeLog log);
+    private static LogLevel GetLogLevel(LogLevel logLevel);
+    private static Verbosity GetVerbosity(LogLevel logLevel);
+    public sealed virtual void LogDebug(string data);
+    public sealed virtual void LogVerbose(string data);
+    public sealed virtual void LogInformation(string data);
+    public sealed virtual void LogMinimal(string data);
+    public sealed virtual void LogWarning(string data);
+    public sealed virtual void LogError(string data);
+    public sealed virtual void LogInformationSummary(string data);
+    public void LogErrorSummary(string data);
+    public sealed virtual void Log(LogLevel level, string data);
+    public sealed virtual Task LogAsync(LogLevel level, string data);
+    public sealed virtual void Log(ILogMessage message);
+    public sealed virtual Task LogAsync(ILogMessage message);
+}
+public class Cake.NuGet.NuGetModule : object {
+    public sealed virtual void Register(ICakeContainerRegistrar registrar);
+}
+internal class Cake.NuGet.NuGetPackageInstaller : object {
+    private bool _useInProcessClient;
+    private InProcessInstaller _inProc;
+    private OutOfProcessInstaller _outProc;
+    public NuGetPackageInstaller(ICakeConfiguration configuration, InProcessInstaller inProc, OutOfProcessInstaller outProc);
+    private bool UseInProcessClient(ICakeConfiguration configuration);
+    public sealed virtual bool CanInstall(PackageReference package, PackageType type);
+    public sealed virtual IReadOnlyCollection`1<IFile> Install(PackageReference package, PackageType type, DirectoryPath path);
+}
+internal class Cake.NuGet.NuGetSourceRepositoryComparer : object {
+    public sealed virtual bool Equals(SourceRepository x, SourceRepository y);
+    public sealed virtual int GetHashCode(SourceRepository obj);
+}
+internal class Cake.NuGet.NuGetSourceRepositoryProvider : object {
+    private List`1<Lazy`1<INuGetResourceProvider>> _resourceProviders;
+    private ISet`1<SourceRepository> _repositories;
+    private ISet`1<SourceRepository> _primaryRepositories;
+    private ISet`1<SourceRepository> _localRepositories;
+    public IEnumerable`1<SourceRepository> PrimaryRepositories { get; }
+    public IEnumerable`1<SourceRepository> LocalRepositories { get; }
+    public IEnumerable`1<SourceRepository> Repositories { get; }
+    public NuGetSourceRepositoryProvider(ISettings settings, ICakeConfiguration config, PackageReference package, string packagesRoot);
+    public IEnumerable`1<SourceRepository> get_PrimaryRepositories();
+    public IEnumerable`1<SourceRepository> get_LocalRepositories();
+    public IEnumerable`1<SourceRepository> get_Repositories();
+    private SourceRepository CreateRepository(string source);
+    private SourceRepository CreateRepository(PackageSource source);
+    private SourceRepository CreateRepository(PackageSource source, FeedType type);
+    [CompilerGeneratedAttribute]
+private SourceRepository <.ctor>g__GetOrCreateRepository|4_0(string source, <>c__DisplayClass4_0& );
+}
+internal class Cake.NuGet.OutOfProcessInstaller : object {
+    private IFileSystem _fileSystem;
+    private ICakeEnvironment _environment;
+    private IProcessRunner _processRunner;
+    private INuGetToolResolver _toolResolver;
+    private INuGetContentResolver _contentResolver;
+    private ICakeLog _log;
+    private ICakeConfiguration _config;
+    public OutOfProcessInstaller(IFileSystem fileSystem, ICakeEnvironment environment, IProcessRunner processRunner, INuGetToolResolver toolResolver, INuGetContentResolver contentResolver, ICakeLog log, ICakeConfiguration config);
+    public bool CanInstall(PackageReference package, PackageType type);
+    public IReadOnlyCollection`1<IFile> Install(PackageReference package, PackageType type, DirectoryPath path);
+    private static DirectoryPath GetPackagePath(IDirectory root, string package);
+    private static DirectoryPath GetPackagePath(DirectoryPath root, PackageReference package);
+    private bool InstallPackage(PackageReference package, DirectoryPath path);
+    private FilePath GetNuGetPath();
+    private static ProcessArgumentBuilder GetArguments(PackageReference definition, DirectoryPath installationRoot, ICakeConfiguration config);
+}
+[ExtensionAttribute]
+internal static class Cake.NuGet.PackageReferenceExtensions : object {
+    private static string LoadDependenciesKey;
+    [ExtensionAttribute]
+public static bool ShouldLoadDependencies(PackageReference packageReference, ICakeConfiguration config);
+    [ExtensionAttribute]
+public static bool IsPrerelease(PackageReference packageReference);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

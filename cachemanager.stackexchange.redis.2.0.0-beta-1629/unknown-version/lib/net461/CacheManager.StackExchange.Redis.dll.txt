@@ -1,0 +1,456 @@
+[ExtensionAttribute]
+public static class CacheManager.Core.RedisConfigurationBuilderExtensions : object {
+    [ExtensionAttribute]
+public static ConfigurationBuilderCachePart WithRedisConfiguration(ConfigurationBuilderCachePart part, string configurationKey, Action`1<RedisConfigurationBuilder> configuration);
+    [ExtensionAttribute]
+public static ConfigurationBuilderCachePart WithRedisConfiguration(ConfigurationBuilderCachePart part, string configurationKey, string connectionString, int database, bool enableKeyspaceNotifications);
+    [ExtensionAttribute]
+[CLSCompliantAttribute("False")]
+public static ConfigurationBuilderCachePart WithRedisConfiguration(ConfigurationBuilderCachePart part, string configurationKey, IConnectionMultiplexer redisClient, int database, bool enableKeyspaceNotifications);
+    [ExtensionAttribute]
+public static ConfigurationBuilderCachePart WithRedisBackplane(ConfigurationBuilderCachePart part, string redisConfigurationKey);
+    [ExtensionAttribute]
+public static ConfigurationBuilderCachePart WithRedisBackplane(ConfigurationBuilderCachePart part, string redisConfigurationKey, string channelName);
+    [ExtensionAttribute]
+public static ConfigurationBuilderCacheHandlePart WithRedisCacheHandle(ConfigurationBuilderCachePart part, string redisConfigurationKey, bool isBackplaneSource);
+}
+public class CacheManager.Redis.Endpoint : ConfigurationElement {
+    [ConfigurationPropertyAttribute("host")]
+public string Host { get; public set; }
+    [ConfigurationPropertyAttribute("port")]
+public int Port { get; public set; }
+    public string get_Host();
+    public void set_Host(string value);
+    public int get_Port();
+    public void set_Port(int value);
+}
+public class CacheManager.Redis.EndpointCollection : ConfigurationElementCollection {
+    [IteratorStateMachineAttribute("CacheManager.Redis.EndpointCollection/<GetEnumerator>d__1")]
+public sealed virtual IEnumerator`1<Endpoint> GetEnumerator();
+    protected virtual ConfigurationElement CreateNewElement();
+    protected virtual object GetElementKey(ConfigurationElement element);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private IEnumerator <>n__0();
+}
+internal interface CacheManager.Redis.IRedisValueConverter {
+    public abstract virtual RedisValue ToRedisValue(T value);
+    public abstract virtual T FromRedisValue(RedisValue value, string valueType);
+}
+internal interface CacheManager.Redis.IRedisValueConverter`1 {
+    public abstract virtual RedisValue ToRedisValue(T value);
+    public abstract virtual T FromRedisValue(RedisValue value, string valueType);
+}
+public class CacheManager.Redis.RedisCacheBackplane : CacheBackplane {
+    private static int HardLimit;
+    private string _channelName;
+    private Byte[] _identifier;
+    private ILogger _logger;
+    private RedisConnectionManager _connection;
+    private Timer _timer;
+    private HashSet`1<BackplaneMessage> _messages;
+    private object _messageLock;
+    private int _skippedMessages;
+    private bool _sending;
+    private CancellationTokenSource _source;
+    private bool loggedLimitWarningOnce;
+    public RedisCacheBackplane(ICacheManagerConfiguration configuration, ILoggerFactory loggerFactory);
+    public virtual void NotifyChange(string key, CacheItemChangedEventAction action);
+    public virtual void NotifyChange(string key, string region, CacheItemChangedEventAction action);
+    public virtual void NotifyClear();
+    public virtual void NotifyClearRegion(string region);
+    public virtual void NotifyRemove(string key);
+    public virtual void NotifyRemove(string key, string region);
+    protected virtual void Dispose(bool managed);
+    private void Publish(Byte[] message);
+    private void PublishMessage(BackplaneMessage message);
+    private void SendMessages(object state);
+    private void Subscribe();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__12_0();
+    [CompilerGeneratedAttribute]
+private void <Subscribe>b__23_0(RedisChannel channel, RedisValue msg);
+}
+[RequiresSerializerAttribute]
+public class CacheManager.Redis.RedisCacheHandle`1 : BaseCacheHandle`1<TCacheValue> {
+    private static TimeSpan MinimumExpirationTimeout;
+    private static string Base64Prefix;
+    private static string HashFieldCreated;
+    private static string HashFieldExpirationMode;
+    private static string HashFieldExpirationTimeout;
+    private static string HashFieldType;
+    private static string HashFieldValue;
+    private static string HashFieldVersion;
+    private static string HashFieldUsesDefaultExp;
+    private static string _scriptAdd;
+    private static string _scriptPut;
+    private static string _scriptUpdate;
+    private static string _scriptGet;
+    private IDictionary`2<ScriptType, LoadedLuaScript> _shaScripts;
+    private IDictionary`2<ScriptType, LuaScript> _luaScripts;
+    private ICacheManagerConfiguration _managerConfiguration;
+    private RedisValueConverter _valueConverter;
+    private RedisConnectionManager _connection;
+    private bool _isLuaAllowed;
+    private bool _canPreloadScripts;
+    private RedisConfiguration _redisConfiguration;
+    private bool _scriptsLoaded;
+    private object _lockObject;
+    [CompilerGeneratedAttribute]
+private ILogger <Logger>k__BackingField;
+    public bool IsDistributedCache { get; }
+    public int Count { get; }
+    public IEnumerable`1<IServer> Servers { get; }
+    public RedisFeatures Features { get; }
+    public bool IsLuaAllowed { get; }
+    protected ILogger Logger { get; }
+    public RedisCacheHandle`1(ICacheManagerConfiguration managerConfiguration, CacheHandleConfiguration configuration, ILoggerFactory loggerFactory, ICacheSerializer serializer);
+    private static RedisCacheHandle`1();
+    public virtual bool get_IsDistributedCache();
+    public virtual int get_Count();
+    public IEnumerable`1<IServer> get_Servers();
+    public RedisFeatures get_Features();
+    public bool get_IsLuaAllowed();
+    [CompilerGeneratedAttribute]
+protected virtual ILogger get_Logger();
+    public virtual void Clear();
+    public virtual void ClearRegion(string region);
+    public virtual bool Exists(string key);
+    public virtual bool Exists(string key, string region);
+    public virtual UpdateItemResult`1<TCacheValue> Update(string key, Func`2<TCacheValue, TCacheValue> updateValue, int maxRetries);
+    public virtual UpdateItemResult`1<TCacheValue> Update(string key, string region, Func`2<TCacheValue, TCacheValue> updateValue, int maxRetries);
+    protected UpdateItemResult`1<TCacheValue> UpdateNoScript(string key, string region, Func`2<TCacheValue, TCacheValue> updateValue, int maxRetries);
+    protected virtual bool AddInternalPrepared(CacheItem`1<TCacheValue> item);
+    protected virtual void Dispose(bool disposeManaged);
+    protected virtual CacheItem`1<TCacheValue> GetCacheItemInternal(string key);
+    protected virtual CacheItem`1<TCacheValue> GetCacheItemInternal(string key, string region);
+    private CacheItem`1<TCacheValue> GetCacheItemAndVersion(string key, string region, Int32& version);
+    protected CacheItem`1<TCacheValue> GetCacheItemInternalNoScript(string key, string region);
+    protected virtual void PutInternal(CacheItem`1<TCacheValue> item);
+    protected virtual void PutInternalPrepared(CacheItem`1<TCacheValue> item);
+    protected virtual bool RemoveInternal(string key);
+    protected virtual bool RemoveInternal(string key, string region);
+    private void SubscribeKeyspaceNotifications();
+    private static Tuple`2<string, string> ParseKey(string value);
+    private static void ValidateExpirationTimeout(CacheItem`1<TCacheValue> item);
+    private string GetKey(string key, string region);
+    private TCacheValue FromRedisValue(RedisValue value, string valueType);
+    private RedisValue ToRedisValue(TCacheValue value);
+    private T Retry(Func`1<T> retryme);
+    private void Retry(Action retryme);
+    private bool Set(CacheItem`1<TCacheValue> item, When when, bool sync);
+    private bool SetNoScript(CacheItem`1<TCacheValue> item, When when, bool sync);
+    private RedisResult Eval(ScriptType scriptType, RedisKey redisKey, RedisValue[] values, CommandFlags flags);
+    private void LoadScripts();
+    [CompilerGeneratedAttribute]
+private void <SubscribeKeyspaceNotifications>b__54_0(RedisChannel channel, RedisValue key);
+    [CompilerGeneratedAttribute]
+private void <SubscribeKeyspaceNotifications>b__54_1(RedisChannel channel, RedisValue key);
+    [CompilerGeneratedAttribute]
+private void <SubscribeKeyspaceNotifications>b__54_2(RedisChannel channel, RedisValue key);
+}
+public class CacheManager.Redis.RedisConfiguration : object {
+    private string _connectionString;
+    private ConfigurationOptions _configurationOptions;
+    [CompilerGeneratedAttribute]
+private string <StrictCompatibilityModeVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Password>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsSsl>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SslHost>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ConnectionTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IList`1<ServerEndPoint> <Endpoints>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowAdmin>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Database>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <KeyspaceNotificationsEnabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <TwemproxyEnabled>k__BackingField;
+    [CLSCompliantAttribute("False")]
+public ConfigurationOptions ConfigurationOptions { get; }
+    public string StrictCompatibilityModeVersion { get; public set; }
+    public string Key { get; public set; }
+    public string ConnectionString { get; public set; }
+    public string Password { get; public set; }
+    public bool IsSsl { get; public set; }
+    public string SslHost { get; public set; }
+    public int ConnectionTimeout { get; public set; }
+    public IList`1<ServerEndPoint> Endpoints { get; }
+    public bool AllowAdmin { get; public set; }
+    public int Database { get; public set; }
+    public bool KeyspaceNotificationsEnabled { get; public set; }
+    public bool TwemproxyEnabled { get; public set; }
+    public RedisConfiguration(string key, IList`1<ServerEndPoint> endpoints, int database, string password, bool isSsl, string sslHost, int connectionTimeout, bool allowAdmin, bool keyspaceNotificationsEnabled, bool twemproxyEnabled, string strictCompatibilityModeVersion);
+    public RedisConfiguration(string key, string connectionString, int database, bool keyspaceNotificationsEnabled, string strictCompatibilityModeVersion);
+    private ConfigurationOptions CreateConfigurationOptions();
+    public ConfigurationOptions get_ConfigurationOptions();
+    [CompilerGeneratedAttribute]
+public string get_StrictCompatibilityModeVersion();
+    [CompilerGeneratedAttribute]
+public void set_StrictCompatibilityModeVersion(string value);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public void set_Key(string value);
+    public string get_ConnectionString();
+    public void set_ConnectionString(string value);
+    [CompilerGeneratedAttribute]
+public string get_Password();
+    [CompilerGeneratedAttribute]
+public void set_Password(string value);
+    [CompilerGeneratedAttribute]
+public bool get_IsSsl();
+    [CompilerGeneratedAttribute]
+public void set_IsSsl(bool value);
+    [CompilerGeneratedAttribute]
+public string get_SslHost();
+    [CompilerGeneratedAttribute]
+public void set_SslHost(string value);
+    [CompilerGeneratedAttribute]
+public int get_ConnectionTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionTimeout(int value);
+    [CompilerGeneratedAttribute]
+public IList`1<ServerEndPoint> get_Endpoints();
+    [CompilerGeneratedAttribute]
+public bool get_AllowAdmin();
+    [CompilerGeneratedAttribute]
+public void set_AllowAdmin(bool value);
+    [CompilerGeneratedAttribute]
+public int get_Database();
+    [CompilerGeneratedAttribute]
+public void set_Database(int value);
+    [CompilerGeneratedAttribute]
+public bool get_KeyspaceNotificationsEnabled();
+    [CompilerGeneratedAttribute]
+public void set_KeyspaceNotificationsEnabled(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_TwemproxyEnabled();
+    [CompilerGeneratedAttribute]
+public void set_TwemproxyEnabled(bool value);
+}
+public class CacheManager.Redis.RedisConfigurationBuilder : object {
+    private bool _allowAdmin;
+    private int _connectionTimeout;
+    private int _database;
+    private IList`1<ServerEndPoint> _endpoints;
+    private bool _isSsl;
+    private string _key;
+    private string _password;
+    private string _sslHost;
+    private bool _enabledKeyspaceNotifications;
+    private string _useVersion;
+    private bool _useTwemproxy;
+    public RedisConfigurationBuilder(string configurationKey);
+    public RedisConfiguration Build();
+    public RedisConfigurationBuilder EnableKeyspaceEvents();
+    public RedisConfigurationBuilder UseCompatibilityMode(string version);
+    [CLSCompliantAttribute("False")]
+public RedisConfigurationBuilder UseTwemproxy();
+    public RedisConfigurationBuilder WithAllowAdmin();
+    public RedisConfigurationBuilder WithConnectionTimeout(int timeout);
+    public RedisConfigurationBuilder WithDatabase(int databaseIndex);
+    public RedisConfigurationBuilder WithEndpoint(string host, int port);
+    public RedisConfigurationBuilder WithPassword(string serverPassword);
+    public RedisConfigurationBuilder WithSsl(string host);
+}
+public static class CacheManager.Redis.RedisConfigurations : object {
+    private static Dictionary`2<string, RedisConfiguration> _config;
+    private static object _configLock;
+    private static Dictionary`2<string, RedisConfiguration> Configurations { get; }
+    private static RedisConfigurations();
+    private static Dictionary`2<string, RedisConfiguration> get_Configurations();
+    public static void AddConfiguration(RedisConfiguration configuration);
+    public static RedisConfiguration GetConfiguration(string configurationName);
+    public static void LoadConfiguration(string configFileName, string sectionName);
+    public static void LoadConfiguration(RedisConfigurationSection section);
+    public static void LoadConfiguration(string sectionName);
+    public static void LoadConfiguration();
+}
+public class CacheManager.Redis.RedisConfigurationSection : ConfigurationSection {
+    public static string DefaultSectionName;
+    private static string ConfigurationsName;
+    [CompilerGeneratedAttribute]
+private string <Xmlns>k__BackingField;
+    [ConfigurationPropertyAttribute("connections")]
+[ConfigurationCollectionAttribute("CacheManager.Redis.RedisOptionCollection")]
+public RedisOptionCollection Connections { get; }
+    [ConfigurationPropertyAttribute("xmlns")]
+public string Xmlns { get; public set; }
+    public RedisOptionCollection get_Connections();
+    [CompilerGeneratedAttribute]
+public string get_Xmlns();
+    [CompilerGeneratedAttribute]
+public void set_Xmlns(string value);
+}
+internal class CacheManager.Redis.RedisConnectionManager : object {
+    private static IDictionary`2<string, IConnectionMultiplexer> _connections;
+    private static object _connectLock;
+    private ILogger _logger;
+    private string _connectionString;
+    private RedisConfiguration _configuration;
+    public IEnumerable`1<IServer> Servers { get; }
+    public IDatabase Database { get; }
+    public ISubscriber Subscriber { get; }
+    public RedisFeatures Features { get; }
+    public RedisConnectionManager(RedisConfiguration configuration, ILoggerFactory loggerFactory);
+    private static RedisConnectionManager();
+    [IteratorStateMachineAttribute("CacheManager.Redis.RedisConnectionManager/<get_Servers>d__7")]
+public IEnumerable`1<IServer> get_Servers();
+    public IDatabase get_Database();
+    public ISubscriber get_Subscriber();
+    public RedisFeatures get_Features();
+    public Dictionary`2<EndPoint, string> GetConfiguration(string key);
+    public void SetConfigurationAllServers(string key, string value, bool addValue);
+    public static void AddConnection(string connectionString, IConnectionMultiplexer connection);
+    public static void RemoveConnection(string connectionString);
+    public IConnectionMultiplexer Connect();
+    private static string RemoveCredentials(string value);
+}
+public class CacheManager.Redis.RedisOptionCollection : ConfigurationElementCollection {
+    [IteratorStateMachineAttribute("CacheManager.Redis.RedisOptionCollection/<GetEnumerator>d__1")]
+public sealed virtual IEnumerator`1<RedisOptions> GetEnumerator();
+    protected virtual ConfigurationElement CreateNewElement();
+    protected virtual object GetElementKey(ConfigurationElement element);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private IEnumerator <>n__0();
+}
+public class CacheManager.Redis.RedisOptions : ConfigurationElement {
+    private static string EndpointsName;
+    [ConfigurationPropertyAttribute("allowAdmin")]
+public bool AllowAdmin { get; public set; }
+    [ConfigurationPropertyAttribute("enableKeyspaceNotifications")]
+public bool EnableKeyspaceNotifications { get; public set; }
+    [ConfigurationPropertyAttribute("connectionString")]
+public string ConnectionString { get; public set; }
+    [ConfigurationPropertyAttribute("connectionTimeout")]
+public int ConnectionTimeout { get; public set; }
+    [ConfigurationPropertyAttribute("database")]
+public int Database { get; public set; }
+    [ConfigurationPropertyAttribute("endpoints")]
+[ConfigurationCollectionAttribute("CacheManager.Redis.EndpointCollection")]
+public EndpointCollection Endpoints { get; }
+    [ConfigurationPropertyAttribute("id")]
+public string Id { get; public set; }
+    [ConfigurationPropertyAttribute("password")]
+public string Password { get; public set; }
+    [ConfigurationPropertyAttribute("ssl")]
+public bool Ssl { get; public set; }
+    [ConfigurationPropertyAttribute("sslHost")]
+public string SslHost { get; public set; }
+    [ConfigurationPropertyAttribute("twemproxyEnabled")]
+public bool TwemproxyEnabled { get; public set; }
+    [ConfigurationPropertyAttribute("strictCompatibilityModeVersion")]
+public string StrictCompatibilityModeVersion { get; public set; }
+    public bool get_AllowAdmin();
+    public void set_AllowAdmin(bool value);
+    public bool get_EnableKeyspaceNotifications();
+    public void set_EnableKeyspaceNotifications(bool value);
+    public string get_ConnectionString();
+    public void set_ConnectionString(string value);
+    public int get_ConnectionTimeout();
+    public void set_ConnectionTimeout(int value);
+    public int get_Database();
+    public void set_Database(int value);
+    public EndpointCollection get_Endpoints();
+    public string get_Id();
+    public void set_Id(string value);
+    public string get_Password();
+    public void set_Password(string value);
+    public bool get_Ssl();
+    public void set_Ssl(bool value);
+    public string get_SslHost();
+    public void set_SslHost(string value);
+    public bool get_TwemproxyEnabled();
+    public void set_TwemproxyEnabled(bool value);
+    public string get_StrictCompatibilityModeVersion();
+    public void set_StrictCompatibilityModeVersion(string value);
+}
+internal class CacheManager.Redis.RedisValueConverter : object {
+    private static Type _byteArrayType;
+    private static Type _byteType;
+    private static Type _stringType;
+    private static Type _intType;
+    private static Type _uIntType;
+    private static Type _shortType;
+    private static Type _uShortType;
+    private static Type _singleType;
+    private static Type _doubleType;
+    private static Type _boolType;
+    private static Type _longType;
+    private static Type _uLongType;
+    private static Type _charType;
+    private ICacheSerializer _serializer;
+    public RedisValueConverter(ICacheSerializer serializer);
+    private static RedisValueConverter();
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Byte[]>.ToRedisValue(Byte[] value);
+    private sealed virtual override Byte[] CacheManager.Redis.IRedisValueConverter<System.Byte[]>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Byte>.ToRedisValue(byte value);
+    private sealed virtual override byte CacheManager.Redis.IRedisValueConverter<System.Byte>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.String>.ToRedisValue(string value);
+    private sealed virtual override string CacheManager.Redis.IRedisValueConverter<System.String>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Int32>.ToRedisValue(int value);
+    private sealed virtual override int CacheManager.Redis.IRedisValueConverter<System.Int32>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.UInt32>.ToRedisValue(UInt32 value);
+    private sealed virtual override UInt32 CacheManager.Redis.IRedisValueConverter<System.UInt32>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Int16>.ToRedisValue(short value);
+    private sealed virtual override short CacheManager.Redis.IRedisValueConverter<System.Int16>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.UInt16>.ToRedisValue(ushort value);
+    private sealed virtual override ushort CacheManager.Redis.IRedisValueConverter<System.UInt16>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Single>.ToRedisValue(float value);
+    private sealed virtual override float CacheManager.Redis.IRedisValueConverter<System.Single>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Double>.ToRedisValue(double value);
+    private sealed virtual override double CacheManager.Redis.IRedisValueConverter<System.Double>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Boolean>.ToRedisValue(bool value);
+    private sealed virtual override bool CacheManager.Redis.IRedisValueConverter<System.Boolean>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Int64>.ToRedisValue(long value);
+    private sealed virtual override long CacheManager.Redis.IRedisValueConverter<System.Int64>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.UInt64>.ToRedisValue(ulong value);
+    private sealed virtual override ulong CacheManager.Redis.IRedisValueConverter<System.UInt64>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Char>.ToRedisValue(char value);
+    private sealed virtual override char CacheManager.Redis.IRedisValueConverter<System.Char>.FromRedisValue(RedisValue value, string valueType);
+    private sealed virtual override RedisValue CacheManager.Redis.IRedisValueConverter<System.Object>.ToRedisValue(object value);
+    private sealed virtual override object CacheManager.Redis.IRedisValueConverter<System.Object>.FromRedisValue(RedisValue value, string type);
+    public sealed virtual RedisValue ToRedisValue(T value);
+    public sealed virtual T FromRedisValue(RedisValue value, string valueType);
+    private object Deserialize(RedisValue value, string valueType);
+}
+internal static class CacheManager.Redis.RetryHelper : object {
+    private static string ErrorMessage;
+    private static string WarningMessage;
+    public static T Retry(Func`1<T> retryme, int timeOut, int retries, ILogger logger);
+    public static void Retry(Action retryme, int timeOut, int retries, ILogger logger);
+}
+internal enum CacheManager.Redis.ScriptType : Enum {
+    public int value__;
+    public static ScriptType Put;
+    public static ScriptType Add;
+    public static ScriptType Update;
+    public static ScriptType Get;
+}
+public class CacheManager.Redis.ServerEndPoint : object {
+    [CompilerGeneratedAttribute]
+private int <Port>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Host>k__BackingField;
+    public int Port { get; public set; }
+    public string Host { get; public set; }
+    public ServerEndPoint(string host, int port);
+    [CompilerGeneratedAttribute]
+public int get_Port();
+    [CompilerGeneratedAttribute]
+public void set_Port(int value);
+    [CompilerGeneratedAttribute]
+public string get_Host();
+    [CompilerGeneratedAttribute]
+public void set_Host(string value);
+}
