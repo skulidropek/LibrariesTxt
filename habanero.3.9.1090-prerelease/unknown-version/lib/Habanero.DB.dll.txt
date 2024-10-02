@@ -1,0 +1,1027 @@
+public class Habanero.Base.CriteriaDB : Criteria {
+    private Criteria _criteria;
+    public QueryField Field { get; }
+    public Criteria LeftCriteria { get; }
+    public LogicalOp LogicalOperator { get; }
+    public Criteria RightCriteria { get; }
+    public object FieldValue { get; }
+    public ComparisonOp ComparisonOperator { get; }
+    public CriteriaDB(Criteria criteria);
+    public virtual string ToString();
+    public virtual QueryField get_Field();
+    public virtual Criteria get_LeftCriteria();
+    public virtual LogicalOp get_LogicalOperator();
+    public virtual Criteria get_RightCriteria();
+    public virtual object get_FieldValue();
+    public virtual ComparisonOp get_ComparisonOperator();
+    public string ToString(ISqlFormatter formatter, AddParameterDelegate addParameter);
+    public string ToString(ISqlFormatter formatter, AddParameterDelegate addParameter, IDictionary`2<string, string> aliases);
+}
+public class Habanero.Base.SourceDB : Source {
+    private Source _source;
+    public string Name { get; public set; }
+    public string EntityName { get; public set; }
+    public JoinList Joins { get; }
+    public JoinList InheritanceJoins { get; }
+    public SourceDB(Source source);
+    public virtual string get_Name();
+    public virtual void set_Name(string value);
+    public virtual string get_EntityName();
+    public virtual void set_EntityName(string value);
+    public virtual JoinList get_Joins();
+    public virtual JoinList get_InheritanceJoins();
+    public string CreateSQL();
+    public string CreateSQL(ISqlFormatter sqlFormatter);
+    public string CreateSQL(ISqlFormatter sqlFormatter, IDictionary`2<string, string> aliases);
+    private string GetJoinString(ISqlFormatter sqlFormatter, Source source, string joinString, IDictionary`2<string, string> aliases);
+    private string GetJoinString(ISqlFormatter sqlFormatter, Join join, IDictionary`2<string, string> aliases);
+    private string GetTableJoinString(Source source, ISqlFormatter sqlFormatter, IDictionary`2<string, string> aliases);
+    private string GetInheritanceJoinString(ISqlFormatter sqlFormatter, Source source, string joinString, IDictionary`2<string, string> aliases);
+}
+internal class Habanero.DB.BOSequenceNumberLocking : BusinessObject {
+    private PessimisticLockingDB _pessimisticLockingDB;
+    public string NumberType { get; public set; }
+    public Nullable`1<long> SequenceNumber { get; public set; }
+    public bool IsLocked { get; }
+    public BOSequenceNumberLocking(int lockDurationInMinutes);
+    internal static void LoadNumberGenClassDef();
+    public virtual string get_NumberType();
+    public virtual void set_NumberType(string value);
+    public virtual Nullable`1<long> get_SequenceNumber();
+    public virtual void set_SequenceNumber(Nullable`1<long> value);
+    public bool get_IsLocked();
+    internal IConcurrencyControl ConcurrencyControl();
+    protected virtual void UpdateAsTransactionRolledBack();
+}
+public class Habanero.DB.BusinessObjectLoaderDB : BusinessObjectLoaderBase {
+    private IDatabaseConnection _databaseConnection;
+    private ConcurrentDictionary`2<IClassDef, SingleItemStack`1<IBusinessObject>> _tempObjectsByClassDef;
+    private ConcurrentDictionary`2<Type, SingleItemStack`1<IBusinessObject>> _tempObjectsByType;
+    public IDatabaseConnection DatabaseConnection { get; }
+    public BusinessObjectLoaderDB(IDatabaseConnection databaseConnection);
+    public IDatabaseConnection get_DatabaseConnection();
+    public ISelectQuery GetSelectQuery(IClassDef classDef, IPrimaryKey primaryKey);
+    public sealed virtual T GetBusinessObject(IPrimaryKey primaryKey);
+    public sealed virtual IBusinessObject GetBusinessObject(IClassDef classDef, IPrimaryKey primaryKey);
+    public sealed virtual T GetBusinessObject(Criteria criteria);
+    protected ISelectQuery GetSelectQuery(IClassDef classDef, Criteria criteria);
+    public sealed virtual T GetBusinessObject(ISelectQuery selectQuery);
+    private T LoadBOFromReader(IDataRecord dataReader, ISelectQuery selectQuery, Boolean& objectUpdatedInLoading);
+    private static T CreateNewTempBo();
+    private static void ThrowRetrieveDuplicateObjectException(ISqlStatement statement, IBusinessObject loadedBo);
+    public sealed virtual IBusinessObject GetBusinessObject(IClassDef classDef, Criteria criteria);
+    public sealed virtual IBusinessObject GetBusinessObject(IClassDef classDef, ISelectQuery selectQuery);
+    public sealed virtual T GetBusinessObject(string criteriaString);
+    public sealed virtual IBusinessObject GetBusinessObject(IClassDef classDef, string criteriaString);
+    private static Criteria GetCriteriaObject(IClassDef classDef, string criteriaString);
+    protected virtual LoaderResult GetObjectsFromDataStore(IClassDef classDef, ISelectQuery selectQuery);
+    protected virtual string GetDuplicatePersistedObjectsErrorMessage(ISelectQuery selectQuery, string loadMechanismDescription);
+    protected virtual List`1<LoadedBoInfo> GetLoadedBusinessObjectsFromDB(IClassDef classDef, ISqlStatement statement, SelectQueryDB selectQuery);
+    private LoadedBoInfo LoadCorrectlyTypedBOFromReader(IDataReader dr, IClassDef classDef, SelectQueryDB selectQuery);
+    private int GetTotalNoOfRecordsIfNeeded(IClassDef classDef, ISelectQuery selectQuery);
+    private static bool IsLoadNecessary(ISelectQuery selectQuery, int totalNoOfRecords);
+    private static ISqlStatement CreateStatementAdjustedForLimits(SelectQueryDB selectQuery, int totalNoOfRecords);
+    public sealed virtual int GetCount(IClassDef classDef, Criteria criteria);
+    private T GetLoadedBoOfSpecifiedType(T loadedBo, IClassDef correctSubClassDef);
+    public sealed virtual IBusinessObject Refresh(IBusinessObject businessObject);
+    public sealed virtual T GetRelatedBusinessObject(SingleRelationship`1<T> relationship);
+    public sealed virtual IBusinessObject GetRelatedBusinessObject(ISingleRelationship relationship);
+    private IBusinessObject LoadBOFromReader(IClassDef classDef, IDataRecord dataReader, ISelectQuery selectQuery, Boolean& objectUpdatedInLoading);
+    private static IBusinessObject CreateNewTempBo(IClassDef classDef);
+    private IBusinessObject GetLoadedBusinessObject(IBusinessObject bo, IDataRecord dataReader, ISelectQuery selectQuery, Boolean& objectUpdatedInLoading);
+    protected static IClassDef GetCorrectSubClassDef(IBusinessObject bo, IDataRecord dataReader);
+    private static bool PopulateBOFromReader(IBusinessObject bo, IDataRecord dr, ISelectQuery selectQuery);
+}
+public class Habanero.DB.ConcurrencyControl.OptimisticLockingVersionNumberDB : object {
+    private BusinessObject _busObj;
+    private IBOProp _dateLastUpdated;
+    private IBOProp _machineLastUpdated;
+    private IBOProp _operatingSystemUser;
+    private IBOProp _userLastUpdated;
+    private IBOProp _versionNumber;
+    public OptimisticLockingVersionNumberDB(BusinessObject busObj, IBOProp dateLastUpdated, IBOProp userLastUpdated, IBOProp machineLastUpdated, IBOProp versionNumber);
+    public OptimisticLockingVersionNumberDB(BusinessObject busObj, IBOProp dateLastUpdated, IBOProp userLastUpdated, IBOProp machineLastUpdated, IBOProp versionNumber, IBOProp operatingSystemUser);
+    public sealed virtual void CheckConcurrencyBeforePersisting();
+    public sealed virtual void CheckConcurrencyBeforeBeginEditing();
+    public sealed virtual void UpdatePropertiesWithLatestConcurrencyInfoBeforePersisting();
+    public sealed virtual void ReleaseWriteLocks();
+    public sealed virtual void UpdateAsTransactionRolledBack();
+    private void CheckConcurrencyControl(VerificationStage verificationStage);
+    private ISqlStatement GetSelectSQLStatement();
+    private void ThrowConcurrencyException(VerificationStage verificationStage, string userNameLastUpdated, string machineLastUpdated, string dateLastUpdatedInDB);
+    private void SetOperatingSystemUser();
+    private void SetMachineName();
+    private void SetUserName();
+    private static string CurrentUser();
+}
+internal class Habanero.DB.ConcurrencyControl.PessimisticLockingDB : object {
+    private BusinessObject _busObj;
+    private int _lockDurationInMinutes;
+    private IBOProp _boPropDateLocked;
+    private IBOProp _boPropUserLocked;
+    private IBOProp _boPropMachineLocked;
+    private IBOProp _boPropOperatingSystemUser;
+    private IBOProp _boPropLocked;
+    internal bool IsLocked { get; }
+    public PessimisticLockingDB(BusinessObject busObj, int lockDurationInMinutes, IBOProp boPropDateTimeLocked, IBOProp boPropUserLocked, IBOProp boPropMachineLocked, IBOProp boPropOperatingSystemUser, IBOProp boPropLocked);
+    private static IBOProp OrphanFromBOStatus(IBOProp prop);
+    public sealed virtual void CheckConcurrencyBeforePersisting();
+    private bool LockDurationExceeded();
+    private DateTime DateTimeLocked();
+    internal bool get_IsLocked();
+    public sealed virtual void CheckConcurrencyBeforeBeginEditing();
+    private ISqlStatement GetSQLStatement();
+    private bool LockDurationValid(DateTime dateLocked);
+    private static DateTime CastToDateTime(IDataRecord dr, string fieldName);
+    private void UpdateLockingToDB();
+    private void ReleaseLockingFromDB();
+    private void SetDateTimeLocked();
+    private void SetOperatingSystemUser();
+    private void SetMachineName();
+    private static string GetOperatinSystemUser();
+    private void SetUserName();
+    private IEnumerable`1<ISqlStatement> GetUpdateSql();
+    private IEnumerable`1<ISqlStatement> GetReleaseLockSql();
+    public sealed virtual void UpdatePropertiesWithLatestConcurrencyInfoBeforePersisting();
+    public sealed virtual void ReleaseWriteLocks();
+    public sealed virtual void UpdateAsTransactionRolledBack();
+}
+public class Habanero.DB.ConnectionStringAccess2007Factory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringAccessFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public abstract class Habanero.DB.ConnectionStringFactory : object {
+    public virtual string GetConnectionString(string server, string database, string userName, string password, string port);
+    protected abstract virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected abstract virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringFirebirdEmbeddedFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringFirebirdFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringMySqlFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringOracleFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringPostgreSqlFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringSQLiteFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringSqlServerCeFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.ConnectionStringSqlServerFactory : ConnectionStringFactory {
+    protected virtual void CheckArguments(string server, string database, string userName, string password, string port);
+    protected virtual string CreateConnectionString(string server, string database, string userName, string password, string port);
+}
+public class Habanero.DB.DataAccessorDB : MarshalByRefObject {
+    private IBusinessObjectLoader _businessObjectLoader;
+    private IDatabaseConnection _databaseConnection;
+    public IBusinessObjectLoader BusinessObjectLoader { get; }
+    public DataAccessorDB(IDatabaseConnection databaseConnection);
+    public sealed virtual IBusinessObjectLoader get_BusinessObjectLoader();
+    public sealed virtual ITransactionCommitter CreateTransactionCommitter();
+}
+public class Habanero.DB.Database : object {
+    public static void ExecuteSqlStatement(SqlStatement statement, IDbConnection connection);
+    public static void ExecuteRawSql(string sql, IDbConnection connection);
+}
+public class Habanero.DB.DatabaseConfig : object {
+    public static string MySql;
+    public static string DB4O;
+    public static string SqlServer;
+    public static string SqlServerCe;
+    public static string Oracle;
+    public static string Access;
+    public static string PostgreSql;
+    public static string SQLite;
+    public static string Firebird;
+    public static string FirebirdEmbedded;
+    public static string Access2007;
+    private static Dictionary`2<string, string> VendorToConnectionStringFactoryNameMap;
+    private string _vendor;
+    private string _server;
+    private string _database;
+    private string _userName;
+    private string _password;
+    private string _port;
+    private ICrypter _passwordCrypter;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <AssemblyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <FullClassName>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <ConnectionStringFactoryAssemblyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <ConnectionStringFactoryClassName>k__BackingField;
+    public string Vendor { get; public set; }
+    public string Server { get; public set; }
+    public string Database { get; public set; }
+    public string UserName { get; public set; }
+    public string Password { get; public set; }
+    public string Port { get; public set; }
+    public string AssemblyName { get; public set; }
+    public string FullClassName { get; public set; }
+    public string ConnectionStringFactoryAssemblyName { get; public set; }
+    public string ConnectionStringFactoryClassName { get; public set; }
+    public string DecryptedPassword { get; }
+    public bool IsInMemoryDB { get; }
+    public DatabaseConfig(string vendor, string server, string database, string userName, string password, string port);
+    public DatabaseConfig(IDictionary settings);
+    private static DatabaseConfig();
+    public virtual string get_Vendor();
+    public virtual void set_Vendor(string value);
+    public virtual string get_Server();
+    public virtual void set_Server(string value);
+    public virtual string get_Database();
+    public virtual void set_Database(string value);
+    public virtual string get_UserName();
+    public virtual void set_UserName(string value);
+    public virtual string get_Password();
+    public virtual void set_Password(string value);
+    public virtual string get_Port();
+    public virtual void set_Port(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_AssemblyName();
+    [CompilerGeneratedAttribute]
+public virtual void set_AssemblyName(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_FullClassName();
+    [CompilerGeneratedAttribute]
+public virtual void set_FullClassName(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_ConnectionStringFactoryAssemblyName();
+    [CompilerGeneratedAttribute]
+public virtual void set_ConnectionStringFactoryAssemblyName(string value);
+    [CompilerGeneratedAttribute]
+public virtual string get_ConnectionStringFactoryClassName();
+    [CompilerGeneratedAttribute]
+public virtual void set_ConnectionStringFactoryClassName(string value);
+    public string get_DecryptedPassword();
+    public void SetPrivateKey(string xmlPrivateKey);
+    private sealed virtual override void Habanero.Base.ISupportsRSADecryption.SetPrivateKeyFromXML(string xmlPrivateKey);
+    public sealed virtual void SetPrivateKey(RSA privateKey);
+    public static DatabaseConfig ReadFromConfigFile();
+    public static DatabaseConfig ReadFromConfigFile(string configSectionName);
+    public sealed virtual string GetConnectionString();
+    public sealed virtual IDbConnection GetConnection();
+    public sealed virtual IDatabaseConnection GetDatabaseConnection();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+    public bool get_IsInMemoryDB();
+    protected internal DatabaseConfig Clone();
+}
+public abstract class Habanero.DB.DatabaseConnection : MarshalByRefObject {
+    private static object LockObject;
+    private string _assemblyName;
+    private string _className;
+    private string _connectString;
+    private List`1<ManagedConnection> _connections;
+    private static IDatabaseConnection _currentDatabaseConnection;
+    private static IHabaneroLogger Log;
+    private int _timeoutPeriod;
+    protected SqlFormatter _sqlFormatter;
+    protected IDbConnection NewConnection { get; }
+    public static IDatabaseConnection CurrentConnection { get; public set; }
+    public string ConnectionString { get; public set; }
+    internal IDbConnection TestConnection { get; }
+    protected IDbConnection OpenConnection { get; }
+    public string LeftFieldDelimiter { get; }
+    public string RightFieldDelimiter { get; }
+    public ISqlFormatter SqlFormatter { get; }
+    public IsolationLevel IsolationLevel { get; }
+    protected DatabaseConnection(string assemblyName, string className);
+    protected DatabaseConnection(string assemblyName, string className, string connectString);
+    private static DatabaseConnection();
+    private IDbConnection CreateDatabaseConnection();
+    protected IDbConnection get_NewConnection();
+    public static IDatabaseConnection get_CurrentConnection();
+    public static void set_CurrentConnection(IDatabaseConnection value);
+    public sealed virtual string get_ConnectionString();
+    public sealed virtual void set_ConnectionString(string value);
+    internal IDbConnection get_TestConnection();
+    public sealed virtual string ErrorSafeConnectString();
+    protected internal virtual IDbConnection GetOpenConnectionForReading();
+    protected internal IDbConnection GetOpenConnection(IDbTransaction transaction);
+    public sealed virtual IDbConnection GetConnection();
+    protected IDbConnection get_OpenConnection();
+    public sealed virtual IDataReader LoadDataReader(ISqlStatement selectSql, string strOrderByCriteria);
+    private static void AppendOrderBy(ISqlStatement statement, string orderByCriteria);
+    public virtual IDataReader LoadDataReader(string selectSql);
+    protected virtual void SetupReadTransaction(IDbCommand dbCommand);
+    public sealed virtual IDataReader LoadDataReader(string selectSql, IDbTransaction transaction);
+    public virtual IDataReader LoadDataReader(ISqlStatement selectSql);
+    public virtual IDbTransaction BeginTransaction(IDbConnection openConnection);
+    public sealed virtual int ExecuteSql(IEnumerable`1<ISqlStatement> statements);
+    public sealed virtual int ExecuteRawSql(string sql);
+    public virtual int ExecuteRawSql(string sql, IDbTransaction transaction);
+    protected virtual IDbCommand CreateCommand(IDbConnection dbConnection);
+    private IDbCommand CreateCommand(IDbConnection connection, IDbTransaction transaction);
+    public virtual int ExecuteSql(IEnumerable`1<ISqlStatement> statements, IDbTransaction transaction);
+    private int ExecuteSqlInternal(IEnumerable`1<ISqlStatement> statements, IDbConnection openConnection, IDbTransaction transaction);
+    protected virtual void SetupCommand(ISqlStatement statement, IDbCommand command, IDbTransaction transaction);
+    protected virtual void DoAfterExecute(SqlStatement statement, IDbCommand command, IDbTransaction transaction);
+    public sealed virtual int ExecuteSql(ISqlStatement sql);
+    public sealed virtual int ExecuteStoredProcNonQuery(string procName, IEnumerable`1<Param> params);
+    public sealed virtual int ExecuteStoredProcNonQuery(string procName, IEnumerable`1<Param> params, int timeout);
+    public sealed virtual object ExecuteRawSqlScalar(string sql);
+    public virtual string get_LeftFieldDelimiter();
+    public virtual string get_RightFieldDelimiter();
+    public sealed virtual ISqlFormatter get_SqlFormatter();
+    public virtual IsolationLevel get_IsolationLevel();
+    public sealed virtual void SetTimeoutPeriod(int timeoutSeconds);
+    public abstract virtual IParameterNameGenerator CreateParameterNameGenerator();
+    public sealed virtual ISqlStatement CreateSqlStatement();
+    public sealed virtual DataTable LoadDataTable(ISqlStatement selectSql, string strSearchCriteria, string strOrderByCriteria);
+    public DataTable GetDataTable(IDataReader reader);
+    public static DataTable GetDataTable(IDataReader reader, string dataTableName);
+    private static void CreateDataColumns(IDataRecord reader, DataTable dt);
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+}
+public class Habanero.DB.DatabaseConnectionAccess : DatabaseConnection {
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionAccess(string assemblyName, string className);
+    public DatabaseConnectionAccess(string assemblyName, string className, string connectString);
+    public virtual IsolationLevel get_IsolationLevel();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+}
+public class Habanero.DB.DatabaseConnectionAccess2007 : DatabaseConnection {
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionAccess2007(string assemblyName, string className);
+    public DatabaseConnectionAccess2007(string assemblyName, string className, string connectString);
+    public virtual IsolationLevel get_IsolationLevel();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+}
+internal class Habanero.DB.DatabaseConnectionException : Exception {
+    private string _sqlStatement;
+    private string _connectString;
+    private string _developerMessage;
+    public string SqlStatement { get; }
+    public string ConnectString { get; }
+    public string DeveloperMessage { get; }
+    public DatabaseConnectionException(string userMessage, string developerMessage, string SqlStatement, string ConnectString);
+    public DatabaseConnectionException(string userMessage, string developerMessage, Exception inner, string SqlStatement, string ConnectString);
+    public DatabaseConnectionException(string userMessage, string developerMessage, Exception inner, string ConnectString);
+    public DatabaseConnectionException(string message);
+    public DatabaseConnectionException(string message, Exception inner);
+    protected DatabaseConnectionException(SerializationInfo info, StreamingContext context);
+    public string get_SqlStatement();
+    public string get_ConnectString();
+    public string get_DeveloperMessage();
+    public virtual string ToString();
+}
+public class Habanero.DB.DatabaseConnectionFactory : object {
+    public sealed virtual IDatabaseConnection CreateConnection(IDatabaseConfig config);
+}
+public class Habanero.DB.DatabaseConnectionFirebird : DatabaseConnection {
+    public DatabaseConnectionFirebird(string assemblyName, string className);
+    public DatabaseConnectionFirebird(string assemblyName, string className, string connectString);
+    private void SetupSqlFormatter();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+}
+public class Habanero.DB.DatabaseConnectionMySql : DatabaseConnection {
+    public DatabaseConnectionMySql(string assemblyName, string className);
+    public DatabaseConnectionMySql(string assemblyName, string className, string connectString);
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+}
+public class Habanero.DB.DatabaseConnectionOracle : DatabaseConnection {
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionOracle(string assemblyName, string className);
+    public DatabaseConnectionOracle(string assemblyName, string className, string connectString);
+    public virtual IsolationLevel get_IsolationLevel();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+}
+public class Habanero.DB.DatabaseConnectionPostgreSql : DatabaseConnection {
+    public DatabaseConnectionPostgreSql(string assemblyName, string className);
+    public DatabaseConnectionPostgreSql(string assemblyName, string className, string connectString);
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+}
+public class Habanero.DB.DatabaseConnectionSQLite : DatabaseConnection {
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionSQLite(string assemblyName, string className);
+    public DatabaseConnectionSQLite(string assemblyName, string className, string connectString);
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+    public virtual IsolationLevel get_IsolationLevel();
+}
+public class Habanero.DB.DatabaseConnectionSqlServer : DatabaseConnection {
+    private static string _newIdentityParameterName;
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionSqlServer(string assemblyName, string className);
+    public DatabaseConnectionSqlServer(string assemblyName, string className, string connectString);
+    protected virtual void SetupCommand(ISqlStatement statement, IDbCommand command, IDbTransaction transaction);
+    private static void SetupCommandForAutoIncrement(IDbCommand command);
+    private static IDbDataParameter CreateIdentityOutputParameter(IDbCommand command);
+    private static bool IsAutoIncrementingInsertStatement(ISqlStatement statement);
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+    public virtual IsolationLevel get_IsolationLevel();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+}
+public class Habanero.DB.DatabaseConnectionSqlServerCe : DatabaseConnection {
+    public IsolationLevel IsolationLevel { get; }
+    public DatabaseConnectionSqlServerCe(string assemblyName, string className);
+    public DatabaseConnectionSqlServerCe(string assemblyName, string className, string connectString);
+    public virtual long GetLastAutoIncrementingID(string tableName, IDbTransaction tran, IDbCommand command);
+    public virtual IsolationLevel get_IsolationLevel();
+    public virtual IParameterNameGenerator CreateParameterNameGenerator();
+}
+public class Habanero.DB.DatabaseLookupList : object {
+    private string _statement;
+    private Type _lookupObjectType;
+    private string _assemblyName;
+    private string _className;
+    private int _timeout;
+    private DateTime _lastCallTime;
+    private Dictionary`2<string, string> _lookupList;
+    private Dictionary`2<string, string> _keyLookupList;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IPropDef <PropDef>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <LimitToList>k__BackingField;
+    public string AssemblyName { get; public set; }
+    public string ClassName { get; public set; }
+    public string SqlString { get; public set; }
+    public int TimeOut { get; public set; }
+    public IClassDef ClassDef { get; }
+    public IPropDef PropDef { get; public set; }
+    private Type MyLookupObjectType { get; private set; }
+    public bool LimitToList { get; public set; }
+    public DatabaseLookupList(string statement);
+    public DatabaseLookupList(string statement, int timeout, string assemblyName, string className, bool limitToList);
+    public sealed virtual string get_AssemblyName();
+    public sealed virtual void set_AssemblyName(string value);
+    public sealed virtual string get_ClassName();
+    public sealed virtual void set_ClassName(string value);
+    public sealed virtual string get_SqlString();
+    public sealed virtual void set_SqlString(string value);
+    public sealed virtual int get_TimeOut();
+    public sealed virtual void set_TimeOut(int value);
+    public sealed virtual IClassDef get_ClassDef();
+    public sealed virtual Dictionary`2<string, string> GetLookupList();
+    public sealed virtual Dictionary`2<string, string> GetLookupList(IDatabaseConnection connection);
+    private string GetAvailableDisplayValue(string stringValue);
+    private void AddValuesToLookupList(DataRow row, string stringValue);
+    [CompilerGeneratedAttribute]
+public sealed virtual IPropDef get_PropDef();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_PropDef(IPropDef value);
+    public sealed virtual Dictionary`2<string, string> GetIDValueLookupList();
+    private Type get_MyLookupObjectType();
+    private void set_MyLookupObjectType(Type value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_LimitToList();
+    [CompilerGeneratedAttribute]
+public void set_LimitToList(bool value);
+    public Dictionary`2<string, string> GetLookupList(BusinessObject bo);
+}
+public class Habanero.DB.DatabaseNumberGenerator : object {
+    private NumberUpdate _numberUpdater;
+    public DatabaseNumberGenerator(string settingName);
+    public DatabaseNumberGenerator(string settingName, string tableName);
+    public DatabaseNumberGenerator(string settingName, string tableName, int seedValue);
+    public DatabaseNumberGenerator(string settingName, string tableName, int seedValue, string settingNameFieldName, string settingValueFieldName);
+    public sealed virtual int GetNextNumberInt();
+    private sealed virtual override ITransactional Habanero.Base.IDBNumberGenerator.GetUpdateTransaction();
+    private ITransactional GetUpdateTransaction();
+}
+public class Habanero.DB.DatabaseReadException : Exception {
+    private string _sqlStatement;
+    private string _connectString;
+    private string _developerMessage;
+    public string SqlStatement { get; }
+    public string ConnectString { get; }
+    public string DeveloperMessage { get; }
+    public DatabaseReadException(string userMessage, string developerMessage, string sqlStatement, string connectString);
+    public DatabaseReadException(string userMessage, string developerMessage, Exception inner, string sqlStatement, string connectString);
+    public DatabaseReadException(string message);
+    public DatabaseReadException(string message, Exception inner);
+    protected DatabaseReadException(SerializationInfo info, StreamingContext context);
+    public string get_SqlStatement();
+    public string get_ConnectString();
+    public string get_DeveloperMessage();
+    public virtual string ToString();
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+}
+public class Habanero.DB.DatabaseSettings : MarshalByRefObject {
+    private IDatabaseConnection _databaseConnection;
+    private Hashtable _cachedSettings;
+    private string _tableName;
+    public string TableName { get; public set; }
+    public DatabaseSettings(IDatabaseConnection databaseConnection);
+    public DatabaseSettings(string tableName, IDatabaseConnection databaseConnection);
+    public string get_TableName();
+    public void set_TableName(string value);
+    public sealed virtual bool HasSetting(string settingName);
+    public sealed virtual string GetString(string settingName);
+    public sealed virtual string GetString(string settingName, DateTime date);
+    public sealed virtual void SetString(string settingName, string settingValue);
+    public sealed virtual decimal GetDecimal(string settingName, DateTime date);
+    public sealed virtual decimal GetDecimal(string settingName);
+    public sealed virtual void SetDecimal(string settingName, decimal settingValue);
+    public sealed virtual bool GetBoolean(string settingName);
+    public sealed virtual void SetBoolean(string settingName, bool boolValue);
+    private void SetValue(string settingName, string settingValue);
+    private void UpdateCache(string settingName);
+    private object GetValue(string settingName, DateTime date);
+    private bool RetrieveSettingValue(string settingName, DateTime date, Object& value);
+    private SqlStatement CreateSelectStatement(string settingName, DateTime date);
+    private SqlStatement CreateUpdateStatementNoDate(string settingName, string settingValue);
+    private SqlStatement CreateInsertStatement(string settingName, string settingValue);
+}
+public class Habanero.DB.DatabaseWriteException : HabaneroDeveloperException {
+    private string _sqlStatement;
+    private string _connectString;
+    public string SqlStatement { get; }
+    public string ConnectString { get; }
+    public DatabaseWriteException(string userMessage, string developerMessage, string sqlStatement, string connectString);
+    public DatabaseWriteException(string userMessage, string developerMessage, Exception inner, string sqlStatement, string connectString);
+    public DatabaseWriteException(string message);
+    public DatabaseWriteException(string message, Exception inner);
+    protected DatabaseWriteException(SerializationInfo info, StreamingContext context);
+    public string get_SqlStatement();
+    public string get_ConnectString();
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+}
+public class Habanero.DB.DBMigrator : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private DBMigrationEvent <OnDbMigrationStarted>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private DBMigrationEvent <OnDbMigrationProgress>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private DBMigrationEvent <OnDbMigrationCompleted>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private DBMigrationEvent <OnDbMigrationException>k__BackingField;
+    public static string DatabaseVersionSetting;
+    private IDatabaseConnection _connection;
+    private SortedDictionary`2<int, ISqlStatement> _migrations;
+    private ISettings _settings;
+    public DBMigrationEvent OnDbMigrationStarted { get; public set; }
+    public DBMigrationEvent OnDbMigrationProgress { get; public set; }
+    public DBMigrationEvent OnDbMigrationCompleted { get; public set; }
+    public DBMigrationEvent OnDbMigrationException { get; public set; }
+    public int MigrationCount { get; }
+    public DBMigrator(IDatabaseConnection connection);
+    [CompilerGeneratedAttribute]
+public DBMigrationEvent get_OnDbMigrationStarted();
+    [CompilerGeneratedAttribute]
+public void set_OnDbMigrationStarted(DBMigrationEvent value);
+    [CompilerGeneratedAttribute]
+public DBMigrationEvent get_OnDbMigrationProgress();
+    [CompilerGeneratedAttribute]
+public void set_OnDbMigrationProgress(DBMigrationEvent value);
+    [CompilerGeneratedAttribute]
+public DBMigrationEvent get_OnDbMigrationCompleted();
+    [CompilerGeneratedAttribute]
+public void set_OnDbMigrationCompleted(DBMigrationEvent value);
+    [CompilerGeneratedAttribute]
+public DBMigrationEvent get_OnDbMigrationException();
+    [CompilerGeneratedAttribute]
+public void set_OnDbMigrationException(DBMigrationEvent value);
+    public int get_MigrationCount();
+    public void AddMigration(int number, string sql);
+    public void AddMigration(int number, SqlStatement sql);
+    public IEnumerable`1<ISqlStatement> GetMigrationSql(int startAfterVersion, int endVersion);
+    public ISqlStatement GetMigration(int number);
+    public void Migrate(int startAfterVersion, int endVersion);
+    public void SetSettingsStorer(ISettings storer);
+    public void SetCurrentVersion(int version);
+    public int CurrentVersion();
+    public void MigrateTo(int version);
+    public int LatestVersion();
+    public void MigrateToLatestVersion();
+}
+public class Habanero.DB.DBMigratorEventArgs : EventArgs {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private UInt32 <StartingStep>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private UInt32 <CurrentStep>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private UInt32 <TotalSteps>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private decimal <PercentageComplete>k__BackingField;
+    public UInt32 StartingStep { get; protected set; }
+    public UInt32 CurrentStep { get; protected set; }
+    public UInt32 TotalSteps { get; protected set; }
+    public decimal PercentageComplete { get; protected set; }
+    public DBMigratorEventArgs(UInt32 startingStep, UInt32 currentStep, UInt32 totalSteps);
+    [CompilerGeneratedAttribute]
+public UInt32 get_StartingStep();
+    [CompilerGeneratedAttribute]
+protected void set_StartingStep(UInt32 value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_CurrentStep();
+    [CompilerGeneratedAttribute]
+protected void set_CurrentStep(UInt32 value);
+    [CompilerGeneratedAttribute]
+public UInt32 get_TotalSteps();
+    [CompilerGeneratedAttribute]
+protected void set_TotalSteps(UInt32 value);
+    [CompilerGeneratedAttribute]
+public decimal get_PercentageComplete();
+    [CompilerGeneratedAttribute]
+protected void set_PercentageComplete(decimal value);
+}
+public class Habanero.DB.DeleteStatementGenerator : object {
+    private BusinessObject _bo;
+    private IDatabaseConnection _connection;
+    public DeleteStatementGenerator(IBusinessObject bo, IDatabaseConnection connection);
+    public IEnumerable`1<ISqlStatement> Generate();
+}
+public interface Habanero.DB.IDatabaseConnectionCreator {
+    public abstract virtual IDatabaseConnection CreateConnection();
+}
+public class Habanero.DB.InsertSqlStatement : SqlStatement {
+    private string _tableName;
+    private ISupportsAutoIncrementingField _supportsAutoIncrementingFIELD;
+    public string TableName { get; public set; }
+    public ISupportsAutoIncrementingField SupportsAutoIncrementingField { get; public set; }
+    public InsertSqlStatement(IDatabaseConnection connection, string statement);
+    public InsertSqlStatement(IDatabaseConnection connection);
+    public string get_TableName();
+    public void set_TableName(string value);
+    public ISupportsAutoIncrementingField get_SupportsAutoIncrementingField();
+    public void set_SupportsAutoIncrementingField(ISupportsAutoIncrementingField value);
+    internal virtual void DoAfterExecute(DatabaseConnection databaseConnection, IDbTransaction transaction, IDbCommand command);
+}
+public class Habanero.DB.InsertStatementGenerator : ModifyStatementGenerator {
+    private BusinessObject _bo;
+    private StringBuilder _dbFieldList;
+    private StringBuilder _dbValueList;
+    private IParameterNameGenerator _gen;
+    private SqlStatement _insertSql;
+    private List`1<ISqlStatement> _statements;
+    private IDatabaseConnection _connection;
+    private bool _firstField;
+    private ClassDef _currentClassDef;
+    public InsertStatementGenerator(IBusinessObject bo, IDatabaseConnection connection);
+    public IEnumerable`1<ISqlStatement> Generate();
+    private void GenerateSingleInsertStatement(IBOPropCol propsToInclude, string tableName);
+    private void ModifyForInheritance(IBOPropCol propsToInclude);
+    private void AddDiscriminatorProperties(ClassDef classDef, IBOPropCol propsToInclude, IBOPropCol discriminatorProps);
+    private void InitialiseStatement(string tableName, ISupportsAutoIncrementingField supportsAutoIncrementingField);
+    private void AddPropToInsertStatement(BOProp prop);
+    private void AddParentID(IBOPropCol propsToInclude);
+    protected virtual IBOPropCol GetPropsToInclude(IClassDef currentClassDef);
+}
+public class Habanero.DB.ManagedConnection : object {
+    private IDbConnection _connection;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <Available>k__BackingField;
+    public bool Available { get; private set; }
+    public string ConnectionString { get; public set; }
+    public int ConnectionTimeout { get; }
+    public string Database { get; }
+    public ConnectionState State { get; }
+    public ManagedConnection(IDbConnection connection);
+    [CompilerGeneratedAttribute]
+public bool get_Available();
+    [CompilerGeneratedAttribute]
+private void set_Available(bool value);
+    public sealed virtual void Dispose();
+    public sealed virtual IDbTransaction BeginTransaction();
+    public sealed virtual IDbTransaction BeginTransaction(IsolationLevel il);
+    public sealed virtual void Close();
+    public sealed virtual void ChangeDatabase(string databaseName);
+    public sealed virtual IDbCommand CreateCommand();
+    public sealed virtual void Open();
+    public sealed virtual string get_ConnectionString();
+    public sealed virtual void set_ConnectionString(string value);
+    public sealed virtual int get_ConnectionTimeout();
+    public sealed virtual string get_Database();
+    public sealed virtual ConnectionState get_State();
+}
+public class Habanero.DB.ModifyStatementGenerator : object {
+    protected virtual IBOPropCol GetPropsToInclude(IClassDef currentClassDef);
+    private static void AddPersistableProps(IBOPropCol propsToInclude, IBOPropCol propsToIncludeTemp);
+}
+public class Habanero.DB.NumberGeneratorPessimisticLocking : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private int <LockDurationInMinutes>k__BackingField;
+    private BOSequenceNumberLocking _boSequenceNumber;
+    private int LockDurationInMinutes { get; private set; }
+    internal BOSequenceNumberLocking BoSequenceNumber { get; }
+    public bool IsLocked { get; }
+    public NumberGeneratorPessimisticLocking(string numberType);
+    public NumberGeneratorPessimisticLocking(string numberType, int lockDurationInMinutes);
+    [CompilerGeneratedAttribute]
+private int get_LockDurationInMinutes();
+    [CompilerGeneratedAttribute]
+private void set_LockDurationInMinutes(int value);
+    internal BOSequenceNumberLocking get_BoSequenceNumber();
+    public sealed virtual long NextNumber();
+    private BOSequenceNumberLocking LoadSequenceNumber(string numberType);
+    private BOSequenceNumberLocking CreateSequenceForType(string numberType);
+    public sealed virtual void SetSequenceNumber(long newSequenceNumber);
+    private BusinessObject GetBOSequenceNumberLocking();
+    public sealed virtual void AddToTransaction(ITransactionCommitter transactionCommitter);
+    protected void ReleaseLocks();
+    public bool get_IsLocked();
+}
+public class Habanero.DB.ParameterNameGenerator : object {
+    private int _number;
+    private static string _parameterNameBase;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <PrefixCharacter>k__BackingField;
+    public string PrefixCharacter { get; protected set; }
+    public ParameterNameGenerator(string prefixCharacter);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_PrefixCharacter();
+    [CompilerGeneratedAttribute]
+protected void set_PrefixCharacter(string value);
+    public virtual string GetNextParameterName();
+    public sealed virtual void Reset();
+}
+public class Habanero.DB.QueryResultLoaderDb : object {
+    private IDatabaseConnection _databaseConnection;
+    public QueryResultLoaderDb(IDatabaseConnection databaseConnection);
+    public sealed virtual IQueryResult GetResultSet(ISelectQuery selectQuery);
+}
+public class Habanero.DB.SelectQueryDB : object {
+    private ISelectQuery _selectQuery;
+    private IDatabaseConnection _databaseConnection;
+    private ISqlFormatter _sqlFormatter;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IDictionary`2<string, string> <Aliases>k__BackingField;
+    private int _aliasCount;
+    public IDictionary`2<string, string> Aliases { get; private set; }
+    public Criteria Criteria { get; public set; }
+    public Dictionary`2<string, QueryField> Fields { get; }
+    public Source Source { get; public set; }
+    public IOrderCriteria OrderCriteria { get; public set; }
+    public int Limit { get; public set; }
+    public IClassDef ClassDef { get; public set; }
+    public Criteria DiscriminatorCriteria { get; public set; }
+    public int FirstRecordToLoad { get; public set; }
+    public SelectQueryDB(ISelectQuery selectQuery, IDatabaseConnection databaseConnection);
+    [CompilerGeneratedAttribute]
+public IDictionary`2<string, string> get_Aliases();
+    [CompilerGeneratedAttribute]
+private void set_Aliases(IDictionary`2<string, string> value);
+    public sealed virtual Criteria get_Criteria();
+    public sealed virtual void set_Criteria(Criteria value);
+    public sealed virtual Dictionary`2<string, QueryField> get_Fields();
+    public sealed virtual Source get_Source();
+    public sealed virtual void set_Source(Source value);
+    public sealed virtual IOrderCriteria get_OrderCriteria();
+    public sealed virtual void set_OrderCriteria(IOrderCriteria value);
+    public sealed virtual int get_Limit();
+    public sealed virtual void set_Limit(int value);
+    public sealed virtual IClassDef get_ClassDef();
+    public sealed virtual void set_ClassDef(IClassDef value);
+    public sealed virtual Criteria get_DiscriminatorCriteria();
+    public sealed virtual void set_DiscriminatorCriteria(Criteria value);
+    public sealed virtual int get_FirstRecordToLoad();
+    public sealed virtual void set_FirstRecordToLoad(int value);
+    public ISqlStatement CreateSqlStatement();
+    public ISqlStatement CreateSqlStatement(ISqlFormatter sqlFormatter);
+    private void AppendMainSelectClause(SqlStatement statement, StringBuilder builder);
+    private void CheckRecordOffSetAndAppendFields(StringBuilder builder);
+    private void AppendOrderBySecondSelect(StringBuilder builder);
+    private static void AppendDesc(StringBuilder builder);
+    private static void AppendAsc(StringBuilder builder);
+    private void AppendOrderByFirstSelect(StringBuilder builder);
+    private void AppendOrderBy(StringBuilder builder, string selectName, bool reverseSortDirection);
+    private string GetOrderByFieldName(OrderCriteriaField orderOrderCriteriaField);
+    private void AppendNoOfRecordsClauseAtEnd(StringBuilder builder);
+    private void AppendFrom(StringBuilder builder);
+    private void AppendFields(StringBuilder builder);
+    private void AppendNoOfRecordsClauseAtBeginning(StringBuilder builder);
+    private void AppendLimitClauseAtBeginning(StringBuilder builder);
+    private void AppendLimitClauseAtEnd(StringBuilder builder);
+    private void AppendOrderByClause(StringBuilder builder);
+    private void AppendOrderByField(StringBuilder orderByClause, OrderCriteriaField orderOrderCriteriaField);
+    private void AppendWhereClause(StringBuilder builder, SqlStatement statement);
+    private string AddParameter(object value, SqlStatement statement);
+    private string CreateInClause(SqlStatement statement, object value);
+    private string DelimitField(string entityName, string fieldName);
+    private string DelimitTable(string tableName);
+    private string DelimitFieldName(string fieldName);
+    private void SetupAliases();
+    private void AddAliasForSource(Source source);
+    [CompilerGeneratedAttribute]
+private string <AppendFields>b__43_0(QueryField f);
+    [CompilerGeneratedAttribute]
+private void <AddAliasForSource>b__57_0(Join join);
+    [CompilerGeneratedAttribute]
+private void <AddAliasForSource>b__57_1(Join join);
+}
+public class Habanero.DB.SqlFormatterForAccess : SqlFormatter {
+    public SqlFormatterForAccess(string leftFieldDelimiter, string rightFieldDelimiter, string limitClauseAtBeginning, string limitClauseAtEnd);
+    public virtual object PrepareValue(object objValue);
+}
+public class Habanero.DB.SqlFormatterForSqlServerCe : SqlFormatter {
+    public SqlFormatterForSqlServerCe(string leftFieldDelimiter, string rightFieldDelimiter, string limitClauseAtBeginning, string limitClauseAtEnd);
+    public virtual string GetLimitClauseCriteriaForBegin(int limit);
+}
+public class Habanero.DB.SqlStatement : object {
+    private StringBuilder _statement;
+    private List`1<IDbDataParameter> _parameters;
+    private IDbCommand _sampleCommand;
+    private IParameterNameGenerator _gen;
+    private IDbConnection _idbConnection;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private IDatabaseConnection <DatabaseConnection>k__BackingField;
+    public IDatabaseConnection DatabaseConnection { get; private set; }
+    public StringBuilder Statement { get; public set; }
+    public List`1<IDbDataParameter> Parameters { get; }
+    public IParameterNameGenerator ParameterNameGenerator { get; }
+    public IDatabaseConnection Connection { get; }
+    public SqlStatement(IDatabaseConnection connection);
+    public SqlStatement(IDatabaseConnection connection, string statement);
+    [CompilerGeneratedAttribute]
+public sealed virtual IDatabaseConnection get_DatabaseConnection();
+    [CompilerGeneratedAttribute]
+private void set_DatabaseConnection(IDatabaseConnection value);
+    public sealed virtual StringBuilder get_Statement();
+    public sealed virtual void set_Statement(StringBuilder value);
+    public IDbDataParameter AddParameter(string paramName, object paramValue, Type paramType);
+    private IDbDataParameter CreateParameter(string paramName, object paramValue, Type paramType);
+    public sealed virtual IDbDataParameter AddParameter(string paramName, object paramValue);
+    private DbType GetParamTypeForType(Type paramType);
+    private void UpdateParam(IDbDataParameter parameter, object value, DbType dbType);
+    private IDbDataParameter CreateParameter(string paramName);
+    private void databaseSpecificParameterSettings(IDbDataParameter newParameter, object paramValue);
+    private void UpdateParameterTypeForOleDBDateTime(object paramValue, IDbDataParameter newParameter);
+    private void UpdateParameterTypeForSqlServerCEImage(string connectionNamespace, object paramValue, IDbDataParameter newParameter);
+    private void UpdateParameterTypeForOracleLongText(string connectionNamespace, object paramValue, IDbDataParameter newParameter);
+    public sealed virtual List`1<IDbDataParameter> get_Parameters();
+    public sealed virtual void SetupCommand(IDbCommand command);
+    public virtual string ToString();
+    public IParameterNameGenerator get_ParameterNameGenerator();
+    public sealed virtual void AddParameterToStatement(object obj);
+    public virtual int GetHashCode();
+    internal virtual void DoAfterExecute(DatabaseConnection databaseConnection, IDbTransaction transaction, IDbCommand command);
+    public IDatabaseConnection get_Connection();
+    public virtual bool Equals(object obj);
+}
+public class Habanero.DB.SqlStatementBuilder : object {
+    private IDatabaseConnection _connection;
+    private static string SELECT_CLAUSE_TOKEN;
+    private static string DISTINCT_CLAUSE_TOKEN;
+    private static string FROM_CLAUSE_TOKEN;
+    private static string JOIN_ON_TOKEN;
+    private static string WHERE_CLAUSE_TOKEN;
+    private static string AND_TOKEN;
+    private static string ORDER_BY_CLAUSE_TOKEN;
+    private ISqlStatement _statement;
+    public SqlStatementBuilder(IDatabaseConnection connection, string statement);
+    public void AppendCriteria(string criteria);
+    public void AppendWhere();
+    public void Append(string appendStatement);
+    public ISqlStatement GetStatement();
+    public void AddJoin(string joinType, string joinTable, string joinCriteria);
+    private void AddDistinct();
+    public void AddSelectFields(List`1<string> fields);
+    public void AppendOrderBy(string orderByCriteria);
+    private int FindStatementClauseToken(string token);
+}
+public class Habanero.DB.SqlStatementException : Exception {
+    public SqlStatementException(string message);
+    public SqlStatementException(string message, Exception inner);
+    protected SqlStatementException(SerializationInfo info, StreamingContext context);
+}
+internal class Habanero.DB.StatementGeneratorUtils : object {
+    public static string GetTableName(BusinessObject bo);
+    private static ClassDef GetClassDefToUseForPrimaryKey(BusinessObject bo);
+    public static string PersistedDatabaseWhereClause(IBOKey key, ISqlStatement sql);
+    private static string PersistedDatabaseNameFieldNameValuePair(IBOProp prop, SqlStatement sql);
+    private static string DatabaseNameFieldNameValuePair(IBOProp prop, SqlStatement sql);
+}
+public class Habanero.DB.TransactionalBusinessObjectDB : TransactionalBusinessObject {
+    private IDatabaseConnection _databaseConnection;
+    public TransactionalBusinessObjectDB(IBusinessObject businessObject, IDatabaseConnection databaseConnection);
+    public virtual IEnumerable`1<ISqlStatement> GetPersistSql();
+    private IEnumerable`1<ISqlStatement> GetInsertSql();
+    private IEnumerable`1<ISqlStatement> GetDeleteSql();
+    private IEnumerable`1<ISqlStatement> GetUpdateSql();
+}
+internal class Habanero.DB.TransactionalSingleRelationship_Added_DB : TransactionalSingleRelationship_Added {
+    private IDatabaseConnection _databaseConnection;
+    internal TransactionalSingleRelationship_Added_DB(IRelationship singleRelationship, IBusinessObject relatedBO, IDatabaseConnection databaseConnection);
+    public virtual IEnumerable`1<ISqlStatement> GetPersistSql();
+}
+internal class Habanero.DB.TransactionalSingleRelationship_Removed_DB : TransactionalSingleRelationship_Removed {
+    private IDatabaseConnection _databaseConnection;
+    public TransactionalSingleRelationship_Removed_DB(IRelationship singleRelationship, IBusinessObject relatedBO, IDatabaseConnection databaseConnection);
+    public virtual IEnumerable`1<ISqlStatement> GetPersistSql();
+}
+public class Habanero.DB.TransactionCommitterDB : TransactionCommitter {
+    protected IDatabaseConnection _databaseConnection;
+    protected IDbConnection _dbConnection;
+    protected IDbTransaction _dbTransaction;
+    protected Dictionary`2<string, ITransactional> _transactionsExecutingToDataSource;
+    public IDatabaseConnection DatabaseConnection { get; }
+    public TransactionCommitterDB(IDatabaseConnection databaseConnection);
+    public IDatabaseConnection get_DatabaseConnection();
+    protected virtual void BeginDataSource();
+    protected virtual TransactionalBusinessObject CreateTransactionalBusinessObject(IBusinessObject businessObject);
+    protected virtual void AddAddedChildBusinessObject(IRelationship relationship, T businessObject);
+    protected virtual void AddRemovedChildBusinessObject(IRelationship relationship, T businessObject);
+    protected virtual void ExecuteTransactionToDataSource(ITransactional transaction);
+    protected virtual bool ExecuteTransactionToDB(ITransactional transactional);
+    protected virtual bool CommitToDatasource();
+    protected virtual void TryRollback();
+}
+public class Habanero.DB.TransactionLoggerFactory : object {
+    public sealed virtual ITransactionLog GetLogger(BusinessObject bo, string tableName);
+    public sealed virtual ITransactionLog GetLogger(BusinessObject bo);
+}
+public class Habanero.DB.TransactionLogTable : object {
+    private BusinessObject _buObjToLog;
+    private string _transactionLogTable;
+    private string _dateTimeUpdatedFieldName;
+    private string _windowsUserFieldName;
+    private string _logonUserFieldName;
+    private string _machineUpdateName;
+    private string _businessObjectTypeNameFieldName;
+    private string _crudActionFieldName;
+    private string _dirtyXmlFieldName;
+    private Guid _id;
+    private ISecurityController _securityController;
+    private string _businessObjectToStringFieldName;
+    public TransactionLogTable(BusinessObject busObjToLog);
+    public TransactionLogTable(BusinessObject busObjToLog, string transactionLogTable);
+    public TransactionLogTable(BusinessObject busObjToLog, ISecurityController securityController);
+    public TransactionLogTable(BusinessObject busObjToLog, ISecurityController securityController, string transactionLogTable);
+    public TransactionLogTable(BusinessObject buObjToLog, string transactionLogTable, string dateTimeUpdatedFieldName, string windowsUserFieldName, string logonUserFieldName, string businessObjectToStringFieldName, string machineUpdateName, string businessObjectTypeNameFieldName, string crudActionFieldName, string dirtyXMLFieldName);
+    public TransactionLogTable(BusinessObject buObjToLog, string transactionLogTable, string dateTimeUpdatedFieldName, string windowsUserFieldName, string logonUserFieldName, string businessObjectToStringFieldName, string machineUpdateName, string businessObjectTypeNameFieldName, string crudActionFieldName, string dirtyXMLFieldName, ISecurityController securityController);
+    private static string GetCrudAction(IBusinessObject busObj);
+    public sealed virtual IEnumerable`1<ISqlStatement> GetPersistSql();
+    private string GetLogonUserName();
+    public sealed virtual string TransactionID();
+    public sealed virtual void UpdateStateAsCommitted();
+    public sealed virtual void UpdateAsRolledBack();
+}
+public class Habanero.DB.UpdateStatementGenerator : ModifyStatementGenerator {
+    private BusinessObject _bo;
+    private IDatabaseConnection _connection;
+    private IList`1<ISqlStatement> _statements;
+    private SqlStatement _updateSql;
+    public UpdateStatementGenerator(IBusinessObject bo, IDatabaseConnection connection);
+    public IEnumerable`1<ISqlStatement> Generate();
+    private void GenerateSingleUpdateStatement(string tableName, IBOPropCol propsToInclude, bool isSuperClassStatement, ClassDef currentClassDef);
+    public IEnumerable`1<ISqlStatement> GenerateForRelationship(IRelationship relationship, IBusinessObject relatedBusinessObject);
+}
+public class Habanero.DB.XmlDatabaseConfig : DatabaseConfig {
+    private IXPathNavigable _node;
+    private XmlWrapper _xmlWrapper;
+    public string Vendor { get; public set; }
+    public string Server { get; public set; }
+    public string Database { get; public set; }
+    public string UserName { get; public set; }
+    public string Password { get; public set; }
+    public string Port { get; public set; }
+    public XmlDatabaseConfig(IXPathNavigable node, XmlWrapper wrapper);
+    public virtual string get_Vendor();
+    public virtual void set_Vendor(string value);
+    public virtual string get_Server();
+    public virtual void set_Server(string value);
+    public virtual string get_Database();
+    public virtual void set_Database(string value);
+    public virtual string get_UserName();
+    public virtual void set_UserName(string value);
+    public virtual string get_Password();
+    public virtual void set_Password(string value);
+    public virtual string get_Port();
+    public virtual void set_Port(string value);
+}

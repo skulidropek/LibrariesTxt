@@ -1,0 +1,380 @@
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class GreenDonut.AutoBatchScheduler : object {
+    [CompilerGeneratedAttribute]
+private static AutoBatchScheduler <Default>k__BackingField;
+    public static AutoBatchScheduler Default { get; }
+    private static AutoBatchScheduler();
+    public sealed virtual void Schedule(Func`1<ValueTask> dispatch);
+    private void BeginDispatch(Func`1<ValueTask> dispatch);
+    [CompilerGeneratedAttribute]
+public static AutoBatchScheduler get_Default();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class GreenDonut.Batch`1 : object {
+    private List`1<TKey> _keys;
+    private Dictionary`2<TKey, object> _items;
+    public int Size { get; }
+    public IReadOnlyList`1<TKey> Keys { get; }
+    public int get_Size();
+    public IReadOnlyList`1<TKey> get_Keys();
+    public TaskCompletionSource`1<TValue> GetOrCreatePromise(TKey key);
+    public TaskCompletionSource`1<TValue> GetPromise(TKey key);
+    internal void ClearUnsafe();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public abstract class GreenDonut.BatchDataLoader`2 : DataLoaderBase`2<TKey, TValue> {
+    protected BatchDataLoader`2(IBatchScheduler batchScheduler, DataLoaderOptions options);
+    [AsyncStateMachineAttribute("GreenDonut.BatchDataLoader`2/<FetchAsync>d__1")]
+protected sealed virtual ValueTask FetchAsync(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue>> results, CancellationToken cancellationToken);
+    private void CopyResults(IReadOnlyList`1<TKey> keys, Span`1<Result`1<TValue>> results, IReadOnlyDictionary`2<TKey, TValue> resultMap);
+    protected abstract virtual Task`1<IReadOnlyDictionary`2<TKey, TValue>> LoadBatchAsync(IReadOnlyList`1<TKey> keys, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal static class GreenDonut.BatchPool`1 : object {
+    [CompilerGeneratedAttribute]
+private static ObjectPool`1<Batch`1<TKey>> <Shared>k__BackingField;
+    public static ObjectPool`1<Batch`1<TKey>> Shared { get; }
+    private static BatchPool`1();
+    [CompilerGeneratedAttribute]
+public static ObjectPool`1<Batch`1<TKey>> get_Shared();
+    private static ObjectPool`1<Batch`1<TKey>> Create();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class GreenDonut.BatchPooledObjectPolicy`1 : PooledObjectPolicy`1<Batch`1<TKey>> {
+    public virtual Batch`1<TKey> Create();
+    public virtual bool Return(Batch`1<TKey> obj);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public abstract class GreenDonut.CacheDataLoader`2 : DataLoaderBase`2<TKey, TValue> {
+    [NullableContextAttribute("2")]
+protected CacheDataLoader`2(DataLoaderOptions options);
+    [AsyncStateMachineAttribute("GreenDonut.CacheDataLoader`2/<FetchAsync>d__1")]
+protected sealed virtual ValueTask FetchAsync(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue>> results, CancellationToken cancellationToken);
+    protected abstract virtual Task`1<TValue> LoadSingleAsync(TKey key, CancellationToken cancellationToken);
+    private static DataLoaderOptions CreateLocalOptions(DataLoaderOptions options);
+}
+[ExtensionAttribute]
+internal static class GreenDonut.CancellationTokenSourceExtensions : object {
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+public static CancellationToken CreateLinkedCancellationToken(CancellationTokenSource source, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class GreenDonut.DataLoaderBase`2 : object {
+    private object _sync;
+    private CancellationTokenSource _disposeTokenSource;
+    private IBatchScheduler _batchScheduler;
+    private int _maxBatchSize;
+    [NullableAttribute("2")]
+private TaskCacheOwner _cacheOwner;
+    private IDataLoaderDiagnosticEvents _diagnosticEvents;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private Batch`1<TKey> _currentBatch;
+    private bool _disposed;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private ITaskCache <Cache>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CacheKeyType>k__BackingField;
+    [NullableAttribute("2")]
+protected ITaskCache Cache { get; }
+    protected string CacheKeyType { get; }
+    protected DataLoaderBase`2(IBatchScheduler batchScheduler, DataLoaderOptions options);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+protected ITaskCache get_Cache();
+    [CompilerGeneratedAttribute]
+protected virtual string get_CacheKeyType();
+    public sealed virtual Task`1<TValue> LoadAsync(TKey key, CancellationToken cancellationToken);
+    public sealed virtual Task`1<IReadOnlyList`1<TValue>> LoadAsync(IReadOnlyCollection`1<TKey> keys, CancellationToken cancellationToken);
+    public sealed virtual void Remove(TKey key);
+    public sealed virtual void Set(TKey key, Task`1<TValue> value);
+    private void BatchOperationFailed(Batch`1<TKey> batch, IReadOnlyList`1<TKey> keys, Exception error);
+    private void BatchOperationSucceeded(Batch`1<TKey> batch, IReadOnlyList`1<TKey> keys, Result`1[] results);
+    private ValueTask DispatchBatchAsync(Batch`1<TKey> batch, CancellationToken cancellationToken);
+    private TaskCompletionSource`1<TValue> GetOrCreatePromiseUnsafe(TKey key);
+    private void SetSingleResult(TaskCompletionSource`1<TValue> promise, TKey key, Result`1<TValue> result);
+    protected void TryAddToCache(string cacheKeyType, IEnumerable`1<TItem> items, Func`2<TItem, TK> key, Func`2<TItem, TV> value);
+    protected void TryAddToCache(string cacheKeyType, TK key, TV value);
+    protected static string GetCacheKeyType();
+    protected static string GetCacheKeyType(Type type);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    protected abstract virtual ValueTask FetchAsync(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue>> results, CancellationToken cancellationToken);
+    private sealed virtual override Task`1<object> GreenDonut.IDataLoader.LoadAsync(object key, CancellationToken cancellationToken);
+    private sealed virtual override Task`1<IReadOnlyList`1<object>> GreenDonut.IDataLoader.LoadAsync(IReadOnlyCollection`1<object> keys, CancellationToken cancellationToken);
+    private sealed virtual override void GreenDonut.IDataLoader.Remove(object key);
+    private sealed virtual override void GreenDonut.IDataLoader.Set(object key, Task`1<object> value);
+    public sealed virtual void Clear();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class GreenDonut.DataLoaderDiagnosticEventListener : object {
+    [CompilerGeneratedAttribute]
+private static IDisposable <EmptyScope>k__BackingField;
+    protected static IDisposable EmptyScope { get; }
+    private static DataLoaderDiagnosticEventListener();
+    [CompilerGeneratedAttribute]
+protected static IDisposable get_EmptyScope();
+    public virtual void ResolvedTaskFromCache(IDataLoader dataLoader, TaskCacheKey cacheKey, Task task);
+    public virtual IDisposable ExecuteBatch(IDataLoader dataLoader, IReadOnlyList`1<TKey> keys);
+    public virtual void BatchResults(IReadOnlyList`1<TKey> keys, ReadOnlySpan`1<Result`1<TValue>> values);
+    public virtual void BatchError(IReadOnlyList`1<TKey> keys, Exception error);
+    public virtual void BatchItemError(TKey key, Exception error);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class GreenDonut.DataLoaderExtensions : object {
+    [ExtensionAttribute]
+public static Task`1<object> LoadAsync(IDataLoader dataLoader, object key);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<object>> LoadAsync(IDataLoader dataLoader, Object[] keys);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<object>> LoadAsync(IDataLoader dataLoader, CancellationToken cancellationToken, Object[] keys);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<TValue>> LoadAsync(IDataLoader`2<TKey, TValue> dataLoader, TKey[] keys);
+    [ExtensionAttribute]
+public static Task`1<IReadOnlyList`1<TValue>> LoadAsync(IDataLoader`2<TKey, TValue> dataLoader, CancellationToken cancellationToken, TKey[] keys);
+    [ExtensionAttribute]
+public static void Set(IDataLoader`2<TKey, TValue> dataLoader, TKey key, TValue value);
+    [ExtensionAttribute]
+public static void Set(IDataLoader dataLoader, object key, object value);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class GreenDonut.DataLoaderOptions : object {
+    [CompilerGeneratedAttribute]
+private int <MaxBatchSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ITaskCache <Cache>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Caching>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IDataLoaderDiagnosticEvents <DiagnosticEvents>k__BackingField;
+    public int MaxBatchSize { get; public set; }
+    public ITaskCache Cache { get; public set; }
+    public bool Caching { get; public set; }
+    public IDataLoaderDiagnosticEvents DiagnosticEvents { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_MaxBatchSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxBatchSize(int value);
+    [CompilerGeneratedAttribute]
+public ITaskCache get_Cache();
+    [CompilerGeneratedAttribute]
+public void set_Cache(ITaskCache value);
+    [CompilerGeneratedAttribute]
+public bool get_Caching();
+    [CompilerGeneratedAttribute]
+public void set_Caching(bool value);
+    [CompilerGeneratedAttribute]
+public IDataLoaderDiagnosticEvents get_DiagnosticEvents();
+    [CompilerGeneratedAttribute]
+public void set_DiagnosticEvents(IDataLoaderDiagnosticEvents value);
+    [NullableContextAttribute("1")]
+public DataLoaderOptions Copy();
+}
+internal static class GreenDonut.Errors : object {
+    [NullableContextAttribute("1")]
+public static InvalidOperationException CreateKeysAndValuesMustMatch(int keysCount, int valuesCount);
+}
+public class GreenDonut.FetchDataDelegate`2 : MulticastDelegate {
+    public FetchDataDelegate`2(object object, IntPtr method);
+    [NullableContextAttribute("1")]
+public virtual ValueTask Invoke(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue>> results, CancellationToken cancellationToken);
+    public virtual IAsyncResult BeginInvoke(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue>> results, CancellationToken cancellationToken, AsyncCallback callback, object object);
+    public virtual ValueTask EndInvoke(IAsyncResult result);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public abstract class GreenDonut.FetchOnceDataLoader`1 : CacheDataLoader`2<string, TValue> {
+    [NullableContextAttribute("2")]
+protected FetchOnceDataLoader`1(DataLoaderOptions options);
+    public Task`1<TValue> LoadAsync(CancellationToken cancellationToken);
+    protected sealed virtual Task`1<TValue> LoadSingleAsync(string key, CancellationToken cancellationToken);
+    protected abstract virtual Task`1<TValue> LoadSingleAsync(CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public abstract class GreenDonut.GroupedDataLoader`2 : DataLoaderBase`2<TKey, TValue[]> {
+    protected GroupedDataLoader`2(IBatchScheduler batchScheduler, DataLoaderOptions options);
+    [AsyncStateMachineAttribute("GreenDonut.GroupedDataLoader`2/<FetchAsync>d__1")]
+protected sealed virtual ValueTask FetchAsync(IReadOnlyList`1<TKey> keys, Memory`1<Result`1<TValue[]>> results, CancellationToken cancellationToken);
+    private void CopyResults(IReadOnlyList`1<TKey> keys, Span`1<Result`1<TValue[]>> results, ILookup`2<TKey, TValue> resultLookup);
+    protected abstract virtual Task`1<ILookup`2<TKey, TValue>> LoadGroupedBatchAsync(IReadOnlyList`1<TKey> keys, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+public interface GreenDonut.IBatchScheduler {
+    public abstract virtual void Schedule(Func`1<ValueTask> dispatch);
+}
+[NullableContextAttribute("1")]
+public interface GreenDonut.IDataLoader {
+    public abstract virtual Task`1<object> LoadAsync(object key, CancellationToken cancellationToken);
+    public abstract virtual Task`1<IReadOnlyList`1<object>> LoadAsync(IReadOnlyCollection`1<object> keys, CancellationToken cancellationToken);
+    public abstract virtual void Remove(object key);
+    public abstract virtual void Set(object key, Task`1<object> value);
+    public abstract virtual void Clear();
+}
+[NullableContextAttribute("1")]
+public interface GreenDonut.IDataLoader`2 {
+    public abstract virtual Task`1<TValue> LoadAsync(TKey key, CancellationToken cancellationToken);
+    public abstract virtual Task`1<IReadOnlyList`1<TValue>> LoadAsync(IReadOnlyCollection`1<TKey> keys, CancellationToken cancellationToken);
+    public abstract virtual void Remove(TKey key);
+    public abstract virtual void Set(TKey key, Task`1<TValue> value);
+}
+public interface GreenDonut.IDataLoaderDiagnosticEventListener {
+}
+[NullableContextAttribute("1")]
+public interface GreenDonut.IDataLoaderDiagnosticEvents {
+    public abstract virtual void ResolvedTaskFromCache(IDataLoader dataLoader, TaskCacheKey cacheKey, Task task);
+    public abstract virtual IDisposable ExecuteBatch(IDataLoader dataLoader, IReadOnlyList`1<TKey> keys);
+    public abstract virtual void BatchResults(IReadOnlyList`1<TKey> keys, ReadOnlySpan`1<Result`1<TValue>> values);
+    public abstract virtual void BatchError(IReadOnlyList`1<TKey> keys, Exception error);
+    public abstract virtual void BatchItemError(TKey key, Exception error);
+}
+[NullableContextAttribute("1")]
+public interface GreenDonut.ITaskCache {
+    public int Size { get; }
+    public int Usage { get; }
+    public abstract virtual int get_Size();
+    public abstract virtual int get_Usage();
+    public abstract virtual T GetOrAddTask(TaskCacheKey key, Func`1<T> createTask);
+    public abstract virtual bool TryAdd(TaskCacheKey key, T value);
+    public abstract virtual bool TryAdd(TaskCacheKey key, Func`1<T> createTask);
+    public abstract virtual bool TryRemove(TaskCacheKey key);
+    public abstract virtual void Clear();
+}
+internal class GreenDonut.NoopDataLoaderDiagnosticEventListener : DataLoaderDiagnosticEventListener {
+    [NullableAttribute("1")]
+internal static NoopDataLoaderDiagnosticEventListener Default;
+    private static NoopDataLoaderDiagnosticEventListener();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[IsReadOnlyAttribute]
+public class GreenDonut.Result`1 : ValueType {
+    [CompilerGeneratedAttribute]
+private ResultKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TValue <Value>k__BackingField;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private Exception <Error>k__BackingField;
+    public ResultKind Kind { get; }
+    public TValue Value { get; }
+    [NullableAttribute("2")]
+public Exception Error { get; }
+    public Result`1(TValue value);
+    public Result`1(Exception error);
+    [CompilerGeneratedAttribute]
+public ResultKind get_Kind();
+    [CompilerGeneratedAttribute]
+public TValue get_Value();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public Exception get_Error();
+    public sealed virtual bool Equals(Result`1<TValue> other);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static Result`1<TValue> Reject(Exception error);
+    public static Result`1<TValue> Resolve(TValue value);
+    [NullableContextAttribute("2")]
+public static Result`1<TValue> op_Implicit(Exception error);
+    public static Result`1<TValue> op_Implicit(TValue value);
+    [NullableContextAttribute("2")]
+public static Exception op_Implicit(Result`1<TValue> result);
+    public static TValue op_Implicit(Result`1<TValue> result);
+}
+public enum GreenDonut.ResultKind : Enum {
+    public int value__;
+    public static ResultKind Undefined;
+    public static ResultKind Value;
+    public static ResultKind Error;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class GreenDonut.TaskCache : object {
+    private static int _minimumSize;
+    private object _sync;
+    private ConcurrentDictionary`2<TaskCacheKey, Entry> _map;
+    private int _size;
+    private int _order;
+    private int _usage;
+    [NullableAttribute("2")]
+private Entry _head;
+    public int Size { get; }
+    public int Usage { get; }
+    public TaskCache(int size);
+    public sealed virtual int get_Size();
+    public sealed virtual int get_Usage();
+    public sealed virtual T GetOrAddTask(TaskCacheKey key, Func`1<T> createTask);
+    public sealed virtual bool TryAdd(TaskCacheKey key, T value);
+    public sealed virtual bool TryAdd(TaskCacheKey key, Func`1<T> createTask);
+    public sealed virtual bool TryRemove(TaskCacheKey key);
+    public sealed virtual void Clear();
+    private Entry AddNewEntry(TaskCacheKey key, Task value);
+    private void ClearSpaceForNewEntryUnsafe();
+    private void TouchEntryUnsafe(Entry touched);
+    private void AppendEntryUnsafe(Entry newEntry);
+    private bool RemoveEntryUnsafe(Entry entry);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[IsReadOnlyAttribute]
+public class GreenDonut.TaskCacheKey : ValueType {
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <Key>k__BackingField;
+    public string Type { get; }
+    public object Key { get; }
+    public TaskCacheKey(string type, object key);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public object get_Key();
+    public sealed virtual bool Equals(TaskCacheKey other);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class GreenDonut.TaskCacheOwner : object {
+    private ObjectPool`1<TaskCache> _pool;
+    private TaskCache _cache;
+    private bool _disposed;
+    public ITaskCache Cache { get; }
+    public TaskCacheOwner(ObjectPool`1<TaskCache> pool);
+    public ITaskCache get_Cache();
+    public sealed virtual void Dispose();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class GreenDonut.TaskCachePool : object {
+    [CompilerGeneratedAttribute]
+private static ObjectPool`1<TaskCache> <Shared>k__BackingField;
+    public static ObjectPool`1<TaskCache> Shared { get; }
+    private static TaskCachePool();
+    [CompilerGeneratedAttribute]
+public static ObjectPool`1<TaskCache> get_Shared();
+    public static ObjectPool`1<TaskCache> Create(int cacheSize, Nullable`1<int> maximumRetained);
+    public static ObjectPool`1<TaskCache> Create(ObjectPoolProvider provider, int cacheSize);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class GreenDonut.TaskCachePooledObjectPolicy : PooledObjectPolicy`1<TaskCache> {
+    private int _size;
+    public TaskCachePooledObjectPolicy(int size);
+    public virtual TaskCache Create();
+    public virtual bool Return(TaskCache obj);
+}

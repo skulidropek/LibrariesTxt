@@ -1,0 +1,1424 @@
+public class GSF.Security.AdoSecurityCache : InterprocessCache {
+    private static string DefaultCacheFileName;
+    private DataSet m_dataSet;
+    private object m_dataSetLock;
+    public DataSet DataSet { get; public set; }
+    public AdoSecurityCache(int maximumConcurrentLocks);
+    public DataSet get_DataSet();
+    public void set_DataSet(DataSet value);
+    public virtual void Save();
+    protected virtual void SaveFileData(FileStream fileStream, Byte[] fileData);
+    protected virtual Byte[] LoadFileData(FileStream fileStream);
+    private void WaitForDataReady();
+    public static AdoSecurityCache GetCurrentCache();
+}
+public class GSF.Security.AdoSecurityProvider : LdapSecurityProvider {
+    private static string UserAccountTable;
+    private static string SecurityGroupTable;
+    private static string SecurityGroupUserAccountTable;
+    private static string ApplicationRoleTable;
+    private static string ApplicationRoleUserAccountTable;
+    private static string ApplicationRoleSecurityGroupTable;
+    private static string DefaultDefaultRoles;
+    public static string DefaultPasswordRequirementsRegex;
+    public static string DefaultPasswordRequirementsError;
+    public static bool DefaultUseDatabaseLogging;
+    protected static string DefaultMessageUserNotDefined;
+    protected static string DefaultMessageUserIsDisabled;
+    protected static string DefaultMessageUserIsLockedOut;
+    protected static string DefaultMessageUserPasswordExpired;
+    protected static string DefaultMessageUserHasNoRoles;
+    public static int ProviderID;
+    private bool m_successfulPassThroughAuthentication;
+    private string m_passwordRequirementsRegex;
+    private string m_passwordRequirementsError;
+    private Nullable`1<bool> m_lastLoggedLoginResult;
+    [CompilerGeneratedAttribute]
+private Exception <LastException>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseDatabaseLogging>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <DefaultRoles>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static EventHandler`1<EventArgs`1<Dictionary`2<string, String[]>>> SecurityContextRefreshed;
+    private static LogPublisher Log;
+    private static String[] s_securityTables;
+    public static Guid DefaultNodeID;
+    public Exception LastException { get; public set; }
+    public bool UseDatabaseLogging { get; public set; }
+    public string DefaultRoles { get; public set; }
+    public AdoSecurityProvider(string username);
+    protected AdoSecurityProvider(string username, bool canRefreshData, bool canResetPassword, bool canChangePassword);
+    private static AdoSecurityProvider();
+    [CompilerGeneratedAttribute]
+public Exception get_LastException();
+    [CompilerGeneratedAttribute]
+public void set_LastException(Exception value);
+    [CompilerGeneratedAttribute]
+public bool get_UseDatabaseLogging();
+    [CompilerGeneratedAttribute]
+public void set_UseDatabaseLogging(bool value);
+    [CompilerGeneratedAttribute]
+public string get_DefaultRoles();
+    [CompilerGeneratedAttribute]
+public void set_DefaultRoles(string value);
+    public virtual void LoadSettings();
+    public virtual bool RefreshData();
+    public virtual bool Authenticate();
+    public virtual bool ChangePassword(string oldPassword, string newPassword);
+    protected virtual void LogAuthenticationAttempt(bool loginSuccess);
+    protected virtual bool LogError(string source, string message);
+    protected virtual string GetLdapPath();
+    private void CacheLastUserRoles(object state);
+    public virtual List`1<string> GetUserRoles(string applicationId);
+    [CompilerGeneratedAttribute]
+public static void add_SecurityContextRefreshed(EventHandler`1<EventArgs`1<Dictionary`2<string, String[]>>> value);
+    [CompilerGeneratedAttribute]
+public static void remove_SecurityContextRefreshed(EventHandler`1<EventArgs`1<Dictionary`2<string, String[]>>> value);
+    public static DataSet ExtractSecurityContext(IDbConnection connection, Action`1<Exception> exceptionHandler, string currentUserName);
+    private static void UpdatePrimaryKey(DataTable table, string columnName);
+    private static void AddSecurityContextTable(IDbConnection connection, DataSet securityContext, string tableName, Guid nodeID);
+    private static string EncodeEscapeSequences(string value);
+    [CompilerGeneratedAttribute]
+private void <RefreshData>b__35_1(Exception ex);
+    [CompilerGeneratedAttribute]
+private bool <Authenticate>g__isAzureADPassthroughPrincipal|36_0();
+    [CompilerGeneratedAttribute]
+private string <Authenticate>g__getUserAuthFailureReason|36_1(string settingName, string defaultValue);
+    [CompilerGeneratedAttribute]
+private void <GetUserRoles>b__42_0(Exception ex);
+}
+internal class GSF.Security.AzureADPassthroughPrincipal : GenericPrincipal {
+    public AzureADPassthroughPrincipal(string name);
+}
+public class GSF.Security.AzureADSettings : object {
+    public static string DefaultSettingsCategory;
+    public static string DefaultInstance;
+    public static string DefaultTenantID;
+    public static string DefaultClientID;
+    public static string DefaultRedirectURI;
+    public static string DefaultCallbackPath;
+    public static string DefaultSignedOutCallbackPath;
+    public static bool DefaultEnabled;
+    private static string DefaultAzureADConfigSource;
+    private static string DefaultAzureADSettings;
+    [CompilerGeneratedAttribute]
+private string <Instance>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TenantID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RedirectURI>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CallbackPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SignedOutCallbackPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Exception <LastException>k__BackingField;
+    public string Instance { get; public set; }
+    public string TenantID { get; public set; }
+    public string ClientID { get; public set; }
+    public string RedirectURI { get; public set; }
+    public string CallbackPath { get; public set; }
+    public string SignedOutCallbackPath { get; public set; }
+    public bool Enabled { get; public set; }
+    public Uri Authority { get; }
+    public Exception LastException { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Instance();
+    [CompilerGeneratedAttribute]
+public void set_Instance(string value);
+    [CompilerGeneratedAttribute]
+public string get_TenantID();
+    [CompilerGeneratedAttribute]
+public void set_TenantID(string value);
+    [CompilerGeneratedAttribute]
+public string get_ClientID();
+    [CompilerGeneratedAttribute]
+public void set_ClientID(string value);
+    [CompilerGeneratedAttribute]
+public string get_RedirectURI();
+    [CompilerGeneratedAttribute]
+public void set_RedirectURI(string value);
+    [CompilerGeneratedAttribute]
+public string get_CallbackPath();
+    [CompilerGeneratedAttribute]
+public void set_CallbackPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_SignedOutCallbackPath();
+    [CompilerGeneratedAttribute]
+public void set_SignedOutCallbackPath(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Enabled();
+    [CompilerGeneratedAttribute]
+public void set_Enabled(bool value);
+    public Uri get_Authority();
+    [CompilerGeneratedAttribute]
+public Exception get_LastException();
+    [CompilerGeneratedAttribute]
+public void set_LastException(Exception value);
+    public GraphServiceClient GetGraphClient(string settingsCategory, bool forceRefresh);
+    public static AzureADSettings Load(string settingsCategory);
+    public static AzureADSettings LoadFromAppSettings(string filepath);
+    public static AzureADSettings LoadFromConfig(string settingsCategory);
+}
+public interface GSF.Security.ISecurityProvider {
+    public string ApplicationName { get; public set; }
+    public string ConnectionString { get; public set; }
+    public IPrincipal PassthroughPrincipal { get; public set; }
+    public SecureString SecurePassword { get; public set; }
+    public string Password { get; public set; }
+    public UserData UserData { get; }
+    public bool IsUserAuthenticated { get; }
+    public bool IsRedirectRequested { get; }
+    public string RequestedRedirect { get; }
+    public bool CanRefreshData { get; }
+    public bool CanResetPassword { get; }
+    public bool CanChangePassword { get; }
+    public string AuthenticationFailureReason { get; }
+    public LogEventFunctionSignature LogEvent { get; public set; }
+    public abstract virtual string get_ApplicationName();
+    public abstract virtual void set_ApplicationName(string value);
+    public abstract virtual string get_ConnectionString();
+    public abstract virtual void set_ConnectionString(string value);
+    public abstract virtual IPrincipal get_PassthroughPrincipal();
+    public abstract virtual void set_PassthroughPrincipal(IPrincipal value);
+    public abstract virtual SecureString get_SecurePassword();
+    public abstract virtual void set_SecurePassword(SecureString value);
+    public abstract virtual string get_Password();
+    public abstract virtual void set_Password(string value);
+    public abstract virtual UserData get_UserData();
+    public abstract virtual bool get_IsUserAuthenticated();
+    public abstract virtual bool get_IsRedirectRequested();
+    public abstract virtual string get_RequestedRedirect();
+    public abstract virtual bool get_CanRefreshData();
+    public abstract virtual bool get_CanResetPassword();
+    public abstract virtual bool get_CanChangePassword();
+    public abstract virtual string get_AuthenticationFailureReason();
+    public abstract virtual LogEventFunctionSignature get_LogEvent();
+    public abstract virtual void set_LogEvent(LogEventFunctionSignature value);
+    public abstract virtual bool Authenticate();
+    public abstract virtual bool RefreshData();
+    public abstract virtual bool ResetPassword(string securityAnswer);
+    public abstract virtual bool ChangePassword(string oldPassword, string newPassword);
+    public abstract virtual string TranslateRole(string role);
+    public abstract virtual string TranslateRedirect(string loginUrl, Uri uri, string encodedPath, string referrer);
+    public abstract virtual List`1<string> GetUserRoles(string applicationId);
+}
+public class GSF.Security.LdapSecurityProvider : SecurityProviderBase {
+    public static int ProviderID;
+    public static bool DefaultEnableOfflineCaching;
+    public static double DefaultCacheRetryDelayInterval;
+    public static int DefaultCacheMaximumRetryAttempts;
+    [CompilerGeneratedAttribute]
+private bool <EnableOfflineCaching>k__BackingField;
+    [CompilerGeneratedAttribute]
+private double <CacheRetryDelayInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <CacheMaximumRetryAttempts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private WindowsPrincipal <WindowsPrincipal>k__BackingField;
+    public bool EnableOfflineCaching { get; public set; }
+    public double CacheRetryDelayInterval { get; public set; }
+    public int CacheMaximumRetryAttempts { get; public set; }
+    public WindowsPrincipal WindowsPrincipal { get; protected set; }
+    public LdapSecurityProvider(string username);
+    protected LdapSecurityProvider(string username, bool canRefreshData, bool canResetPassword, bool canChangePassword);
+    [CompilerGeneratedAttribute]
+public bool get_EnableOfflineCaching();
+    [CompilerGeneratedAttribute]
+public void set_EnableOfflineCaching(bool value);
+    [CompilerGeneratedAttribute]
+public double get_CacheRetryDelayInterval();
+    [CompilerGeneratedAttribute]
+public void set_CacheRetryDelayInterval(double value);
+    [CompilerGeneratedAttribute]
+public int get_CacheMaximumRetryAttempts();
+    [CompilerGeneratedAttribute]
+public void set_CacheMaximumRetryAttempts(int value);
+    [CompilerGeneratedAttribute]
+public WindowsPrincipal get_WindowsPrincipal();
+    [CompilerGeneratedAttribute]
+protected void set_WindowsPrincipal(WindowsPrincipal value);
+    public virtual bool ResetPassword(string securityAnswer);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual bool Authenticate();
+    public virtual bool RefreshData();
+    protected virtual bool RefreshData(UserData userData, List`1<string> groupCollection, int providerID);
+    public virtual bool ChangePassword(string oldPassword, string newPassword);
+    public virtual string TranslateRole(string role);
+    protected virtual string GetLdapPath();
+    public virtual List`1<string> GetUserRoles(string applicationId);
+}
+public class GSF.Security.LogEventFunctionSignature : MulticastDelegate {
+    public LogEventFunctionSignature(object object, IntPtr method);
+    public virtual void Invoke(string source, string message, EventLogEntryType type, int eventID);
+    public virtual IAsyncResult BeginInvoke(string source, string message, EventLogEntryType type, int eventID, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class GSF.Security.Model.AccessLog : object {
+    [CompilerGeneratedAttribute]
+private int <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UserName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AccessGranted>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <NodeID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public int ID { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string UserName { get; public set; }
+    public bool AccessGranted { get; public set; }
+    public Guid NodeID { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(int value);
+    [CompilerGeneratedAttribute]
+public string get_UserName();
+    [CompilerGeneratedAttribute]
+public void set_UserName(string value);
+    [CompilerGeneratedAttribute]
+public bool get_AccessGranted();
+    [CompilerGeneratedAttribute]
+public void set_AccessGranted(bool value);
+    [CompilerGeneratedAttribute]
+public Guid get_NodeID();
+    [CompilerGeneratedAttribute]
+public void set_NodeID(Guid value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+}
+[PrimaryLabelAttribute("Name")]
+[GetRolesAttribute("Administrator")]
+[ViewOnlyAttribute]
+public class GSF.Security.Model.ApplicationRole : object {
+    [CompilerGeneratedAttribute]
+private Guid <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <NodeID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreatedBy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <UpdatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UpdatedBy>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public Guid ID { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string Name { get; public set; }
+    public string Description { get; public set; }
+    public Guid NodeID { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string CreatedBy { get; public set; }
+    [DefaultValueExpressionAttribute("this.CreatedOn")]
+public DateTime UpdatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("this.CreatedBy")]
+public string UpdatedBy { get; public set; }
+    [CompilerGeneratedAttribute]
+public Guid get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(Guid value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    [CompilerGeneratedAttribute]
+public Guid get_NodeID();
+    [CompilerGeneratedAttribute]
+public void set_NodeID(Guid value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_CreatedBy();
+    [CompilerGeneratedAttribute]
+public void set_CreatedBy(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_UpdatedOn();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_UpdatedBy();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedBy(string value);
+}
+public class GSF.Security.Model.ApplicationRoleSecurityGroup : object {
+    [CompilerGeneratedAttribute]
+private Guid <ApplicationRoleID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <SecurityGroupID>k__BackingField;
+    [RequiredAttribute]
+public Guid ApplicationRoleID { get; public set; }
+    [RequiredAttribute]
+public Guid SecurityGroupID { get; public set; }
+    [CompilerGeneratedAttribute]
+public Guid get_ApplicationRoleID();
+    [CompilerGeneratedAttribute]
+public void set_ApplicationRoleID(Guid value);
+    [CompilerGeneratedAttribute]
+public Guid get_SecurityGroupID();
+    [CompilerGeneratedAttribute]
+public void set_SecurityGroupID(Guid value);
+}
+[PostRolesAttribute("Administrator")]
+[PatchRolesAttribute("Administrator")]
+[DeleteRolesAttribute("Administrator")]
+public class GSF.Security.Model.ApplicationRoleUserAccount : object {
+    [CompilerGeneratedAttribute]
+private Guid <ApplicationRoleID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <UserAccountID>k__BackingField;
+    [RequiredAttribute]
+public Guid ApplicationRoleID { get; public set; }
+    [RequiredAttribute]
+[ParentKeyAttribute("GSF.Security.Model.UserAccount")]
+public Guid UserAccountID { get; public set; }
+    [CompilerGeneratedAttribute]
+public Guid get_ApplicationRoleID();
+    [CompilerGeneratedAttribute]
+public void set_ApplicationRoleID(Guid value);
+    [CompilerGeneratedAttribute]
+public Guid get_UserAccountID();
+    [CompilerGeneratedAttribute]
+public void set_UserAccountID(Guid value);
+}
+public class GSF.Security.Model.ErrorLog : object {
+    [CompilerGeneratedAttribute]
+private int <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Detail>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public int ID { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string Source { get; public set; }
+    public string Type { get; public set; }
+    [RequiredAttribute]
+public string Message { get; public set; }
+    public string Detail { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [CompilerGeneratedAttribute]
+public int get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(int value);
+    [CompilerGeneratedAttribute]
+public string get_Source();
+    [CompilerGeneratedAttribute]
+public void set_Source(string value);
+    [CompilerGeneratedAttribute]
+public string get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(string value);
+    [CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public void set_Message(string value);
+    [CompilerGeneratedAttribute]
+public string get_Detail();
+    [CompilerGeneratedAttribute]
+public void set_Detail(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+}
+[PrimaryLabelAttribute("Name")]
+public class GSF.Security.Model.Node : object {
+    [CompilerGeneratedAttribute]
+private Guid <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <CompanyID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private decimal <Longitude>k__BackingField;
+    [CompilerGeneratedAttribute]
+private decimal <Latitude>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ImagePath>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Settings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MenuType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <MenuData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Master>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <LoadOrder>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Enabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreatedBy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <UpdatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UpdatedBy>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public Guid ID { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string Name { get; public set; }
+    public Nullable`1<int> CompanyID { get; public set; }
+    public decimal Longitude { get; public set; }
+    public decimal Latitude { get; public set; }
+    public string Description { get; public set; }
+    public string ImagePath { get; public set; }
+    public string Settings { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string MenuType { get; public set; }
+    [RequiredAttribute]
+public string MenuData { get; public set; }
+    public bool Master { get; public set; }
+    public int LoadOrder { get; public set; }
+    [InitialValueScriptAttribute("true")]
+public bool Enabled { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string CreatedBy { get; public set; }
+    [DefaultValueExpressionAttribute("this.CreatedOn")]
+[UpdateValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime UpdatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("this.CreatedBy")]
+[UpdateValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string UpdatedBy { get; public set; }
+    [CompilerGeneratedAttribute]
+public Guid get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(Guid value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_CompanyID();
+    [CompilerGeneratedAttribute]
+public void set_CompanyID(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public decimal get_Longitude();
+    [CompilerGeneratedAttribute]
+public void set_Longitude(decimal value);
+    [CompilerGeneratedAttribute]
+public decimal get_Latitude();
+    [CompilerGeneratedAttribute]
+public void set_Latitude(decimal value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    [CompilerGeneratedAttribute]
+public string get_ImagePath();
+    [CompilerGeneratedAttribute]
+public void set_ImagePath(string value);
+    [CompilerGeneratedAttribute]
+public string get_Settings();
+    [CompilerGeneratedAttribute]
+public void set_Settings(string value);
+    [CompilerGeneratedAttribute]
+public string get_MenuType();
+    [CompilerGeneratedAttribute]
+public void set_MenuType(string value);
+    [CompilerGeneratedAttribute]
+public string get_MenuData();
+    [CompilerGeneratedAttribute]
+public void set_MenuData(string value);
+    [CompilerGeneratedAttribute]
+public bool get_Master();
+    [CompilerGeneratedAttribute]
+public void set_Master(bool value);
+    [CompilerGeneratedAttribute]
+public int get_LoadOrder();
+    [CompilerGeneratedAttribute]
+public void set_LoadOrder(int value);
+    [CompilerGeneratedAttribute]
+public bool get_Enabled();
+    [CompilerGeneratedAttribute]
+public void set_Enabled(bool value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_CreatedBy();
+    [CompilerGeneratedAttribute]
+public void set_CreatedBy(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_UpdatedOn();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_UpdatedBy();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedBy(string value);
+}
+[PrimaryLabelAttribute("Name")]
+public class GSF.Security.Model.SecurityGroup : object {
+    [CompilerGeneratedAttribute]
+private Guid <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreatedBy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <UpdatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UpdatedBy>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public Guid ID { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string Name { get; public set; }
+    public string Description { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string CreatedBy { get; public set; }
+    [DefaultValueExpressionAttribute("this.CreatedOn")]
+[UpdateValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime UpdatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("this.CreatedBy")]
+[UpdateValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string UpdatedBy { get; public set; }
+    [NonRecordFieldAttribute]
+public string AccountName { get; }
+    [CompilerGeneratedAttribute]
+public Guid get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(Guid value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [CompilerGeneratedAttribute]
+public void set_Description(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_CreatedBy();
+    [CompilerGeneratedAttribute]
+public void set_CreatedBy(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_UpdatedOn();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_UpdatedBy();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedBy(string value);
+    public string get_AccountName();
+}
+public class GSF.Security.Model.SecurityGroupUserAccount : object {
+    [CompilerGeneratedAttribute]
+private Guid <SecurityGroupID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <UserAccountID>k__BackingField;
+    [RequiredAttribute]
+public Guid SecurityGroupID { get; public set; }
+    [RequiredAttribute]
+public Guid UserAccountID { get; public set; }
+    [CompilerGeneratedAttribute]
+public Guid get_SecurityGroupID();
+    [CompilerGeneratedAttribute]
+public void set_SecurityGroupID(Guid value);
+    [CompilerGeneratedAttribute]
+public Guid get_UserAccountID();
+    [CompilerGeneratedAttribute]
+public void set_UserAccountID(Guid value);
+}
+[PrimaryLabelAttribute("Name")]
+public class GSF.Security.Model.UserAccount : object {
+    [CompilerGeneratedAttribute]
+private Guid <ID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Password>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FirstName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LastName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <DefaultNodeID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Phone>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Email>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <ChangePasswordOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseADAuthentication>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <LockedOut>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CreatedBy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <UpdatedOn>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <UpdatedBy>k__BackingField;
+    [PrimaryKeyAttribute("True")]
+public Guid ID { get; public set; }
+    [LabelAttribute("User Name")]
+[RequiredAttribute]
+[StringLengthAttribute("200")]
+[SearchableAttribute]
+public string Name { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+public string Password { get; public set; }
+    [LabelAttribute("First Name")]
+[StringLengthAttribute("200")]
+[SearchableAttribute]
+public string FirstName { get; public set; }
+    [LabelAttribute("Last Name")]
+[StringLengthAttribute("200")]
+[SearchableAttribute]
+public string LastName { get; public set; }
+    [RequiredAttribute]
+[DefaultValueExpressionAttribute("AdoSecurityProvider.DefaultNodeID")]
+public Guid DefaultNodeID { get; public set; }
+    [StringLengthAttribute("200")]
+public string Phone { get; public set; }
+    [LabelAttribute("E-Mail")]
+[StringLengthAttribute("200")]
+[EmailValidationAttribute]
+public string Email { get; public set; }
+    public Nullable`1<DateTime> ChangePasswordOn { get; public set; }
+    [LabelAttribute("Use Active Directory Authentication")]
+[DefaultValueAttribute("True")]
+public bool UseADAuthentication { get; public set; }
+    [LabelAttribute("Locked Out")]
+public bool LockedOut { get; public set; }
+    [DefaultValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime CreatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string CreatedBy { get; public set; }
+    [DefaultValueExpressionAttribute("this.CreatedOn")]
+[UpdateValueExpressionAttribute("DateTime.UtcNow")]
+public DateTime UpdatedOn { get; public set; }
+    [RequiredAttribute]
+[StringLengthAttribute("200")]
+[DefaultValueExpressionAttribute("this.CreatedBy")]
+[UpdateValueExpressionAttribute("UserInfo.CurrentUserID")]
+public string UpdatedBy { get; public set; }
+    [NonRecordFieldAttribute]
+public string AccountName { get; }
+    private static UserAccount();
+    [CompilerGeneratedAttribute]
+public Guid get_ID();
+    [CompilerGeneratedAttribute]
+public void set_ID(Guid value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Password();
+    [CompilerGeneratedAttribute]
+public void set_Password(string value);
+    [CompilerGeneratedAttribute]
+public string get_FirstName();
+    [CompilerGeneratedAttribute]
+public void set_FirstName(string value);
+    [CompilerGeneratedAttribute]
+public string get_LastName();
+    [CompilerGeneratedAttribute]
+public void set_LastName(string value);
+    [CompilerGeneratedAttribute]
+public Guid get_DefaultNodeID();
+    [CompilerGeneratedAttribute]
+public void set_DefaultNodeID(Guid value);
+    [CompilerGeneratedAttribute]
+public string get_Phone();
+    [CompilerGeneratedAttribute]
+public void set_Phone(string value);
+    [CompilerGeneratedAttribute]
+public string get_Email();
+    [CompilerGeneratedAttribute]
+public void set_Email(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_ChangePasswordOn();
+    [CompilerGeneratedAttribute]
+public void set_ChangePasswordOn(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public bool get_UseADAuthentication();
+    [CompilerGeneratedAttribute]
+public void set_UseADAuthentication(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_LockedOut();
+    [CompilerGeneratedAttribute]
+public void set_LockedOut(bool value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedOn();
+    [CompilerGeneratedAttribute]
+public void set_CreatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_CreatedBy();
+    [CompilerGeneratedAttribute]
+public void set_CreatedBy(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_UpdatedOn();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedOn(DateTime value);
+    [CompilerGeneratedAttribute]
+public string get_UpdatedBy();
+    [CompilerGeneratedAttribute]
+public void set_UpdatedBy(string value);
+    public string get_AccountName();
+}
+[CompilerGeneratedAttribute]
+internal class GSF.Security.NamespaceDoc : object {
+}
+public class GSF.Security.OIDCSecurityProvider : SecurityProviderBase {
+    private static string ResponseType;
+    private static int NonceSlidingExpiration;
+    public static int ProviderID;
+    private string m_clientRequestUri;
+    [CompilerGeneratedAttribute]
+private Exception <LastException>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <UseDatabaseLogging>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Scope>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SelfVerifiedNonce>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AuthorizationEndpoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TokenEndpoint>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RedirectURI>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientSecret>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <RolesClaim>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ShowDetailedError>k__BackingField;
+    private static LogPublisher Log;
+    private static MemoryCache s_nonceCache;
+    private static HttpClient s_client;
+    public OIDCUserData UserData { get; protected set; }
+    public Exception LastException { get; public set; }
+    public bool UseDatabaseLogging { get; public set; }
+    public string ClientID { get; public set; }
+    public string Scope { get; public set; }
+    public string SelfVerifiedNonce { get; public set; }
+    public string AuthorizationEndpoint { get; public set; }
+    public string TokenEndpoint { get; public set; }
+    public string RedirectURI { get; public set; }
+    public string ClientSecret { get; public set; }
+    public string RolesClaim { get; public set; }
+    public bool IsRedirectRequested { get; }
+    public string RequestedRedirect { get; }
+    public bool ShowDetailedError { get; public set; }
+    public bool CanRefreshData { get; }
+    public OIDCSecurityProvider(string username);
+    private static OIDCSecurityProvider();
+    public OIDCUserData get_UserData();
+    protected void set_UserData(OIDCUserData value);
+    [CompilerGeneratedAttribute]
+public Exception get_LastException();
+    [CompilerGeneratedAttribute]
+public void set_LastException(Exception value);
+    [CompilerGeneratedAttribute]
+public bool get_UseDatabaseLogging();
+    [CompilerGeneratedAttribute]
+public void set_UseDatabaseLogging(bool value);
+    [CompilerGeneratedAttribute]
+public string get_ClientID();
+    [CompilerGeneratedAttribute]
+public void set_ClientID(string value);
+    [CompilerGeneratedAttribute]
+public string get_Scope();
+    [CompilerGeneratedAttribute]
+public void set_Scope(string value);
+    [CompilerGeneratedAttribute]
+public string get_SelfVerifiedNonce();
+    [CompilerGeneratedAttribute]
+public void set_SelfVerifiedNonce(string value);
+    [CompilerGeneratedAttribute]
+public string get_AuthorizationEndpoint();
+    [CompilerGeneratedAttribute]
+public void set_AuthorizationEndpoint(string value);
+    [CompilerGeneratedAttribute]
+public string get_TokenEndpoint();
+    [CompilerGeneratedAttribute]
+public void set_TokenEndpoint(string value);
+    [CompilerGeneratedAttribute]
+public string get_RedirectURI();
+    [CompilerGeneratedAttribute]
+public void set_RedirectURI(string value);
+    [CompilerGeneratedAttribute]
+public string get_ClientSecret();
+    [CompilerGeneratedAttribute]
+public void set_ClientSecret(string value);
+    [CompilerGeneratedAttribute]
+public string get_RolesClaim();
+    [CompilerGeneratedAttribute]
+public void set_RolesClaim(string value);
+    public virtual bool get_IsRedirectRequested();
+    public virtual string get_RequestedRedirect();
+    [CompilerGeneratedAttribute]
+public bool get_ShowDetailedError();
+    [CompilerGeneratedAttribute]
+public void set_ShowDetailedError(bool value);
+    public virtual void LoadSettings();
+    public virtual bool RefreshData();
+    public virtual bool Authenticate();
+    protected virtual void LogAuthenticationAttempt(bool loginSuccess);
+    protected virtual bool LogError(string source, string message);
+    [AsyncStateMachineAttribute("GSF.Security.OIDCSecurityProvider/<GetTokenAsync>d__61")]
+private Task`1<TokenResponse> GetTokenAsync(string code);
+    private JObject DecodeJWT(string token);
+    public virtual string TranslateRedirect(string loginUrl, Uri uri, string encodedPath, string referrer);
+    public virtual bool ResetPassword(string securityAnswer);
+    public virtual bool ChangePassword(string oldPassword, string newPassword);
+    public virtual bool get_CanRefreshData();
+    private void RequestToken(string code);
+    [CompilerGeneratedAttribute]
+private void <GetTokenAsync>g__configureRequest|61_0(HttpRequestMessage request, <>c__DisplayClass61_0& );
+}
+public class GSF.Security.OIDCUserData : UserData {
+    [CompilerGeneratedAttribute]
+private string <Nonce>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TokenResponse <Token>k__BackingField;
+    public string Nonce { get; public set; }
+    internal TokenResponse Token { get; internal set; }
+    public OIDCUserData(string username);
+    [CompilerGeneratedAttribute]
+public string get_Nonce();
+    [CompilerGeneratedAttribute]
+public void set_Nonce(string value);
+    [CompilerGeneratedAttribute]
+internal TokenResponse get_Token();
+    [CompilerGeneratedAttribute]
+internal void set_Token(TokenResponse value);
+}
+[AttributeUsageAttribute("4")]
+public class GSF.Security.RestrictAccessAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private String[] <Roles>k__BackingField;
+    public String[] Roles { get; public set; }
+    public RestrictAccessAttribute(String[] roles);
+    [CompilerGeneratedAttribute]
+public String[] get_Roles();
+    [CompilerGeneratedAttribute]
+public void set_Roles(String[] value);
+    public bool CheckAccess();
+}
+public class GSF.Security.SecurityIdentity : object {
+    [CompilerGeneratedAttribute]
+private ISecurityProvider <Provider>k__BackingField;
+    public string AuthenticationType { get; }
+    public bool IsAuthenticated { get; }
+    public string Name { get; }
+    public string Type { get; }
+    public ISecurityProvider Provider { get; }
+    public SecurityIdentity(ISecurityProvider provider);
+    public sealed virtual string get_AuthenticationType();
+    public sealed virtual bool get_IsAuthenticated();
+    public sealed virtual string get_Name();
+    public string get_Type();
+    [CompilerGeneratedAttribute]
+public ISecurityProvider get_Provider();
+}
+public class GSF.Security.SecurityPrincipal : object {
+    [CompilerGeneratedAttribute]
+private SecurityIdentity <Identity>k__BackingField;
+    public SecurityIdentity Identity { get; }
+    private IIdentity System.Security.Principal.IPrincipal.Identity { get; }
+    public SecurityPrincipal(SecurityIdentity identity);
+    [CompilerGeneratedAttribute]
+public SecurityIdentity get_Identity();
+    private sealed virtual override IIdentity System.Security.Principal.IPrincipal.get_Identity();
+    public sealed virtual bool IsInRole(string roles);
+    public static string GetFailureReasonPhrase(SecurityPrincipal securityPrincipal, string authorizationScheme, bool useProviderReason);
+}
+public abstract class GSF.Security.SecurityProviderBase : object {
+    public static string DefaultApplicationName;
+    public static string DefaultConnectionString;
+    public static bool DefaultPersistSettings;
+    public static string DefaultSettingsCategory;
+    private SecureString m_securePassword;
+    private string m_settingsCategory;
+    private LogEventFunctionSignature m_logEvent;
+    [CompilerGeneratedAttribute]
+private string <ApplicationName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionString>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IPrincipal <PassthroughPrincipal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PersistSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private UserData <UserData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsUserAuthenticated>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CanRefreshData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CanResetPassword>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CanChangePassword>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <AuthenticationFailureReason>k__BackingField;
+    public string ApplicationName { get; public set; }
+    public string ConnectionString { get; public set; }
+    public IPrincipal PassthroughPrincipal { get; public set; }
+    public SecureString SecurePassword { get; public set; }
+    public string Password { get; public set; }
+    public LogEventFunctionSignature LogEvent { get; public set; }
+    public bool PersistSettings { get; public set; }
+    public string SettingsCategory { get; public set; }
+    public UserData UserData { get; protected set; }
+    public bool IsUserAuthenticated { get; protected set; }
+    public bool CanRefreshData { get; }
+    public bool CanResetPassword { get; }
+    public bool CanChangePassword { get; }
+    public string AuthenticationFailureReason { get; protected set; }
+    public bool IsRedirectRequested { get; }
+    public string RequestedRedirect { get; }
+    protected SecurityProviderBase(string username, bool canRefreshData, bool canResetPassword, bool canChangePassword);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ApplicationName();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ApplicationName(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_ConnectionString();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_ConnectionString(string value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IPrincipal get_PassthroughPrincipal();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_PassthroughPrincipal(IPrincipal value);
+    public virtual SecureString get_SecurePassword();
+    public virtual void set_SecurePassword(SecureString value);
+    public sealed virtual string get_Password();
+    public sealed virtual void set_Password(string value);
+    public virtual LogEventFunctionSignature get_LogEvent();
+    public virtual void set_LogEvent(LogEventFunctionSignature value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PersistSettings();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_PersistSettings(bool value);
+    public sealed virtual string get_SettingsCategory();
+    public sealed virtual void set_SettingsCategory(string value);
+    [CompilerGeneratedAttribute]
+public virtual UserData get_UserData();
+    [CompilerGeneratedAttribute]
+protected virtual void set_UserData(UserData value);
+    [CompilerGeneratedAttribute]
+public virtual bool get_IsUserAuthenticated();
+    [CompilerGeneratedAttribute]
+protected virtual void set_IsUserAuthenticated(bool value);
+    [CompilerGeneratedAttribute]
+public virtual bool get_CanRefreshData();
+    [CompilerGeneratedAttribute]
+public virtual bool get_CanResetPassword();
+    [CompilerGeneratedAttribute]
+public virtual bool get_CanChangePassword();
+    [CompilerGeneratedAttribute]
+public virtual string get_AuthenticationFailureReason();
+    [CompilerGeneratedAttribute]
+protected virtual void set_AuthenticationFailureReason(string value);
+    public virtual bool get_IsRedirectRequested();
+    public virtual string get_RequestedRedirect();
+    public abstract virtual bool Authenticate();
+    public abstract virtual bool RefreshData();
+    public abstract virtual bool ResetPassword(string securityAnswer);
+    public abstract virtual bool ChangePassword(string oldPassword, string newPassword);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual string TranslateRole(string role);
+    public virtual string TranslateRedirect(string loginUrl, Uri uri, string encodedPath, string referrer);
+    public virtual List`1<string> GetUserRoles(string applicationId);
+}
+public class GSF.Security.SecurityProviderCache : object {
+    private static int DefaultUserCacheTimeout;
+    private static int CacheMonitorTimerInterval;
+    private Dictionary`2<string, CacheContext> m_cache;
+    private List`1<CacheContext> m_autoRefreshProviders;
+    private int m_userCacheTimeout;
+    private Action m_cacheMonitorAction;
+    private string m_settingsCategory;
+    private static SecurityProviderCache s_primarySecurityProvider;
+    private static SecurityProviderCache s_alternateSecurityProvider;
+    public static string DefaultAlternateSettingsCategory;
+    public SecurityProviderCache(string settingsCategory);
+    private static SecurityProviderCache();
+    public ISecurityProvider CreateProvider(string username, IPrincipal passthroughPrincipal, bool autoRefresh);
+    public void Flush(string username);
+    public void AutoRefresh(ISecurityProvider provider);
+    public void DisableAutoRefresh(ISecurityProvider provider);
+    public void RefreshAll();
+    private void ManageCachedCredentials();
+    public static ISecurityProvider CreateProvider(string username, IPrincipal passthroughPrincipal, bool autoRefresh, bool useAlternate);
+    public static void Flush(string username, bool useAlternate);
+    public static void AutoRefresh(ISecurityProvider provider, bool useAlternate);
+    public static void DisableAutoRefresh(ISecurityProvider provider, bool useAlternate);
+    public static void RefreshAll(bool useAlternate);
+}
+public static class GSF.Security.SecurityProviderUtility : object {
+    private static string SettingsCategory;
+    private static string DefaultProviderType;
+    private static string DefaultIncludedResources;
+    private static string DefaultExcludedResources;
+    private static string DefaultNotificationSmtpServer;
+    private static string DefaultNotificationSenderEmail;
+    private static ICollection`1<string> s_excludedResources;
+    private static IDictionary`2<string, string> s_includedResources;
+    private static string s_notificationSmtpServer;
+    private static string s_notificationSenderEmail;
+    private static Dictionary`2<string, Func`2<string, ISecurityProvider>> s_providerFactory;
+    private static object s_providerFactoryLock;
+    private static SecurityProviderUtility();
+    public static ISecurityProvider CreateProvider(string username, string settingsCategory);
+    public static ISecurityProvider CreateProvider(string username, IPrincipal passthroughPrincipal, string settingsCategory);
+    public static ISecurityProvider CreateProvider(UserData userData, string settingsCategory);
+    public static bool IsResourceSecurable(string resource);
+    public static bool IsResourceAccessible(string resource, IPrincipal principal);
+    public static bool IsRegexMatch(string spec, string target);
+    public static string EncryptPassword(string password);
+    public static string GeneratePassword(int length);
+    public static void SendNotification(string recipient, string subject, string body);
+    private static Func`2<string, ISecurityProvider> CreateSecurityProviderFactory(string settingsCategory);
+    private static Func`2<string, ISecurityProvider> ProviderFactory(string settingsCategory);
+}
+public static class GSF.Security.TokenCacheHelper : object {
+    [CompilerGeneratedAttribute]
+private static string <CacheFilePath>k__BackingField;
+    private static object s_fileLock;
+    public static string CacheFilePath { get; }
+    private static TokenCacheHelper();
+    [CompilerGeneratedAttribute]
+public static string get_CacheFilePath();
+    private static void BeforeAccessNotification(TokenCacheNotificationArgs args);
+    private static void AfterAccessNotification(TokenCacheNotificationArgs args);
+    internal static void EnableSerialization(ITokenCache tokenCache);
+}
+internal class GSF.Security.TokenResponse : object {
+    [CompilerGeneratedAttribute]
+private string <access_token>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <id_token>k__BackingField;
+    public string access_token { get; public set; }
+    public string id_token { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_access_token();
+    [CompilerGeneratedAttribute]
+public void set_access_token(string value);
+    [CompilerGeneratedAttribute]
+public string get_id_token();
+    [CompilerGeneratedAttribute]
+public void set_id_token(string value);
+}
+[XmlTypeAttribute]
+[DataContractAttribute]
+public class GSF.Security.UserData : object {
+    [CompilerGeneratedAttribute]
+private string <LoginID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Username>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Password>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <FirstName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LastName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <CompanyName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <PhoneNumber>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <EmailAddress>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SecurityQuestion>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SecurityAnswer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <PasswordChangeDateTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <AccountCreatedDateTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDefined>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsExternal>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsAzureAD>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDisabled>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsLockedOut>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <Groups>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<string> <Roles>k__BackingField;
+    public string LoginID { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string Username { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string Password { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string FirstName { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string LastName { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string CompanyName { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string PhoneNumber { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string EmailAddress { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string SecurityQuestion { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public string SecurityAnswer { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public DateTime PasswordChangeDateTime { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public DateTime AccountCreatedDateTime { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public bool IsDefined { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public bool IsExternal { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public bool IsAzureAD { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public bool IsDisabled { get; public set; }
+    [XmlElementAttribute]
+[DataMemberAttribute]
+public bool IsLockedOut { get; public set; }
+    [XmlArrayAttribute]
+[XmlArrayItemAttribute("Group")]
+[DataMemberAttribute]
+public List`1<string> Groups { get; public set; }
+    [XmlArrayAttribute]
+[XmlArrayItemAttribute("Role")]
+[DataMemberAttribute]
+public List`1<string> Roles { get; public set; }
+    public UserData(string username);
+    public UserData(UserData userData);
+    [CompilerGeneratedAttribute]
+public string get_LoginID();
+    [CompilerGeneratedAttribute]
+public void set_LoginID(string value);
+    [CompilerGeneratedAttribute]
+public string get_Username();
+    [CompilerGeneratedAttribute]
+public void set_Username(string value);
+    [CompilerGeneratedAttribute]
+public string get_Password();
+    [CompilerGeneratedAttribute]
+public void set_Password(string value);
+    [CompilerGeneratedAttribute]
+public string get_FirstName();
+    [CompilerGeneratedAttribute]
+public void set_FirstName(string value);
+    [CompilerGeneratedAttribute]
+public string get_LastName();
+    [CompilerGeneratedAttribute]
+public void set_LastName(string value);
+    [CompilerGeneratedAttribute]
+public string get_CompanyName();
+    [CompilerGeneratedAttribute]
+public void set_CompanyName(string value);
+    [CompilerGeneratedAttribute]
+public string get_PhoneNumber();
+    [CompilerGeneratedAttribute]
+public void set_PhoneNumber(string value);
+    [CompilerGeneratedAttribute]
+public string get_EmailAddress();
+    [CompilerGeneratedAttribute]
+public void set_EmailAddress(string value);
+    [CompilerGeneratedAttribute]
+public string get_SecurityQuestion();
+    [CompilerGeneratedAttribute]
+public void set_SecurityQuestion(string value);
+    [CompilerGeneratedAttribute]
+public string get_SecurityAnswer();
+    [CompilerGeneratedAttribute]
+public void set_SecurityAnswer(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_PasswordChangeDateTime();
+    [CompilerGeneratedAttribute]
+public void set_PasswordChangeDateTime(DateTime value);
+    [CompilerGeneratedAttribute]
+public DateTime get_AccountCreatedDateTime();
+    [CompilerGeneratedAttribute]
+public void set_AccountCreatedDateTime(DateTime value);
+    [CompilerGeneratedAttribute]
+public bool get_IsDefined();
+    [CompilerGeneratedAttribute]
+public void set_IsDefined(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsExternal();
+    [CompilerGeneratedAttribute]
+public void set_IsExternal(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsAzureAD();
+    [CompilerGeneratedAttribute]
+public void set_IsAzureAD(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsDisabled();
+    [CompilerGeneratedAttribute]
+public void set_IsDisabled(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsLockedOut();
+    [CompilerGeneratedAttribute]
+public void set_IsLockedOut(bool value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_Groups();
+    [CompilerGeneratedAttribute]
+public void set_Groups(List`1<string> value);
+    [CompilerGeneratedAttribute]
+public List`1<string> get_Roles();
+    [CompilerGeneratedAttribute]
+public void set_Roles(List`1<string> value);
+    public void Initialize();
+    public void Clone(UserData userData);
+}
+[DefaultMemberAttribute("Item")]
+public class GSF.Security.UserDataCache : InterprocessCache {
+    private static string DefaultCacheFileName;
+    private static Byte[] s_cacheHeaderBytes;
+    private Dictionary`2<string, UserData> m_userDataTable;
+    private object m_userDataTableLock;
+    [CompilerGeneratedAttribute]
+private int <ProviderID>k__BackingField;
+    public UserData Item { get; public set; }
+    public int ProviderID { get; public set; }
+    public UserDataCache(int providerID);
+    public UserDataCache(int providerID, int maximumConcurrentLocks);
+    private static UserDataCache();
+    public UserData get_Item(string loginID);
+    public void set_Item(string loginID, UserData value);
+    [CompilerGeneratedAttribute]
+public int get_ProviderID();
+    [CompilerGeneratedAttribute]
+public void set_ProviderID(int value);
+    public bool TryGetUserData(string loginID, UserData& userData);
+    public void SaveUserData(string loginID, UserData userData);
+    public virtual void Save();
+    protected virtual void SaveFileData(FileStream fileStream, Byte[] fileData);
+    protected virtual Byte[] LoadFileData(FileStream fileStream);
+    protected string HashLoginID(string loginID);
+    private void WaitForDataReady();
+    public static UserDataCache GetCurrentCache(int providerID);
+    private static Byte[] SerializeCache(Dictionary`2<string, UserData> cache);
+    private Dictionary`2<string, UserData> DeserializeCache(Byte[] data);
+}
+[DefaultMemberAttribute("Item")]
+public class GSF.Security.UserRoleCache : InterprocessCache {
+    private static string DefaultCacheFileName;
+    private Dictionary`2<string, String[]> m_userRoles;
+    private object m_userRolesLock;
+    public Dictionary`2<string, String[]> UserRoles { get; }
+    public String[] Item { get; public set; }
+    public UserRoleCache(int maximumConcurrentLocks);
+    public Dictionary`2<string, String[]> get_UserRoles();
+    public String[] get_Item(string userName);
+    public void set_Item(string userName, String[] value);
+    public bool TryGetUserRole(string userName, String[]& roles);
+    public void SaveUserRole(string userName, String[] roles);
+    public void MergeLeft(UserRoleCache other);
+    public void MergeRight(UserRoleCache other);
+    public virtual void Save();
+    protected virtual void SaveFileData(FileStream fileStream, Byte[] fileData);
+    protected virtual Byte[] LoadFileData(FileStream fileStream);
+    protected string HashLoginID(string userName);
+    private void WaitForDataReady();
+    public static UserRoleCache GetCurrentCache();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

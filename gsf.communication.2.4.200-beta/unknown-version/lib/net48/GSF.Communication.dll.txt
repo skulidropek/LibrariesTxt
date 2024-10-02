@@ -1,0 +1,2259 @@
+[ToolboxBitmapAttribute("GSF.Communication.ClientBase")]
+public abstract class GSF.Communication.ClientBase : Component {
+    public static int DefaultMaxConnectionAttempts;
+    public static int DefaultSendBufferSize;
+    public static int DefaultReceiveBufferSize;
+    public static bool DefaultPersistSettings;
+    public static string DefaultSettingsCategory;
+    [CompilerGeneratedAttribute]
+private EventHandler ConnectionAttempt;
+    [CompilerGeneratedAttribute]
+private EventHandler ConnectionEstablished;
+    [CompilerGeneratedAttribute]
+private EventHandler ConnectionTerminated;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> ConnectionException;
+    [CompilerGeneratedAttribute]
+private EventHandler SendDataStart;
+    [CompilerGeneratedAttribute]
+private EventHandler SendDataComplete;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> SendDataException;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<int>> ReceiveData;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`2<Byte[], int>> ReceiveDataComplete;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> ReceiveDataException;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> UnhandledUserException;
+    private string m_connectionString;
+    private int m_maxConnectionAttempts;
+    private int m_sendBufferSize;
+    private int m_receiveBufferSize;
+    private string m_settingsCategory;
+    private Encoding m_textEncoding;
+    private ClientState m_currentState;
+    private TransportProtocol m_transportProtocol;
+    private Ticks m_connectTime;
+    private Ticks m_disconnectTime;
+    private ManualResetEvent m_connectHandle;
+    private bool m_initialized;
+    private Action`1<int> m_updateBytesSent;
+    private Action`1<int> m_updateBytesReceived;
+    [CompilerGeneratedAttribute]
+private int <ServerIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <PersistSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDisposed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <ReadIndex>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TransportStatistics <Statistics>k__BackingField;
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    [BrowsableAttribute("False")]
+public int ServerIndex { get; internal set; }
+    [CategoryAttribute("Settings")]
+[DescriptionAttribute("The data required by the client to connect to the server.")]
+public string ConnectionString { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("-1")]
+[DescriptionAttribute("The maximum number of times the client will attempt to connect to the server. Set MaxConnectionAttempts to -1 for infinite connection attempts.")]
+public int MaxConnectionAttempts { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("32768")]
+[DescriptionAttribute("The size of the buffer used by the client for receiving data from the server.")]
+public int SendBufferSize { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("32768")]
+[DescriptionAttribute("The size of the buffer used by the client for receiving data from the server.")]
+public int ReceiveBufferSize { get; public set; }
+    [CategoryAttribute("Persistence")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client settings are to be saved to the config file.")]
+public bool PersistSettings { get; public set; }
+    [CategoryAttribute("Persistence")]
+[DefaultValueAttribute("CommunicationClient")]
+[DescriptionAttribute("Category under which the client settings are to be saved to the config file if the PersistSettings property is set to true.")]
+public string SettingsCategory { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public bool Enabled { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public bool IsDisposed { get; private set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Encoding TextEncoding { get; public set; }
+    [BrowsableAttribute("False")]
+public ClientState CurrentState { get; }
+    [BrowsableAttribute("False")]
+public TransportProtocol TransportProtocol { get; }
+    [BrowsableAttribute("False")]
+public Time ConnectionTime { get; }
+    protected int ReadIndex { get; protected set; }
+    [BrowsableAttribute("False")]
+public string Name { get; }
+    public TransportStatistics Statistics { get; }
+    protected bool TrackStatistics { get; }
+    [BrowsableAttribute("False")]
+public string Status { get; }
+    protected ClientBase(TransportProtocol transportProtocol, string connectionString);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ConnectionAttempt(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ConnectionAttempt(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ConnectionEstablished(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ConnectionEstablished(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ConnectionTerminated(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ConnectionTerminated(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ConnectionException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ConnectionException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendDataStart(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendDataStart(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendDataComplete(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendDataComplete(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveData(EventHandler`1<EventArgs`1<int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveData(EventHandler`1<EventArgs`1<int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveDataComplete(EventHandler`1<EventArgs`2<Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveDataComplete(EventHandler`1<EventArgs`2<Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    public abstract virtual string get_ServerUri();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_ServerIndex();
+    [CompilerGeneratedAttribute]
+internal void set_ServerIndex(int value);
+    public virtual string get_ConnectionString();
+    public virtual void set_ConnectionString(string value);
+    public virtual int get_MaxConnectionAttempts();
+    public virtual void set_MaxConnectionAttempts(int value);
+    public virtual int get_SendBufferSize();
+    public virtual void set_SendBufferSize(int value);
+    public virtual int get_ReceiveBufferSize();
+    public virtual void set_ReceiveBufferSize(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PersistSettings();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_PersistSettings(bool value);
+    public sealed virtual string get_SettingsCategory();
+    public sealed virtual void set_SettingsCategory(string value);
+    public sealed virtual bool get_Enabled();
+    public sealed virtual void set_Enabled(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsDisposed();
+    [CompilerGeneratedAttribute]
+private void set_IsDisposed(bool value);
+    public virtual Encoding get_TextEncoding();
+    public virtual void set_TextEncoding(Encoding value);
+    public virtual ClientState get_CurrentState();
+    public virtual TransportProtocol get_TransportProtocol();
+    public virtual Time get_ConnectionTime();
+    [CompilerGeneratedAttribute]
+protected int get_ReadIndex();
+    [CompilerGeneratedAttribute]
+protected void set_ReadIndex(int value);
+    public virtual string get_Name();
+    [CompilerGeneratedAttribute]
+public sealed virtual TransportStatistics get_Statistics();
+    protected virtual bool get_TrackStatistics();
+    public virtual string get_Status();
+    public abstract virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual bool RequestNextServerIndex();
+    protected abstract virtual void ValidateConnectionString(string connectionString);
+    protected abstract virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    public sealed virtual void Initialize();
+    public sealed virtual void BeginInit();
+    public sealed virtual void EndInit();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Connect();
+    public virtual WaitHandle ConnectAsync();
+    public virtual void Send(string data);
+    public virtual void Send(object serializableObject);
+    public virtual void Send(Byte[] data);
+    public virtual void Send(Byte[] data, int offset, int length);
+    public virtual WaitHandle SendAsync(string data);
+    public virtual WaitHandle SendAsync(object serializableObject);
+    public virtual WaitHandle SendAsync(Byte[] data);
+    public virtual WaitHandle SendAsync(Byte[] data, int offset, int length);
+    public virtual void Disconnect();
+    protected void UpdateBytesSent(int bytes);
+    protected void UpdateBytesReceived(int bytes);
+    protected virtual void OnConnectionAttempt();
+    protected virtual void OnConnectionEstablished();
+    protected virtual void OnConnectionTerminated();
+    protected virtual void OnConnectionException(Exception ex);
+    protected virtual void OnSendDataStart();
+    protected virtual void OnSendDataComplete();
+    protected virtual void OnSendDataException(Exception ex);
+    protected virtual void OnReceiveData(int size);
+    protected virtual void OnReceiveDataComplete(Byte[] data, int size);
+    protected virtual void OnReceiveDataException(Exception ex);
+    protected virtual void OnUnhandledUserException(Exception ex);
+    protected virtual void Dispose(bool disposing);
+    private void ReConnect();
+    public static IClient Create(string connectionString);
+}
+public enum GSF.Communication.ClientIdentificationMode : Enum {
+    public int value__;
+    public static ClientIdentificationMode IP;
+    public static ClientIdentificationMode Port;
+    public static ClientIdentificationMode EndPoint;
+}
+public enum GSF.Communication.ClientState : Enum {
+    public int value__;
+    public static ClientState Connecting;
+    public static ClientState Connected;
+    public static ClientState Disconnected;
+}
+public class GSF.Communication.FileClient : ClientBase {
+    public static bool DefaultAutoRepeat;
+    public static bool DefaultReceiveOnDemand;
+    public static int DefaultReceiveInterval;
+    public static long DefaultStartingOffset;
+    public static FileMode DefaultFileOpenMode;
+    public static FileShare DefaultFileShareMode;
+    public static FileAccess DefaultFileAccessMode;
+    public static bool DefaultDisconnectAtEOF;
+    public static string DefaultConnectionString;
+    [CompilerGeneratedAttribute]
+private EventHandler EndOfFile;
+    private bool m_autoRepeat;
+    private bool m_receiveOnDemand;
+    private int m_receiveInterval;
+    private long m_startingOffset;
+    private FileAccess m_fileAccessMode;
+    private TransportProvider`1<FileStream> m_fileClient;
+    private Dictionary`2<string, string> m_connectData;
+    private SharedTimer m_receiveDataTimer;
+    private ManualResetEvent m_connectionHandle;
+    private Thread m_connectionThread;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private FileMode <FileOpenMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private FileShare <FileShareMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <DisconnectAtEOF>k__BackingField;
+    private static SharedTimerScheduler s_timerScheduler;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether receiving (reading) of data is to be repeated endlessly.")]
+public bool AutoRepeat { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether receiving (reading) of data will be initiated manually by calling ReceiveData().")]
+public bool ReceiveOnDemand { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("-1")]
+[DescriptionAttribute("The number of milliseconds to pause before receiving (reading) the next available set of data. Set ReceiveInterval = -1 to receive data continuously without pausing.")]
+public double ReceiveInterval { get; public set; }
+    [CategoryAttribute("File")]
+[DefaultValueAttribute("0")]
+[DescriptionAttribute("The starting point relative to the beginning of the file from where the data is to be received (read).")]
+public long StartingOffset { get; public set; }
+    [CategoryAttribute("File")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The System.IO.FileMode value to be used when opening the file.")]
+public FileMode FileOpenMode { get; public set; }
+    [CategoryAttribute("File")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The System.IO.FileShare value to be used when opening the file.")]
+public FileShare FileShareMode { get; public set; }
+    [CategoryAttribute("File")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The System.IO.FileAccess value to be used when opening the file.")]
+public FileAccess FileAccessMode { get; public set; }
+    [CategoryAttribute("File")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("The flag that determines if client should disconnect when end of file has been reached.")]
+public bool DisconnectAtEOF { get; public set; }
+    public bool AtEOF { get; }
+    [BrowsableAttribute("False")]
+public FileStream Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    public FileClient(string connectString);
+    public FileClient(IContainer container);
+    private static FileClient();
+    [CompilerGeneratedAttribute]
+public void add_EndOfFile(EventHandler value);
+    [CompilerGeneratedAttribute]
+public void remove_EndOfFile(EventHandler value);
+    public bool get_AutoRepeat();
+    public void set_AutoRepeat(bool value);
+    public bool get_ReceiveOnDemand();
+    public void set_ReceiveOnDemand(bool value);
+    public double get_ReceiveInterval();
+    public void set_ReceiveInterval(double value);
+    public long get_StartingOffset();
+    public void set_StartingOffset(long value);
+    [CompilerGeneratedAttribute]
+public FileMode get_FileOpenMode();
+    [CompilerGeneratedAttribute]
+public void set_FileOpenMode(FileMode value);
+    [CompilerGeneratedAttribute]
+public FileShare get_FileShareMode();
+    [CompilerGeneratedAttribute]
+public void set_FileShareMode(FileShare value);
+    public FileAccess get_FileAccessMode();
+    public void set_FileAccessMode(FileAccess value);
+    [CompilerGeneratedAttribute]
+public bool get_DisconnectAtEOF();
+    [CompilerGeneratedAttribute]
+public void set_DisconnectAtEOF(bool value);
+    public bool get_AtEOF();
+    public FileStream get_Client();
+    public virtual string get_ServerUri();
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public void ReadNextBuffer();
+    public virtual void Disconnect();
+    public virtual WaitHandle ConnectAsync();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    private void SendDataAsyncCallback(IAsyncResult asyncResult);
+    private void OpenFile();
+    private void ReadData();
+    private void m_receiveDataTimer_Elapsed(object sender, EventArgs`1<DateTime> e);
+    protected virtual void OnConnectionException(Exception ex);
+    protected virtual void OnEndOfFile();
+}
+public interface GSF.Communication.IClient {
+    public string ConnectionString { get; public set; }
+    public int MaxConnectionAttempts { get; public set; }
+    public int SendBufferSize { get; public set; }
+    public int ReceiveBufferSize { get; public set; }
+    public Encoding TextEncoding { get; public set; }
+    public string ServerUri { get; }
+    public int ServerIndex { get; }
+    public ClientState CurrentState { get; }
+    public TransportProtocol TransportProtocol { get; }
+    public Time ConnectionTime { get; }
+    public TransportStatistics Statistics { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ConnectionAttempt(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ConnectionAttempt(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ConnectionEstablished(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ConnectionEstablished(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ConnectionTerminated(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ConnectionTerminated(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ConnectionException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ConnectionException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendDataStart(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendDataStart(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendDataComplete(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendDataComplete(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveData(EventHandler`1<EventArgs`1<int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveData(EventHandler`1<EventArgs`1<int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveDataComplete(EventHandler`1<EventArgs`2<Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveDataComplete(EventHandler`1<EventArgs`2<Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveDataException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    public abstract virtual string get_ConnectionString();
+    public abstract virtual void set_ConnectionString(string value);
+    public abstract virtual int get_MaxConnectionAttempts();
+    public abstract virtual void set_MaxConnectionAttempts(int value);
+    public abstract virtual int get_SendBufferSize();
+    public abstract virtual void set_SendBufferSize(int value);
+    public abstract virtual int get_ReceiveBufferSize();
+    public abstract virtual void set_ReceiveBufferSize(int value);
+    public abstract virtual Encoding get_TextEncoding();
+    public abstract virtual void set_TextEncoding(Encoding value);
+    public abstract virtual string get_ServerUri();
+    public abstract virtual int get_ServerIndex();
+    public abstract virtual ClientState get_CurrentState();
+    public abstract virtual TransportProtocol get_TransportProtocol();
+    public abstract virtual Time get_ConnectionTime();
+    public abstract virtual TransportStatistics get_Statistics();
+    public abstract virtual void Connect();
+    public abstract virtual WaitHandle ConnectAsync();
+    public abstract virtual void Disconnect();
+    public abstract virtual void Send(Byte[] data, int offset, int length);
+    public abstract virtual WaitHandle SendAsync(Byte[] data, int offset, int length);
+    public abstract virtual int Read(Byte[] buffer, int startIndex, int length);
+    public abstract virtual bool RequestNextServerIndex();
+}
+public enum GSF.Communication.IPStack : Enum {
+    public int value__;
+    public static IPStack IPv6;
+    public static IPStack IPv4;
+    public static IPStack Default;
+}
+public interface GSF.Communication.IServer {
+    public string ConfigurationString { get; public set; }
+    public int MaxClientConnections { get; public set; }
+    public int SendBufferSize { get; public set; }
+    public int ReceiveBufferSize { get; public set; }
+    public Encoding TextEncoding { get; public set; }
+    public ServerState CurrentState { get; }
+    public TransportProtocol TransportProtocol { get; }
+    public Guid ServerID { get; }
+    public Guid[] ClientIDs { get; }
+    public Time RunTime { get; }
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ServerStarted(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ServerStarted(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ServerStopped(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ServerStopped(EventHandler value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ClientConnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ClientConnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ClientDisconnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ClientDisconnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ClientConnectingException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ClientConnectingException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendClientDataStart(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendClientDataStart(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendClientDataComplete(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendClientDataComplete(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_SendClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_SendClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveClientData(EventHandler`1<EventArgs`2<Guid, int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveClientData(EventHandler`1<EventArgs`2<Guid, int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveClientDataComplete(EventHandler`1<EventArgs`3<Guid, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveClientDataComplete(EventHandler`1<EventArgs`3<Guid, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_ReceiveClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_ReceiveClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    public abstract virtual string get_ConfigurationString();
+    public abstract virtual void set_ConfigurationString(string value);
+    public abstract virtual int get_MaxClientConnections();
+    public abstract virtual void set_MaxClientConnections(int value);
+    public abstract virtual int get_SendBufferSize();
+    public abstract virtual void set_SendBufferSize(int value);
+    public abstract virtual int get_ReceiveBufferSize();
+    public abstract virtual void set_ReceiveBufferSize(int value);
+    public abstract virtual Encoding get_TextEncoding();
+    public abstract virtual void set_TextEncoding(Encoding value);
+    public abstract virtual ServerState get_CurrentState();
+    public abstract virtual TransportProtocol get_TransportProtocol();
+    public abstract virtual Guid get_ServerID();
+    public abstract virtual Guid[] get_ClientIDs();
+    public abstract virtual Time get_RunTime();
+    public abstract virtual void Start();
+    public abstract virtual void Stop();
+    public abstract virtual void DisconnectAll();
+    public abstract virtual void DisconnectOne(Guid clientID);
+    public abstract virtual void SendTo(Guid clientID, Byte[] data, int offset, int length);
+    public abstract virtual void Multicast(Byte[] data, int offset, int length);
+    public abstract virtual WaitHandle SendToAsync(Guid clientID, Byte[] data, int offset, int length);
+    public abstract virtual WaitHandle[] MulticastAsync(Byte[] data, int offset, int length);
+    public abstract virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+}
+[CompilerGeneratedAttribute]
+internal class GSF.Communication.NamespaceDoc : object {
+}
+public static class GSF.Communication.Payload : object {
+    public static int LengthSegment;
+    public static Byte[] DefaultMarker;
+    private static Payload();
+    public static void AddHeader(Byte[]& buffer, Int32& offset, Int32& length, Byte[] marker, EndianOrder endianOrder);
+    public static bool HasHeader(Byte[] buffer, Byte[] marker);
+    public static int ExtractLength(Byte[] buffer, int length, Byte[] marker, EndianOrder endianOrder);
+}
+public enum GSF.Communication.Radius.AttributeType : Enum {
+    public int value__;
+    public static AttributeType UserName;
+    public static AttributeType UserPassword;
+    public static AttributeType ChapPassword;
+    public static AttributeType NasIpAddress;
+    public static AttributeType NasPort;
+    public static AttributeType ServiceType;
+    public static AttributeType FramedProtocol;
+    public static AttributeType FramedIpAddress;
+    public static AttributeType FramedIpNetmask;
+    public static AttributeType FramedRouting;
+    public static AttributeType FilterId;
+    public static AttributeType FramedMtu;
+    public static AttributeType FramedCompression;
+    public static AttributeType LoginIpHost;
+    public static AttributeType LoginService;
+    public static AttributeType LoginTcpPort;
+    public static AttributeType ReplyMessage;
+    public static AttributeType CallbackNumber;
+    public static AttributeType CallbackId;
+    public static AttributeType FramedRoute;
+    public static AttributeType FramedIpxNetwork;
+    public static AttributeType State;
+    public static AttributeType Class;
+    public static AttributeType VendorSpecific;
+    public static AttributeType SessionTimeout;
+    public static AttributeType IdleTimeout;
+    public static AttributeType TerminationAction;
+    public static AttributeType CallerStationId;
+    public static AttributeType CallingStationId;
+    public static AttributeType NasIdentifier;
+    public static AttributeType ProxyState;
+    public static AttributeType LoginLatService;
+    public static AttributeType LoginLatNode;
+    public static AttributeType LoginLatGroup;
+    public static AttributeType FramedAppleTalkLink;
+    public static AttributeType FramedAppleTalkNetwork;
+    public static AttributeType FramedAppleTalkZone;
+    public static AttributeType ChapChallenge;
+    public static AttributeType NasPortType;
+    public static AttributeType PortLimit;
+    public static AttributeType LoginLatPort;
+}
+[CompilerGeneratedAttribute]
+internal class GSF.Communication.Radius.NamespaceDoc : object {
+}
+public enum GSF.Communication.Radius.PacketType : Enum {
+    public int value__;
+    public static PacketType AccessRequest;
+    public static PacketType AccessAccept;
+    public static PacketType AccessReject;
+    public static PacketType AccountingRequest;
+    public static PacketType AccountingResponse;
+    public static PacketType AccountingStatus;
+    public static PacketType PasswordRequest;
+    public static PacketType PasswordAccept;
+    public static PacketType PasswordReject;
+    public static PacketType AccountingMessage;
+    public static PacketType AccessChallenge;
+    public static PacketType StatuServer;
+    public static PacketType StatusClient;
+}
+public class GSF.Communication.Radius.RadiusClient : object {
+    public static int DefaultServerPort;
+    public static string DefaultNewPinModeMessage1;
+    public static string DefaultNewPinModeMessage2;
+    public static string DefaultNewPinModeMessage3;
+    public static string DefaultNextTokenModeMessage;
+    private short m_requestAttempts;
+    private int m_reponseTimeout;
+    private string m_sharedSecret;
+    private string m_newPinModeMessage1;
+    private string m_newPinModeMessage2;
+    private string m_newPinModeMessage3;
+    private string m_nextTokenModeMessage;
+    private bool m_disposed;
+    private Byte[] m_responseBytes;
+    private UdpClient m_udpClient;
+    public string ServerName { get; public set; }
+    public int ServerPort { get; public set; }
+    public short RequestAttempts { get; public set; }
+    public int ReponseTimeout { get; public set; }
+    public string SharedSecret { get; public set; }
+    public string NewPinModeMessage1 { get; public set; }
+    public string NewPinModeMessage2 { get; public set; }
+    public string NewPinModeMessage3 { get; public set; }
+    public string NextTokenModeMessage { get; public set; }
+    public RadiusClient(string serverName, string sharedSecret);
+    public RadiusClient(string serverName, int serverPort, string sharedSecret);
+    public string get_ServerName();
+    public void set_ServerName(string value);
+    public int get_ServerPort();
+    public void set_ServerPort(int value);
+    public short get_RequestAttempts();
+    public void set_RequestAttempts(short value);
+    public int get_ReponseTimeout();
+    public void set_ReponseTimeout(int value);
+    public string get_SharedSecret();
+    public void set_SharedSecret(string value);
+    public string get_NewPinModeMessage1();
+    public void set_NewPinModeMessage1(string value);
+    public string get_NewPinModeMessage2();
+    public void set_NewPinModeMessage2(string value);
+    public string get_NewPinModeMessage3();
+    public void set_NewPinModeMessage3(string value);
+    public string get_NextTokenModeMessage();
+    public void set_NextTokenModeMessage(string value);
+    public RadiusPacket ProcessRequest(RadiusPacket request);
+    public bool CreateNewPin(string username, string token, string pin);
+    public RadiusPacket Authenticate(string username, string password);
+    public RadiusPacket Authenticate(string username, string password, Byte[] state);
+    public bool IsUserInNewPinMode(RadiusPacket response);
+    public bool IsUserInNextTokenMode(RadiusPacket response);
+    public sealed virtual void Dispose();
+    protected void CheckDisposed();
+    protected virtual void Dispose(bool disposing);
+    private void m_udpClient_ReceivedData(object sender, EventArgs`2<Byte[], int> e);
+}
+public class GSF.Communication.Radius.RadiusPacket : object {
+    private Byte[] m_authenticator;
+    [CompilerGeneratedAttribute]
+private PacketType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private byte <Identifier>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<RadiusPacketAttribute> <Attributes>k__BackingField;
+    public static Encoding Encoding;
+    public static EndianOrder EndianOrder;
+    public PacketType Type { get; public set; }
+    public byte Identifier { get; public set; }
+    public Byte[] Authenticator { get; public set; }
+    public List`1<RadiusPacketAttribute> Attributes { get; }
+    public int BinaryLength { get; }
+    public RadiusPacket(PacketType type);
+    public RadiusPacket(Byte[] binaryImage, int startIndex, int length);
+    private static RadiusPacket();
+    [CompilerGeneratedAttribute]
+public PacketType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(PacketType value);
+    [CompilerGeneratedAttribute]
+public byte get_Identifier();
+    [CompilerGeneratedAttribute]
+public void set_Identifier(byte value);
+    public Byte[] get_Authenticator();
+    public void set_Authenticator(Byte[] value);
+    [CompilerGeneratedAttribute]
+public List`1<RadiusPacketAttribute> get_Attributes();
+    public sealed virtual int get_BinaryLength();
+    public sealed virtual int ParseBinaryImage(Byte[] buffer, int startIndex, int length);
+    public sealed virtual int GenerateBinaryImage(Byte[] buffer, int startIndex);
+    public Byte[] GetAttributeValue(AttributeType attributeType);
+    public static Byte[] CreateRequestAuthenticator(string sharedSecret);
+    public static Byte[] CreateResponseAuthenticator(string sharedSecret, RadiusPacket requestPacket, RadiusPacket responsePacket);
+    public static Byte[] EncryptPassword(string password, string sharedSecret, Byte[] requestAuthenticator);
+}
+public class GSF.Communication.Radius.RadiusPacketAttribute : object {
+    private Byte[] m_value;
+    [CompilerGeneratedAttribute]
+private AttributeType <Type>k__BackingField;
+    public AttributeType Type { get; public set; }
+    public Byte[] Value { get; public set; }
+    public int BinaryLength { get; }
+    public RadiusPacketAttribute(AttributeType type, string value);
+    public RadiusPacketAttribute(AttributeType type, UInt32 value);
+    public RadiusPacketAttribute(AttributeType type, IPAddress value);
+    public RadiusPacketAttribute(AttributeType type, Byte[] value);
+    public RadiusPacketAttribute(Byte[] buffer, int startIndex, int length);
+    [CompilerGeneratedAttribute]
+public AttributeType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(AttributeType value);
+    public Byte[] get_Value();
+    public void set_Value(Byte[] value);
+    public sealed virtual int get_BinaryLength();
+    public sealed virtual int ParseBinaryImage(Byte[] buffer, int startIndex, int length);
+    public sealed virtual int GenerateBinaryImage(Byte[] buffer, int startIndex);
+}
+public class GSF.Communication.SerialClient : ClientBase {
+    public static string DefaultConnectionString;
+    public static int DefaultReceivedBytesThreshold;
+    private TransportProvider`1<SerialPort> m_serialClient;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectionHandle;
+    private Thread m_connectionThread;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private int <ReceivedBytesThreshold>k__BackingField;
+    [BrowsableAttribute("False")]
+public SerialPort Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    [DefaultValueAttribute("1")]
+public int ReceivedBytesThreshold { get; public set; }
+    public string Status { get; }
+    public SerialClient(string connectString);
+    public SerialClient(IContainer container);
+    public SerialPort get_Client();
+    public virtual string get_ServerUri();
+    [CompilerGeneratedAttribute]
+public int get_ReceivedBytesThreshold();
+    [CompilerGeneratedAttribute]
+public void set_ReceivedBytesThreshold(int value);
+    public virtual string get_Status();
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual void Disconnect();
+    public virtual WaitHandle ConnectAsync();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    private void SendDataAsyncCallback(IAsyncResult asyncResult);
+    private void OpenPort();
+    private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e);
+    private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e);
+    protected virtual void OnConnectionException(Exception ex);
+}
+public class GSF.Communication.SerialException : Exception {
+    [CompilerGeneratedAttribute]
+private SerialError <SerialError>k__BackingField;
+    public SerialError SerialError { get; }
+    public SerialException(SerialError serialError, string message, Exception innerException);
+    protected SerialException(SerializationInfo info, StreamingContext context);
+    [CompilerGeneratedAttribute]
+public SerialError get_SerialError();
+    public virtual void GetObjectData(SerializationInfo info, StreamingContext context);
+    private static string GetMessage(SerialError serialError);
+}
+[ToolboxBitmapAttribute("GSF.Communication.ServerBase")]
+public abstract class GSF.Communication.ServerBase : Component {
+    public static int DefaultMaxClientConnections;
+    public static int DefaultSendBufferSize;
+    public static int DefaultReceiveBufferSize;
+    public static bool DefaultPersistSettings;
+    public static string DefaultSettingsCategory;
+    [CompilerGeneratedAttribute]
+private EventHandler ServerStarted;
+    [CompilerGeneratedAttribute]
+private EventHandler ServerStopped;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Guid>> ClientConnected;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Guid>> ClientDisconnected;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> ClientConnectingException;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Guid>> SendClientDataStart;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Guid>> SendClientDataComplete;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`2<Guid, Exception>> SendClientDataException;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`2<Guid, int>> ReceiveClientData;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`3<Guid, Byte[], int>> ReceiveClientDataComplete;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`2<Guid, Exception>> ReceiveClientDataException;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`1<Exception>> UnhandledUserException;
+    private string m_configurationString;
+    private int m_maxClientConnections;
+    private int m_sendBufferSize;
+    private int m_receiveBufferSize;
+    private Encoding m_textEncoding;
+    private TransportProtocol m_transportProtocol;
+    private ConcurrentDictionary`2<Guid, int> m_clientIDs;
+    private Ticks m_stopTime;
+    private Ticks m_startTime;
+    [CompilerGeneratedAttribute]
+private bool <PersistSettings>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IsDisposed>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ServerState <CurrentState>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Guid <ServerID>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <Initialized>k__BackingField;
+    [CategoryAttribute("Settings")]
+[DescriptionAttribute("The data that is required by the server to initialize.")]
+public string ConfigurationString { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("-1")]
+[DescriptionAttribute("The maximum number of clients that can connect to the server. Set MaxClientConnections to -1 to allow infinite client connections.")]
+public int MaxClientConnections { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("32768")]
+[DescriptionAttribute("The size of the buffer used by the server for receiving data from the clients.")]
+public int SendBufferSize { get; public set; }
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("32768")]
+[DescriptionAttribute("The size of the buffer used by the server for receiving data from the clients.")]
+public int ReceiveBufferSize { get; public set; }
+    [CategoryAttribute("Persistence")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the server settings are to be saved to the config file.")]
+public bool PersistSettings { get; public set; }
+    [CategoryAttribute("Persistence")]
+[DefaultValueAttribute("CommunicationServer")]
+[DescriptionAttribute("Category under which the server settings are to be saved to the config file if the PersistSettings property is set to true.")]
+public string SettingsCategory { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public bool Enabled { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public bool IsDisposed { get; private set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Encoding TextEncoding { get; public set; }
+    [BrowsableAttribute("False")]
+public ServerState CurrentState { get; private set; }
+    [BrowsableAttribute("False")]
+public TransportProtocol TransportProtocol { get; }
+    [BrowsableAttribute("False")]
+public Guid ServerID { get; }
+    [BrowsableAttribute("False")]
+public Guid[] ClientIDs { get; }
+    [BrowsableAttribute("False")]
+public Time RunTime { get; }
+    protected ConcurrentDictionary`2<Guid, int> ReadIndicies { get; }
+    [BrowsableAttribute("False")]
+public string Name { get; private set; }
+    [BrowsableAttribute("False")]
+public string Status { get; }
+    protected bool Initialized { get; private set; }
+    protected ServerBase(TransportProtocol transportProtocol, string configurationString);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ServerStarted(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ServerStarted(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ServerStopped(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ServerStopped(EventHandler value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ClientConnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ClientConnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ClientDisconnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ClientDisconnected(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ClientConnectingException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ClientConnectingException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendClientDataStart(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendClientDataStart(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendClientDataComplete(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendClientDataComplete(EventHandler`1<EventArgs`1<Guid>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_SendClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_SendClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveClientData(EventHandler`1<EventArgs`2<Guid, int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveClientData(EventHandler`1<EventArgs`2<Guid, int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveClientDataComplete(EventHandler`1<EventArgs`3<Guid, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveClientDataComplete(EventHandler`1<EventArgs`3<Guid, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_ReceiveClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_ReceiveClientDataException(EventHandler`1<EventArgs`2<Guid, Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_UnhandledUserException(EventHandler`1<EventArgs`1<Exception>> value);
+    public virtual string get_ConfigurationString();
+    public virtual void set_ConfigurationString(string value);
+    public virtual int get_MaxClientConnections();
+    public virtual void set_MaxClientConnections(int value);
+    public virtual int get_SendBufferSize();
+    public virtual void set_SendBufferSize(int value);
+    public virtual int get_ReceiveBufferSize();
+    public virtual void set_ReceiveBufferSize(int value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_PersistSettings();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_PersistSettings(bool value);
+    public sealed virtual string get_SettingsCategory();
+    public sealed virtual void set_SettingsCategory(string value);
+    public sealed virtual bool get_Enabled();
+    public sealed virtual void set_Enabled(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsDisposed();
+    [CompilerGeneratedAttribute]
+private void set_IsDisposed(bool value);
+    public virtual Encoding get_TextEncoding();
+    public virtual void set_TextEncoding(Encoding value);
+    [CompilerGeneratedAttribute]
+public sealed virtual ServerState get_CurrentState();
+    [CompilerGeneratedAttribute]
+private void set_CurrentState(ServerState value);
+    public virtual TransportProtocol get_TransportProtocol();
+    [CompilerGeneratedAttribute]
+public virtual Guid get_ServerID();
+    public virtual Guid[] get_ClientIDs();
+    public virtual Time get_RunTime();
+    protected ConcurrentDictionary`2<Guid, int> get_ReadIndicies();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_Name();
+    [CompilerGeneratedAttribute]
+private void set_Name(string value);
+    public virtual string get_Status();
+    [CompilerGeneratedAttribute]
+protected bool get_Initialized();
+    [CompilerGeneratedAttribute]
+private void set_Initialized(bool value);
+    public abstract virtual void Start();
+    public abstract virtual void Stop();
+    public abstract virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+    public abstract virtual void DisconnectOne(Guid clientID);
+    protected abstract virtual void ValidateConfigurationString(string configurationString);
+    protected abstract virtual WaitHandle SendDataToAsync(Guid clientID, Byte[] data, int offset, int length);
+    public sealed virtual void Initialize();
+    [EditorBrowsableAttribute("1")]
+public sealed virtual void BeginInit();
+    [EditorBrowsableAttribute("1")]
+public sealed virtual void EndInit();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void SendTo(Guid clientID, string data);
+    public virtual void SendTo(Guid clientID, object serializableObject);
+    public virtual void SendTo(Guid clientID, Byte[] data);
+    public virtual void SendTo(Guid clientID, Byte[] data, int offset, int length);
+    public virtual void Multicast(string data);
+    public virtual void Multicast(object serializableObject);
+    public virtual void Multicast(Byte[] data);
+    public virtual void Multicast(Byte[] data, int offset, int length);
+    public virtual void DisconnectAll();
+    public virtual WaitHandle SendToAsync(Guid clientID, string data);
+    public virtual WaitHandle SendToAsync(Guid clientID, object serializableObject);
+    public virtual WaitHandle SendToAsync(Guid clientID, Byte[] data);
+    public virtual WaitHandle SendToAsync(Guid clientID, Byte[] data, int offset, int length);
+    public virtual WaitHandle[] MulticastAsync(string data);
+    public virtual WaitHandle[] MulticastAsync(object serializableObject);
+    public virtual WaitHandle[] MulticastAsync(Byte[] data);
+    public virtual WaitHandle[] MulticastAsync(Byte[] data, int offset, int length);
+    public bool IsClientConnected(Guid clientID);
+    protected virtual void OnServerStarted();
+    protected virtual void OnServerStopped();
+    protected virtual void OnClientConnected(Guid clientID);
+    protected virtual void OnClientDisconnected(Guid clientID);
+    protected virtual void OnClientConnectingException(Exception ex);
+    protected virtual void OnSendClientDataStart(Guid clientID);
+    protected virtual void OnSendClientDataComplete(Guid clientID);
+    protected virtual void OnSendClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnReceiveClientData(Guid clientID, int size);
+    protected virtual void OnReceiveClientDataComplete(Guid clientID, Byte[] data, int size);
+    protected virtual void OnReceiveClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnUnhandledUserException(Exception ex);
+    protected virtual void Dispose(bool disposing);
+    protected void ReStart();
+    public static IServer Create(string configurationString);
+}
+public enum GSF.Communication.ServerState : Enum {
+    public int value__;
+    public static ServerState Running;
+    public static ServerState NotRunning;
+}
+public class GSF.Communication.TcpClient : ClientBase {
+    public static bool DefaultPayloadAware;
+    public static bool DefaultIntegratedSecurity;
+    public static bool DefaultIgnoreInvalidCredentials;
+    public static bool DefaultAllowDualStackSocket;
+    public static int DefaultMaxSendQueueSize;
+    public static bool DefaultNoDelay;
+    public static string DefaultConnectionString;
+    private Byte[] m_payloadMarker;
+    private EndianOrder m_payloadEndianOrder;
+    private IPStack m_ipStack;
+    private ShortSynchronizedOperation m_dumpPayloadsOperation;
+    private String[] m_serverList;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectWaitHandle;
+    private ConnectState m_connectState;
+    private ReceiveState m_receiveState;
+    private SendState m_sendState;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private bool <PayloadAware>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IntegratedSecurity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IgnoreInvalidCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NetworkCredential <NetworkCredential>k__BackingField;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the payload boundaries are to be preserved during transmission.")]
+public bool PayloadAware { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Byte[] PayloadMarker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public EndianOrder PayloadEndianOrder { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the current Windows account credentials are used for authentication.")]
+public bool IntegratedSecurity { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are validated during authentication.")]
+public bool IgnoreInvalidCredentials { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if small packets are delivered to the remote host without delay.")]
+public bool NoDelay { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    public NetworkCredential NetworkCredential { get; public set; }
+    protected bool TrackStatistics { get; }
+    private String[] ServerList { get; }
+    public string Status { get; }
+    public TcpClient(string connectString);
+    public TcpClient(IContainer container);
+    [CompilerGeneratedAttribute]
+public bool get_PayloadAware();
+    [CompilerGeneratedAttribute]
+public void set_PayloadAware(bool value);
+    public Byte[] get_PayloadMarker();
+    public void set_PayloadMarker(Byte[] value);
+    public EndianOrder get_PayloadEndianOrder();
+    public void set_PayloadEndianOrder(EndianOrder value);
+    [CompilerGeneratedAttribute]
+public bool get_IntegratedSecurity();
+    [CompilerGeneratedAttribute]
+public void set_IntegratedSecurity(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IgnoreInvalidCredentials();
+    [CompilerGeneratedAttribute]
+public void set_IgnoreInvalidCredentials(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    public Socket get_Client();
+    public virtual string get_ServerUri();
+    [CompilerGeneratedAttribute]
+public NetworkCredential get_NetworkCredential();
+    [CompilerGeneratedAttribute]
+public void set_NetworkCredential(NetworkCredential value);
+    protected virtual bool get_TrackStatistics();
+    private String[] get_ServerList();
+    public virtual string get_Status();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual WaitHandle ConnectAsync();
+    private void ConnectAsync(ConnectState connectState);
+    private void ProcessConnect(ConnectState connectState);
+    private void ProcessIntegratedSecurityAuthentication(IAsyncResult asyncResult);
+    private void ReceivePayloadAwareAsync(ReceiveState receiveState);
+    private void ProcessReceivePayloadAware(ReceiveState receiveState);
+    private void ReceivePayloadUnawareAsync(ReceiveState receiveState);
+    private void ProcessReceivePayloadUnaware(ReceiveState receiveState);
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual bool RequestNextServerIndex();
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    private void SendPayloadAsync(SendState sendState);
+    private void ProcessSend(SendState sendState);
+    public virtual void Disconnect();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual void OnSendDataException(Exception ex);
+    protected void OnReceiveDataException(SocketException ex);
+    protected virtual void OnReceiveDataException(Exception ex);
+    private void DumpPayloads();
+    private void TerminateConnection(CancellationToken cancellationToken);
+    [CompilerGeneratedAttribute]
+private void <ConnectAsync>b__72_0(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <ProcessIntegratedSecurityAuthentication>b__75_0(object sender, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <ProcessIntegratedSecurityAuthentication>b__75_1(object sender, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <ProcessIntegratedSecurityAuthentication>b__75_2(object sender, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <SendPayloadAsync>b__83_0(object state);
+    [CompilerGeneratedAttribute]
+private void <SendPayloadAsync>b__83_1(object state);
+    [CompilerGeneratedAttribute]
+private void <SendPayloadAsync>b__83_2(object state);
+}
+public class GSF.Communication.TcpServer : ServerBase {
+    public static bool DefaultPayloadAware;
+    public static bool DefaultIntegratedSecurity;
+    public static bool DefaultIgnoreInvalidCredentials;
+    public static bool DefaultAllowDualStackSocket;
+    public static int DefaultMaxSendQueueSize;
+    public static bool DefaultNoDelay;
+    public static string DefaultConfigurationString;
+    private Byte[] m_payloadMarker;
+    private EndianOrder m_payloadEndianOrder;
+    private IPStack m_ipStack;
+    private SocketAsyncEventArgs m_acceptArgs;
+    private ConcurrentDictionary`2<Guid, TcpClientInfo> m_clientInfoLookup;
+    private Dictionary`2<string, string> m_configData;
+    private EventHandler`1<SocketAsyncEventArgs> m_acceptHandler;
+    private EventHandler`1<SocketAsyncEventArgs> m_sendHandler;
+    private EventHandler`1<SocketAsyncEventArgs> m_receivePayloadAwareHandler;
+    private EventHandler`1<SocketAsyncEventArgs> m_receivePayloadUnawareHandler;
+    [CompilerGeneratedAttribute]
+private bool <PayloadAware>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IntegratedSecurity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IgnoreInvalidCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Socket <Server>k__BackingField;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the payload boundaries are to be preserved during transmission.")]
+public bool PayloadAware { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Byte[] PayloadMarker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public EndianOrder PayloadEndianOrder { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are used for authentication.")]
+public bool IntegratedSecurity { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are validated during authentication.")]
+public bool IgnoreInvalidCredentials { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if small packets are delivered to the remote host without delay.")]
+public bool NoDelay { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Server { get; private set; }
+    private EventHandler`1<SocketAsyncEventArgs> ReceiveHandler { get; }
+    public string Status { get; }
+    public TcpServer(string configString);
+    public TcpServer(IContainer container);
+    [CompilerGeneratedAttribute]
+public bool get_PayloadAware();
+    [CompilerGeneratedAttribute]
+public void set_PayloadAware(bool value);
+    public Byte[] get_PayloadMarker();
+    public void set_PayloadMarker(Byte[] value);
+    public EndianOrder get_PayloadEndianOrder();
+    public void set_PayloadEndianOrder(EndianOrder value);
+    [CompilerGeneratedAttribute]
+public bool get_IntegratedSecurity();
+    [CompilerGeneratedAttribute]
+public void set_IntegratedSecurity(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IgnoreInvalidCredentials();
+    [CompilerGeneratedAttribute]
+public void set_IgnoreInvalidCredentials(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    [CompilerGeneratedAttribute]
+public Socket get_Server();
+    [CompilerGeneratedAttribute]
+private void set_Server(Socket value);
+    private EventHandler`1<SocketAsyncEventArgs> get_ReceiveHandler();
+    public virtual string get_Status();
+    public virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Stop();
+    public virtual void Start();
+    public virtual void DisconnectOne(Guid clientID);
+    public bool TryGetClient(Guid clientID, TransportProvider`1& tcpClient);
+    public bool TryGetClientPrincipal(Guid clientID, WindowsPrincipal& clientPrincipal);
+    protected virtual void ValidateConfigurationString(string configurationString);
+    protected virtual WaitHandle SendDataToAsync(Guid clientID, Byte[] data, int offset, int length);
+    protected virtual void OnSendClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnReceiveClientDataException(Guid clientID, SocketException ex);
+    protected virtual void OnReceiveClientDataException(Guid clientID, Exception ex);
+    private void ProcessAccept(SocketAsyncEventArgs acceptArgs);
+    private void SendPayload(TcpServerPayload payload);
+    private void ProcessSend(SocketAsyncEventArgs args);
+    private void ReceivePayloadAsync(TransportProvider`1<Socket> client, SocketAsyncEventArgs args);
+    private void ReceivePayloadAwareAsync(TransportProvider`1<Socket> client, SocketAsyncEventArgs args);
+    private void ProcessReceivePayloadAware(SocketAsyncEventArgs args);
+    private void ReceivePayloadUnawareAsync(TransportProvider`1<Socket> client, SocketAsyncEventArgs args);
+    private void ProcessReceivePayloadUnaware(SocketAsyncEventArgs args);
+    private void TerminateConnection(TransportProvider`1<Socket> client, SocketAsyncEventArgs args, bool raiseEvent);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__20_0(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__20_1(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__20_2(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__20_3(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <Start>b__64_0(object state);
+    [CompilerGeneratedAttribute]
+private void <SendDataToAsync>b__69_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__75_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__75_1(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__75_2(object state);
+    [CompilerGeneratedAttribute]
+private void <ReceivePayloadAwareAsync>b__77_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ReceivePayloadUnawareAsync>b__79_0(object state);
+}
+public class GSF.Communication.TcpSimpleClient : ClientBase {
+    public static bool DefaultPayloadAware;
+    public static bool DefaultNoDelay;
+    public static string DefaultConnectionString;
+    private TcpClientProvider m_tcpClient;
+    private Byte[] m_payloadMarker;
+    private EndianOrder m_payloadEndianOrder;
+    private IPStack m_ipStack;
+    private String[] m_serverList;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectWaitHandle;
+    private Func`1<Task> m_cancelReadAsync;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private bool <PayloadAware>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [ThreadStaticAttribute]
+private static bool s_onReadThread;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the payload boundaries are to be preserved during transmission.")]
+public bool PayloadAware { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Byte[] PayloadMarker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public EndianOrder PayloadEndianOrder { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if small packets are delivered to the remote host without delay.")]
+public bool NoDelay { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    protected bool TrackStatistics { get; }
+    private String[] ServerList { get; }
+    public TcpSimpleClient(string connectString);
+    public TcpSimpleClient(IContainer container);
+    [CompilerGeneratedAttribute]
+public bool get_PayloadAware();
+    [CompilerGeneratedAttribute]
+public void set_PayloadAware(bool value);
+    public Byte[] get_PayloadMarker();
+    public void set_PayloadMarker(Byte[] value);
+    public EndianOrder get_PayloadEndianOrder();
+    public void set_PayloadEndianOrder(EndianOrder value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    public Socket get_Client();
+    public virtual string get_ServerUri();
+    protected virtual bool get_TrackStatistics();
+    private String[] get_ServerList();
+    protected virtual void Dispose(bool disposing);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual WaitHandle ConnectAsync();
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual bool RequestNextServerIndex();
+    [AsyncStateMachineAttribute("GSF.Communication.TcpSimpleClient/<ReadDataAsync>d__44")]
+private Task ReadDataAsync(CancellationToken cancellationToken);
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    public virtual void Disconnect();
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual void OnSendDataException(Exception ex);
+    protected virtual void OnReceiveDataComplete(Byte[] data, int size);
+    protected void OnReceiveDataException(SocketException ex);
+    protected virtual void OnReceiveDataException(Exception ex);
+    private void TerminateConnectionOnReadThread();
+}
+public class GSF.Communication.TlsClient : ClientBase {
+    public string DefaultTrustedCertificatesPath;
+    public static bool DefaultPayloadAware;
+    public static bool DefaultIntegratedSecurity;
+    public static bool DefaultIgnoreInvalidCredentials;
+    public static bool DefaultAllowDualStackSocket;
+    public static int DefaultMaxSendQueueSize;
+    public static bool DefaultNoDelay;
+    public static string DefaultConnectionString;
+    private SimpleCertificateChecker m_defaultCertificateChecker;
+    private ICertificateChecker m_certificateChecker;
+    private X509Certificate2Collection m_clientCertificates;
+    private SslProtocols m_enabledSslProtocols;
+    private string m_certificateFile;
+    private Byte[] m_payloadMarker;
+    private EndianOrder m_payloadEndianOrder;
+    private IPStack m_ipStack;
+    private ShortSynchronizedOperation m_dumpPayloadsOperation;
+    private String[] m_serverList;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectWaitHandle;
+    private ConnectState m_connectState;
+    private ReceiveState m_receiveState;
+    private SendState m_sendState;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private bool <PayloadAware>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IntegratedSecurity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IgnoreInvalidCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NetworkCredential <NetworkCredential>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RemoteCertificateValidationCallback <RemoteCertificateValidationCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LocalCertificateSelectionCallback <LocalCertificateSelectionCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CheckCertificateRevocation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private X509Certificate <Certificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TrustedCertificatesPath>k__BackingField;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the payload boundaries are to be preserved during transmission.")]
+public bool PayloadAware { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Byte[] PayloadMarker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public EndianOrder PayloadEndianOrder { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the current Windows account credentials are used for authentication.")]
+public bool IntegratedSecurity { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are validated during authentication.")]
+public bool IgnoreInvalidCredentials { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if small packets are delivered to the remote host without delay.")]
+public bool NoDelay { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Client { get; }
+    [BrowsableAttribute("False")]
+public SslStream SslStream { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public NetworkCredential NetworkCredential { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public ICertificateChecker CertificateChecker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public LocalCertificateSelectionCallback LocalCertificateSelectionCallback { get; public set; }
+    [BrowsableAttribute("False")]
+public X509CertificateCollection ClientCertificates { get; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The set of SSL protocols that are enabled for this client.")]
+public SslProtocols EnabledSslProtocols { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("True if the certificate revocation list is to be checked during authentication, otherwise False.")]
+public bool CheckCertificateRevocation { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("")]
+[DescriptionAttribute("Path to the certificate used by this client for authentication.")]
+public string CertificateFile { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public X509Certificate Certificate { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Trusted Certificates")]
+[DescriptionAttribute("Path to the directory containing the trusted remote certificates.")]
+public string TrustedCertificatesPath { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("Set of valid policy errors when validating remote certificates.")]
+public SslPolicyErrors ValidPolicyErrors { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("Set of valid chain flags used when validating remote certificates.")]
+public X509ChainStatusFlags ValidChainFlags { get; public set; }
+    protected bool TrackStatistics { get; }
+    private String[] ServerList { get; }
+    public string Status { get; }
+    public TlsClient(string connectString);
+    public TlsClient(IContainer container);
+    [CompilerGeneratedAttribute]
+public bool get_PayloadAware();
+    [CompilerGeneratedAttribute]
+public void set_PayloadAware(bool value);
+    public Byte[] get_PayloadMarker();
+    public void set_PayloadMarker(Byte[] value);
+    public EndianOrder get_PayloadEndianOrder();
+    public void set_PayloadEndianOrder(EndianOrder value);
+    [CompilerGeneratedAttribute]
+public bool get_IntegratedSecurity();
+    [CompilerGeneratedAttribute]
+public void set_IntegratedSecurity(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IgnoreInvalidCredentials();
+    [CompilerGeneratedAttribute]
+public void set_IgnoreInvalidCredentials(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    public Socket get_Client();
+    public SslStream get_SslStream();
+    public virtual string get_ServerUri();
+    [CompilerGeneratedAttribute]
+public NetworkCredential get_NetworkCredential();
+    [CompilerGeneratedAttribute]
+public void set_NetworkCredential(NetworkCredential value);
+    public ICertificateChecker get_CertificateChecker();
+    public void set_CertificateChecker(ICertificateChecker value);
+    [CompilerGeneratedAttribute]
+public RemoteCertificateValidationCallback get_RemoteCertificateValidationCallback();
+    [CompilerGeneratedAttribute]
+public void set_RemoteCertificateValidationCallback(RemoteCertificateValidationCallback value);
+    [CompilerGeneratedAttribute]
+public LocalCertificateSelectionCallback get_LocalCertificateSelectionCallback();
+    [CompilerGeneratedAttribute]
+public void set_LocalCertificateSelectionCallback(LocalCertificateSelectionCallback value);
+    public X509CertificateCollection get_ClientCertificates();
+    public SslProtocols get_EnabledSslProtocols();
+    public void set_EnabledSslProtocols(SslProtocols value);
+    [CompilerGeneratedAttribute]
+public bool get_CheckCertificateRevocation();
+    [CompilerGeneratedAttribute]
+public void set_CheckCertificateRevocation(bool value);
+    public string get_CertificateFile();
+    public void set_CertificateFile(string value);
+    [CompilerGeneratedAttribute]
+public X509Certificate get_Certificate();
+    [CompilerGeneratedAttribute]
+public void set_Certificate(X509Certificate value);
+    [CompilerGeneratedAttribute]
+public string get_TrustedCertificatesPath();
+    [CompilerGeneratedAttribute]
+public void set_TrustedCertificatesPath(string value);
+    public SslPolicyErrors get_ValidPolicyErrors();
+    public void set_ValidPolicyErrors(SslPolicyErrors value);
+    public X509ChainStatusFlags get_ValidChainFlags();
+    public void set_ValidChainFlags(X509ChainStatusFlags value);
+    protected virtual bool get_TrackStatistics();
+    private String[] get_ServerList();
+    public virtual string get_Status();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual WaitHandle ConnectAsync();
+    private void ConnectAsync(ConnectState connectState);
+    private void ProcessConnect(ConnectState connectState);
+    private void ProcessTlsAuthentication(IAsyncResult asyncResult);
+    private void ProcessIntegratedSecurityAuthentication(IAsyncResult asyncResult);
+    private void ReceivePayloadAwareAsync(ReceiveState receiveState);
+    private void ProcessReceivePayloadAware(IAsyncResult asyncResult);
+    private void ReceivePayloadUnawareAsync(ReceiveState receiveState);
+    private void ProcessReceivePayloadUnaware(IAsyncResult asyncResult);
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual bool RequestNextServerIndex();
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    private void SendPayloadAsync(SendState sendState);
+    private void ProcessSend(IAsyncResult asyncResult);
+    public virtual void Disconnect();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual void OnSendDataException(Exception ex);
+    protected void OnReceiveDataException(SocketException ex);
+    protected virtual void OnReceiveDataException(Exception ex);
+    private void DumpPayloads();
+    private void TerminateConnection(CancellationToken cancellationToken);
+    private X509Certificate DefaultLocalCertificateSelectionCallback(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, String[] acceptableIssuers);
+    private void LoadTrustedCertificates();
+    [CompilerGeneratedAttribute]
+private void <ConnectAsync>b__117_0(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <SendPayloadAsync>b__129_0(object state);
+    [CompilerGeneratedAttribute]
+private void <SendPayloadAsync>b__129_1(object state);
+}
+public class GSF.Communication.TlsServer : ServerBase {
+    public string DefaultTrustedCertificatesPath;
+    public static bool DefaultPayloadAware;
+    public static bool DefaultIntegratedSecurity;
+    public static bool DefaultIgnoreInvalidCredentials;
+    public static bool DefaultAllowDualStackSocket;
+    public static int DefaultMaxSendQueueSize;
+    public static bool DefaultNoDelay;
+    public static string DefaultConfigurationString;
+    private SimpleCertificateChecker m_defaultCertificateChecker;
+    private ICertificateChecker m_certificateChecker;
+    private string m_certificateFile;
+    private SslProtocols m_enabledSslProtocols;
+    private Byte[] m_payloadMarker;
+    private EndianOrder m_payloadEndianOrder;
+    private IPStack m_ipStack;
+    private SocketAsyncEventArgs m_acceptArgs;
+    private ConcurrentDictionary`2<Guid, TlsClientInfo> m_clientInfoLookup;
+    private Dictionary`2<string, string> m_configData;
+    private EventHandler`1<SocketAsyncEventArgs> m_acceptHandler;
+    [CompilerGeneratedAttribute]
+private bool <PayloadAware>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IntegratedSecurity>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <IgnoreInvalidCredentials>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <NoDelay>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Socket <Server>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RemoteCertificateValidationCallback <RemoteCertificateValidationCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LocalCertificateSelectionCallback <LocalCertificateSelectionCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private X509Certificate <Certificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <RequireClientCertificate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CheckCertificateRevocation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <TrustedCertificatesPath>k__BackingField;
+    [CategoryAttribute("Data")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the payload boundaries are to be preserved during transmission.")]
+public bool PayloadAware { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public Byte[] PayloadMarker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public EndianOrder PayloadEndianOrder { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are used for authentication.")]
+public bool IntegratedSecurity { get; public set; }
+    [CategoryAttribute("Security")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Indicates whether the client Windows account credentials are validated during authentication.")]
+public bool IgnoreInvalidCredentials { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if small packets are delivered to the remote host without delay.")]
+public bool NoDelay { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Server { get; private set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public ICertificateChecker CertificateChecker { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public LocalCertificateSelectionCallback LocalCertificateSelectionCallback { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("")]
+[DescriptionAttribute("Path to the local certificate used by this server for authentication.")]
+public string CertificateFile { get; public set; }
+    [BrowsableAttribute("False")]
+[DesignerSerializationVisibilityAttribute("0")]
+public X509Certificate Certificate { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The set of SSL protocols that are enabled for this server.")]
+public SslProtocols EnabledSslProtocols { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("True if the client certificate is required during authentication, otherwise False.")]
+public bool RequireClientCertificate { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("True if the certificate revocation list is to be checked during authentication, otherwise False.")]
+public bool CheckCertificateRevocation { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Trusted Certificates")]
+[DescriptionAttribute("Path to the directory containing the trusted remote certificates.")]
+public string TrustedCertificatesPath { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("Set of valid policy errors when validating remote certificates.")]
+public SslPolicyErrors ValidPolicyErrors { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("Set of valid chain flags used when validating remote certificates.")]
+public X509ChainStatusFlags ValidChainFlags { get; public set; }
+    public string Status { get; }
+    public TlsServer(string configString);
+    public TlsServer(IContainer container);
+    [CompilerGeneratedAttribute]
+public bool get_PayloadAware();
+    [CompilerGeneratedAttribute]
+public void set_PayloadAware(bool value);
+    public Byte[] get_PayloadMarker();
+    public void set_PayloadMarker(Byte[] value);
+    public EndianOrder get_PayloadEndianOrder();
+    public void set_PayloadEndianOrder(EndianOrder value);
+    [CompilerGeneratedAttribute]
+public bool get_IntegratedSecurity();
+    [CompilerGeneratedAttribute]
+public void set_IntegratedSecurity(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IgnoreInvalidCredentials();
+    [CompilerGeneratedAttribute]
+public void set_IgnoreInvalidCredentials(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public bool get_NoDelay();
+    [CompilerGeneratedAttribute]
+public void set_NoDelay(bool value);
+    [CompilerGeneratedAttribute]
+public Socket get_Server();
+    [CompilerGeneratedAttribute]
+private void set_Server(Socket value);
+    public ICertificateChecker get_CertificateChecker();
+    public void set_CertificateChecker(ICertificateChecker value);
+    [CompilerGeneratedAttribute]
+public RemoteCertificateValidationCallback get_RemoteCertificateValidationCallback();
+    [CompilerGeneratedAttribute]
+public void set_RemoteCertificateValidationCallback(RemoteCertificateValidationCallback value);
+    [CompilerGeneratedAttribute]
+public LocalCertificateSelectionCallback get_LocalCertificateSelectionCallback();
+    [CompilerGeneratedAttribute]
+public void set_LocalCertificateSelectionCallback(LocalCertificateSelectionCallback value);
+    public string get_CertificateFile();
+    public void set_CertificateFile(string value);
+    [CompilerGeneratedAttribute]
+public X509Certificate get_Certificate();
+    [CompilerGeneratedAttribute]
+public void set_Certificate(X509Certificate value);
+    public SslProtocols get_EnabledSslProtocols();
+    public void set_EnabledSslProtocols(SslProtocols value);
+    [CompilerGeneratedAttribute]
+public bool get_RequireClientCertificate();
+    [CompilerGeneratedAttribute]
+public void set_RequireClientCertificate(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_CheckCertificateRevocation();
+    [CompilerGeneratedAttribute]
+public void set_CheckCertificateRevocation(bool value);
+    [CompilerGeneratedAttribute]
+public string get_TrustedCertificatesPath();
+    [CompilerGeneratedAttribute]
+public void set_TrustedCertificatesPath(string value);
+    public SslPolicyErrors get_ValidPolicyErrors();
+    public void set_ValidPolicyErrors(SslPolicyErrors value);
+    public X509ChainStatusFlags get_ValidChainFlags();
+    public void set_ValidChainFlags(X509ChainStatusFlags value);
+    public virtual string get_Status();
+    public virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Stop();
+    public virtual void Start();
+    public virtual void DisconnectOne(Guid clientID);
+    public bool TryGetClient(Guid clientID, TransportProvider`1& tlsClient);
+    public bool TryGetClientPrincipal(Guid clientID, WindowsPrincipal& clientPrincipal);
+    protected virtual void ValidateConfigurationString(string configurationString);
+    protected virtual WaitHandle SendDataToAsync(Guid clientID, Byte[] data, int offset, int length);
+    private void ProcessAccept(SocketAsyncEventArgs acceptArgs);
+    private void ProcessTlsAuthentication(IAsyncResult asyncResult);
+    private void ProcessIntegratedSecurityAuthentication(IAsyncResult asyncResult);
+    private void SendPayload(TlsServerPayload payload);
+    private void ProcessSend(IAsyncResult asyncResult);
+    private void ReceivePayloadAsync(TransportProvider`1<TlsSocket> client);
+    private void ReceivePayloadAwareAsync(TransportProvider`1<TlsSocket> client, bool waitingForHeader);
+    private void ProcessReceivePayloadAware(IAsyncResult asyncResult);
+    private void ReceivePayloadUnawareAsync(TransportProvider`1<TlsSocket> client);
+    private void ProcessReceivePayloadUnaware(IAsyncResult asyncResult);
+    private void TerminateConnection(TransportProvider`1<TlsSocket> client, bool raiseEvent);
+    private X509Certificate DefaultLocalCertificateSelectionCallback(object sender, string targetHost, X509CertificateCollection localCertificates, X509Certificate remoteCertificate, String[] acceptableIssuers);
+    private void LoadTrustedCertificates();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__23_0(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <Start>b__104_0(object state);
+    [CompilerGeneratedAttribute]
+private void <SendDataToAsync>b__109_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__114_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__114_1(object state);
+}
+public static class GSF.Communication.Transport : object {
+    public static int PortRangeLow;
+    public static int PortRangeHigh;
+    public static string EndpointFormatRegex;
+    public static IPEndPoint CreateEndPoint(string hostNameOrAddress, int port, IPStack stack);
+    public static Socket CreateSocket(string address, int port, ProtocolType protocol, IPStack stack, bool allowDualStackSocket);
+    public static bool IsLocalAddress(string hostNameOrAddress);
+    public static IPStack GetDefaultIPStack();
+    public static IPStack GetInterfaceIPStack(Dictionary`2<string, string> connectionStringEntries);
+    public static bool IsIPv6IP(string ipAddress);
+    public static bool IsMulticastIP(IPAddress ipAddress);
+    public static bool IsPortNumberValid(string port);
+    public static bool IsDestinationReachable(IPEndPoint targetIPEndPoint);
+}
+public enum GSF.Communication.TransportProtocol : Enum {
+    public int value__;
+    public static TransportProtocol Tcp;
+    public static TransportProtocol Udp;
+    public static TransportProtocol Serial;
+    public static TransportProtocol File;
+}
+public class GSF.Communication.TransportProvider`1 : object {
+    public Guid ID;
+    public T Provider;
+    public int BytesReceived;
+    public TransportStatistics Statistics;
+    public Byte[] MulticastMembershipAddresses;
+    [CompilerGeneratedAttribute]
+private Byte[] <SendBuffer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Byte[] <ReceiveBuffer>k__BackingField;
+    public Byte[] SendBuffer { get; private set; }
+    public int SendBufferSize { get; }
+    public Byte[] ReceiveBuffer { get; private set; }
+    public int ReceiveBufferSize { get; }
+    [CompilerGeneratedAttribute]
+public Byte[] get_SendBuffer();
+    [CompilerGeneratedAttribute]
+private void set_SendBuffer(Byte[] value);
+    public int get_SendBufferSize();
+    [CompilerGeneratedAttribute]
+public Byte[] get_ReceiveBuffer();
+    [CompilerGeneratedAttribute]
+private void set_ReceiveBuffer(Byte[] value);
+    public int get_ReceiveBufferSize();
+    public Byte[] SetSendBuffer(int size);
+    public Byte[] SetReceiveBuffer(int size);
+    public void Reset();
+}
+public class GSF.Communication.TransportStatistics : object {
+    public DateTime LastSend;
+    public DateTime LastReceive;
+    public int LastBytesSent;
+    public int LastBytesReceived;
+    public long TotalBytesSent;
+    public long TotalBytesReceived;
+    public void Reset();
+    public void UpdateBytesSent(int bytesSent);
+    public void UpdateBytesReceived(int bytesReceived);
+}
+public class GSF.Communication.UdpClient : ClientBase {
+    public static int DefaultReceiveBufferSize;
+    public static int DefaultMaxPacketSize;
+    public static bool DefaultAllowDualStackSocket;
+    public static int DefaultMaxSendQueueSize;
+    public static string DefaultConnectionString;
+    private static int SIO_UDP_CONNRESET;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`3<EndPoint, IPPacketInformation, int>> ReceiveDataFrom;
+    [CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs`4<EndPoint, IPPacketInformation, Byte[], int>> ReceiveDataFromComplete;
+    private IPEndPoint m_udpServer;
+    private TransportProvider`1<Socket> m_udpClient;
+    private IPStack m_ipStack;
+    private int m_maxPacketSize;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectionHandle;
+    private Thread m_connectionThread;
+    private int m_sending;
+    private int m_receiving;
+    private object m_sendLock;
+    private ConcurrentQueue`1<UdpClientPayload> m_sendQueue;
+    private ShortSynchronizedOperation m_dumpPayloadsOperation;
+    private SocketAsyncEventArgs m_sendArgs;
+    private SocketAsyncEventArgs m_receiveArgs;
+    private EventHandler`1<SocketAsyncEventArgs> m_sendHandler;
+    private EventHandler`1<SocketAsyncEventArgs> m_receiveHandler;
+    private bool m_receivePacketInfo;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    public int ReceiveBufferSize { get; public set; }
+    public int MaxPacketSize { get; public set; }
+    public bool ReceivePacketInfo { get; public set; }
+    protected bool TrackStatistics { get; }
+    public string Status { get; }
+    public UdpClient(string connectString);
+    public UdpClient(IContainer container);
+    [CompilerGeneratedAttribute]
+public void add_ReceiveDataFrom(EventHandler`1<EventArgs`3<EndPoint, IPPacketInformation, int>> value);
+    [CompilerGeneratedAttribute]
+public void remove_ReceiveDataFrom(EventHandler`1<EventArgs`3<EndPoint, IPPacketInformation, int>> value);
+    [CompilerGeneratedAttribute]
+public void add_ReceiveDataFromComplete(EventHandler`1<EventArgs`4<EndPoint, IPPacketInformation, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public void remove_ReceiveDataFromComplete(EventHandler`1<EventArgs`4<EndPoint, IPPacketInformation, Byte[], int>> value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    public Socket get_Client();
+    public virtual string get_ServerUri();
+    public virtual int get_ReceiveBufferSize();
+    public virtual void set_ReceiveBufferSize(int value);
+    public int get_MaxPacketSize();
+    public void set_MaxPacketSize(int value);
+    public bool get_ReceivePacketInfo();
+    public void set_ReceivePacketInfo(bool value);
+    protected virtual bool get_TrackStatistics();
+    public virtual string get_Status();
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Disconnect();
+    public virtual WaitHandle ConnectAsync();
+    public void AddMulticastMembership(IPAddress serverAddress, IPAddress sourceAddress);
+    public void DropMulticastMembership(IPAddress serverAddress, IPAddress sourceAddress);
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    private void OpenPort();
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    public WaitHandle SendDataToAsync(Byte[] data, int offset, int length, EndPoint destination);
+    protected virtual void OnConnectionException(Exception ex);
+    protected virtual void OnSendDataException(Exception ex);
+    protected virtual void OnReceiveDataException(Exception ex);
+    protected virtual void OnConnectionTerminated();
+    private void SendPayload(UdpClientPayload payload);
+    private void ProcessSend();
+    private void ReceivePayloadAsync();
+    private void ProcessReceive();
+    private void AddMulticastMembership(IPAddress serverAddress, IPAddress sourceAddress, Byte[]& multicastMembershipAddresses);
+    private void DropMulticastMembership(IPAddress serverAddress, IPAddress sourceAddress, Byte[] multicastMembershipAddresses);
+    private void DumpPayloads();
+    private void TerminateConnection(bool raiseEvent);
+    private void OnReceive(EndPoint remoteEndPoint, IPPacketInformation packetInformation, Byte[] data, int size);
+    private void OnReceiveDataFrom(EndPoint remoteEndPoint, IPPacketInformation packetInformation, int size);
+    private void OnReceiveDataFromComplete(EndPoint remoteEndPoint, IPPacketInformation packetInformation, Byte[] data, int size);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__32_0(object _, SocketAsyncEventArgs _);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__32_1(object _, SocketAsyncEventArgs _);
+    [CompilerGeneratedAttribute]
+private void <SendDataToAsync>b__70_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__76_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__76_1(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__76_2(object state);
+    [CompilerGeneratedAttribute]
+private void <ReceivePayloadAsync>b__77_0(object _);
+    [CompilerGeneratedAttribute]
+private void <ReceivePayloadAsync>b__77_1(object _);
+}
+public class GSF.Communication.UdpServer : ServerBase {
+    public static ClientIdentificationMode DefaultClientIdentificationMode;
+    public static bool DefaultAllowDualStackSocket;
+    public static bool DefaultDynamicClientEndPoints;
+    public static int DefaultMaxSendQueueSize;
+    public static string DefaultConfigurationString;
+    private static int SIO_UDP_CONNRESET;
+    private TransportProvider`1<Socket> m_udpServer;
+    private SocketAsyncEventArgs m_receiveArgs;
+    private ConcurrentDictionary`2<Guid, UdpClientInfo> m_clientInfoLookup;
+    private IPStack m_ipStack;
+    private bool m_dynamicClientEndPoints;
+    private bool m_dynamicClientList;
+    private Dictionary`2<string, string> m_configData;
+    private EventHandler`1<SocketAsyncEventArgs> m_sendHandler;
+    private EventHandler`1<SocketAsyncEventArgs> m_receiveHandler;
+    [CompilerGeneratedAttribute]
+private ClientIdentificationMode <ClientIdentificationMode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <AllowDualStackSocket>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("Mode by which the UDP server will identify its clients when receiving messages.")]
+public ClientIdentificationMode ClientIdentificationMode { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("True")]
+[DescriptionAttribute("Determines if dual-mode socket is allowed when endpoint address is IPv6.")]
+public bool AllowDualStackSocket { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("False")]
+[DescriptionAttribute("Determines if UDP server should always send responses to clients on the port that data is received from the client.")]
+public bool DynamicClientEndPoints { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [BrowsableAttribute("False")]
+public Socket Server { get; }
+    public string Status { get; }
+    public UdpServer(string configString);
+    public UdpServer(IContainer container);
+    [CompilerGeneratedAttribute]
+public ClientIdentificationMode get_ClientIdentificationMode();
+    [CompilerGeneratedAttribute]
+public void set_ClientIdentificationMode(ClientIdentificationMode value);
+    [CompilerGeneratedAttribute]
+public bool get_AllowDualStackSocket();
+    [CompilerGeneratedAttribute]
+public void set_AllowDualStackSocket(bool value);
+    public bool get_DynamicClientEndPoints();
+    public void set_DynamicClientEndPoints(bool value);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    public Socket get_Server();
+    public virtual string get_Status();
+    public virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Stop();
+    public virtual void Start();
+    public virtual void DisconnectOne(Guid clientID);
+    public bool TryGetClient(Guid clientID, TransportProvider`1& udpClient);
+    protected virtual void ValidateConfigurationString(string configurationString);
+    protected virtual WaitHandle SendDataToAsync(Guid clientID, Byte[] data, int offset, int length);
+    protected virtual void OnSendClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnReceiveClientDataException(Guid clientID, Exception ex);
+    private void AddUdpClient(string host, int port);
+    private TransportProvider`1<EndPoint> AddUdpClient(EndPoint udpClientEndPoint);
+    private void SendPayload(UdpServerPayload payload);
+    private void ProcessSend(SocketAsyncEventArgs args);
+    private void ReceivePayloadAsync(SocketAsyncEventArgs args);
+    private void ProcessReceive(SocketAsyncEventArgs args);
+    private TransportProvider`1<EndPoint> IdentifyClient(EndPoint remoteEndPoint);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_0(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__18_1(object _, SocketAsyncEventArgs args);
+    [CompilerGeneratedAttribute]
+private void <SendDataToAsync>b__47_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__53_0(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__53_1(object state);
+    [CompilerGeneratedAttribute]
+private void <ProcessSend>b__53_2(object state);
+    [CompilerGeneratedAttribute]
+private void <ReceivePayloadAsync>b__54_0(object state);
+}
+public class GSF.Communication.ZeroMQClient : ClientBase {
+    public static string DefaultConnectionString;
+    public static int DefaultMaxSendQueueSize;
+    public static int DefaultMaxReceiveQueueSize;
+    private TransportProvider`1<ZSocket> m_zeroMQClient;
+    private ZeroMQTransportProtocol m_zeroMQTransportProtocol;
+    private ManualResetEventSlim m_completedHandle;
+    private Dictionary`2<string, string> m_connectData;
+    private ManualResetEvent m_connectionHandle;
+    private Thread m_connectionThread;
+    private object m_sendLock;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxReceiveQueueSize>k__BackingField;
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the receive queue before payloads are dumped from the queue.")]
+public int MaxReceiveQueueSize { get; public set; }
+    public TransportProtocol TransportProtocol { get; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The ZeroMQ transport protocol to use for the connection.")]
+public ZeroMQTransportProtocol ZeroMQTransportProtocol { get; public set; }
+    [BrowsableAttribute("False")]
+public ZSocket Client { get; }
+    [BrowsableAttribute("False")]
+public string ServerUri { get; }
+    public string Status { get; }
+    public ZeroMQClient(string connectString);
+    public ZeroMQClient(IContainer container);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxReceiveQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxReceiveQueueSize(int value);
+    public virtual TransportProtocol get_TransportProtocol();
+    public ZeroMQTransportProtocol get_ZeroMQTransportProtocol();
+    public void set_ZeroMQTransportProtocol(ZeroMQTransportProtocol value);
+    public ZSocket get_Client();
+    public virtual string get_ServerUri();
+    public virtual string get_Status();
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual WaitHandle ConnectAsync();
+    private void OpenSocket(object state);
+    private void ReceiveDataHandler();
+    public virtual int Read(Byte[] buffer, int startIndex, int length);
+    protected virtual WaitHandle SendDataAsync(Byte[] data, int offset, int length);
+    public virtual void Disconnect();
+    protected virtual void Dispose(bool disposing);
+    protected virtual void ValidateConnectionString(string connectionString);
+    protected virtual void OnSendDataException(Exception ex);
+    protected virtual void OnReceiveDataException(Exception ex);
+    protected virtual void OnConnectionException(Exception ex);
+    protected virtual void OnDisconnectException(Exception ex);
+    protected virtual void OnUnhandledUserException(Exception ex);
+    [CompilerGeneratedAttribute]
+private void <OnSendDataException>b__43_0(object _);
+}
+public class GSF.Communication.ZeroMQServer : ServerBase {
+    public static string DefaultConfigurationString;
+    public static int DefaultMaxSendQueueSize;
+    public static int DefaultMaxReceiveQueueSize;
+    public static string EndpointFormatRegex;
+    private ZeroMQTransportProtocol m_zeroMQTransportProtocol;
+    private ManualResetEventSlim m_completedHandle;
+    private Dictionary`2<string, string> m_configData;
+    private ConcurrentDictionary`2<Guid, TransportProvider`1<DateTime>> m_clientInfoLookup;
+    private Timer m_activeClientTimer;
+    private Thread m_receiveDataThread;
+    private object m_sendLock;
+    private bool m_disposed;
+    [CompilerGeneratedAttribute]
+private int <MaxSendQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxReceiveQueueSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ZSocket <Server>k__BackingField;
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the send queue before payloads are dumped from the queue.")]
+public int MaxSendQueueSize { get; public set; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("500000")]
+[DescriptionAttribute("The maximum size for the receive queue before payloads are dumped from the queue.")]
+public int MaxReceiveQueueSize { get; public set; }
+    public TransportProtocol TransportProtocol { get; }
+    [CategoryAttribute("Settings")]
+[DefaultValueAttribute("Mono.Cecil.CustomAttributeArgument")]
+[DescriptionAttribute("The ZeroMQ transport protocol to use for the connection.")]
+public ZeroMQTransportProtocol ZeroMQTransportProtocol { get; public set; }
+    [BrowsableAttribute("False")]
+public ZSocket Server { get; private set; }
+    public string Status { get; }
+    public ZeroMQServer(string configString);
+    public ZeroMQServer(IContainer container);
+    [CompilerGeneratedAttribute]
+public int get_MaxSendQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxSendQueueSize(int value);
+    [CompilerGeneratedAttribute]
+public int get_MaxReceiveQueueSize();
+    [CompilerGeneratedAttribute]
+public void set_MaxReceiveQueueSize(int value);
+    public virtual TransportProtocol get_TransportProtocol();
+    public ZeroMQTransportProtocol get_ZeroMQTransportProtocol();
+    public void set_ZeroMQTransportProtocol(ZeroMQTransportProtocol value);
+    [CompilerGeneratedAttribute]
+public ZSocket get_Server();
+    [CompilerGeneratedAttribute]
+private void set_Server(ZSocket value);
+    public virtual string get_Status();
+    protected virtual void Dispose(bool disposing);
+    public virtual int Read(Guid clientID, Byte[] buffer, int startIndex, int length);
+    public virtual void SaveSettings();
+    public virtual void LoadSettings();
+    public virtual void Stop();
+    public virtual void Start();
+    private void ReceiveDataHandler();
+    public virtual void DisconnectOne(Guid clientID);
+    public bool TryGetClient(Guid clientID, TransportProvider`1& clientInfo);
+    private TransportProvider`1<DateTime> GetClient(Guid clientID);
+    protected virtual void ValidateConfigurationString(string configurationString);
+    protected virtual WaitHandle SendDataToAsync(Guid clientID, Byte[] data, int offset, int length);
+    protected virtual void OnSendClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnReceiveClientDataException(Guid clientID, Exception ex);
+    protected virtual void OnClientConnectingException(Exception ex);
+    protected virtual void OnUnhandledUserException(Exception ex);
+    private void MonitorActiveClients(object state);
+    internal static bool IsThreadAbortException(Exception ex);
+    [CompilerGeneratedAttribute]
+private TransportProvider`1<DateTime> <GetClient>b__43_0(Guid id);
+}
+public enum GSF.Communication.ZeroMQTransportProtocol : Enum {
+    public int value__;
+    public static ZeroMQTransportProtocol Tcp;
+    public static ZeroMQTransportProtocol InProc;
+    public static ZeroMQTransportProtocol Pgm;
+    public static ZeroMQTransportProtocol Epgm;
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}

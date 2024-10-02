@@ -1,0 +1,3420 @@
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.Connection : object {
+    private IMessageSerializer _messageSerializer;
+    private Uri _uri;
+    private IWebSocketConnection _webSocketConnection;
+    [NullableAttribute("2")]
+private string _username;
+    [NullableAttribute("2")]
+private string _password;
+    [NullableAttribute("2")]
+private string _sessionId;
+    private bool _sessionEnabled;
+    [TupleElementNamesAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private ConcurrentQueue`1<ValueTuple`2<RequestMessage, CancellationToken>> _writeQueue;
+    private ConcurrentDictionary`2<Guid, IResponseHandlerForSingleRequestMessage> _callbackByRequestId;
+    private ConcurrentDictionary`2<Guid, CancellationTokenRegistration> _cancellationByRequestId;
+    private int _connectionState;
+    private int _writeInProgress;
+    private static int Closed;
+    private bool _disposed;
+    public int NrRequestsInFlight { get; }
+    public bool IsOpen { get; }
+    public Connection(IWebSocketConnection webSocketConnection, Uri uri, string username, string password, IMessageSerializer messageSerializer, string sessionId);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<ConnectAsync>d__14")]
+public sealed virtual Task ConnectAsync(CancellationToken cancellationToken);
+    public sealed virtual int get_NrRequestsInFlight();
+    public sealed virtual bool get_IsOpen();
+    public sealed virtual Task`1<ResultSet`1<T>> SubmitAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    private void BeginReceiving();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<ReceiveMessagesAsync>d__21")]
+private Task ReceiveMessagesAsync();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<HandleReceivedAsync>d__22")]
+private Task HandleReceivedAsync(Byte[] received);
+    private void HandleReceivedMessage(ResponseMessage`1<List`1<object>> receivedMsg);
+    private void Authenticate();
+    private string SaslArgument();
+    private void BeginSendingMessages();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<SendMessagesFromQueueAsync>d__27")]
+private Task SendMessagesFromQueueAsync();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<CloseConnectionBecauseOfFailureAsync>d__28")]
+private Task CloseConnectionBecauseOfFailureAsync(Exception exception);
+    private void EmptyWriteQueue();
+    private void NotifyAboutConnectionFailure(Exception exception);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<SendMessageAsync>d__31")]
+private Task SendMessageAsync(RequestMessage message, CancellationToken cancellationToken);
+    private RequestMessage RebuildSessionMessage(RequestMessage message);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<CloseAsync>d__33")]
+public sealed virtual Task CloseAsync();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Connection/<CloseSession>d__34")]
+private Task CloseSession();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    private void DisposeCancellationRegistrations();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.ConnectionFactory : object {
+    private WebSocketSettings _webSocketSettings;
+    private GremlinServer _gremlinServer;
+    [NullableAttribute("2")]
+private string _sessionId;
+    private IMessageSerializer _messageSerializer;
+    public ConnectionFactory(GremlinServer gremlinServer, IMessageSerializer messageSerializer, WebSocketSettings webSocketSettings, string sessionId);
+    public sealed virtual IConnection CreateConnection();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.ConnectionPool : object {
+    private static int ConnectionIndexOverflowLimit;
+    private IConnectionFactory _connectionFactory;
+    private CopyOnWriteCollection`1<IConnection> _connections;
+    private ConcurrentDictionary`2<IConnection, byte> _deadConnections;
+    private ConnectionPoolSettings _settings;
+    private ILogger`1<ConnectionPool> _logger;
+    private int _connectionIndex;
+    private int _poolState;
+    private static int PoolIdle;
+    private static int PoolPopulationInProgress;
+    private CancellationTokenSource _cts;
+    private bool _disposed;
+    public int NrConnections { get; }
+    private bool IsHealthy { get; }
+    public ConnectionPool(IConnectionFactory connectionFactory, ConnectionPoolSettings settings, ILogger`1<ConnectionPool> logger);
+    public int get_NrConnections();
+    public IConnection GetAvailableConnection();
+    private bool get_IsHealthy();
+    private TimeSpan ComputeRetrySleepDuration(int retryAttemptNr);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<EnsurePoolIsHealthyAsync>d__18")]
+private Task`1<bool> EnsurePoolIsHealthyAsync();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<ReplaceDeadConnectionsAsync>d__19")]
+private Task ReplaceDeadConnectionsAsync();
+    private void RemoveDeadConnections();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<FillPoolAsync>d__21")]
+private Task FillPoolAsync();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<CreateNewConnectionAsync>d__22")]
+private Task`1<IConnection> CreateNewConnectionAsync();
+    private IConnection GetConnectionFromPool();
+    private IConnection TryGetAvailableConnection(IConnection[] connections);
+    private void ProtectIndexFromOverflowing(int currentIndex);
+    private void ReplaceConnection(IConnection connection);
+    private void RemoveConnectionFromPool(IConnection connection);
+    private void TriggerReplacementOfDeadConnections();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<ReplaceClosedConnectionsAsync>d__29")]
+private Task ReplaceClosedConnectionsAsync();
+    private IConnection ProxiedConnection(IConnection connection);
+    private void ReplaceConnectionIfItWasClosed(IConnection connection);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ConnectionPool/<CloseAndRemoveAllConnectionsAsync>d__32")]
+private Task CloseAndRemoveAllConnectionsAsync();
+    private void DefinitelyDestroyConnection(IConnection connection);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private void <GetAvailableConnection>b__14_0(Exception _, TimeSpan _, int retryCount, Context _);
+}
+public class Gremlin.Net.Driver.ConnectionPoolSettings : object {
+    private int _poolSize;
+    private int _maxInProcessPerConnection;
+    private int _reconnectionAttempts;
+    private TimeSpan _reconnectionBaseDelay;
+    private static int DefaultPoolSize;
+    private static int DefaultMaxInProcessPerConnection;
+    private static int DefaultReconnectionAttempts;
+    private static TimeSpan DefaultReconnectionBaseDelay;
+    internal static bool DefaultEnableUserAgentOnConnect;
+    [CompilerGeneratedAttribute]
+private bool <EnableUserAgentOnConnect>k__BackingField;
+    public int PoolSize { get; public set; }
+    public int MaxInProcessPerConnection { get; public set; }
+    public int ReconnectionAttempts { get; public set; }
+    public TimeSpan ReconnectionBaseDelay { get; public set; }
+    public bool EnableUserAgentOnConnect { get; public set; }
+    private static ConnectionPoolSettings();
+    public int get_PoolSize();
+    public void set_PoolSize(int value);
+    public int get_MaxInProcessPerConnection();
+    public void set_MaxInProcessPerConnection(int value);
+    public int get_ReconnectionAttempts();
+    public void set_ReconnectionAttempts(int value);
+    public TimeSpan get_ReconnectionBaseDelay();
+    public void set_ReconnectionBaseDelay(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableUserAgentOnConnect();
+    [CompilerGeneratedAttribute]
+public void set_EnableUserAgentOnConnect(bool value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.CopyOnWriteCollection`1 : object {
+    private static T[] EmptyArray;
+    private T[] modreq(System.Runtime.CompilerServices.IsVolatile) _array;
+    private object _writeLock;
+    public int Count { get; }
+    public T[] Snapshot { get; }
+    private static CopyOnWriteCollection`1();
+    public int get_Count();
+    public void AddRange(T[] items);
+    public bool TryRemove(T item);
+    public T[] RemoveAndGetAll();
+    public T[] get_Snapshot();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Exceptions.ConnectionClosedException : Exception {
+    [CompilerGeneratedAttribute]
+private Nullable`1<WebSocketCloseStatus> <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Description>k__BackingField;
+    public Nullable`1<WebSocketCloseStatus> Status { get; }
+    public string Description { get; }
+    public ConnectionClosedException(Nullable`1<WebSocketCloseStatus> status, string description);
+    [CompilerGeneratedAttribute]
+public Nullable`1<WebSocketCloseStatus> get_Status();
+    [CompilerGeneratedAttribute]
+public string get_Description();
+    [NullableContextAttribute("1")]
+private static string CreateMessage(Nullable`1<WebSocketCloseStatus> status, string description);
+}
+public class Gremlin.Net.Driver.Exceptions.ConnectionPoolBusyException : NoConnectionAvailableException {
+    [CompilerGeneratedAttribute]
+private int <PoolSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <MaxInProcessPerConnection>k__BackingField;
+    public int PoolSize { get; }
+    public int MaxInProcessPerConnection { get; }
+    public ConnectionPoolBusyException(int poolSize, int maxInProcessPerConnection);
+    [CompilerGeneratedAttribute]
+public int get_PoolSize();
+    [CompilerGeneratedAttribute]
+public int get_MaxInProcessPerConnection();
+    [NullableContextAttribute("1")]
+private static string CreateMessage(int poolSize, int maxInProcessPerConnection);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Exceptions.NoConnectionAvailableException : Exception {
+    public NoConnectionAvailableException(string message);
+    public NoConnectionAvailableException(string message, Exception inner);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Exceptions.ResponseException : Exception {
+    [CompilerGeneratedAttribute]
+private ResponseStatusCode <StatusCode>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, object> <StatusAttributes>k__BackingField;
+    public ResponseStatusCode StatusCode { get; }
+    public IReadOnlyDictionary`2<string, object> StatusAttributes { get; }
+    public ResponseException(ResponseStatusCode statusCode, IReadOnlyDictionary`2<string, object> statusAttributes, string message);
+    [CompilerGeneratedAttribute]
+public ResponseStatusCode get_StatusCode();
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, object> get_StatusAttributes();
+}
+public class Gremlin.Net.Driver.Exceptions.ServerUnavailableException : NoConnectionAvailableException {
+    [NullableContextAttribute("1")]
+private static string CreateMessage();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.GremlinClient : object {
+    private ConnectionPool _connectionPool;
+    [CompilerGeneratedAttribute]
+private ILoggerFactory <LoggerFactory>k__BackingField;
+    private bool _disposed;
+    internal ILoggerFactory LoggerFactory { get; }
+    public int NrConnections { get; }
+    [ObsoleteAttribute("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
+public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter, ConnectionPoolSettings connectionPoolSettings, Action`1<ClientWebSocketOptions> webSocketConfiguration, string sessionId);
+    [NullableContextAttribute("2")]
+[ObsoleteAttribute("This constructor is obsolete. Use the constructor that takes a IMessageSerializer instead.")]
+public GremlinClient(GremlinServer gremlinServer, GraphSONReader graphSONReader, GraphSONWriter graphSONWriter, string mimeType, ConnectionPoolSettings connectionPoolSettings, Action`1<ClientWebSocketOptions> webSocketConfiguration, string sessionId);
+    [NullableContextAttribute("2")]
+public GremlinClient(GremlinServer gremlinServer, IMessageSerializer messageSerializer, ConnectionPoolSettings connectionPoolSettings, Action`1<ClientWebSocketOptions> webSocketConfiguration, string sessionId, bool disableCompression, ILoggerFactory loggerFactory);
+    [CompilerGeneratedAttribute]
+internal ILoggerFactory get_LoggerFactory();
+    private static void VerifyGraphSONArgumentTypeForMimeType(object argument, string argumentName, string mimeType);
+    public int get_NrConnections();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClient/<SubmitAsync>d__10`1")]
+public sealed virtual Task`1<ResultSet`1<T>> SubmitAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class Gremlin.Net.Driver.GremlinClientExtensions : object {
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClientExtensions/<SubmitWithSingleResultAsync>d__0`1")]
+[ExtensionAttribute]
+public static Task`1<T> SubmitWithSingleResultAsync(IGremlinClient gremlinClient, string requestScript, Dictionary`2<string, object> bindings, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClientExtensions/<SubmitWithSingleResultAsync>d__1`1")]
+[ExtensionAttribute]
+public static Task`1<T> SubmitWithSingleResultAsync(IGremlinClient gremlinClient, RequestMessage requestMessage, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClientExtensions/<SubmitAsync>d__2")]
+[ExtensionAttribute]
+public static Task SubmitAsync(IGremlinClient gremlinClient, string requestScript, Dictionary`2<string, object> bindings, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClientExtensions/<SubmitAsync>d__3")]
+[ExtensionAttribute]
+public static Task SubmitAsync(IGremlinClient gremlinClient, RequestMessage requestMessage, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.GremlinClientExtensions/<SubmitAsync>d__4`1")]
+[ExtensionAttribute]
+public static Task`1<ResultSet`1<T>> SubmitAsync(IGremlinClient gremlinClient, string requestScript, Dictionary`2<string, object> bindings, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.GremlinServer : object {
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private Uri <Uri>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Username>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Password>k__BackingField;
+    [NullableAttribute("1")]
+public Uri Uri { get; }
+    public string Username { get; }
+    public string Password { get; }
+    public GremlinServer(string hostname, int port, bool enableSsl, string username, string password);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public Uri get_Uri();
+    [CompilerGeneratedAttribute]
+public string get_Username();
+    [CompilerGeneratedAttribute]
+public string get_Password();
+    [NullableContextAttribute("1")]
+private Uri CreateUri(string hostname, int port, bool enableSsl);
+}
+[NullableContextAttribute("1")]
+internal interface Gremlin.Net.Driver.IClientWebSocket {
+    public WebSocketState State { get; }
+    public ClientWebSocketOptions Options { get; }
+    public abstract virtual WebSocketState get_State();
+    public abstract virtual ClientWebSocketOptions get_Options();
+    public abstract virtual Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    public abstract virtual Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+    [NullableContextAttribute("0")]
+public abstract virtual Task`1<WebSocketReceiveResult> ReceiveAsync(ArraySegment`1<byte> buffer, CancellationToken cancellationToken);
+    [NullableContextAttribute("0")]
+public abstract virtual Task SendAsync(ArraySegment`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+internal interface Gremlin.Net.Driver.IConnection {
+    public int NrRequestsInFlight { get; }
+    public bool IsOpen { get; }
+    public abstract virtual Task ConnectAsync(CancellationToken cancellationToken);
+    public abstract virtual Task`1<ResultSet`1<T>> SubmitAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    public abstract virtual int get_NrRequestsInFlight();
+    public abstract virtual bool get_IsOpen();
+    public abstract virtual Task CloseAsync();
+}
+[NullableContextAttribute("1")]
+internal interface Gremlin.Net.Driver.IConnectionFactory {
+    public abstract virtual IConnection CreateConnection();
+}
+public interface Gremlin.Net.Driver.IGremlinClient {
+    [NullableContextAttribute("1")]
+public abstract virtual Task`1<ResultSet`1<T>> SubmitAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Driver.IMessageSerializer {
+    public abstract virtual Task`1<Byte[]> SerializeMessageAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    public abstract virtual Task`1<ResponseMessage`1<List`1<object>>> DeserializeMessageAsync(Byte[] message, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+internal interface Gremlin.Net.Driver.IResponseHandlerForSingleRequestMessage {
+    public abstract virtual void HandleReceived(ResponseMessage`1<List`1<object>> received);
+    public abstract virtual void Finalize(Dictionary`2<string, object> statusAttributes);
+    public abstract virtual void HandleFailure(Exception objException);
+    public abstract virtual void Cancel();
+}
+[NullableContextAttribute("1")]
+internal interface Gremlin.Net.Driver.IWebSocketConnection {
+    public bool IsOpen { get; }
+    public abstract virtual Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+    public abstract virtual Task CloseAsync();
+    public abstract virtual Task SendMessageAsync(Byte[] message, CancellationToken cancellationToken);
+    public abstract virtual Task`1<Byte[]> ReceiveMessageAsync();
+    public abstract virtual bool get_IsOpen();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class Gremlin.Net.Driver.Log : object {
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+private static Action`3<ILogger, int, Exception> __FillingPoolCallback;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+private static Action`4<ILogger, int, int, Exception> __CouldNotGetConnectionFromPoolCallback;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+private static Action`2<ILogger, Exception> __RemovingClosedConnectionFromPoolCallback;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+private static Action`4<ILogger, Bytecode, Guid, Exception> __SubmittingBytecodeCallback;
+    private static Log();
+    [ExtensionAttribute]
+[LoggerMessageAttribute]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+public static void FillingPool(ILogger logger, int nrConnections);
+    [ExtensionAttribute]
+[LoggerMessageAttribute]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+public static void CouldNotGetConnectionFromPool(ILogger logger, int retryCount, int maxRetries);
+    [ExtensionAttribute]
+[LoggerMessageAttribute]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+public static void RemovingClosedConnectionFromPool(ILogger logger);
+    [ExtensionAttribute]
+[LoggerMessageAttribute]
+[GeneratedCodeAttribute("Microsoft.Extensions.Logging.Generators", "7.0.8.27404")]
+public static void SubmittingBytecode(ILogger logger, Bytecode bytecode, Guid requestId);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Messages.RequestMessage : object {
+    [CompilerGeneratedAttribute]
+private Guid <RequestId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Operation>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Processor>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Arguments>k__BackingField;
+    public Guid RequestId { get; }
+    public string Operation { get; }
+    public string Processor { get; }
+    public Dictionary`2<string, object> Arguments { get; }
+    private RequestMessage(Guid requestId, string operation, string processor, Dictionary`2<string, object> arguments);
+    [CompilerGeneratedAttribute]
+public Guid get_RequestId();
+    [CompilerGeneratedAttribute]
+public string get_Operation();
+    [CompilerGeneratedAttribute]
+public string get_Processor();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Arguments();
+    public static Builder Build(string operation);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Messages.ResponseMessage`1 : object {
+    [CompilerGeneratedAttribute]
+private Nullable`1<Guid> <RequestId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ResponseStatus <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ResponseResult`1<T> <Result>k__BackingField;
+    [CompilerGeneratedAttribute]
+protected Type EqualityContract { get; }
+    public Nullable`1<Guid> RequestId { get; }
+    public ResponseStatus Status { get; }
+    public ResponseResult`1<T> Result { get; public set; }
+    public ResponseMessage`1(Nullable`1<Guid> requestId, ResponseStatus status, ResponseResult`1<T> result);
+    [CompilerGeneratedAttribute]
+protected ResponseMessage`1(ResponseMessage`1<T> original);
+    [CompilerGeneratedAttribute]
+protected virtual Type get_EqualityContract();
+    [CompilerGeneratedAttribute]
+public Nullable`1<Guid> get_RequestId();
+    [CompilerGeneratedAttribute]
+public ResponseStatus get_Status();
+    [CompilerGeneratedAttribute]
+public ResponseResult`1<T> get_Result();
+    [CompilerGeneratedAttribute]
+public void set_Result(ResponseResult`1<T> value);
+    [CompilerGeneratedAttribute]
+public virtual string ToString();
+    [CompilerGeneratedAttribute]
+protected virtual bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(ResponseMessage`1<T> left, ResponseMessage`1<T> right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(ResponseMessage`1<T> left, ResponseMessage`1<T> right);
+    [CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [CompilerGeneratedAttribute]
+public virtual bool Equals(ResponseMessage`1<T> other);
+    [CompilerGeneratedAttribute]
+public virtual ResponseMessage`1<T> <Clone>$();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Messages.ResponseResult`1 : object {
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private T <Data>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Meta>k__BackingField;
+    [CompilerGeneratedAttribute]
+protected Type EqualityContract { get; }
+    [NullableAttribute("2")]
+public T Data { get; }
+    public Dictionary`2<string, object> Meta { get; }
+    [NullableContextAttribute("2")]
+public ResponseResult`1(T data, Dictionary`2<string, object> meta);
+    [CompilerGeneratedAttribute]
+protected ResponseResult`1(ResponseResult`1<T> original);
+    [CompilerGeneratedAttribute]
+protected virtual Type get_EqualityContract();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public T get_Data();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Meta();
+    [CompilerGeneratedAttribute]
+public virtual string ToString();
+    [CompilerGeneratedAttribute]
+protected virtual bool PrintMembers(StringBuilder builder);
+    [CompilerGeneratedAttribute]
+public static bool op_Inequality(ResponseResult`1<T> left, ResponseResult`1<T> right);
+    [CompilerGeneratedAttribute]
+public static bool op_Equality(ResponseResult`1<T> left, ResponseResult`1<T> right);
+    [CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [CompilerGeneratedAttribute]
+public virtual bool Equals(ResponseResult`1<T> other);
+    [CompilerGeneratedAttribute]
+public virtual ResponseResult`1<T> <Clone>$();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Messages.ResponseStatus : object {
+    [CompilerGeneratedAttribute]
+private ResponseStatusCode <Code>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Attributes>k__BackingField;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private string <Message>k__BackingField;
+    [CompilerGeneratedAttribute]
+protected Type EqualityContract { get; }
+    public ResponseStatusCode Code { get; }
+    public Dictionary`2<string, object> Attributes { get; }
+    [NullableAttribute("2")]
+public string Message { get; }
+    [NullableContextAttribute("2")]
+public ResponseStatus(ResponseStatusCode code, Dictionary`2<string, object> attributes, string message);
+    [CompilerGeneratedAttribute]
+protected ResponseStatus(ResponseStatus original);
+    [CompilerGeneratedAttribute]
+protected virtual Type get_EqualityContract();
+    [CompilerGeneratedAttribute]
+public ResponseStatusCode get_Code();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Attributes();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public string get_Message();
+    [CompilerGeneratedAttribute]
+public virtual string ToString();
+    [CompilerGeneratedAttribute]
+protected virtual bool PrintMembers(StringBuilder builder);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public static bool op_Inequality(ResponseStatus left, ResponseStatus right);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public static bool op_Equality(ResponseStatus left, ResponseStatus right);
+    [CompilerGeneratedAttribute]
+public virtual int GetHashCode();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(object obj);
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public virtual bool Equals(ResponseStatus other);
+    [CompilerGeneratedAttribute]
+public virtual ResponseStatus <Clone>$();
+}
+public enum Gremlin.Net.Driver.Messages.ResponseStatusCode : Enum {
+    public int value__;
+    public static ResponseStatusCode Success;
+    public static ResponseStatusCode NoContent;
+    public static ResponseStatusCode PartialContent;
+    public static ResponseStatusCode Unauthorized;
+    public static ResponseStatusCode Forbidden;
+    public static ResponseStatusCode Authenticate;
+    public static ResponseStatusCode TooManyRequests;
+    public static ResponseStatusCode ClientSerializationError;
+    public static ResponseStatusCode MalformedRequest;
+    public static ResponseStatusCode InvalidRequestArguments;
+    public static ResponseStatusCode ServerError;
+    public static ResponseStatusCode ServerErrorFailStep;
+    public static ResponseStatusCode ServerErrorTemporary;
+    public static ResponseStatusCode ServerEvaluationError;
+    public static ResponseStatusCode ServerTimeout;
+    public static ResponseStatusCode ServerSerializationError;
+}
+[ExtensionAttribute]
+internal static class Gremlin.Net.Driver.Messages.ResponseStatusCodeExtensions : object {
+    [ExtensionAttribute]
+public static bool IndicatesError(ResponseStatusCode statusCode);
+}
+[ExtensionAttribute]
+internal static class Gremlin.Net.Driver.Messages.ResponseStatusExtensions : object {
+    [NullableContextAttribute("1")]
+[ExtensionAttribute]
+public static void ThrowIfStatusIndicatesError(ResponseStatus status);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.ProxyClientWebSocket : object {
+    private ClientWebSocket _client;
+    public WebSocketState State { get; }
+    public ClientWebSocketOptions Options { get; }
+    public ProxyClientWebSocket(ClientWebSocket client);
+    public sealed virtual WebSocketState get_State();
+    public sealed virtual ClientWebSocketOptions get_Options();
+    public static IClientWebSocket CreateClientWebSocket();
+    public sealed virtual Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken);
+    public sealed virtual Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    [NullableContextAttribute("0")]
+public sealed virtual Task`1<WebSocketReceiveResult> ReceiveAsync(ArraySegment`1<byte> buffer, CancellationToken cancellationToken);
+    [NullableContextAttribute("0")]
+public sealed virtual Task SendAsync(ArraySegment`1<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.ProxyConnection : object {
+    [CompilerGeneratedAttribute]
+private IConnection <ProxiedConnection>k__BackingField;
+    private Action`1<IConnection> _releaseAction;
+    public IConnection ProxiedConnection { get; }
+    public int NrRequestsInFlight { get; }
+    public bool IsOpen { get; }
+    public ProxyConnection(IConnection proxiedConnection, Action`1<IConnection> releaseAction);
+    [CompilerGeneratedAttribute]
+public IConnection get_ProxiedConnection();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ProxyConnection/<ConnectAsync>d__5")]
+public sealed virtual Task ConnectAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ProxyConnection/<SubmitAsync>d__6`1")]
+public sealed virtual Task`1<ResultSet`1<T>> SubmitAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    public sealed virtual int get_NrRequestsInFlight();
+    public sealed virtual bool get_IsOpen();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.ProxyConnection/<CloseAsync>d__11")]
+public sealed virtual Task CloseAsync();
+    public sealed virtual void Dispose();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Remote.DriverRemoteConnection : object {
+    private IGremlinClient _client;
+    private string _traversalSource;
+    private ILogger`1<DriverRemoteConnection> _logger;
+    private List`1<string> _allowedKeys;
+    [NullableAttribute("2")]
+private string _sessionId;
+    private string Processor { get; }
+    public bool IsSessionBound { get; }
+    public DriverRemoteConnection(string host, int port, string traversalSource, ILoggerFactory loggerFactory);
+    public DriverRemoteConnection(IGremlinClient client, string traversalSource);
+    private DriverRemoteConnection(IGremlinClient client, string traversalSource, string sessionId, ILogger`1<DriverRemoteConnection> logger);
+    private string get_Processor();
+    public sealed virtual bool get_IsSessionBound();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Remote.DriverRemoteConnection/<SubmitAsync>d__12`2")]
+public sealed virtual Task`1<ITraversal`2<TStart, TEnd>> SubmitAsync(Bytecode bytecode, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.Remote.DriverRemoteConnection/<SubmitBytecodeAsync>d__13")]
+private Task`1<IEnumerable`1<Traverser>> SubmitBytecodeAsync(Guid requestid, Bytecode bytecode, CancellationToken cancellationToken);
+    public sealed virtual RemoteTransaction Tx(GraphTraversalSource g);
+    public sealed virtual void Dispose();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+internal class Gremlin.Net.Driver.Remote.DriverRemoteTraversal`2 : DefaultTraversal`2<TStart, TEnd> {
+    public Bytecode Bytecode { get; }
+    public DriverRemoteTraversal`2(IEnumerable`1<Traverser> traversers);
+    public virtual Bytecode get_Bytecode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.ResponseHandlerForSingleRequestMessage`1 : object {
+    private TaskCompletionSource`1<ResultSet`1<T>> _tcs;
+    private List`1<T> _result;
+    public Task`1<ResultSet`1<T>> Result { get; }
+    public Task`1<ResultSet`1<T>> get_Result();
+    public sealed virtual void HandleReceived(ResponseMessage`1<List`1<object>> received);
+    public sealed virtual void Finalize(Dictionary`2<string, object> statusAttributes);
+    public sealed virtual void HandleFailure(Exception objException);
+    public sealed virtual void Cancel();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.ResultSet`1 : object {
+    private IReadOnlyCollection`1<T> _data;
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, object> <StatusAttributes>k__BackingField;
+    public IReadOnlyDictionary`2<string, object> StatusAttributes { get; }
+    public int Count { get; }
+    public ResultSet`1(IReadOnlyCollection`1<T> data, IReadOnlyDictionary`2<string, object> attributes);
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, object> get_StatusAttributes();
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual int get_Count();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Driver.Tokens : object {
+    public static string GremlinVersion;
+    public static string RequestId;
+    public static string OpsAuthentication;
+    public static string OpsBytecode;
+    public static string OpsEval;
+    public static string OpsClose;
+    public static string ProcessorTraversal;
+    public static string ProcessorSession;
+    public static string ArgsBatchSize;
+    public static string ArgsBindings;
+    public static string ArgsAliases;
+    public static string ArgsGremlin;
+    public static string ArgsSession;
+    public static string ArgsUserAgent;
+    public static string ArgsLanguage;
+    public static string ArgsEvalTimeout;
+    public static string ArgMaterializeProperties;
+    public static string ArgsSasl;
+    private static Tokens();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Driver.WebSocketConnection : object {
+    private static int ReceiveBufferSize;
+    private static WebSocketMessageType MessageType;
+    private IClientWebSocket _client;
+    private static string userAgentHeaderName;
+    private bool _disposed;
+    private bool CloseAlreadyInitiated { get; }
+    public bool IsOpen { get; }
+    public WebSocketConnection(IClientWebSocket client, WebSocketSettings settings);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.WebSocketConnection/<ConnectAsync>d__5")]
+public sealed virtual Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.WebSocketConnection/<CloseAsync>d__6")]
+public sealed virtual Task CloseAsync();
+    private bool get_CloseAlreadyInitiated();
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.WebSocketConnection/<SendMessageAsync>d__9")]
+public sealed virtual Task SendMessageAsync(Byte[] message, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Driver.WebSocketConnection/<ReceiveMessageAsync>d__10")]
+public sealed virtual Task`1<Byte[]> ReceiveMessageAsync();
+    public sealed virtual bool get_IsOpen();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+}
+internal class Gremlin.Net.Driver.WebSocketSettings : object {
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Action`1<ClientWebSocketOptions> <WebSocketConfigurationCallback>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <EnableUserAgentOnConnect>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Action`1<ClientWebSocketOptions> WebSocketConfigurationCallback { get; public set; }
+    public bool EnableUserAgentOnConnect { get; public set; }
+    [CompilerGeneratedAttribute]
+public Action`1<ClientWebSocketOptions> get_WebSocketConfigurationCallback();
+    [CompilerGeneratedAttribute]
+public void set_WebSocketConfigurationCallback(Action`1<ClientWebSocketOptions> value);
+    [CompilerGeneratedAttribute]
+public bool get_EnableUserAgentOnConnect();
+    [CompilerGeneratedAttribute]
+public void set_EnableUserAgentOnConnect(bool value);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Process.Remote.IRemoteConnection {
+    public bool IsSessionBound { get; }
+    public abstract virtual Task`1<ITraversal`2<TStart, TEnd>> SubmitAsync(Bytecode bytecode, CancellationToken cancellationToken);
+    public abstract virtual RemoteTransaction Tx(GraphTraversalSource graphTraversalSource);
+    public abstract virtual bool get_IsSessionBound();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Remote.RemoteStrategy : object {
+    private IRemoteConnection _remoteConnection;
+    public RemoteStrategy(IRemoteConnection remoteConnection);
+    [NullableContextAttribute("2")]
+public sealed virtual void Apply(ITraversal`2<TStart, TEnd> traversal);
+    [AsyncStateMachineAttribute("Gremlin.Net.Process.Remote.RemoteStrategy/<ApplyAsync>d__3`2")]
+public sealed virtual Task ApplyAsync(ITraversal`2<TStart, TEnd> traversal, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Remote.RemoteTransaction : object {
+    private IRemoteConnection _sessionBasedConnection;
+    private GraphTraversalSource _g;
+    public RemoteTransaction(IRemoteConnection connection, GraphTraversalSource g);
+    public GraphTraversalSource Begin();
+    [AsyncStateMachineAttribute("Gremlin.Net.Process.Remote.RemoteTransaction/<CommitAsync>d__4")]
+public Task CommitAsync(CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Process.Remote.RemoteTransaction/<RollbackAsync>d__5")]
+public Task RollbackAsync();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Process.Traversal.__ : object {
+    public static GraphTraversal`2<object, object> Start();
+    public static GraphTraversal`2<object, Vertex> V(Object[] vertexIdsOrElements);
+    public static GraphTraversal`2<object, Edge> E(Object[] edgeIdsOrElements);
+    public static GraphTraversal`2<object, Edge> AddE(string edgeLabel);
+    public static GraphTraversal`2<object, Edge> AddE(ITraversal edgeLabelTraversal);
+    public static GraphTraversal`2<object, Vertex> AddV();
+    public static GraphTraversal`2<object, Vertex> AddV(string vertexLabel);
+    public static GraphTraversal`2<object, Vertex> AddV(ITraversal vertexLabelTraversal);
+    public static GraphTraversal`2<object, object> Aggregate(Scope scope, string sideEffectKey);
+    public static GraphTraversal`2<object, object> Aggregate(string sideEffectKey);
+    public static GraphTraversal`2<object, object> All(P predicate);
+    public static GraphTraversal`2<object, object> And(ITraversal[] andTraversals);
+    public static GraphTraversal`2<object, object> Any(P predicate);
+    public static GraphTraversal`2<object, object> As(string label, String[] labels);
+    public static GraphTraversal`2<object, string> AsString();
+    public static GraphTraversal`2<object, E2> AsString(Scope scope);
+    public static GraphTraversal`2<object, DateTimeOffset> AsDate();
+    public static GraphTraversal`2<object, object> Barrier();
+    public static GraphTraversal`2<object, object> Barrier(IConsumer barrierConsumer);
+    public static GraphTraversal`2<object, object> Barrier(int maxBarrierSize);
+    public static GraphTraversal`2<object, Vertex> Both(String[] edgeLabels);
+    public static GraphTraversal`2<object, Edge> BothE(String[] edgeLabels);
+    public static GraphTraversal`2<object, Vertex> BothV();
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Branch(IFunction function);
+    public static GraphTraversal`2<object, E2> Branch(ITraversal traversalFunction);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Call(string service);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Call(string service, IDictionary`2<object, object> m);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Call(string service, ITraversal t);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Call(string service, IDictionary`2<object, object> m, ITraversal t);
+    public static GraphTraversal`2<object, E2> Cap(string sideEffectKey, String[] sideEffectKeys);
+    public static GraphTraversal`2<object, E2> Choose(IFunction choiceFunction);
+    public static GraphTraversal`2<object, E2> Choose(IPredicate choosePredicate, ITraversal trueChoice);
+    public static GraphTraversal`2<object, E2> Choose(IPredicate choosePredicate, ITraversal trueChoice, ITraversal falseChoice);
+    public static GraphTraversal`2<object, E2> Choose(ITraversal traversalFunction);
+    public static GraphTraversal`2<object, E2> Choose(ITraversal traversalPredicate, ITraversal trueChoice);
+    public static GraphTraversal`2<object, E2> Choose(ITraversal traversalPredicate, ITraversal trueChoice, ITraversal falseChoice);
+    public static GraphTraversal`2<object, E2> Coalesce(ITraversal[] traversals);
+    public static GraphTraversal`2<object, object> Coin(double probability);
+    public static GraphTraversal`2<object, object> Combine(object combineObject);
+    public static GraphTraversal`2<object, string> Concat(ITraversal concatTraversal, ITraversal[] otherConcatTraversals);
+    public static GraphTraversal`2<object, string> Concat(String[] concatStrings);
+    public static GraphTraversal`2<object, object> Conjoin(string delimiter);
+    public static GraphTraversal`2<object, E2> Constant(E2 a);
+    public static GraphTraversal`2<object, long> Count();
+    public static GraphTraversal`2<object, long> Count(Scope scope);
+    public static GraphTraversal`2<object, object> CyclicPath();
+    public static GraphTraversal`2<object, DateTimeOffset> DateAdd(DT dateToken, int value);
+    public static GraphTraversal`2<object, long> DateDiff(DateTimeOffset value);
+    public static GraphTraversal`2<object, long> DateDiff(ITraversal dateTraversal);
+    public static GraphTraversal`2<object, object> Dedup(Scope scope, String[] dedupLabels);
+    public static GraphTraversal`2<object, object> Dedup(String[] dedupLabels);
+    public static GraphTraversal`2<object, object> Difference(object differenceObject);
+    public static GraphTraversal`2<object, object> Disjunct(object disjunctObject);
+    public static GraphTraversal`2<object, object> Drop();
+    public static GraphTraversal`2<object, Element> Element();
+    public static GraphTraversal`2<object, IDictionary`2<object, E2>> ElementMap(String[] propertyKeys);
+    public static GraphTraversal`2<object, object> Emit();
+    public static GraphTraversal`2<object, object> Emit(IPredicate emitPredicate);
+    public static GraphTraversal`2<object, object> Emit(ITraversal emitTraversal);
+    public static GraphTraversal`2<object, object> Fail();
+    public static GraphTraversal`2<object, object> Fail(string msg);
+    public static GraphTraversal`2<object, object> Filter(IPredicate predicate);
+    public static GraphTraversal`2<object, object> Filter(ITraversal filterTraversal);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> FlatMap(IFunction function);
+    public static GraphTraversal`2<object, E2> FlatMap(ITraversal flatMapTraversal);
+    public static GraphTraversal`2<object, IList`1<E2>> Fold();
+    public static GraphTraversal`2<object, E2> Fold(E2 seed, IBiFunction foldFunction);
+    public static GraphTraversal`2<object, string> Format(string format);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<K, V>> Group();
+    public static GraphTraversal`2<object, object> Group(string sideEffectKey);
+    public static GraphTraversal`2<object, IDictionary`2<K, long>> GroupCount();
+    public static GraphTraversal`2<object, object> GroupCount(string sideEffectKey);
+    public static GraphTraversal`2<object, object> Has(string propertyKey);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> Has(string propertyKey, object value);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> Has(string propertyKey, P predicate);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> Has(string label, string propertyKey, object value);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> Has(string label, string propertyKey, P predicate);
+    public static GraphTraversal`2<object, object> Has(string propertyKey, ITraversal propertyTraversal);
+    public static GraphTraversal`2<object, object> Has(T accessor, object value);
+    public static GraphTraversal`2<object, object> Has(T accessor, P predicate);
+    public static GraphTraversal`2<object, object> Has(T accessor, ITraversal propertyTraversal);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> HasId(object id, Object[] otherIds);
+    public static GraphTraversal`2<object, object> HasId(P predicate);
+    public static GraphTraversal`2<object, object> HasKey(P predicate);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> HasKey(string label, String[] otherLabels);
+    public static GraphTraversal`2<object, object> HasLabel(P predicate);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> HasLabel(string label, String[] otherLabels);
+    public static GraphTraversal`2<object, object> HasNot(string propertyKey);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> HasValue(object value, Object[] values);
+    public static GraphTraversal`2<object, object> HasValue(P predicate);
+    public static GraphTraversal`2<object, object> Id();
+    public static GraphTraversal`2<object, object> Identity();
+    public static GraphTraversal`2<object, Vertex> In(String[] edgeLabels);
+    public static GraphTraversal`2<object, Edge> InE(String[] edgeLabels);
+    public static GraphTraversal`2<object, Vertex> InV();
+    public static GraphTraversal`2<object, E2> Index();
+    public static GraphTraversal`2<object, object> Inject(Object[] injections);
+    public static GraphTraversal`2<object, object> Intersect(object intersectObject);
+    public static GraphTraversal`2<object, object> Is(object value);
+    public static GraphTraversal`2<object, object> Is(P predicate);
+    public static GraphTraversal`2<object, string> Key();
+    public static GraphTraversal`2<object, string> Label();
+    public static GraphTraversal`2<object, Nullable`1<int>> Length();
+    public static GraphTraversal`2<object, E2> Length(Scope scope);
+    public static GraphTraversal`2<object, E2> Limit(Scope scope, long limit);
+    public static GraphTraversal`2<object, E2> Limit(long limit);
+    public static GraphTraversal`2<object, E2> Local(ITraversal localTraversal);
+    public static GraphTraversal`2<object, int> Loops();
+    public static GraphTraversal`2<object, int> Loops(string loopName);
+    public static GraphTraversal`2<object, string> LTrim();
+    public static GraphTraversal`2<object, E2> LTrim(Scope scope);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Map(IFunction function);
+    public static GraphTraversal`2<object, E2> Map(ITraversal mapTraversal);
+    public static GraphTraversal`2<object, IDictionary`2<string, E2>> Match(ITraversal[] matchTraversals);
+    public static GraphTraversal`2<object, double> Math(string expression);
+    public static GraphTraversal`2<object, E2> Max();
+    public static GraphTraversal`2<object, E2> Max(Scope scope);
+    public static GraphTraversal`2<object, E2> Mean();
+    public static GraphTraversal`2<object, E2> Mean(Scope scope);
+    public static GraphTraversal`2<object, object> Merge(object mergeObject);
+    public static GraphTraversal`2<object, Edge> MergeE();
+    public static GraphTraversal`2<object, Edge> MergeE(IDictionary`2<object, object> m);
+    public static GraphTraversal`2<object, Edge> MergeE(ITraversal t);
+    public static GraphTraversal`2<object, Vertex> MergeV();
+    public static GraphTraversal`2<object, Vertex> MergeV(IDictionary`2<object, object> m);
+    public static GraphTraversal`2<object, Vertex> MergeV(ITraversal t);
+    public static GraphTraversal`2<object, E2> Min();
+    public static GraphTraversal`2<object, E2> Min(Scope scope);
+    public static GraphTraversal`2<object, object> Not(ITraversal notTraversal);
+    public static GraphTraversal`2<object, E2> Optional(ITraversal optionalTraversal);
+    public static GraphTraversal`2<object, object> Or(ITraversal[] orTraversals);
+    public static GraphTraversal`2<object, object> Order();
+    public static GraphTraversal`2<object, object> Order(Scope scope);
+    public static GraphTraversal`2<object, Vertex> OtherV();
+    public static GraphTraversal`2<object, Vertex> Out(String[] edgeLabels);
+    public static GraphTraversal`2<object, Edge> OutE(String[] edgeLabels);
+    public static GraphTraversal`2<object, Vertex> OutV();
+    public static GraphTraversal`2<object, Path> Path();
+    public static GraphTraversal`2<object, object> Product(object productObject);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<string, E2>> Project(string projectKey, String[] projectKeys);
+    public static GraphTraversal`2<object, E2> Properties(String[] propertyKeys);
+    public static GraphTraversal`2<object, object> Property(Cardinality cardinality, object key, object value, Object[] keyValues);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, object> Property(object key, object value, Object[] keyValues);
+    public static GraphTraversal`2<object, IDictionary`2<string, E2>> PropertyMap(String[] propertyKeys);
+    public static GraphTraversal`2<object, E2> Range(Scope scope, long low, long high);
+    public static GraphTraversal`2<object, E2> Range(long low, long high);
+    public static GraphTraversal`2<object, object> Repeat(string loopName, ITraversal traversal);
+    public static GraphTraversal`2<object, object> Repeat(ITraversal traversal);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, string> Replace(string oldChar, string newChar);
+    public static GraphTraversal`2<object, object> Reverse();
+    public static GraphTraversal`2<object, string> RTrim();
+    public static GraphTraversal`2<object, E2> RTrim(Scope scope);
+    public static GraphTraversal`2<object, E2> Sack();
+    public static GraphTraversal`2<object, object> Sack(IBiFunction sackOperator);
+    public static GraphTraversal`2<object, object> Sample(Scope scope, int amountToSample);
+    public static GraphTraversal`2<object, object> Sample(int amountToSample);
+    public static GraphTraversal`2<object, ICollection`1<E2>> Select(Column column);
+    public static GraphTraversal`2<object, E2> Select(Pop pop, string selectKey);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<string, E2>> Select(Pop pop, string selectKey1, string selectKey2, String[] otherSelectKeys);
+    public static GraphTraversal`2<object, E2> Select(Pop pop, ITraversal keyTraversal);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, E2> Select(string selectKey);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<string, E2>> Select(string selectKey1, string selectKey2, String[] otherSelectKeys);
+    public static GraphTraversal`2<object, E2> Select(ITraversal keyTraversal);
+    public static GraphTraversal`2<object, object> SideEffect(IConsumer consumer);
+    public static GraphTraversal`2<object, object> SideEffect(ITraversal sideEffectTraversal);
+    public static GraphTraversal`2<object, object> SimplePath();
+    public static GraphTraversal`2<object, E2> Skip(Scope scope, long skip);
+    public static GraphTraversal`2<object, E2> Skip(long skip);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, List`1<string>> Split(string splitChar);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, List`1<E2>> Split(Scope scope, string splitChar);
+    public static GraphTraversal`2<object, object> Store(string sideEffectKey);
+    public static GraphTraversal`2<object, Edge> Subgraph(string sideEffectKey);
+    public static GraphTraversal`2<object, string> Substring(int startIndex);
+    public static GraphTraversal`2<object, string> Substring(int startIndex, int endIndex);
+    public static GraphTraversal`2<object, E2> Sum();
+    public static GraphTraversal`2<object, E2> Sum(Scope scope);
+    public static GraphTraversal`2<object, E2> Tail();
+    public static GraphTraversal`2<object, E2> Tail(Scope scope);
+    public static GraphTraversal`2<object, E2> Tail(Scope scope, long limit);
+    public static GraphTraversal`2<object, E2> Tail(long limit);
+    public static GraphTraversal`2<object, object> TimeLimit(long timeLimit);
+    public static GraphTraversal`2<object, object> Times(int maxLoops);
+    public static GraphTraversal`2<object, Vertex> To(Direction direction, String[] edgeLabels);
+    public static GraphTraversal`2<object, Edge> ToE(Direction direction, String[] edgeLabels);
+    public static GraphTraversal`2<object, string> ToLower();
+    public static GraphTraversal`2<object, E2> ToLower(Scope scope);
+    public static GraphTraversal`2<object, string> ToUpper();
+    public static GraphTraversal`2<object, E2> ToUpper(Scope scope);
+    public static GraphTraversal`2<object, Vertex> ToV(Direction direction);
+    public static GraphTraversal`2<object, E2> Tree();
+    public static GraphTraversal`2<object, object> Tree(string sideEffectKey);
+    public static GraphTraversal`2<object, string> Trim();
+    public static GraphTraversal`2<object, E2> Trim(Scope scope);
+    public static GraphTraversal`2<object, E2> Unfold();
+    public static GraphTraversal`2<object, E2> Union(ITraversal[] traversals);
+    public static GraphTraversal`2<object, object> Until(IPredicate untilPredicate);
+    public static GraphTraversal`2<object, object> Until(ITraversal untilTraversal);
+    public static GraphTraversal`2<object, E2> Value();
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<TKey, TValue>> ValueMap(String[] propertyKeys);
+    [NullableContextAttribute("2")]
+public static GraphTraversal`2<object, IDictionary`2<TKey, TValue>> ValueMap(bool includeTokens, String[] propertyKeys);
+    public static GraphTraversal`2<object, E2> Values(String[] propertyKeys);
+    public static GraphTraversal`2<object, object> Where(P predicate);
+    public static GraphTraversal`2<object, object> Where(string startKey, P predicate);
+    public static GraphTraversal`2<object, object> Where(ITraversal whereTraversal);
+}
+public class Gremlin.Net.Process.Traversal.AnonymousTraversalSource : object {
+    [NullableContextAttribute("1")]
+public static GraphTraversalSource Traversal();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Barrier : EnumWrapper {
+    private static IDictionary`2<string, Barrier> Properties;
+    public static Barrier NormSack { get; }
+    private Barrier(string enumValue);
+    private static Barrier();
+    public static Barrier get_NormSack();
+    public static Barrier GetByValue(string value);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Binding : object {
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    [CompilerGeneratedAttribute]
+private object <Value>k__BackingField;
+    [NullableAttribute("1")]
+public string Key { get; }
+    public object Value { get; }
+    [NullableContextAttribute("1")]
+public Binding(string key, object value);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public object get_Value();
+    public sealed virtual bool Equals(Binding other);
+    public virtual bool Equals(object other);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Bindings : object {
+    [CompilerGeneratedAttribute]
+private static Bindings <Instance>k__BackingField;
+    private static ThreadLocal`1<Dictionary`2<object, string>> BoundVariableByValue;
+    public static Bindings Instance { get; }
+    private static Bindings();
+    [CompilerGeneratedAttribute]
+public static Bindings get_Instance();
+    public TV Of(string variable, TV value);
+    internal static string GetBoundVariable(TV value);
+    internal static void Clear();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Bytecode : object {
+    private static Object[] EmptyArray;
+    [CompilerGeneratedAttribute]
+private List`1<Instruction> <SourceInstructions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<Instruction> <StepInstructions>k__BackingField;
+    public List`1<Instruction> SourceInstructions { get; }
+    public List`1<Instruction> StepInstructions { get; }
+    public Bytecode(Bytecode byteCode);
+    private static Bytecode();
+    [CompilerGeneratedAttribute]
+public List`1<Instruction> get_SourceInstructions();
+    [CompilerGeneratedAttribute]
+public List`1<Instruction> get_StepInstructions();
+    public void AddSource(string sourceName, Object[] args);
+    public void AddStep(string stepName, Object[] args);
+    private Object[] FlattenArguments(Object[] arguments);
+    [NullableContextAttribute("2")]
+private object ConvertArgument(object argument, bool searchBindings);
+    private bool IsDictionaryType(Type type);
+    private bool IsListType(Type type);
+    private bool IsHashSetType(Type type);
+    public virtual string ToString();
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private object <FlattenArguments>b__11_0(object nestObject);
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private object <ConvertArgument>b__12_0(object item);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Cardinality : EnumWrapper {
+    private static IDictionary`2<string, Cardinality> Properties;
+    public static Cardinality List { get; }
+    public static Cardinality Set { get; }
+    public static Cardinality Single { get; }
+    private Cardinality(string enumValue);
+    private static Cardinality();
+    public static Cardinality get_List();
+    public static Cardinality get_Set();
+    public static Cardinality get_Single();
+    public static Cardinality GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.CardinalityValue : Bytecode {
+    [NullableAttribute("2")]
+public Cardinality Cardinality { get; }
+    [NullableAttribute("2")]
+public object Value { get; }
+    public CardinalityValue(Cardinality card, object val);
+    [NullableContextAttribute("2")]
+public Cardinality get_Cardinality();
+    [NullableContextAttribute("2")]
+public object get_Value();
+    public static CardinalityValue Single(object value);
+    public static CardinalityValue Set(object value);
+    public static CardinalityValue List(object value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Column : EnumWrapper {
+    private static IDictionary`2<string, Column> Properties;
+    public static Column Keys { get; }
+    public static Column Values { get; }
+    private Column(string enumValue);
+    private static Column();
+    public static Column get_Keys();
+    public static Column get_Values();
+    public static Column GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.ConnectedComponent : object {
+    public static string component;
+    public static string edges;
+    public static string propertyName;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Process.Traversal.DefaultTraversal`2 : object {
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+private IEnumerator`1<Traverser> _traverserEnumerator;
+    [CompilerGeneratedAttribute]
+private bool <IsAnonymous>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private IEnumerable`1<Traverser> <Traversers>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ICollection`1<ITraversalStrategy> <TraversalStrategies>k__BackingField;
+    private bool _nextAvailable;
+    private bool _fetchedNext;
+    public Bytecode Bytecode { get; }
+    public bool IsAnonymous { get; protected set; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public IEnumerable`1<Traverser> Traversers { get; public set; }
+    protected ICollection`1<ITraversalStrategy> TraversalStrategies { get; protected set; }
+    private IEnumerator`1<Traverser> TraverserEnumerator { get; }
+    [NullableAttribute("2")]
+public TEnd Current { get; }
+    [NullableAttribute("2")]
+private object System.Collections.IEnumerator.Current { get; }
+    public abstract virtual Bytecode get_Bytecode();
+    [CompilerGeneratedAttribute]
+public sealed virtual bool get_IsAnonymous();
+    [CompilerGeneratedAttribute]
+protected void set_IsAnonymous(bool value);
+    [CompilerGeneratedAttribute]
+public sealed virtual IEnumerable`1<Traverser> get_Traversers();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Traversers(IEnumerable`1<Traverser> value);
+    private sealed virtual override ITraversal Gremlin.Net.Process.Traversal.ITraversal.Iterate();
+    [CompilerGeneratedAttribute]
+protected ICollection`1<ITraversalStrategy> get_TraversalStrategies();
+    [CompilerGeneratedAttribute]
+protected void set_TraversalStrategies(ICollection`1<ITraversalStrategy> value);
+    private IEnumerator`1<Traverser> get_TraverserEnumerator();
+    public sealed virtual void Dispose();
+    public sealed virtual bool MoveNext();
+    private bool MoveNextInternal();
+    public sealed virtual void Reset();
+    [NullableContextAttribute("2")]
+public sealed virtual TEnd get_Current();
+    [NullableContextAttribute("2")]
+private sealed virtual override object System.Collections.IEnumerator.get_Current();
+    [NullableContextAttribute("2")]
+private TReturn GetCurrent();
+    [NullableContextAttribute("2")]
+private object GetCurrent();
+    [NullableContextAttribute("2")]
+private static object GetValue(Type type, object value);
+    private IEnumerator`1<Traverser> GetTraverserEnumerator();
+    private void ApplyStrategies();
+    [AsyncStateMachineAttribute("Gremlin.Net.Process.Traversal.DefaultTraversal`2/<ApplyStrategiesAsync>d__33")]
+private Task ApplyStrategiesAsync(CancellationToken cancellationToken);
+    public sealed virtual bool HasNext();
+    [NullableContextAttribute("2")]
+public sealed virtual TEnd Next();
+    [IteratorStateMachineAttribute("Gremlin.Net.Process.Traversal.DefaultTraversal`2/<Next>d__36")]
+public sealed virtual IEnumerable`1<TEnd> Next(int amount);
+    public sealed virtual ITraversal`2<TStart, TEnd> Iterate();
+    public sealed virtual Traverser NextTraverser();
+    public sealed virtual IList`1<TEnd> ToList();
+    public sealed virtual ISet`1<TEnd> ToSet();
+    [AsyncStateMachineAttribute("Gremlin.Net.Process.Traversal.DefaultTraversal`2/<Promise>d__41`1")]
+public sealed virtual Task`1<TReturn> Promise(Func`2<ITraversal`2<TStart, TEnd>, TReturn> callback, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Direction : EnumWrapper {
+    private static IDictionary`2<string, Direction> Properties;
+    public static Direction Both { get; }
+    public static Direction In { get; }
+    public static Direction Out { get; }
+    public static Direction From { get; }
+    public static Direction To { get; }
+    private Direction(string enumValue);
+    private static Direction();
+    public static Direction get_Both();
+    public static Direction get_In();
+    public static Direction get_Out();
+    public static Direction get_From();
+    public static Direction get_To();
+    public static Direction GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.DT : EnumWrapper {
+    private static Dictionary`2<string, DT> Properties;
+    public static DT Second { get; }
+    public static DT Minute { get; }
+    public static DT Hour { get; }
+    public static DT Day { get; }
+    private DT(string enumValue);
+    private static DT();
+    public static DT get_Second();
+    public static DT get_Minute();
+    public static DT get_Hour();
+    public static DT get_Day();
+    public static DT GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Process.Traversal.EnumWrapper : object {
+    [CompilerGeneratedAttribute]
+private string <EnumName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <EnumValue>k__BackingField;
+    public string EnumName { get; }
+    public string EnumValue { get; }
+    protected EnumWrapper(string enumName, string enumValue);
+    [CompilerGeneratedAttribute]
+public string get_EnumName();
+    [CompilerGeneratedAttribute]
+public string get_EnumValue();
+    [NullableContextAttribute("2")]
+public sealed virtual bool Equals(EnumWrapper other);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Process.Traversal.GraphOp : object {
+    [CompilerGeneratedAttribute]
+private static Bytecode <Commit>k__BackingField;
+    [CompilerGeneratedAttribute]
+private static Bytecode <Rollback>k__BackingField;
+    public static Bytecode Commit { get; }
+    public static Bytecode Rollback { get; }
+    private static GraphOp();
+    [CompilerGeneratedAttribute]
+public static Bytecode get_Commit();
+    [CompilerGeneratedAttribute]
+public static Bytecode get_Rollback();
+    private static Bytecode CreateGraphOp(string name, object value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.GraphSONVersion : EnumWrapper {
+    private static IDictionary`2<string, GraphSONVersion> Properties;
+    public static GraphSONVersion V1_0 { get; }
+    public static GraphSONVersion V2_0 { get; }
+    public static GraphSONVersion V3_0 { get; }
+    private GraphSONVersion(string enumValue);
+    private static GraphSONVersion();
+    public static GraphSONVersion get_V1_0();
+    public static GraphSONVersion get_V2_0();
+    public static GraphSONVersion get_V3_0();
+    public static GraphSONVersion GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Process.Traversal.GraphTraversal`2 : DefaultTraversal`2<TStart, TEnd> {
+    [CompilerGeneratedAttribute]
+private Bytecode <Bytecode>k__BackingField;
+    public Bytecode Bytecode { get; }
+    public GraphTraversal`2(ICollection`1<ITraversalStrategy> traversalStrategies, Bytecode bytecode);
+    private GraphTraversal`2(ICollection`1<ITraversalStrategy> traversalStrategies, Bytecode bytecode, bool anonymous);
+    [CompilerGeneratedAttribute]
+public virtual Bytecode get_Bytecode();
+    private static GraphTraversal`2<TNewStart, TNewEnd> Wrap(GraphTraversal`2<TStart, TEnd> traversal);
+    public GraphTraversal`2<TStart, Vertex> V(Object[] vertexIdsOrElements);
+    public GraphTraversal`2<TStart, Edge> E(Object[] edgeIdsOrElements);
+    public GraphTraversal`2<TStart, Edge> AddE(string edgeLabel);
+    public GraphTraversal`2<TStart, Edge> AddE(ITraversal edgeLabelTraversal);
+    public GraphTraversal`2<TStart, Vertex> AddV();
+    public GraphTraversal`2<TStart, Vertex> AddV(string vertexLabel);
+    public GraphTraversal`2<TStart, Vertex> AddV(ITraversal vertexLabelTraversal);
+    public GraphTraversal`2<TStart, TEnd> Aggregate(Scope scope, string sideEffectKey);
+    public GraphTraversal`2<TStart, TEnd> Aggregate(string sideEffectKey);
+    public GraphTraversal`2<TStart, TEnd> All(P predicate);
+    public GraphTraversal`2<TStart, TEnd> And(ITraversal[] andTraversals);
+    public GraphTraversal`2<TStart, TEnd> Any(P predicate);
+    public GraphTraversal`2<TStart, TEnd> As(string stepLabel, String[] stepLabels);
+    public GraphTraversal`2<TStart, string> AsString();
+    public GraphTraversal`2<TStart, TNewEnd> AsString(Scope scope);
+    public GraphTraversal`2<TStart, DateTimeOffset> AsDate();
+    public GraphTraversal`2<TStart, TEnd> Barrier();
+    public GraphTraversal`2<TStart, TEnd> Barrier(IConsumer barrierConsumer);
+    public GraphTraversal`2<TStart, TEnd> Barrier(int maxBarrierSize);
+    public GraphTraversal`2<TStart, Vertex> Both(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Edge> BothE(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Vertex> BothV();
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Branch(IFunction function);
+    public GraphTraversal`2<TStart, TNewEnd> Branch(ITraversal branchTraversal);
+    public GraphTraversal`2<TStart, TEnd> By();
+    public GraphTraversal`2<TStart, TEnd> By(IComparator comparator);
+    public GraphTraversal`2<TStart, TEnd> By(IFunction function);
+    public GraphTraversal`2<TStart, TEnd> By(IFunction function, IComparator comparator);
+    public GraphTraversal`2<TStart, TEnd> By(Order order);
+    public GraphTraversal`2<TStart, TEnd> By(string key);
+    public GraphTraversal`2<TStart, TEnd> By(string key, IComparator comparator);
+    public GraphTraversal`2<TStart, TEnd> By(T token);
+    public GraphTraversal`2<TStart, TEnd> By(ITraversal traversal);
+    public GraphTraversal`2<TStart, TEnd> By(ITraversal traversal, IComparator comparator);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Call(string service);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Call(string service, ITraversal t);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Call(string service, IDictionary`2<object, object> m);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Call(string service, IDictionary`2<object, object> m, ITraversal t);
+    public GraphTraversal`2<TStart, TNewEnd> Cap(string sideEffectKey, String[] sideEffectKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(IFunction choiceFunction);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(IPredicate choosePredicate, ITraversal trueChoice);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(IPredicate choosePredicate, ITraversal trueChoice, ITraversal falseChoice);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(ITraversal choiceTraversal);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(ITraversal traversalPredicate, ITraversal trueChoice);
+    public GraphTraversal`2<TStart, TNewEnd> Choose(ITraversal traversalPredicate, ITraversal trueChoice, ITraversal falseChoice);
+    public GraphTraversal`2<TStart, TNewEnd> Coalesce(ITraversal[] coalesceTraversals);
+    public GraphTraversal`2<TStart, TEnd> Coin(double probability);
+    public GraphTraversal`2<TStart, TEnd> Combine(object combineObject);
+    public GraphTraversal`2<TStart, string> Concat(ITraversal concatTraversal, ITraversal[] otherConcatTraversals);
+    public GraphTraversal`2<TStart, string> Concat(String[] concatStrings);
+    public GraphTraversal`2<TStart, TEnd> Conjoin(string delimiter);
+    public GraphTraversal`2<TStart, TEnd> ConnectedComponent();
+    public GraphTraversal`2<TStart, TNewEnd> Constant(TNewEnd e);
+    public GraphTraversal`2<TStart, long> Count();
+    public GraphTraversal`2<TStart, long> Count(Scope scope);
+    public GraphTraversal`2<TStart, TEnd> CyclicPath();
+    public GraphTraversal`2<TStart, DateTimeOffset> DateAdd(DT dateToken, int value);
+    public GraphTraversal`2<TStart, long> DateDiff(DateTimeOffset value);
+    public GraphTraversal`2<TStart, long> DateDiff(ITraversal dateTraversal);
+    public GraphTraversal`2<TStart, TEnd> Dedup(Scope scope, String[] dedupLabels);
+    public GraphTraversal`2<TStart, TEnd> Dedup(String[] dedupLabels);
+    public GraphTraversal`2<TStart, TEnd> Difference(object differenceObject);
+    public GraphTraversal`2<TStart, TEnd> Disjunct(object disjunctObject);
+    public GraphTraversal`2<TStart, TEnd> Drop();
+    public GraphTraversal`2<TStart, Element> Element();
+    public GraphTraversal`2<TStart, IDictionary`2<object, TNewEnd>> ElementMap(String[] propertyKeys);
+    public GraphTraversal`2<TStart, TEnd> Emit();
+    public GraphTraversal`2<TStart, TEnd> Emit(IPredicate emitPredicate);
+    public GraphTraversal`2<TStart, TEnd> Emit(ITraversal emitTraversal);
+    public GraphTraversal`2<TStart, TEnd> Fail();
+    public GraphTraversal`2<TStart, TEnd> Fail(string msg);
+    public GraphTraversal`2<TStart, TEnd> Fail(string msg, IDictionary`2<string, object> m);
+    public GraphTraversal`2<TStart, TEnd> Filter(IPredicate predicate);
+    public GraphTraversal`2<TStart, TEnd> Filter(ITraversal filterTraversal);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> FlatMap(IFunction function);
+    public GraphTraversal`2<TStart, TNewEnd> FlatMap(ITraversal flatMapTraversal);
+    public GraphTraversal`2<TStart, IList`1<TEnd>> Fold();
+    public GraphTraversal`2<TStart, TNewEnd> Fold(TNewEnd seed, IBiFunction foldFunction);
+    public GraphTraversal`2<TStart, string> Format(string format);
+    public GraphTraversal`2<TStart, TEnd> From(string fromStepLabel);
+    public GraphTraversal`2<TStart, TEnd> From(ITraversal fromVertex);
+    public GraphTraversal`2<TStart, TEnd> From(Vertex fromVertex);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<K, V>> Group();
+    public GraphTraversal`2<TStart, TEnd> Group(string sideEffectKey);
+    public GraphTraversal`2<TStart, IDictionary`2<K, long>> GroupCount();
+    public GraphTraversal`2<TStart, TEnd> GroupCount(string sideEffectKey);
+    public GraphTraversal`2<TStart, TEnd> Has(string propertyKey);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> Has(string propertyKey, object value);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> Has(string propertyKey, P predicate);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> Has(string label, string propertyKey, object value);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> Has(string label, string propertyKey, P predicate);
+    public GraphTraversal`2<TStart, TEnd> Has(string propertyKey, ITraversal propertyTraversal);
+    public GraphTraversal`2<TStart, TEnd> Has(T accessor, object value);
+    public GraphTraversal`2<TStart, TEnd> Has(T accessor, P predicate);
+    public GraphTraversal`2<TStart, TEnd> Has(T accessor, ITraversal propertyTraversal);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> HasId(object id, Object[] otherIds);
+    public GraphTraversal`2<TStart, TEnd> HasId(P predicate);
+    public GraphTraversal`2<TStart, TEnd> HasKey(P predicate);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> HasKey(string label, String[] otherLabels);
+    public GraphTraversal`2<TStart, TEnd> HasLabel(P predicate);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> HasLabel(string label, String[] otherLabels);
+    public GraphTraversal`2<TStart, TEnd> HasNot(string propertyKey);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> HasValue(object value, Object[] otherValues);
+    public GraphTraversal`2<TStart, TEnd> HasValue(P predicate);
+    public GraphTraversal`2<TStart, object> Id();
+    public GraphTraversal`2<TStart, TEnd> Identity();
+    public GraphTraversal`2<TStart, Vertex> In(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Edge> InE(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Vertex> InV();
+    public GraphTraversal`2<TStart, TNewEnd> Index();
+    public GraphTraversal`2<TStart, TEnd> Inject(TEnd[] injections);
+    public GraphTraversal`2<TStart, TEnd> Intersect(object intersectObject);
+    public GraphTraversal`2<TStart, TEnd> Is(object value);
+    public GraphTraversal`2<TStart, TEnd> Is(P predicate);
+    public GraphTraversal`2<TStart, string> Key();
+    public GraphTraversal`2<TStart, string> Label();
+    public GraphTraversal`2<TStart, Nullable`1<int>> Length();
+    public GraphTraversal`2<TStart, TNewEnd> Length(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Limit(Scope scope, long limit);
+    public GraphTraversal`2<TStart, TNewEnd> Limit(long limit);
+    public GraphTraversal`2<TStart, TNewEnd> Local(ITraversal localTraversal);
+    public GraphTraversal`2<TStart, int> Loops();
+    public GraphTraversal`2<TStart, int> Loops(string loopName);
+    public GraphTraversal`2<TStart, string> LTrim();
+    public GraphTraversal`2<TStart, TNewEnd> LTrim(Scope scope);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Map(IFunction function);
+    public GraphTraversal`2<TStart, TNewEnd> Map(ITraversal mapTraversal);
+    public GraphTraversal`2<TStart, IDictionary`2<string, TNewEnd>> Match(ITraversal[] matchTraversals);
+    public GraphTraversal`2<TStart, double> Math(string expression);
+    public GraphTraversal`2<TStart, TNewEnd> Max();
+    public GraphTraversal`2<TStart, TNewEnd> Max(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Mean();
+    public GraphTraversal`2<TStart, TNewEnd> Mean(Scope scope);
+    public GraphTraversal`2<TStart, TEnd> Merge(object mergeObject);
+    public GraphTraversal`2<TStart, Edge> MergeE();
+    public GraphTraversal`2<TStart, Edge> MergeE(IDictionary`2<object, object> m);
+    public GraphTraversal`2<TStart, Edge> MergeE(ITraversal t);
+    public GraphTraversal`2<TStart, Vertex> MergeV();
+    public GraphTraversal`2<TStart, Vertex> MergeV(IDictionary`2<object, object> m);
+    public GraphTraversal`2<TStart, Vertex> MergeV(ITraversal t);
+    public GraphTraversal`2<TStart, TNewEnd> Min();
+    public GraphTraversal`2<TStart, TNewEnd> Min(Scope scope);
+    public GraphTraversal`2<TStart, TEnd> None();
+    public GraphTraversal`2<TStart, TEnd> Not(ITraversal notTraversal);
+    public GraphTraversal`2<TStart, TEnd> Option(object pickToken, ITraversal traversalOption);
+    public GraphTraversal`2<TStart, TEnd> Option(object pickToken, IDictionary`2<object, object> traversalOption);
+    public GraphTraversal`2<TStart, TEnd> Option(object pickToken, IDictionary`2<object, object> traversalOption, Cardinality cardinality);
+    public GraphTraversal`2<TStart, TEnd> Option(ITraversal traversalOption);
+    public GraphTraversal`2<TStart, TNewEnd> Optional(ITraversal optionalTraversal);
+    public GraphTraversal`2<TStart, TEnd> Or(ITraversal[] orTraversals);
+    public GraphTraversal`2<TStart, TEnd> Order();
+    public GraphTraversal`2<TStart, TEnd> Order(Scope scope);
+    public GraphTraversal`2<TStart, Vertex> OtherV();
+    public GraphTraversal`2<TStart, Vertex> Out(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Edge> OutE(String[] edgeLabels);
+    public GraphTraversal`2<TStart, Vertex> OutV();
+    public GraphTraversal`2<TStart, TEnd> PageRank();
+    public GraphTraversal`2<TStart, TEnd> PageRank(double alpha);
+    public GraphTraversal`2<TStart, Path> Path();
+    public GraphTraversal`2<TStart, TEnd> PeerPressure();
+    public GraphTraversal`2<TStart, TEnd> Product(object productObject);
+    public GraphTraversal`2<TStart, TNewEnd> Profile();
+    public GraphTraversal`2<TStart, TEnd> Profile(string sideEffectKey);
+    public GraphTraversal`2<TStart, TEnd> Program(object vertexProgram);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<string, TNewEnd>> Project(string projectKey, String[] otherProjectKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Properties(String[] propertyKeys);
+    public GraphTraversal`2<TStart, TEnd> Property(Cardinality cardinality, object key, object value, Object[] keyValues);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TEnd> Property(object key, object value, Object[] keyValues);
+    public GraphTraversal`2<TStart, IDictionary`2<string, TNewEnd>> PropertyMap(String[] propertyKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Range(Scope scope, long low, long high);
+    public GraphTraversal`2<TStart, TNewEnd> Range(long low, long high);
+    public GraphTraversal`2<TStart, TEnd> Read();
+    public GraphTraversal`2<TStart, TEnd> Repeat(string loopName, ITraversal repeatTraversal);
+    public GraphTraversal`2<TStart, TEnd> Repeat(ITraversal repeatTraversal);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, string> Replace(string oldChar, string newChar);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Replace(Scope scope, string oldChar, string newChar);
+    public GraphTraversal`2<TStart, TEnd> Reverse();
+    public GraphTraversal`2<TStart, string> RTrim();
+    public GraphTraversal`2<TStart, TNewEnd> RTrim(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Sack();
+    public GraphTraversal`2<TStart, TEnd> Sack(IBiFunction sackOperator);
+    public GraphTraversal`2<TStart, TEnd> Sample(Scope scope, int amountToSample);
+    public GraphTraversal`2<TStart, TEnd> Sample(int amountToSample);
+    public GraphTraversal`2<TStart, ICollection`1<TNewEnd>> Select(Column column);
+    public GraphTraversal`2<TStart, TNewEnd> Select(Pop pop, string selectKey);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<string, TNewEnd>> Select(Pop pop, string selectKey1, string selectKey2, String[] otherSelectKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Select(Pop pop, ITraversal keyTraversal);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TNewEnd> Select(string selectKey);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<string, TNewEnd>> Select(string selectKey1, string selectKey2, String[] otherSelectKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Select(ITraversal keyTraversal);
+    public GraphTraversal`2<TStart, Path> ShortestPath();
+    public GraphTraversal`2<TStart, TEnd> SideEffect(IConsumer consumer);
+    public GraphTraversal`2<TStart, TEnd> SideEffect(ITraversal sideEffectTraversal);
+    public GraphTraversal`2<TStart, TEnd> SimplePath();
+    public GraphTraversal`2<TStart, TNewEnd> Skip(Scope scope, long skip);
+    public GraphTraversal`2<TStart, TNewEnd> Skip(long skip);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, List`1<string>> Split(string splitChar);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, List`1<TNewEnd>> Split(Scope scope, string splitChar);
+    public GraphTraversal`2<TStart, TEnd> Store(string sideEffectKey);
+    public GraphTraversal`2<TStart, Edge> Subgraph(string sideEffectKey);
+    public GraphTraversal`2<TStart, string> Substring(int startIndex);
+    public GraphTraversal`2<TStart, TNewEnd> Substring(Scope scope, int startIndex);
+    public GraphTraversal`2<TStart, string> Substring(int startIndex, int endIndex);
+    public GraphTraversal`2<TStart, TNewEnd> Substring(Scope scope, int startIndex, int endIndex);
+    public GraphTraversal`2<TStart, TNewEnd> Sum();
+    public GraphTraversal`2<TStart, TNewEnd> Sum(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Tail();
+    public GraphTraversal`2<TStart, TNewEnd> Tail(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Tail(Scope scope, long limit);
+    public GraphTraversal`2<TStart, TNewEnd> Tail(long limit);
+    public GraphTraversal`2<TStart, TEnd> TimeLimit(long timeLimit);
+    public GraphTraversal`2<TStart, TEnd> Times(int maxLoops);
+    public GraphTraversal`2<TStart, Vertex> To(Direction direction, String[] edgeLabels);
+    public GraphTraversal`2<TStart, TEnd> To(string toStepLabel);
+    public GraphTraversal`2<TStart, TEnd> To(ITraversal toVertex);
+    public GraphTraversal`2<TStart, TEnd> To(Vertex toVertex);
+    public GraphTraversal`2<TStart, Edge> ToE(Direction direction, String[] edgeLabels);
+    public GraphTraversal`2<TStart, string> ToLower();
+    public GraphTraversal`2<TStart, TNewEnd> ToLower(Scope scope);
+    public GraphTraversal`2<TStart, string> ToUpper();
+    public GraphTraversal`2<TStart, TNewEnd> ToUpper(Scope scope);
+    public GraphTraversal`2<TStart, Vertex> ToV(Direction direction);
+    public GraphTraversal`2<TStart, TNewEnd> Tree();
+    public GraphTraversal`2<TStart, TEnd> Tree(string sideEffectKey);
+    public GraphTraversal`2<TStart, string> Trim();
+    public GraphTraversal`2<TStart, TNewEnd> Trim(Scope scope);
+    public GraphTraversal`2<TStart, TNewEnd> Unfold();
+    public GraphTraversal`2<TStart, TNewEnd> Union(ITraversal[] unionTraversals);
+    public GraphTraversal`2<TStart, TEnd> Until(IPredicate untilPredicate);
+    public GraphTraversal`2<TStart, TEnd> Until(ITraversal untilTraversal);
+    public GraphTraversal`2<TStart, TNewEnd> Value();
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<TKey, TValue>> ValueMap(String[] propertyKeys);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, IDictionary`2<TKey, TValue>> ValueMap(bool includeTokens, String[] propertyKeys);
+    public GraphTraversal`2<TStart, TNewEnd> Values(String[] propertyKeys);
+    public GraphTraversal`2<TStart, TEnd> Where(P predicate);
+    public GraphTraversal`2<TStart, TEnd> Where(string startKey, P predicate);
+    public GraphTraversal`2<TStart, TEnd> Where(ITraversal whereTraversal);
+    public GraphTraversal`2<TStart, TEnd> With(string key);
+    public GraphTraversal`2<TStart, TEnd> With(string key, object value);
+    public GraphTraversal`2<TStart, TEnd> Write();
+    public GraphTraversal`2<TStart, TEnd> Clone();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.GraphTraversalSource : object {
+    [NullableAttribute("2")]
+private IRemoteConnection _connection;
+    [CompilerGeneratedAttribute]
+private ICollection`1<ITraversalStrategy> <TraversalStrategies>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Bytecode <Bytecode>k__BackingField;
+    public bool IsSessionBound { get; }
+    public ICollection`1<ITraversalStrategy> TraversalStrategies { get; public set; }
+    public Bytecode Bytecode { get; public set; }
+    public GraphTraversalSource(ICollection`1<ITraversalStrategy> traversalStrategies, Bytecode bytecode);
+    public GraphTraversalSource(ICollection`1<ITraversalStrategy> traversalStrategies, Bytecode bytecode, IRemoteConnection connection);
+    public bool get_IsSessionBound();
+    [CompilerGeneratedAttribute]
+public ICollection`1<ITraversalStrategy> get_TraversalStrategies();
+    [CompilerGeneratedAttribute]
+public void set_TraversalStrategies(ICollection`1<ITraversalStrategy> value);
+    [CompilerGeneratedAttribute]
+public Bytecode get_Bytecode();
+    [CompilerGeneratedAttribute]
+public void set_Bytecode(Bytecode value);
+    public GraphTraversalSource With(string key);
+    public GraphTraversalSource With(string key, object value);
+    public GraphTraversalSource WithBulk(bool useBulk);
+    public GraphTraversalSource WithPath();
+    public GraphTraversalSource WithSack(object initialValue);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(object initialValue, IBinaryOperator mergeOperator);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(object initialValue, IUnaryOperator splitOperator);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(object initialValue, IUnaryOperator splitOperator, IBinaryOperator mergeOperator);
+    public GraphTraversalSource WithSack(ISupplier initialValue);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(ISupplier initialValue, IBinaryOperator mergeOperator);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(ISupplier initialValue, IUnaryOperator splitOperator);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSack(ISupplier initialValue, IUnaryOperator splitOperator, IBinaryOperator mergeOperator);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSideEffect(string key, object initialValue);
+    public GraphTraversalSource WithSideEffect(string key, object initialValue, IBinaryOperator reducer);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSideEffect(string key, ISupplier initialValue);
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithSideEffect(string key, ISupplier initialValue, IBinaryOperator reducer);
+    public GraphTraversalSource WithStrategies(ITraversalStrategy[] traversalStrategies);
+    public GraphTraversalSource WithoutStrategies(Type[] traversalStrategyClasses);
+    [ObsoleteAttribute("Use the Bindings class instead.", "False")]
+public GraphTraversalSource WithBindings(object bindings);
+    public GraphTraversalSource WithRemote(IRemoteConnection remoteConnection);
+    public RemoteTransaction Tx();
+    [NullableContextAttribute("2")]
+public GraphTraversalSource WithComputer(string graphComputer, Nullable`1<int> workers, string persist, string result, ITraversal vertices, ITraversal edges, Dictionary`2<string, object> configuration);
+    public GraphTraversal`2<Edge, Edge> E(Object[] edgesIds);
+    public GraphTraversal`2<Vertex, Vertex> V(Object[] vertexIds);
+    public GraphTraversal`2<Edge, Edge> AddE(string label);
+    public GraphTraversal`2<Edge, Edge> AddE(ITraversal edgeLabelTraversal);
+    public GraphTraversal`2<Edge, Edge> MergeE(IDictionary`2<object, object> m);
+    public GraphTraversal`2<Edge, Edge> MergeE(ITraversal t);
+    public GraphTraversal`2<Vertex, Vertex> AddV();
+    public GraphTraversal`2<Vertex, Vertex> AddV(string label);
+    public GraphTraversal`2<Vertex, Vertex> AddV(ITraversal vertexLabelTraversal);
+    public GraphTraversal`2<Vertex, Vertex> MergeV(IDictionary`2<object, object> m);
+    public GraphTraversal`2<Vertex, Vertex> MergeV(ITraversal t);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TStart> Inject(TStart[] starts);
+    public GraphTraversal`2<TStart, TStart> Io(string file);
+    public GraphTraversal`2<TStart, TStart> Call();
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TStart> Call(string service);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TStart> Call(string service, IDictionary`2<object, object> m);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TStart> Call(string service, ITraversal t);
+    [NullableContextAttribute("2")]
+public GraphTraversal`2<TStart, TStart> Call(string service, IDictionary`2<object, object> m, ITraversal t);
+    public GraphTraversal`2<TStart, TStart> Union(ITraversal[] unionTraversals);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Process.Traversal.GroovyStringBasedLambda : StringBasedLambda {
+    public GroovyStringBasedLambda(string expression);
+    public GroovyStringBasedLambda(string expression, int arguments);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.GryoVersion : EnumWrapper {
+    private static IDictionary`2<string, GryoVersion> Properties;
+    public static GryoVersion V1_0 { get; }
+    public static GryoVersion V3_0 { get; }
+    private GryoVersion(string enumValue);
+    private static GryoVersion();
+    public static GryoVersion get_V1_0();
+    public static GryoVersion get_V3_0();
+    public static GryoVersion GetByValue(string value);
+}
+public interface Gremlin.Net.Process.Traversal.IBiFunction {
+}
+public interface Gremlin.Net.Process.Traversal.IBinaryOperator {
+}
+public interface Gremlin.Net.Process.Traversal.IComparator {
+}
+public interface Gremlin.Net.Process.Traversal.IConsumer {
+}
+public interface Gremlin.Net.Process.Traversal.IFunction {
+}
+public interface Gremlin.Net.Process.Traversal.ILambda {
+    [NullableAttribute("1")]
+public string LambdaExpression { get; }
+    [NullableAttribute("1")]
+public string Language { get; }
+    public int Arguments { get; }
+    [NullableContextAttribute("1")]
+public abstract virtual string get_LambdaExpression();
+    [NullableContextAttribute("1")]
+public abstract virtual string get_Language();
+    public abstract virtual int get_Arguments();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Instruction : object {
+    [CompilerGeneratedAttribute]
+private string <OperatorName>k__BackingField;
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Object[] <Arguments>k__BackingField;
+    public string OperatorName { get; }
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Object[] Arguments { get; }
+    public Instruction(string operatorName, Object[] arguments);
+    [CompilerGeneratedAttribute]
+public string get_OperatorName();
+    [CompilerGeneratedAttribute]
+public Object[] get_Arguments();
+    public virtual string ToString();
+    [NullableContextAttribute("2")]
+public sealed virtual bool Equals(Instruction other);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.IO : object {
+    public static string graphml;
+    public static string graphson;
+    public static string gryo;
+    public static string reader;
+    public static string registry;
+    public static string writer;
+}
+public interface Gremlin.Net.Process.Traversal.IPredicate {
+}
+public interface Gremlin.Net.Process.Traversal.ISupplier {
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Process.Traversal.ITraversal {
+    public Bytecode Bytecode { get; }
+    public bool IsAnonymous { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public IEnumerable`1<Traverser> Traversers { get; public set; }
+    public abstract virtual Bytecode get_Bytecode();
+    public abstract virtual bool get_IsAnonymous();
+    public abstract virtual IEnumerable`1<Traverser> get_Traversers();
+    public abstract virtual void set_Traversers(IEnumerable`1<Traverser> value);
+    public abstract virtual ITraversal Iterate();
+}
+public interface Gremlin.Net.Process.Traversal.ITraversal`2 {
+    [NullableContextAttribute("2")]
+public abstract virtual TEnd Next();
+    public abstract virtual bool HasNext();
+    public abstract virtual IEnumerable`1<TEnd> Next(int amount);
+    [NullableContextAttribute("1")]
+public abstract virtual ITraversal`2<TStart, TEnd> Iterate();
+    [NullableContextAttribute("1")]
+public abstract virtual Traverser NextTraverser();
+    public abstract virtual IList`1<TEnd> ToList();
+    public abstract virtual ISet`1<TEnd> ToSet();
+    [NullableContextAttribute("1")]
+public abstract virtual Task`1<TReturn> Promise(Func`2<ITraversal`2<TStart, TEnd>, TReturn> callback, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Process.Traversal.ITraversalStrategy {
+    [NullableContextAttribute("2")]
+public abstract virtual void Apply(ITraversal`2<TStart, TEnd> traversal);
+    public abstract virtual Task ApplyAsync(ITraversal`2<TStart, TEnd> traversal, CancellationToken cancellationToken);
+}
+public interface Gremlin.Net.Process.Traversal.IUnaryOperator {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Process.Traversal.Lambda : object {
+    public static ILambda Groovy(string expression);
+    public static ILambda Groovy(string expression, int arguments);
+    public static ILambda Python(string expression);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Merge : EnumWrapper {
+    private static IDictionary`2<string, Merge> Properties;
+    public static Merge OnCreate { get; }
+    public static Merge OnMatch { get; }
+    public static Merge OutV { get; }
+    public static Merge InV { get; }
+    private Merge(string enumValue);
+    private static Merge();
+    public static Merge get_OnCreate();
+    public static Merge get_OnMatch();
+    public static Merge get_OutV();
+    public static Merge get_InV();
+    public static Merge GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Operator : EnumWrapper {
+    private static IDictionary`2<string, Operator> Properties;
+    public static Operator AddAll { get; }
+    public static Operator And { get; }
+    public static Operator Assign { get; }
+    public static Operator Div { get; }
+    public static Operator Max { get; }
+    public static Operator Min { get; }
+    public static Operator Minus { get; }
+    public static Operator Mult { get; }
+    public static Operator Or { get; }
+    public static Operator Sum { get; }
+    public static Operator SumLong { get; }
+    private Operator(string enumValue);
+    private static Operator();
+    public static Operator get_AddAll();
+    public static Operator get_And();
+    public static Operator get_Assign();
+    public static Operator get_Div();
+    public static Operator get_Max();
+    public static Operator get_Min();
+    public static Operator get_Minus();
+    public static Operator get_Mult();
+    public static Operator get_Or();
+    public static Operator get_Sum();
+    public static Operator get_SumLong();
+    public static Operator GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Order : EnumWrapper {
+    private static IDictionary`2<string, Order> Properties;
+    public static Order Asc { get; }
+    public static Order Desc { get; }
+    public static Order Shuffle { get; }
+    private Order(string enumValue);
+    private static Order();
+    public static Order get_Asc();
+    public static Order get_Desc();
+    public static Order get_Shuffle();
+    public static Order GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.P : object {
+    [CompilerGeneratedAttribute]
+private string <OperatorName>k__BackingField;
+    [DynamicAttribute]
+[NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private object <Value>k__BackingField;
+    [NullableAttribute("2")]
+[CompilerGeneratedAttribute]
+private P <Other>k__BackingField;
+    public string OperatorName { get; }
+    [DynamicAttribute]
+[NullableAttribute("2")]
+public object Value { get; }
+    [NullableAttribute("2")]
+public P Other { get; }
+    [NullableContextAttribute("2")]
+public P(string operatorName, object value, P other);
+    [CompilerGeneratedAttribute]
+public string get_OperatorName();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public object get_Value();
+    [NullableContextAttribute("2")]
+[CompilerGeneratedAttribute]
+public P get_Other();
+    public P And(P otherPredicate);
+    public P Or(P otherPredicate);
+    public static P Between(Object[] args);
+    public static P Eq(Object[] args);
+    public static P Gt(Object[] args);
+    public static P Gte(Object[] args);
+    public static P Inside(Object[] args);
+    public static P Lt(Object[] args);
+    public static P Lte(Object[] args);
+    public static P Neq(Object[] args);
+    public static P Not(Object[] args);
+    public static P Outside(Object[] args);
+    public static P Test(Object[] args);
+    public static P Within(Object[] args);
+    public static P Without(Object[] args);
+    private static List`1<object> ToGenericList(IEnumerable collection);
+    public virtual string ToString();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.PageRank : object {
+    public static string edges;
+    public static string propertyName;
+    public static string times;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.PeerPressure : object {
+    public static string edges;
+    public static string propertyName;
+    public static string times;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Pick : EnumWrapper {
+    private static IDictionary`2<string, Pick> Properties;
+    public static Pick Any { get; }
+    public static Pick None { get; }
+    private Pick(string enumValue);
+    private static Pick();
+    public static Pick get_Any();
+    public static Pick get_None();
+    public static Pick GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Pop : EnumWrapper {
+    private static IDictionary`2<string, Pop> Properties;
+    public static Pop All { get; }
+    public static Pop First { get; }
+    public static Pop Last { get; }
+    public static Pop Mixed { get; }
+    private Pop(string enumValue);
+    private static Pop();
+    public static Pop get_All();
+    public static Pop get_First();
+    public static Pop get_Last();
+    public static Pop get_Mixed();
+    public static Pop GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Scope : EnumWrapper {
+    private static IDictionary`2<string, Scope> Properties;
+    public static Scope Global { get; }
+    public static Scope Local { get; }
+    private Scope(string enumValue);
+    private static Scope();
+    public static Scope get_Global();
+    public static Scope get_Local();
+    public static Scope GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.ShortestPath : object {
+    public static string distance;
+    public static string edges;
+    public static string includeEdges;
+    public static string maxDistance;
+    public static string target;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Step.Util.WithOptions : object {
+    public static string Tokens;
+    public static int None;
+    public static int Ids;
+    public static int Labels;
+    public static int Keys;
+    public static int Values;
+    public static int All;
+    public static string Indexer;
+    public static int List;
+    public static int Map;
+    private static WithOptions();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Process.Traversal.Strategy.AbstractTraversalStrategy : object {
+    private static string BaseNamespace;
+    protected static string DecorationNamespace;
+    protected static string FinalizationNamespace;
+    protected static string OptimizationNamespace;
+    protected static string VerificationNamespace;
+    protected static string ComputerDecorationNamespace;
+    [CompilerGeneratedAttribute]
+private string <Fqcn>k__BackingField;
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Dictionary`2<string, object> <Configuration>k__BackingField;
+    public string StrategyName { get; }
+    public string Fqcn { get; }
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Dictionary`2<string, object> Configuration { get; }
+    protected AbstractTraversalStrategy(string fqcn);
+    public string get_StrategyName();
+    [CompilerGeneratedAttribute]
+public string get_Fqcn();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, object> get_Configuration();
+    [NullableContextAttribute("2")]
+public sealed virtual bool Equals(AbstractTraversalStrategy other);
+    [NullableContextAttribute("2")]
+public virtual void Apply(ITraversal`2<TStart, TEnd> traversal);
+    public virtual Task ApplyAsync(ITraversal`2<TStart, TEnd> traversal, CancellationToken cancellationToken);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public virtual string ToString();
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.ConnectiveStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.ElementIdStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.HaltedTraverserStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    [NullableContextAttribute("2")]
+public HaltedTraverserStrategy(string haltedTraverserFactoryName);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.OptionsStrategy : AbstractTraversalStrategy {
+    private static string JavaFqcn;
+    public OptionsStrategy(IDictionary`2<string, object> options);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.PartitionStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    [NullableContextAttribute("2")]
+public PartitionStrategy(string partitionKey, string writePartition, IEnumerable`1<string> readPartitions, Nullable`1<bool> includeMetaProperties);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.SeedStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    public SeedStrategy(long seed);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.SubgraphStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    [NullableContextAttribute("2")]
+public SubgraphStrategy(ITraversal vertices, ITraversal edges, ITraversal vertexProperties, Nullable`1<bool> checkAdjacentVertices);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Decoration.VertexProgramStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    [NullableContextAttribute("2")]
+public VertexProgramStrategy(string graphComputer, Nullable`1<int> workers, string persist, string result, ITraversal vertices, ITraversal edges, Dictionary`2<string, object> configuration);
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__2_0(KeyValuePair`2<string, object> x);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Strategy.Finalization.MatchAlgorithmStrategy : AbstractTraversalStrategy {
+    private static string JavaFqcn;
+    public MatchAlgorithmStrategy(string matchAlgorithm);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.AdjacentToIncidentStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.CountStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.EarlyLimitStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.FilterRankingStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.GraphFilterStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.IdentityRemovalStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.IncidentToAdjacentStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.InlineFilterStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.LazyBarrierStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.MatchPredicateStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.OrderLimitStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.PathProcessorStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.PathRetractionStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.ProductiveByStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    public ProductiveByStrategy(IEnumerable`1<object> productiveKeys);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Optimization.RepeatUnrollStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Verification.EdgeLabelVerificationStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    public EdgeLabelVerificationStrategy(bool logWarning, bool throwException);
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Verification.LambdaRestrictionStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Verification.ReadOnlyStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+}
+public class Gremlin.Net.Process.Traversal.Strategy.Verification.ReservedKeysVerificationStrategy : AbstractTraversalStrategy {
+    [NullableAttribute("1")]
+private static string JavaFqcn;
+    public ReservedKeysVerificationStrategy(bool logWarning, bool throwException, List`1<string> keys);
+}
+internal class Gremlin.Net.Process.Traversal.StringBasedLambda : object {
+    private static int DefaultArgument;
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private string <LambdaExpression>k__BackingField;
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private string <Language>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Arguments>k__BackingField;
+    [NullableAttribute("1")]
+public string LambdaExpression { get; }
+    [NullableAttribute("1")]
+public string Language { get; }
+    public int Arguments { get; protected set; }
+    [NullableContextAttribute("1")]
+public StringBasedLambda(string expression, string language);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_LambdaExpression();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public sealed virtual string get_Language();
+    [CompilerGeneratedAttribute]
+public sealed virtual int get_Arguments();
+    [CompilerGeneratedAttribute]
+protected void set_Arguments(int value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.T : EnumWrapper {
+    private static IDictionary`2<string, T> Properties;
+    public static T Id { get; }
+    public static T Key { get; }
+    public static T Label { get; }
+    public static T Value { get; }
+    private T(string enumValue);
+    private static T();
+    public static T get_Id();
+    public static T get_Key();
+    public static T get_Label();
+    public static T get_Value();
+    public static T GetByValue(string value);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.TextP : P {
+    public TextP(string operatorName, string value, P other);
+    public static TextP Containing(string value);
+    public static TextP EndingWith(string value);
+    public static TextP NotContaining(string value);
+    public static TextP NotEndingWith(string value);
+    public static TextP NotStartingWith(string value);
+    public static TextP StartingWith(string value);
+    public static TextP Regex(string value);
+    public static TextP NotRegex(string value);
+    public virtual string ToString();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Translator.GroovyTranslator : object {
+    [CompilerGeneratedAttribute]
+private string <TraversalSource>k__BackingField;
+    private static Dictionary`2<object, string> PropertyMapOptionsTranslation;
+    private static Dictionary`2<object, string> IndexOptionsTranslation;
+    public string TargetLanguage { get; }
+    public string TraversalSource { get; }
+    private GroovyTranslator(string traversalSource);
+    private static GroovyTranslator();
+    public static GroovyTranslator Of(string traversalSource);
+    public string get_TargetLanguage();
+    [CompilerGeneratedAttribute]
+public string get_TraversalSource();
+    public string Translate(ITraversal traversal, bool isChildTraversal);
+    public string Translate(Bytecode bytecode, bool isChildTraversal);
+    private string TranslateStep(Instruction step);
+    private string TranslateWithArguments(Object[] arguments);
+    private string TranslateArguments(IEnumerable`1<object> arguments);
+    private string TranslateArgument(object argument);
+    private static string TranslateDateTimeOffset(DateTimeOffset dto);
+    private string TranslateP(P p);
+    private string TranslateDictionary(IDictionary dict);
+    private string TranslateCollection(IEnumerable enumerable);
+    private string TranslateTraversal(ITraversal traversal);
+    private string TranslateStrategy(AbstractTraversalStrategy strategy);
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Process.Traversal.Traverser : object {
+    [DynamicAttribute]
+[CompilerGeneratedAttribute]
+private object <Object>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Bulk>k__BackingField;
+    [DynamicAttribute]
+public object Object { get; }
+    public long Bulk { get; internal set; }
+    public Traverser(object obj, long bulk);
+    [CompilerGeneratedAttribute]
+public object get_Object();
+    [CompilerGeneratedAttribute]
+public long get_Bulk();
+    [CompilerGeneratedAttribute]
+internal void set_Bulk(long value);
+    public bool Equals(Traverser other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+internal static class Gremlin.Net.Process.Utils : object {
+    [NullableAttribute("2")]
+private static string _userAgent;
+    public static string UserAgent { get; }
+    public static string get_UserAgent();
+    [ExtensionAttribute]
+public static void WaitUnwrap(Task task);
+    [ExtensionAttribute]
+public static void Forget(Task task);
+    private static string GenerateUserAgent();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.Edge : Element {
+    [CompilerGeneratedAttribute]
+private Vertex <InV>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Vertex <OutV>k__BackingField;
+    public Vertex InV { get; }
+    public Vertex OutV { get; }
+    public Edge(object id, Vertex outV, string label, Vertex inV, Object[] properties);
+    [CompilerGeneratedAttribute]
+public Vertex get_InV();
+    [CompilerGeneratedAttribute]
+public Vertex get_OutV();
+    public Property Property(string key);
+    public virtual string ToString();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.Element : object {
+    [CompilerGeneratedAttribute]
+private object <Id>k__BackingField;
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private string <Label>k__BackingField;
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private Object[] <Properties>k__BackingField;
+    public object Id { get; }
+    [NullableAttribute("1")]
+public string Label { get; }
+    [DynamicAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public Object[] Properties { get; }
+    [NullableContextAttribute("1")]
+protected Element(object id, string label, Object[] properties);
+    [CompilerGeneratedAttribute]
+public object get_Id();
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_Label();
+    [CompilerGeneratedAttribute]
+public Object[] get_Properties();
+    public sealed virtual bool Equals(Element other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Gremlin.Net.Structure.Graph : object {
+    [NullableContextAttribute("1")]
+[ObsoleteAttribute("As of release 3.3.5, replaced by AnonymousTraversalSource.Traversal() called statically.", "False")]
+public GraphTraversalSource Traversal();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.DataType : object {
+    public static DataType Int;
+    public static DataType Long;
+    public static DataType String;
+    public static DataType Date;
+    public static DataType Timestamp;
+    public static DataType Class;
+    public static DataType Double;
+    public static DataType Float;
+    public static DataType List;
+    public static DataType Map;
+    public static DataType Set;
+    public static DataType Uuid;
+    public static DataType Edge;
+    public static DataType Path;
+    public static DataType Property;
+    public static DataType Vertex;
+    public static DataType VertexProperty;
+    public static DataType Barrier;
+    public static DataType Binding;
+    public static DataType Bytecode;
+    public static DataType Cardinality;
+    public static DataType Column;
+    public static DataType Direction;
+    public static DataType DT;
+    public static DataType Merge;
+    public static DataType Operator;
+    public static DataType Order;
+    public static DataType Pick;
+    public static DataType Pop;
+    public static DataType Lambda;
+    public static DataType P;
+    public static DataType Scope;
+    public static DataType T;
+    public static DataType Traverser;
+    public static DataType BigDecimal;
+    public static DataType BigInteger;
+    public static DataType Byte;
+    public static DataType ByteBuffer;
+    public static DataType Short;
+    public static DataType Boolean;
+    public static DataType TextP;
+    public static DataType TraversalStrategy;
+    public static DataType BulkSet;
+    public static DataType Char;
+    public static DataType Duration;
+    public static DataType Custom;
+    public static DataType UnspecifiedNull;
+    [CompilerGeneratedAttribute]
+private byte <TypeCode>k__BackingField;
+    public byte TypeCode { get; }
+    private DataType(int code);
+    private static DataType();
+    [CompilerGeneratedAttribute]
+public byte get_TypeCode();
+    public static DataType FromTypeCode(int code);
+    [NullableContextAttribute("2")]
+public sealed virtual bool Equals(DataType other);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public static bool op_Equality(DataType first, DataType second);
+    public static bool op_Inequality(DataType first, DataType second);
+    public virtual string ToString();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryMessageSerializer : object {
+    private static string MimeType;
+    private static Byte[] Header;
+    private GraphBinaryReader _reader;
+    private GraphBinaryWriter _writer;
+    private RequestMessageSerializer _requestSerializer;
+    private ResponseMessageSerializer _responseSerializer;
+    [NullableContextAttribute("2")]
+public GraphBinaryMessageSerializer(TypeSerializerRegistry registry);
+    [ObsoleteAttribute("Use the constructor that takes a TypeSerializerRegistry instead.")]
+public GraphBinaryMessageSerializer(GraphBinaryReader reader, GraphBinaryWriter writer);
+    private static GraphBinaryMessageSerializer();
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryMessageSerializer/<SerializeMessageAsync>d__8")]
+public sealed virtual Task`1<Byte[]> SerializeMessageAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryMessageSerializer/<DeserializeMessageAsync>d__9")]
+public sealed virtual Task`1<ResponseMessage`1<List`1<object>>> DeserializeMessageAsync(Byte[] message, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryReader : object {
+    private TypeSerializerRegistry _registry;
+    [NullableContextAttribute("2")]
+public GraphBinaryReader(TypeSerializerRegistry registry);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryReader/<ReadNullableValueAsync>d__2`1")]
+public Task`1<object> ReadNullableValueAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryReader/<ReadNonNullableValueAsync>d__3`1")]
+public Task`1<object> ReadNonNullableValueAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryReader/<ReadAsync>d__4")]
+public Task`1<object> ReadAsync(Stream stream, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter : object {
+    private static byte ValueFlagNull;
+    private static byte ValueFlagNone;
+    public static byte VersionByte;
+    private static Byte[] UnspecifiedNullBytes;
+    private static Byte[] CustomTypeCodeBytes;
+    private TypeSerializerRegistry _registry;
+    [NullableContextAttribute("2")]
+public GraphBinaryWriter(TypeSerializerRegistry registry);
+    private static GraphBinaryWriter();
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter/<WriteNullableValueAsync>d__7")]
+public Task WriteNullableValueAsync(object value, Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter/<WriteNonNullableValueAsync>d__8")]
+public Task WriteNonNullableValueAsync(object value, Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter/<WriteAsync>d__9")]
+public Task WriteAsync(object value, Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter/<WriteValueFlagNullAsync>d__10")]
+public Task WriteValueFlagNullAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.GraphBinaryWriter/<WriteValueFlagNoneAsync>d__11")]
+public Task WriteValueFlagNoneAsync(Stream stream, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Structure.IO.GraphBinary.ITypeSerializer {
+    public DataType DataType { get; }
+    public abstract virtual DataType get_DataType();
+    public abstract virtual Task WriteAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task WriteNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task WriteNonNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadNonNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+public class Gremlin.Net.Structure.IO.GraphBinary.RequestMessageSerializer : object {
+    [NullableContextAttribute("1")]
+[AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.RequestMessageSerializer/<WriteValueAsync>d__0")]
+public Task WriteValueAsync(RequestMessage requestMessage, MemoryStream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+}
+public class Gremlin.Net.Structure.IO.GraphBinary.ResponseMessageSerializer : object {
+    [NullableContextAttribute("1")]
+[AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.ResponseMessageSerializer/<ReadValueAsync>d__0")]
+public Task`1<ResponseMessage`1<List`1<object>>> ReadValueAsync(MemoryStream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions : object {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteByteAsync>d__0")]
+[ExtensionAttribute]
+public static Task WriteByteAsync(Stream stream, byte value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadByteAsync>d__1")]
+[ExtensionAttribute]
+public static Task`1<byte> ReadByteAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteIntAsync>d__2")]
+[ExtensionAttribute]
+public static Task WriteIntAsync(Stream stream, int value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadIntAsync>d__3")]
+[ExtensionAttribute]
+public static Task`1<int> ReadIntAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteLongAsync>d__4")]
+[ExtensionAttribute]
+public static Task WriteLongAsync(Stream stream, long value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadLongAsync>d__5")]
+[ExtensionAttribute]
+public static Task`1<long> ReadLongAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteFloatAsync>d__6")]
+[ExtensionAttribute]
+public static Task WriteFloatAsync(Stream stream, float value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadFloatAsync>d__7")]
+[ExtensionAttribute]
+public static Task`1<float> ReadFloatAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteDoubleAsync>d__8")]
+[ExtensionAttribute]
+public static Task WriteDoubleAsync(Stream stream, double value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadDoubleAsync>d__9")]
+[ExtensionAttribute]
+public static Task`1<double> ReadDoubleAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteShortAsync>d__10")]
+[ExtensionAttribute]
+public static Task WriteShortAsync(Stream stream, short value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadShortAsync>d__11")]
+[ExtensionAttribute]
+public static Task`1<short> ReadShortAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteBoolAsync>d__12")]
+[ExtensionAttribute]
+public static Task WriteBoolAsync(Stream stream, bool value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadBoolAsync>d__13")]
+[ExtensionAttribute]
+public static Task`1<bool> ReadBoolAsync(Stream stream, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<WriteAsync>d__14")]
+[ExtensionAttribute]
+public static Task WriteAsync(Stream stream, Byte[] value, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.StreamExtensions/<ReadAsync>d__15")]
+[ExtensionAttribute]
+public static Task`1<Byte[]> ReadAsync(Stream stream, int count, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.ArraySerializer`1 : SimpleTypeSerializer`1<TMember[]> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ArraySerializer`1/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(TMember[] value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected virtual Task`1<TMember[]> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.BigDecimalSerializer : SimpleTypeSerializer`1<decimal> {
+    [NullableContextAttribute("1")]
+[AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BigDecimalSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(decimal value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    private static ValueTuple`2<BigInteger, int> GetUnscaledValueAndScale(decimal input);
+    [NullableContextAttribute("1")]
+[AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BigDecimalSerializer/<ReadValueAsync>d__3")]
+protected virtual Task`1<decimal> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    private static decimal ConvertScaleAndUnscaledValue(int scale, BigInteger unscaledValue);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.BigIntegerSerializer : SimpleTypeSerializer`1<BigInteger> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BigIntegerSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(BigInteger value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BigIntegerSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<BigInteger> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.BindingSerializer : SimpleTypeSerializer`1<Binding> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BindingSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Binding value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BindingSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Binding> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.BulkSetSerializer`1 : SimpleTypeSerializer`1<TList> {
+    protected virtual Task WriteValueAsync(TList value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BulkSetSerializer`1/<ReadValueAsync>d__2")]
+protected virtual Task`1<TList> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.ByteBufferSerializer : SimpleTypeSerializer`1<Byte[]> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ByteBufferSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Byte[] value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ByteBufferSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Byte[]> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer : SimpleTypeSerializer`1<Bytecode> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Bytecode value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer/<WriteInstructionsAsync>d__2")]
+private static Task WriteInstructionsAsync(IReadOnlyCollection`1<Instruction> instructions, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer/<WriteArgumentsAsync>d__3")]
+private static Task WriteArgumentsAsync(Object[] arguments, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer/<ReadValueAsync>d__4")]
+protected virtual Task`1<Bytecode> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.BytecodeSerializer/<ReadArgumentsAsync>d__5")]
+private static Task`1<Object[]> ReadArgumentsAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.CharSerializer : SimpleTypeSerializer`1<char> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.CharSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(char value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.CharSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<char> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.ClassSerializer : SimpleTypeSerializer`1<GremlinType> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ClassSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(GremlinType value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected virtual Task`1<GremlinType> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.IO.GraphBinary.Types.CustomTypeSerializer : object {
+    public string TypeName { get; }
+    public DataType DataType { get; }
+    public abstract virtual string get_TypeName();
+    public sealed virtual DataType get_DataType();
+    public abstract virtual Task WriteAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task WriteNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task WriteNonNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    public abstract virtual Task`1<object> ReadNonNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.DateTimeOffsetSerializer : SimpleTypeSerializer`1<DateTimeOffset> {
+    public static DateTimeOffsetSerializer DateSerializer;
+    public static DateTimeOffsetSerializer TimestampSerializer;
+    private DateTimeOffsetSerializer(DataType dataType);
+    private static DateTimeOffsetSerializer();
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.DateTimeOffsetSerializer/<WriteValueAsync>d__3")]
+protected virtual Task WriteValueAsync(DateTimeOffset value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.DateTimeOffsetSerializer/<ReadValueAsync>d__4")]
+protected virtual Task`1<DateTimeOffset> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.DurationSerializer : SimpleTypeSerializer`1<TimeSpan> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.DurationSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(TimeSpan value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.DurationSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<TimeSpan> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.EdgeSerializer : SimpleTypeSerializer`1<Edge> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.EdgeSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Edge value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.EdgeSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Edge> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.EnumSerializer`1 : SimpleTypeSerializer`1<TEnum> {
+    private Func`2<string, TEnum> _readFunc;
+    internal EnumSerializer`1(DataType dataType, Func`2<string, TEnum> readFunc);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.EnumSerializer`1/<WriteValueAsync>d__2")]
+protected virtual Task WriteValueAsync(TEnum value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.EnumSerializer`1/<ReadValueAsync>d__3")]
+protected virtual Task`1<TEnum> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Structure.IO.GraphBinary.Types.EnumSerializers : object {
+    public static EnumSerializer`1<Barrier> BarrierSerializer;
+    public static EnumSerializer`1<Cardinality> CardinalitySerializer;
+    public static EnumSerializer`1<Column> ColumnSerializer;
+    public static EnumSerializer`1<Direction> DirectionSerializer;
+    public static EnumSerializer`1<DT> DTSerializer;
+    public static EnumSerializer`1<Merge> MergeSerializer;
+    public static EnumSerializer`1<Operator> OperatorSerializer;
+    public static EnumSerializer`1<Order> OrderSerializer;
+    public static EnumSerializer`1<Pick> PickSerializer;
+    public static EnumSerializer`1<Pop> PopSerializer;
+    public static EnumSerializer`1<Scope> ScopeSerializer;
+    public static EnumSerializer`1<T> TSerializer;
+    private static EnumSerializers();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.GremlinType : object {
+    [CompilerGeneratedAttribute]
+private string <Fqcn>k__BackingField;
+    public string Fqcn { get; }
+    private GremlinType(string fqcn);
+    [CompilerGeneratedAttribute]
+public string get_Fqcn();
+    public static GremlinType FromFqcn(string fqcn);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.LambdaSerializer : SimpleTypeSerializer`1<ILambda> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.LambdaSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(ILambda value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.LambdaSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<ILambda> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.ListSerializer`1 : SimpleTypeSerializer`1<IList`1<TMember>> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ListSerializer`1/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(IList`1<TMember> value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.ListSerializer`1/<ReadValueAsync>d__2")]
+protected virtual Task`1<IList`1<TMember>> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.MapSerializer`2 : SimpleTypeSerializer`1<IDictionary`2<TKey, TValue>> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.MapSerializer`2/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(IDictionary`2<TKey, TValue> value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.MapSerializer`2/<ReadValueAsync>d__2")]
+protected virtual Task`1<IDictionary`2<TKey, TValue>> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.PathSerializer : SimpleTypeSerializer`1<Path> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PathSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Path value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PathSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Path> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.PropertySerializer : SimpleTypeSerializer`1<Property> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PropertySerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Property value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PropertySerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Property> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.PSerializer : SimpleTypeSerializer`1<P> {
+    public PSerializer(DataType typeOfP);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(P value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.PSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<P> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    private static P SafelyCastToP(object pObject);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.SetSerializer`2 : SimpleTypeSerializer`1<TSet> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SetSerializer`2/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(TSet value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SetSerializer`2/<ReadValueAsync>d__2")]
+protected virtual Task`1<TSet> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1 : object {
+    [CompilerGeneratedAttribute]
+private DataType <DataType>k__BackingField;
+    public DataType DataType { get; }
+    protected SimpleTypeSerializer`1(DataType dataType);
+    [CompilerGeneratedAttribute]
+public sealed virtual DataType get_DataType();
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<WriteAsync>d__4")]
+public sealed virtual Task WriteAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<WriteNullableValueAsync>d__5")]
+public sealed virtual Task WriteNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<WriteNonNullableValueAsync>d__6")]
+public sealed virtual Task WriteNonNullableValueAsync(object value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected abstract virtual Task WriteValueAsync(T value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<ReadAsync>d__8")]
+public sealed virtual Task`1<object> ReadAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<ReadNullableValueAsync>d__9")]
+public sealed virtual Task`1<object> ReadNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SimpleTypeSerializer`1/<ReadNonNullableValueAsync>d__10")]
+public sealed virtual Task`1<object> ReadNonNullableValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+    protected abstract virtual Task`1<T> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.SingleTypeSerializer`1 : SimpleTypeSerializer`1<T> {
+    private Func`4<T, Stream, CancellationToken, Task> _writeFunc;
+    private Func`3<Stream, CancellationToken, Task`1<T>> _readFunc;
+    internal SingleTypeSerializer`1(DataType dataType, Func`4<T, Stream, CancellationToken, Task> writeFunc, Func`3<Stream, CancellationToken, Task`1<T>> readFunc);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SingleTypeSerializer`1/<WriteValueAsync>d__3")]
+protected virtual Task WriteValueAsync(T value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.SingleTypeSerializer`1/<ReadValueAsync>d__4")]
+protected virtual Task`1<T> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Structure.IO.GraphBinary.Types.SingleTypeSerializers : object {
+    public static SingleTypeSerializer`1<int> IntSerializer;
+    public static SingleTypeSerializer`1<long> LongSerializer;
+    public static SingleTypeSerializer`1<double> DoubleSerializer;
+    public static SingleTypeSerializer`1<float> FloatSerializer;
+    public static SingleTypeSerializer`1<short> ShortSerializer;
+    public static SingleTypeSerializer`1<bool> BooleanSerializer;
+    public static SingleTypeSerializer`1<byte> ByteSerializer;
+    private static SingleTypeSerializers();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.StringSerializer : SimpleTypeSerializer`1<string> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.StringSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(string value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.StringSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<string> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.TraversalSerializer : SimpleTypeSerializer`1<ITraversal> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.TraversalSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(ITraversal value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected virtual Task`1<ITraversal> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.TraversalStrategySerializer : SimpleTypeSerializer`1<AbstractTraversalStrategy> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.TraversalStrategySerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(AbstractTraversalStrategy value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected virtual Task`1<AbstractTraversalStrategy> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.TraverserSerializer : SimpleTypeSerializer`1<Traverser> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.TraverserSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Traverser value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.TraverserSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Traverser> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.TypeSerializer : SimpleTypeSerializer`1<Type> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.TypeSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Type value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    protected virtual Task`1<Type> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.UuidSerializer : SimpleTypeSerializer`1<Guid> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.UuidSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Guid value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.UuidSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Guid> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.VertexPropertySerializer : SimpleTypeSerializer`1<VertexProperty> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.VertexPropertySerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(VertexProperty value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.VertexPropertySerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<VertexProperty> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public class Gremlin.Net.Structure.IO.GraphBinary.Types.VertexSerializer : SimpleTypeSerializer`1<Vertex> {
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.VertexSerializer/<WriteValueAsync>d__1")]
+protected virtual Task WriteValueAsync(Vertex value, Stream stream, GraphBinaryWriter writer, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("Gremlin.Net.Structure.IO.GraphBinary.Types.VertexSerializer/<ReadValueAsync>d__2")]
+protected virtual Task`1<Vertex> ReadValueAsync(Stream stream, GraphBinaryReader reader, CancellationToken cancellationToken);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphBinary.TypeSerializerRegistry : object {
+    private Dictionary`2<Type, ITypeSerializer> _serializerByType;
+    private Dictionary`2<DataType, ITypeSerializer> _serializerByDataType;
+    private Dictionary`2<string, CustomTypeSerializer> _serializerByCustomTypeName;
+    public static TypeSerializerRegistry Instance;
+    private TypeSerializerRegistry(List`1<CustomTypeRegistryEntry> customTypeEntries);
+    private static TypeSerializerRegistry();
+    public static Builder Build();
+    public ITypeSerializer GetSerializerFor(Type valueType);
+    [NullableContextAttribute("2")]
+private static bool IsDictionaryType(Type type, Type& keyType, Type& valueType);
+    private static bool IsSetType(Type type);
+    private static bool IsListType(Type type);
+    public ITypeSerializer GetSerializerFor(DataType type);
+    public CustomTypeSerializer GetSerializerForCustomType(string typeName);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.BigIntegerDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphson, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.BigIntegerSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.BindingSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.BulkSetSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.ByteBufferDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.ByteBufferSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.BytecodeSerializer : object {
+    public sealed virtual Dictionary`2<string, object> Dictify(object bytecodeObj, GraphSONWriter writer);
+    private IEnumerable`1<IEnumerable`1<object>> DictifyInstructions(IEnumerable`1<Instruction> instructions, GraphSONWriter writer);
+    private IEnumerable`1<object> DictifyInstruction(Instruction instruction, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.ByteConverter : NumberConverter`1<byte> {
+    protected string GraphSONTypeName { get; }
+    protected string Prefix { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual string get_Prefix();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.CharConverter : NumberConverter`1<char> {
+    protected string GraphSONTypeName { get; }
+    protected string Prefix { get; }
+    protected bool StringifyValue { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual string get_Prefix();
+    protected virtual bool get_StringifyValue();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.ClassSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DateDeserializer : object {
+    private static DateTimeOffset UnixStart;
+    private static DateDeserializer();
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DateSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.DecimalConverter : NumberConverter`1<decimal> {
+    protected string GraphSONTypeName { get; }
+    protected string Prefix { get; }
+    protected bool StringifyValue { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual string get_Prefix();
+    protected virtual bool get_StringifyValue();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DirectionDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.DoubleConverter : NumberConverter`1<double> {
+    private static string NaN;
+    private static string PositiveInfinity;
+    private static string NegativeInfinity;
+    protected string GraphSONTypeName { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual object FromJsonElement(JsonElement graphson);
+    protected virtual object ConvertInvalidNumber(double number);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DTDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DurationDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.DurationSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.EdgeDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.EdgeSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.EnumSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.FloatConverter : NumberConverter`1<float> {
+    protected string GraphSONTypeName { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON2MessageSerializer : GraphSONMessageSerializer {
+    [NullableAttribute("1")]
+private static string MimeType;
+    [NullableContextAttribute("2")]
+public GraphSON2MessageSerializer(GraphSON2Reader graphSONReader, GraphSON2Writer graphSONWriter);
+}
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON2Reader : GraphSONReader {
+    [NullableContextAttribute("1")]
+public GraphSON2Reader(IReadOnlyDictionary`2<string, IGraphSONDeserializer> deserializerByGraphSONType);
+}
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON2Writer : GraphSONWriter {
+    [NullableContextAttribute("1")]
+public GraphSON2Writer(IReadOnlyDictionary`2<Type, IGraphSONSerializer> customSerializerByType);
+}
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON3MessageSerializer : GraphSONMessageSerializer {
+    [NullableAttribute("1")]
+private static string MimeType;
+    [NullableContextAttribute("2")]
+public GraphSON3MessageSerializer(GraphSON3Reader graphSONReader, GraphSON3Writer graphSONWriter);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON3Reader : GraphSONReader {
+    private static IDictionary`2<string, IGraphSONDeserializer> GraphSON3SpecificDeserializers;
+    public GraphSON3Reader(IReadOnlyDictionary`2<string, IGraphSONDeserializer> deserializerByGraphSONType);
+    private static GraphSON3Reader();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.GraphSON.GraphSON3Writer : GraphSONWriter {
+    private static IDictionary`2<Type, IGraphSONSerializer> GraphSON3SpecificSerializers;
+    public GraphSON3Writer(IReadOnlyDictionary`2<Type, IGraphSONSerializer> customSerializerByType);
+    private static GraphSON3Writer();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.IO.GraphSON.GraphSONMessageSerializer : object {
+    private static JsonSerializerOptions JsonDeserializingOptions;
+    private string _mimeType;
+    private GraphSONReader _graphSONReader;
+    private GraphSONWriter _graphSONWriter;
+    protected GraphSONMessageSerializer(string mimeType, GraphSONReader graphSONReader, GraphSONWriter graphSonWriter);
+    private static GraphSONMessageSerializer();
+    public virtual Task`1<Byte[]> SerializeMessageAsync(RequestMessage requestMessage, CancellationToken cancellationToken);
+    private string MessageWithHeader(string messageContent);
+    public virtual Task`1<ResponseMessage`1<List`1<object>>> DeserializeMessageAsync(Byte[] message, CancellationToken cancellationToken);
+    private static ResponseMessage`1<List`1<object>> CopyMessageWithNewData(ResponseMessage`1<JsonElement> origMsg, object data);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.IO.GraphSON.GraphSONReader : object {
+    protected Dictionary`2<string, IGraphSONDeserializer> Deserializers;
+    protected GraphSONReader(IReadOnlyDictionary`2<string, IGraphSONDeserializer> deserializerByGraphSONType);
+    public virtual object ToObject(IEnumerable`1<JsonElement> graphSonData);
+    [NullableContextAttribute("2")]
+public virtual object ToObject(JsonElement graphSon);
+    private object ReadValueOfType(JsonElement typedValue, string graphSONType);
+    private object ReadDictionary(JsonElement jsonDict);
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private object <ToObject>b__3_0(JsonElement graphson);
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private object <ToObject>b__4_0(JsonElement t);
+    [NullableContextAttribute("0")]
+[CompilerGeneratedAttribute]
+private object <ReadDictionary>b__6_1(JsonProperty property);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.GraphSONTokens : object {
+    public static string TypeKey;
+    public static string ValueKey;
+    public static string GremlinTypeNamespace;
+    private static GraphSONTokens();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public static class Gremlin.Net.Structure.IO.GraphSON.GraphSONUtil : object {
+    public static Dictionary`2<string, object> ToTypedValue(string typename, object value, string prefix);
+    public static string FormatTypeName(string namespacePrefix, string typeName);
+    internal static Dictionary`2<string, object> ToCollection(object objectData, GraphSONWriter writer, string typename);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class Gremlin.Net.Structure.IO.GraphSON.GraphSONWriter : object {
+    private static JsonSerializerOptions JsonOptions;
+    protected Dictionary`2<Type, IGraphSONSerializer> Serializers;
+    protected GraphSONWriter(IReadOnlyDictionary`2<Type, IGraphSONSerializer> customSerializerByType);
+    private static GraphSONWriter();
+    public virtual string WriteObject(object objectData);
+    [NullableContextAttribute("2")]
+public object ToDict(object objectData);
+    private IGraphSONSerializer TryGetSerializerFor(Type type);
+    private bool IsDictionaryType(Type type);
+    private Dictionary`2<string, object> DictToGraphSONDict(object dict);
+    private bool IsCollectionType(Type type);
+    [IteratorStateMachineAttribute("Gremlin.Net.Structure.IO.GraphSON.GraphSONWriter/<CollectionToGraphSONCollection>d__10")]
+private IEnumerable`1<object> CollectionToGraphSONCollection(object collection);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Structure.IO.GraphSON.IGraphSONDeserializer {
+    public abstract virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+[NullableContextAttribute("1")]
+public interface Gremlin.Net.Structure.IO.GraphSON.IGraphSONSerializer {
+    public abstract virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.Int16Converter : NumberConverter`1<short> {
+    protected string GraphSONTypeName { get; }
+    protected string Prefix { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual string get_Prefix();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.Int32Converter : NumberConverter`1<int> {
+    protected string GraphSONTypeName { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class Gremlin.Net.Structure.IO.GraphSON.Int64Converter : NumberConverter`1<long> {
+    protected string GraphSONTypeName { get; }
+    protected virtual string get_GraphSONTypeName();
+    protected virtual object FromJsonElement(JsonElement graphson);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.LambdaSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.ListSerializer : object {
+    [NullableAttribute("1")]
+private static IReadOnlyList`1<object> EmptyList;
+    private static ListSerializer();
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.MapSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.MergeDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal abstract class Gremlin.Net.Structure.IO.GraphSON.NumberConverter`1 : object {
+    protected string GraphSONTypeName { get; }
+    protected string Prefix { get; }
+    protected bool StringifyValue { get; }
+    protected abstract virtual string get_GraphSONTypeName();
+    protected virtual string get_Prefix();
+    protected virtual bool get_StringifyValue();
+    public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+    protected abstract virtual object FromJsonElement(JsonElement graphson);
+    public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+    protected virtual object ConvertInvalidNumber(T number);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.Path3Deserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.PathDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.PropertyDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.PropertySerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+    [NullableContextAttribute("2")]
+private object CreateElementDict(Element element, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.PSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object predicate, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.RequestMessageSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.SetSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.TDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.TextPSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object predicate, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.TraversalSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.TraversalStrategySerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.TraverserReader : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.UuidDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.UuidSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.VertexDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.VertexPropertyDeserializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual object Objectify(JsonElement graphsonObject, GraphSONReader reader);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.VertexPropertySerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+internal class Gremlin.Net.Structure.IO.GraphSON.VertexSerializer : object {
+    [NullableContextAttribute("1")]
+public sealed virtual Dictionary`2<string, object> Dictify(object objectData, GraphSONWriter writer);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.IO.SerializationTokens : object {
+    public static string GraphSON2MimeType;
+    public static string GraphSON3MimeType;
+    public static string GraphBinary1MimeType;
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[DefaultMemberAttribute("Item")]
+public class Gremlin.Net.Structure.Path : object {
+    [CompilerGeneratedAttribute]
+private IList`1<ISet`1<string>> <Labels>k__BackingField;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private IList`1<object> <Objects>k__BackingField;
+    public IList`1<ISet`1<string>> Labels { get; }
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+public IList`1<object> Objects { get; }
+    public object Item { get; }
+    [DynamicAttribute]
+[NullableAttribute("2")]
+public object Item { get; }
+    public int Count { get; }
+    public Path(IList`1<ISet`1<string>> labels, IList`1<object> objects);
+    [CompilerGeneratedAttribute]
+public IList`1<ISet`1<string>> get_Labels();
+    [CompilerGeneratedAttribute]
+public IList`1<object> get_Objects();
+    public object get_Item(string label);
+    [NullableContextAttribute("2")]
+public sealed virtual bool Equals(Path other);
+    [NullableContextAttribute("2")]
+public sealed virtual object get_Item(int index);
+    public sealed virtual int get_Count();
+    public sealed virtual IEnumerator`1<object> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual string ToString();
+    public bool ContainsKey(string key);
+    public bool TryGetValue(string label, Object& value);
+    private bool ObjectsEqual(ICollection`1<object> otherObjects);
+    private bool LabelsEqual(ICollection`1<ISet`1<string>> otherLabels);
+    [NullableContextAttribute("2")]
+public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.Property : object {
+    [NullableAttribute("1")]
+[CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    [DynamicAttribute]
+[CompilerGeneratedAttribute]
+private object <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Element <Element>k__BackingField;
+    [NullableAttribute("1")]
+public string Key { get; }
+    [DynamicAttribute]
+public object Value { get; }
+    public Element Element { get; }
+    public Property(string key, object value, Element element);
+    [NullableContextAttribute("1")]
+[CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public object get_Value();
+    [CompilerGeneratedAttribute]
+public Element get_Element();
+    public sealed virtual bool Equals(Property other);
+    [NullableContextAttribute("1")]
+public virtual string ToString();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.Vertex : Element {
+    public static string DefaultLabel;
+    public Vertex(object id, string label, Object[] properties);
+    public VertexProperty Property(string key);
+    public virtual string ToString();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+public class Gremlin.Net.Structure.VertexProperty : Element {
+    [DynamicAttribute]
+[CompilerGeneratedAttribute]
+private object <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Vertex <Vertex>k__BackingField;
+    [DynamicAttribute]
+public object Value { get; }
+    public Vertex Vertex { get; }
+    [NullableAttribute("1")]
+public string Key { get; }
+    public VertexProperty(object id, string label, object value, Vertex vertex, Object[] properties);
+    [CompilerGeneratedAttribute]
+public object get_Value();
+    [CompilerGeneratedAttribute]
+public Vertex get_Vertex();
+    [NullableContextAttribute("1")]
+public string get_Key();
+    [NullableContextAttribute("1")]
+public Property Property(string key);
+    [NullableContextAttribute("1")]
+public virtual string ToString();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[AttributeUsageAttribute("2432")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.AllowNullAttribute : Attribute {
+}
+[AttributeUsageAttribute("2432")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.DisallowNullAttribute : Attribute {
+}
+[AttributeUsageAttribute("64")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute : Attribute {
+}
+[AttributeUsageAttribute("2048")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private bool <ParameterValue>k__BackingField;
+    public bool ParameterValue { get; }
+    public DoesNotReturnIfAttribute(bool parameterValue);
+    [CompilerGeneratedAttribute]
+public bool get_ParameterValue();
+}
+[AttributeUsageAttribute("10624")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.MaybeNullAttribute : Attribute {
+}
+[AttributeUsageAttribute("2048")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private bool <ReturnValue>k__BackingField;
+    public bool ReturnValue { get; }
+    public MaybeNullWhenAttribute(bool returnValue);
+    [CompilerGeneratedAttribute]
+public bool get_ReturnValue();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[AttributeUsageAttribute("192")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.MemberNotNullAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private String[] <Members>k__BackingField;
+    public String[] Members { get; }
+    public MemberNotNullAttribute(string member);
+    public MemberNotNullAttribute(String[] members);
+    [CompilerGeneratedAttribute]
+public String[] get_Members();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[AttributeUsageAttribute("192")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private bool <ReturnValue>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Members>k__BackingField;
+    public bool ReturnValue { get; }
+    public String[] Members { get; }
+    public MemberNotNullWhenAttribute(bool returnValue, string member);
+    public MemberNotNullWhenAttribute(bool returnValue, String[] members);
+    [CompilerGeneratedAttribute]
+public bool get_ReturnValue();
+    [CompilerGeneratedAttribute]
+public String[] get_Members();
+}
+[AttributeUsageAttribute("10624")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.NotNullAttribute : Attribute {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[AttributeUsageAttribute("10368")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private string <ParameterName>k__BackingField;
+    public string ParameterName { get; }
+    public NotNullIfNotNullAttribute(string parameterName);
+    [CompilerGeneratedAttribute]
+public string get_ParameterName();
+}
+[AttributeUsageAttribute("2048")]
+[ExcludeFromCodeCoverageAttribute]
+[DebuggerNonUserCodeAttribute]
+internal class System.Diagnostics.CodeAnalysis.NotNullWhenAttribute : Attribute {
+    [CompilerGeneratedAttribute]
+private bool <ReturnValue>k__BackingField;
+    public bool ReturnValue { get; }
+    public NotNullWhenAttribute(bool returnValue);
+    [CompilerGeneratedAttribute]
+public bool get_ReturnValue();
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

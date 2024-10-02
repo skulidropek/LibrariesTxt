@@ -1,0 +1,279 @@
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class HotChocolate.Subscriptions.CannotSubscribeException : Exception {
+    public CannotSubscribeException(string message);
+    public CannotSubscribeException(string message, Exception inner);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class HotChocolate.Subscriptions.DefaultJsonMessageSerializer : object {
+    private static string _completed;
+    private JsonSerializerOptions _options;
+    public string CompleteMessage { get; }
+    public sealed virtual string get_CompleteMessage();
+    public sealed virtual string Serialize(TMessage message);
+    public sealed virtual MessageEnvelope`1<TMessage> Deserialize(string serializedMessage);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class HotChocolate.Subscriptions.DefaultPubSub : object {
+    private SemaphoreSlim _subscribeSemaphore;
+    private ConcurrentDictionary`2<string, ITopic> _topics;
+    private TopicFormatter _topicFormatter;
+    private ISubscriptionDiagnosticEvents _diagnosticEvents;
+    private bool _disposed;
+    protected ISubscriptionDiagnosticEvents DiagnosticEvents { get; }
+    protected DefaultPubSub(SubscriptionOptions options, ISubscriptionDiagnosticEvents diagnosticEvents);
+    protected ISubscriptionDiagnosticEvents get_DiagnosticEvents();
+    public sealed virtual ValueTask`1<ISourceStream`1<TMessage>> SubscribeAsync(string topicName, CancellationToken cancellationToken);
+    [AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultPubSub/<SubscribeAsync>d__9`1")]
+public sealed virtual ValueTask`1<ISourceStream`1<TMessage>> SubscribeAsync(string topicName, Nullable`1<int> bufferCapacity, Nullable`1<TopicBufferFullMode> bufferFullMode, CancellationToken cancellationToken);
+    public sealed virtual ValueTask SendAsync(string topicName, TMessage message, CancellationToken cancellationToken);
+    protected abstract virtual ValueTask OnSendAsync(string formattedTopic, TMessage message, CancellationToken cancellationToken);
+    public sealed virtual ValueTask CompleteAsync(string topicName);
+    protected abstract virtual ValueTask OnCompleteAsync(string formattedTopic);
+    [AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultPubSub/<CreateTopicAsync>d__14`1")]
+private ValueTask`1<DefaultTopic`1<TMessage>> CreateTopicAsync(string formattedTopic, Nullable`1<int> bufferCapacity, Nullable`1<TopicBufferFullMode> bufferFullMode);
+    protected abstract virtual DefaultTopic`1<TMessage> OnCreateTopic(string formattedTopic, Nullable`1<int> bufferCapacity, Nullable`1<TopicBufferFullMode> bufferFullMode);
+    protected virtual string FormatTopicName(string topic);
+    protected bool TryGetTopic(string formattedTopic, DefaultTopic`1& topic);
+    protected bool TryGetTopic(string formattedTopic, ITopic& topic);
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [CompilerGeneratedAttribute]
+internal static ISourceStream`1<TMessage> <SubscribeAsync>g__TryCreateSourceStream|9_0(ITopic topic);
+    [CompilerGeneratedAttribute]
+private void <CreateTopicAsync>b__14_0(object sender, EventArgs __);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class HotChocolate.Subscriptions.DefaultSourceStream`1 : object {
+    private DefaultTopic`1<TMessage> _topic;
+    private Channel`1<TMessage> _channel;
+    internal DefaultSourceStream`1(DefaultTopic`1<TMessage> topic, Channel`1<TMessage> channel);
+    public sealed virtual IAsyncEnumerable`1<TMessage> ReadEventsAsync();
+    private sealed virtual override IAsyncEnumerable`1<object> HotChocolate.Execution.ISourceStream.ReadEventsAsync();
+    public sealed virtual ValueTask DisposeAsync();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public abstract class HotChocolate.Subscriptions.DefaultTopic`1 : object {
+    private CancellationTokenSource _cts;
+    private ReaderWriterLockSlim _lock;
+    private Channel`1<TMessage> _incoming;
+    private BoundedChannelOptions _channelOptions;
+    private ISubscriptionDiagnosticEvents _diagnosticEvents;
+    private List`1<Channel`1<TMessage>> _subscribers;
+    private bool _completed;
+    private bool _disposed;
+    [NullableAttribute("Mono.Cecil.CustomAttributeArgument[]")]
+[CompilerGeneratedAttribute]
+private EventHandler`1<EventArgs> Closed;
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    public string Name { get; }
+    public Type MessageType { get; }
+    protected ISubscriptionDiagnosticEvents DiagnosticEvents { get; }
+    protected DefaultTopic`1(string name, int capacity, TopicBufferFullMode fullMode, ISubscriptionDiagnosticEvents diagnosticEvents);
+    protected DefaultTopic`1(string name, int capacity, TopicBufferFullMode fullMode, ISubscriptionDiagnosticEvents diagnosticEvents, Channel`1<TMessage> incomingMessages);
+    [CompilerGeneratedAttribute]
+public void add_Closed(EventHandler`1<EventArgs> value);
+    [CompilerGeneratedAttribute]
+public void remove_Closed(EventHandler`1<EventArgs> value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    public sealed virtual Type get_MessageType();
+    protected ISubscriptionDiagnosticEvents get_DiagnosticEvents();
+    public void Publish(TMessage message);
+    public sealed virtual void Complete();
+    internal ISourceStream`1<TMessage> TrySubscribe();
+    private DefaultSourceStream`1<TMessage> SubscribeUnsafe();
+    internal void Unsubscribe(Channel`1<TMessage> channel);
+    [AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultTopic`1/<ConnectAsync>d__25")]
+internal ValueTask ConnectAsync(CancellationToken ct);
+    private void BeginProcessing(IDisposable session);
+    [AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultTopic`1/<ProcessMessagesSessionAsync>d__27")]
+private Task ProcessMessagesSessionAsync(IDisposable session);
+    [AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultTopic`1/<ProcessMessagesAsync>d__28")]
+private Task ProcessMessagesAsync();
+    private void DispatchMessages();
+    protected void Close();
+    private void CloseUnsafe();
+    protected void DispatchMessage(IMessageSerializer serializer, string serializedMessage);
+    private MessageEnvelope`1<TMessage> DeserializeMessage(IMessageSerializer serializer, string serializedMessage);
+    protected virtual ValueTask`1<IDisposable> OnConnectAsync(CancellationToken cancellationToken);
+    private void RaiseClosedEvent();
+    protected virtual override void Finalize();
+    public sealed virtual void Dispose();
+    protected virtual void Dispose(bool disposing);
+    [NullableContextAttribute("0")]
+[AsyncStateMachineAttribute("HotChocolate.Subscriptions.DefaultTopic`1/<<BeginProcessing>b__26_0>d")]
+[CompilerGeneratedAttribute]
+private Task <BeginProcessing>b__26_0(object s);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class HotChocolate.Subscriptions.Diagnostics.AggregateSubscriptionDiagnosticEventsListener : SubscriptionDiagnosticEventsListener {
+    private ISubscriptionDiagnosticEventsListener[] _listeners;
+    public AggregateSubscriptionDiagnosticEventsListener(ISubscriptionDiagnosticEventsListener[] listeners);
+    public virtual void Created(string topicName);
+    public virtual void Connected(string topicName);
+    public virtual void Disconnected(string topicName);
+    public virtual void MessageProcessingError(string topicName, Exception error);
+    public virtual void Received(string topicName, string serializedMessage);
+    public virtual void WaitForMessages(string topicName);
+    public virtual void Dispatch(string topicName, T message, int subscribers);
+    public virtual void TrySubscribe(string topicName, int attempt);
+    public virtual void SubscribeSuccess(string topicName);
+    public virtual void SubscribeFailed(string topicName);
+    public virtual void Unsubscribe(string topicName, int shard, int subscribers);
+    public virtual void Close(string topicName);
+    public virtual void Send(string topicName, T message);
+    public virtual void ProviderInfo(string infoText);
+    public virtual void ProviderTopicInfo(string topicName, string infoText);
+}
+[NullableContextAttribute("1")]
+public interface HotChocolate.Subscriptions.Diagnostics.ISubscriptionDiagnosticEvents {
+    public abstract virtual void Created(string topicName);
+    public abstract virtual void Connected(string topicName);
+    public abstract virtual void Disconnected(string topicName);
+    public abstract virtual void MessageProcessingError(string topicName, Exception error);
+    public abstract virtual void Received(string topicName, string serializedMessage);
+    public abstract virtual void WaitForMessages(string topicName);
+    public abstract virtual void Dispatch(string topicName, T message, int subscribers);
+    public abstract virtual void TrySubscribe(string topicName, int attempt);
+    public abstract virtual void SubscribeSuccess(string topicName);
+    public abstract virtual void SubscribeFailed(string topicName);
+    public abstract virtual void Unsubscribe(string topicName, int shard, int subscribers);
+    public abstract virtual void Close(string topicName);
+    public abstract virtual void Send(string topicName, T message);
+    public abstract virtual void ProviderInfo(string infoText);
+    public abstract virtual void ProviderTopicInfo(string topicName, string infoText);
+}
+public interface HotChocolate.Subscriptions.Diagnostics.ISubscriptionDiagnosticEventsListener {
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class HotChocolate.Subscriptions.Diagnostics.NoopSubscriptionDiagnosticEventsListener : SubscriptionDiagnosticEventsListener {
+    [CompilerGeneratedAttribute]
+private static NoopSubscriptionDiagnosticEventsListener <Default>k__BackingField;
+    internal static NoopSubscriptionDiagnosticEventsListener Default { get; }
+    private static NoopSubscriptionDiagnosticEventsListener();
+    [CompilerGeneratedAttribute]
+internal static NoopSubscriptionDiagnosticEventsListener get_Default();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[DiagnosticEventSourceAttribute("HotChocolate.Subscriptions.Diagnostics.ISubscriptionDiagnosticEventsListener")]
+public class HotChocolate.Subscriptions.Diagnostics.SubscriptionDiagnosticEventsListener : object {
+    public virtual void Created(string topicName);
+    public virtual void Connected(string topicName);
+    public virtual void Disconnected(string topicName);
+    public virtual void MessageProcessingError(string topicName, Exception error);
+    public virtual void Received(string topicName, string serializedMessage);
+    public virtual void WaitForMessages(string topicName);
+    public virtual void Dispatch(string topicName, T message, int subscribers);
+    public virtual void TrySubscribe(string topicName, int attempt);
+    public virtual void SubscribeSuccess(string topicName);
+    public virtual void SubscribeFailed(string topicName);
+    public virtual void Unsubscribe(string topicName, int shard, int subscribers);
+    public virtual void Close(string topicName);
+    public virtual void Send(string topicName, T message);
+    public virtual void ProviderInfo(string infoText);
+    public virtual void ProviderTopicInfo(string topicName, string infoText);
+}
+[NullableContextAttribute("1")]
+public interface HotChocolate.Subscriptions.IMessageSerializer {
+    public string CompleteMessage { get; }
+    public abstract virtual string get_CompleteMessage();
+    public abstract virtual string Serialize(TMessage message);
+    public abstract virtual MessageEnvelope`1<TMessage> Deserialize(string serializedMessage);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+public class HotChocolate.Subscriptions.InvalidMessageTypeException : Exception {
+    [CompilerGeneratedAttribute]
+private Type <TopicMessageType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Type <RequestedMessageType>k__BackingField;
+    public Type TopicMessageType { get; }
+    public Type RequestedMessageType { get; }
+    public InvalidMessageTypeException(Type topicMessageType, Type requestedMessageType);
+    [CompilerGeneratedAttribute]
+public Type get_TopicMessageType();
+    [CompilerGeneratedAttribute]
+public Type get_RequestedMessageType();
+    private static string CreateMessage(Type topicMessageType, Type requestedMessageType);
+}
+[NullableContextAttribute("1")]
+public interface HotChocolate.Subscriptions.ITopic {
+    public Type MessageType { get; }
+    public abstract virtual Type get_MessageType();
+    public abstract virtual void Complete();
+}
+[NullableContextAttribute("2")]
+[NullableAttribute("0")]
+[IsReadOnlyAttribute]
+public class HotChocolate.Subscriptions.MessageEnvelope`1 : ValueType {
+    [CompilerGeneratedAttribute]
+private TBody <Body>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MessageKind <Kind>k__BackingField;
+    public TBody Body { get; }
+    public MessageKind Kind { get; }
+    public MessageEnvelope`1(TBody body, MessageKind kind);
+    [CompilerGeneratedAttribute]
+public TBody get_Body();
+    [CompilerGeneratedAttribute]
+public MessageKind get_Kind();
+}
+public enum HotChocolate.Subscriptions.MessageKind : Enum {
+    public int value__;
+    public static MessageKind Default;
+    public static MessageKind Completed;
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class HotChocolate.Subscriptions.Properties.Resources : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string JsonMessageSerializer_Deserialize_MessageIsNull { get; }
+    internal static string DefaultPubSub_SubscribeAsync_MinimumAllowedBufferSize { get; }
+    internal static string MessageEnumerable_UnsubscribedNotAllowed { get; }
+    internal static string MessageEnvelope_DefaultMessage_NeedsBody { get; }
+    internal static string InvalidMessageTypeException_Message { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_JsonMessageSerializer_Deserialize_MessageIsNull();
+    internal static string get_DefaultPubSub_SubscribeAsync_MinimumAllowedBufferSize();
+    internal static string get_MessageEnumerable_UnsubscribedNotAllowed();
+    internal static string get_MessageEnvelope_DefaultMessage_NeedsBody();
+    internal static string get_InvalidMessageTypeException_Message();
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+internal class HotChocolate.Subscriptions.TopicFormatter : object {
+    private static Encoding _utf8;
+    private ThreadLocal`1<MD5> _md5;
+    private Byte[] _prefix;
+    [NullableContextAttribute("2")]
+public TopicFormatter(string prefix);
+    private static TopicFormatter();
+    public string Format(string topic);
+}
+[NullableContextAttribute("1")]
+[NullableAttribute("0")]
+[ExtensionAttribute]
+public static class Microsoft.Extensions.DependencyInjection.CoreSubscriptionsServiceCollectionExtensions : object {
+    [ExtensionAttribute]
+public static IRequestExecutorBuilder AddSubscriptionDiagnostics(IRequestExecutorBuilder builder);
+    [ExtensionAttribute]
+public static IServiceCollection AddSubscriptionDiagnostics(IServiceCollection services);
+}

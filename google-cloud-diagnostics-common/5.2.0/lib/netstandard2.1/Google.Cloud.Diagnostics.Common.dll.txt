@@ -1,0 +1,922 @@
+public class Google.Cloud.Diagnostics.Common.BufferOptions : object {
+    private static BufferOptions s_noBufferInstance;
+    internal static int DefaultBufferSize;
+    private static TimeSpan DefaultWaitTime;
+    [CompilerGeneratedAttribute]
+private BufferType <BufferType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <BufferSizeBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <BufferWaitTime>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Action`1<Exception> <TimerExceptionHandler>k__BackingField;
+    public BufferType BufferType { get; }
+    public int BufferSizeBytes { get; }
+    public TimeSpan BufferWaitTime { get; }
+    public Action`1<Exception> TimerExceptionHandler { get; }
+    internal BufferOptions(BufferType bufferType, Nullable`1<int> bufferSizeBytes, Nullable`1<TimeSpan> bufferWaitTime, Action`1<Exception> timerExceptionHandler);
+    private static BufferOptions();
+    [CompilerGeneratedAttribute]
+public BufferType get_BufferType();
+    [CompilerGeneratedAttribute]
+public int get_BufferSizeBytes();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_BufferWaitTime();
+    [CompilerGeneratedAttribute]
+public Action`1<Exception> get_TimerExceptionHandler();
+    public static BufferOptions NoBuffer();
+    public static BufferOptions SizedBuffer(int bufferSizeBytes);
+    public static BufferOptions TimedBuffer(Nullable`1<TimeSpan> bufferWaitTime);
+    public BufferOptions WithTimerExceptionHandler(Action`1<Exception> handler);
+}
+public enum Google.Cloud.Diagnostics.Common.BufferOverflow : Enum {
+    public int value__;
+    public static BufferOverflow ThrowException;
+    public static BufferOverflow IgnoreNewEntries;
+}
+public enum Google.Cloud.Diagnostics.Common.BufferType : Enum {
+    public int value__;
+    public static BufferType None;
+    public static BufferType Sized;
+    public static BufferType Timed;
+}
+internal static class Google.Cloud.Diagnostics.Common.CommonUtils : object {
+    internal static string AgentName;
+    internal static Task CompletedTask;
+    internal static string AgentNameAndVersion;
+    private static CommonUtils();
+    internal static string GetVersion(Type type);
+}
+internal static class Google.Cloud.Diagnostics.Common.ConsumerFactory`1 : object {
+    internal static IConsumer`1<T> GetConsumer(IConsumer`1<T> consumer, Func`2<T, int> sizer, BufferOptions bufferOptions, RetryOptions retryOptions);
+}
+public static class Google.Cloud.Diagnostics.Common.ContextExceptionLogger : object {
+    public static IContextExceptionLogger Create(ErrorReportingServiceOptions options, IServiceProvider serviceProvider);
+    public static IContextExceptionLogger Create(string projectId, string serviceName, string version, ErrorReportingOptions options, IServiceProvider serviceProvider);
+    public static IContextExceptionLogger Create(string projectId, string serviceName, string version, ErrorReportingOptions options);
+}
+public static class Google.Cloud.Diagnostics.Common.ContextTracerManager : object {
+    private static AsyncLocal`1<IManagedTracer> _currentTracer;
+    private static IManagedTracer CurrentTracer { get; private set; }
+    private static ContextTracerManager();
+    private static IManagedTracer get_CurrentTracer();
+    private static void set_CurrentTracer(IManagedTracer value);
+    public static void SetCurrentTracer(IManagedTracer tracer);
+    public static IManagedTracer GetCurrentTracer();
+    public static ITraceContext GetCurrentTraceContext();
+}
+internal class Google.Cloud.Diagnostics.Common.DelegatingTracer : object {
+    private Func`1<IManagedTracer> _managedTracerGetter;
+    internal DelegatingTracer(Func`1<IManagedTracer> managedTracerGetter);
+    public sealed virtual ISpan StartSpan(string name, StartSpanOptions options);
+    public sealed virtual void RunInSpan(Action action, string name, StartSpanOptions options);
+    public sealed virtual T RunInSpan(Func`1<T> func, string name, StartSpanOptions options);
+    public sealed virtual Task`1<T> RunInSpanAsync(Func`1<Task`1<T>> func, string name, StartSpanOptions options);
+    public sealed virtual void AnnotateSpan(Dictionary`2<string, string> labels);
+    public sealed virtual void SetStackTrace(StackTrace stackTrace);
+    public sealed virtual string GetCurrentTraceId();
+    public sealed virtual Nullable`1<ulong> GetCurrentSpanId();
+}
+internal class Google.Cloud.Diagnostics.Common.ErrorReportingContextExceptionLogger : object {
+    private Struct _serviceContext;
+    private string _logName;
+    private IConsumer`1<LogEntry> _consumer;
+    private ErrorReportingOptions _options;
+    private IServiceProvider _serviceProvider;
+    private TraceTarget _traceTarget;
+    internal ErrorReportingContextExceptionLogger(IConsumer`1<LogEntry> consumer, EventTarget eventTarget, Struct serviceContext, ErrorReportingOptions options, IServiceProvider serviceProvider);
+    internal static IContextExceptionLogger Create(ErrorReportingServiceOptions options, IServiceProvider serviceProvider);
+    private sealed virtual override Task Google.Cloud.Diagnostics.Common.IContextExceptionLogger.LogAsync(Exception exception, IContextWrapper context, CancellationToken cancellationToken);
+    private sealed virtual override void Google.Cloud.Diagnostics.Common.IContextExceptionLogger.Log(Exception exception, IContextWrapper context);
+    public sealed virtual void Dispose();
+    private Struct CreateHttpRequestContext(IContextWrapper context);
+    private static Struct CreateSourceLocation(Exception exception);
+    private LogEntry CreateReportRequest(Exception exception, IContextWrapper context);
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.ErrorReportingExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddGoogleErrorReporting(IServiceCollection services, ErrorReportingServiceOptions options);
+}
+public class Google.Cloud.Diagnostics.Common.ErrorReportingOptions : object {
+    internal static string LogNameDefault;
+    [CompilerGeneratedAttribute]
+private string <LogName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MonitoredResource <MonitoredResource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BufferOptions <BufferOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RetryOptions <RetryOptions>k__BackingField;
+    public string LogName { get; }
+    public MonitoredResource MonitoredResource { get; }
+    public BufferOptions BufferOptions { get; }
+    public RetryOptions RetryOptions { get; }
+    private ErrorReportingOptions(string logName, MonitoredResource resource, BufferOptions bufferOptions, RetryOptions retryOptions);
+    [CompilerGeneratedAttribute]
+public string get_LogName();
+    [CompilerGeneratedAttribute]
+public MonitoredResource get_MonitoredResource();
+    [CompilerGeneratedAttribute]
+public BufferOptions get_BufferOptions();
+    [CompilerGeneratedAttribute]
+public RetryOptions get_RetryOptions();
+    public static ErrorReportingOptions Create(string logName, MonitoredResource resource, BufferOptions bufferOptions, RetryOptions retryOptions);
+}
+public class Google.Cloud.Diagnostics.Common.ErrorReportingServiceOptions : object {
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private EventTarget <EventTarget>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LoggingServiceV2Client <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ErrorReportingOptions <Options>k__BackingField;
+    public string ProjectId { get; public set; }
+    public string ServiceName { get; public set; }
+    public string Version { get; public set; }
+    public EventTarget EventTarget { get; public set; }
+    public LoggingServiceV2Client Client { get; public set; }
+    public ErrorReportingOptions Options { get; public set; }
+    public string get_ProjectId();
+    public void set_ProjectId(string value);
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(string value);
+    [CompilerGeneratedAttribute]
+public EventTarget get_EventTarget();
+    [CompilerGeneratedAttribute]
+public void set_EventTarget(EventTarget value);
+    [CompilerGeneratedAttribute]
+public LoggingServiceV2Client get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(LoggingServiceV2Client value);
+    [CompilerGeneratedAttribute]
+public ErrorReportingOptions get_Options();
+    [CompilerGeneratedAttribute]
+public void set_Options(ErrorReportingOptions value);
+}
+public class Google.Cloud.Diagnostics.Common.EventTarget : object {
+    [CompilerGeneratedAttribute]
+private EventTargetKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LogTarget <LogTarget>k__BackingField;
+    public EventTargetKind Kind { get; }
+    public LogTarget LogTarget { get; }
+    public string ProjectId { get; }
+    private EventTarget(LogTarget target);
+    [CompilerGeneratedAttribute]
+public EventTargetKind get_Kind();
+    [CompilerGeneratedAttribute]
+public LogTarget get_LogTarget();
+    public string get_ProjectId();
+    public static EventTarget ForProject(string projectId);
+    public static EventTarget ForLogTarget(LogTarget target);
+}
+public enum Google.Cloud.Diagnostics.Common.EventTargetKind : Enum {
+    public int value__;
+    public static EventTargetKind Logging;
+}
+public enum Google.Cloud.Diagnostics.Common.ExceptionHandling : Enum {
+    public int value__;
+    public static ExceptionHandling Propagate;
+    public static ExceptionHandling Ignore;
+}
+[ExtensionAttribute]
+internal static class Google.Cloud.Diagnostics.Common.Extensions : object {
+    [ExtensionAttribute]
+internal static SpanKind Convert(SpanKind kind);
+}
+internal abstract class Google.Cloud.Diagnostics.Common.FlushableConsumerBase`1 : object {
+    private SemaphoreSlim _semaphore;
+    private IConsumer`1<T> _consumer;
+    protected FlushableConsumerBase`1(IConsumer`1<T> consumer);
+    protected abstract virtual bool ReceiveWithSemaphoreHeld(IEnumerable`1<T> items);
+    protected abstract virtual IEnumerable`1<T> GetAndResetItemsWithSemaphoreHeld();
+    public abstract virtual void Dispose();
+    public sealed virtual void Receive(IEnumerable`1<T> items);
+    [AsyncStateMachineAttribute("Google.Cloud.Diagnostics.Common.FlushableConsumerBase`1/<ReceiveAsync>d__7")]
+public sealed virtual Task ReceiveAsync(IEnumerable`1<T> items, CancellationToken cancellationToken);
+    public sealed virtual void Flush();
+    [AsyncStateMachineAttribute("Google.Cloud.Diagnostics.Common.FlushableConsumerBase`1/<FlushAsync>d__9")]
+public sealed virtual Task FlushAsync(CancellationToken cancellationToken);
+    private void Flush(IEnumerable`1<T> items);
+    private Task FlushAsync(IEnumerable`1<T> items, CancellationToken cancellationToken);
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.GoogleDiagnosticsExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddGoogleDiagnostics(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddGoogleDiagnostics(IServiceCollection services, TraceServiceOptions traceOptions, LoggingServiceOptions loggingOptions, ErrorReportingServiceOptions errorReportingOptions);
+    [ExtensionAttribute]
+public static IServiceCollection AddGoogleDiagnostics(IServiceCollection services, string projectId, string serviceName, string serviceVersion, TraceOptions traceOptions, LoggingOptions loggingOptions, ErrorReportingOptions errorReportingOptions);
+}
+public class Google.Cloud.Diagnostics.Common.GoogleLogger : object {
+    private static string GcpConsoleLogsBaseUrl;
+    private string _logName;
+    private IConsumer`1<LogEntry> _consumer;
+    private TraceTarget _traceTarget;
+    private LogTarget _logTarget;
+    private Struct _serviceContext;
+    private LoggingOptions _loggerOptions;
+    private string _fullLogName;
+    private IClock _clock;
+    private IServiceProvider _serviceProvider;
+    private AmbientScopeManager _ambientScopeManager;
+    internal GoogleLogger(IConsumer`1<LogEntry> consumer, LogTarget logTarget, Struct serviceContext, LoggingOptions loggerOptions, string logName, IClock clock, IServiceProvider serviceProvider);
+    public sealed virtual IDisposable BeginScope(TState state);
+    public sealed virtual bool IsEnabled(LogLevel logLevel);
+    public sealed virtual void Log(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func`3<TState, Exception, string> formatter);
+    private Struct CreateJsonPayload(EventId eventId, TState state, Exception exception, string message);
+    public Uri GetGcpConsoleLogsUrl();
+    internal void WriteDiagnostics(TextWriter writer);
+    [CompilerGeneratedAttribute]
+internal static bool <CreateJsonPayload>g__ContainsFormatParameters|15_0(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+}
+[ProviderAliasAttribute("Google")]
+public class Google.Cloud.Diagnostics.Common.GoogleLoggerProvider : object {
+    private IConsumer`1<LogEntry> _consumer;
+    private LoggingOptions _loggerOptions;
+    private LogTarget _logTarget;
+    private Struct _serviceContext;
+    private IServiceProvider _serviceProvider;
+    internal GoogleLoggerProvider(IConsumer`1<LogEntry> consumer, LogTarget logTarget, Struct serviceContext, LoggingOptions loggerOptions, IServiceProvider serviceProvider);
+    public static GoogleLoggerProvider Create(IServiceProvider serviceProvider, LoggingServiceOptions options);
+    public sealed virtual ILogger CreateLogger(string logName);
+    public sealed virtual void Dispose();
+}
+internal abstract class Google.Cloud.Diagnostics.Common.GoogleLoggerScope : object {
+    private static AsyncLocal`1<GoogleLoggerScope> _current;
+    [CompilerGeneratedAttribute]
+private GoogleLoggerScope <Parent>k__BackingField;
+    public static GoogleLoggerScope Current { get; private set; }
+    private GoogleLoggerScope Parent { get; }
+    protected internal GoogleLoggerScope(GoogleLoggerScope parent);
+    private static GoogleLoggerScope();
+    public static GoogleLoggerScope get_Current();
+    private static void set_Current(GoogleLoggerScope value);
+    public static GoogleLoggerScope BeginScope(object state);
+    public static GoogleLoggerScope CreateScope(object state, GoogleLoggerScope parent);
+    [CompilerGeneratedAttribute]
+private GoogleLoggerScope get_Parent();
+    public sealed virtual void Dispose();
+    public void ApplyTo(LogEntry entry);
+    private void ApplyToImp(LogEntry entry);
+    protected internal abstract virtual void ApplyThisScopeOnlyTo(LogEntry entry);
+}
+internal class Google.Cloud.Diagnostics.Common.GoogleLoggerScope`1 : GoogleLoggerScope {
+    [CompilerGeneratedAttribute]
+private TState <State>k__BackingField;
+    public TState State { get; }
+    public GoogleLoggerScope`1(TState state, GoogleLoggerScope parent);
+    [CompilerGeneratedAttribute]
+public TState get_State();
+    protected internal virtual void ApplyThisScopeOnlyTo(LogEntry entry);
+}
+internal class Google.Cloud.Diagnostics.Common.GrpcLogConsumer : object {
+    private LoggingServiceV2Client _client;
+    public GrpcLogConsumer(LoggingServiceV2Client client);
+    public sealed virtual void Receive(IEnumerable`1<LogEntry> logs);
+    public sealed virtual Task ReceiveAsync(IEnumerable`1<LogEntry> logs, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+}
+internal class Google.Cloud.Diagnostics.Common.GrpcTraceConsumer : object {
+    private TraceServiceClient _client;
+    internal GrpcTraceConsumer(TraceServiceClient client);
+    public sealed virtual void Receive(IEnumerable`1<Trace> traces);
+    public sealed virtual Task ReceiveAsync(IEnumerable`1<Trace> traces, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.HttpClientBuilderExtensions : object {
+    [ExtensionAttribute]
+public static IHttpClientBuilder AddOutgoingGoogleTraceHandler(IHttpClientBuilder clientBuilder);
+    [ExtensionAttribute]
+public static IHttpClientBuilder AddOutgoingGoogleTraceHandler(IHttpClientBuilder clientBuilder, Func`2<IServiceProvider, IDictionary`2<string, string>> labelsProvider);
+}
+public interface Google.Cloud.Diagnostics.Common.IConsumer`1 {
+    public abstract virtual void Receive(IEnumerable`1<T> items);
+    public abstract virtual Task ReceiveAsync(IEnumerable`1<T> items, CancellationToken cancellationToken);
+}
+public interface Google.Cloud.Diagnostics.Common.IContextExceptionLogger {
+    public abstract virtual void Log(Exception exception, IContextWrapper context);
+    public abstract virtual Task LogAsync(Exception exception, IContextWrapper context, CancellationToken cancellationToken);
+}
+public interface Google.Cloud.Diagnostics.Common.IContextWrapper {
+    public abstract virtual string GetHttpMethod();
+    public abstract virtual string GetUri();
+    public abstract virtual string GetUserAgent();
+}
+internal interface Google.Cloud.Diagnostics.Common.IFlushableConsumer`1 {
+    public abstract virtual void Flush();
+    public abstract virtual Task FlushAsync(CancellationToken cancellationToken);
+}
+public interface Google.Cloud.Diagnostics.Common.ILogEntryLabelProvider {
+    public abstract virtual void Invoke(Dictionary`2<string, string> labels);
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.ILoggerExtensions : object {
+    [ExtensionAttribute]
+public static ILogger WithLabels(ILogger logger, KeyValuePair`2[] labels);
+    [ExtensionAttribute]
+public static ILogger WithLabels(ILogger logger, IEnumerable`1<KeyValuePair`2<string, string>> labels);
+    [ExtensionAttribute]
+public static ILogger WithAddedLabels(ILogger logger, KeyValuePair`2[] labels);
+    [ExtensionAttribute]
+public static ILogger WithAddedLabels(ILogger logger, IEnumerable`1<KeyValuePair`2<string, string>> labels);
+}
+public interface Google.Cloud.Diagnostics.Common.IManagedTracer {
+    public abstract virtual ISpan StartSpan(string name, StartSpanOptions options);
+    public abstract virtual void RunInSpan(Action action, string name, StartSpanOptions options);
+    public abstract virtual T RunInSpan(Func`1<T> func, string name, StartSpanOptions options);
+    public abstract virtual Task`1<T> RunInSpanAsync(Func`1<Task`1<T>> func, string name, StartSpanOptions options);
+    public abstract virtual void AnnotateSpan(Dictionary`2<string, string> labels);
+    public abstract virtual void SetStackTrace(StackTrace stackTrace);
+    public abstract virtual string GetCurrentTraceId();
+    public abstract virtual Nullable`1<ulong> GetCurrentSpanId();
+}
+internal class Google.Cloud.Diagnostics.Common.InternalTraceOptions : object {
+    [CompilerGeneratedAttribute]
+private bool <ShouldTrace>k__BackingField;
+    public bool ShouldTrace { get; }
+    private InternalTraceOptions(bool shouldTrace);
+    [CompilerGeneratedAttribute]
+public bool get_ShouldTrace();
+    public static InternalTraceOptions Create(bool shouldTrace);
+}
+internal interface Google.Cloud.Diagnostics.Common.ISequentialThreadingTimer {
+    public abstract virtual void Initialize(Action callback, TimeSpan waitTime);
+}
+public interface Google.Cloud.Diagnostics.Common.ISpan {
+    public abstract virtual bool Disposed();
+    public abstract virtual void AnnotateSpan(Dictionary`2<string, string> labels);
+    public abstract virtual void SetStackTrace(StackTrace stackTrace);
+    public abstract virtual ulong SpanId();
+}
+internal interface Google.Cloud.Diagnostics.Common.IThreadingTimer {
+    public abstract virtual void Initialize(TimerCallback callback, TimeSpan waitTime);
+}
+internal interface Google.Cloud.Diagnostics.Common.ITimer {
+    public abstract virtual void Start();
+    public abstract virtual long GetElapsedMilliseconds();
+}
+public interface Google.Cloud.Diagnostics.Common.ITraceContext {
+    public string TraceId { get; }
+    public Nullable`1<ulong> SpanId { get; }
+    public Nullable`1<bool> ShouldTrace { get; }
+    public abstract virtual string get_TraceId();
+    public abstract virtual Nullable`1<ulong> get_SpanId();
+    public abstract virtual Nullable`1<bool> get_ShouldTrace();
+}
+internal interface Google.Cloud.Diagnostics.Common.ITraceOptionsFactory {
+    public abstract virtual InternalTraceOptions CreateOptions();
+}
+internal class Google.Cloud.Diagnostics.Common.KeyValueLoggerScope : GoogleLoggerScope`1<IEnumerable`1<KeyValuePair`2<string, object>>> {
+    public KeyValueLoggerScope(IEnumerable`1<KeyValuePair`2<string, object>> state, GoogleLoggerScope parent);
+    protected internal virtual void ApplyThisScopeOnlyTo(LogEntry entry);
+}
+[ExtensionAttribute]
+internal static class Google.Cloud.Diagnostics.Common.KeyValuePairEnumerableExtensions : object {
+    [ExtensionAttribute]
+internal static Value ToStructValue(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    [ExtensionAttribute]
+internal static string ToDefaultStringRepresentation(IEnumerable`1<KeyValuePair`2<TKey, TValue>> fields);
+}
+internal class Google.Cloud.Diagnostics.Common.LabellingScope : GoogleLoggerScope`1<LabellingScopeState> {
+    public LabellingScope(LabellingScopeState state, GoogleLoggerScope parent);
+    protected internal virtual void ApplyThisScopeOnlyTo(LogEntry entry);
+}
+internal class Google.Cloud.Diagnostics.Common.LabellingScopeState : object {
+    [CompilerGeneratedAttribute]
+private IReadOnlyDictionary`2<string, string> <Labels>k__BackingField;
+    public IReadOnlyDictionary`2<string, string> Labels { get; }
+    public LabellingScopeState(IEnumerable`1<KeyValuePair`2<string, string>> labels);
+    internal LabellingScopeState(KeyValuePair`2[] labels);
+    [CompilerGeneratedAttribute]
+public IReadOnlyDictionary`2<string, string> get_Labels();
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, object>> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public virtual string ToString();
+}
+public static class Google.Cloud.Diagnostics.Common.LogConsumer : object {
+    public static IConsumer`1<LogEntry> Create(LoggingServiceV2Client client, BufferOptions bufferOptions, RetryOptions retryOptions);
+}
+[ExtensionAttribute]
+internal static class Google.Cloud.Diagnostics.Common.LogEntryExtensions : object {
+    [ExtensionAttribute]
+internal static LogEntry SetTraceAndSpanIfAny(LogEntry entry, TraceTarget traceTarget, IServiceProvider serviceProvider);
+    [ExtensionAttribute]
+private static ITraceContext SafeGetTraceContext(IServiceProvider serviceProvider);
+    [CompilerGeneratedAttribute]
+internal static string <SetTraceAndSpanIfAny>g__SpanIdToHex|0_0(Nullable`1<ulong> spanId);
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.LoggingExtensions : object {
+    [ExtensionAttribute]
+public static ILoggingBuilder AddGoogle(ILoggingBuilder builder, LoggingServiceOptions options);
+    [ExtensionAttribute]
+public static IServiceCollection AddLogEntryLabelProviderSingleton(IServiceCollection services);
+    [ExtensionAttribute]
+public static IServiceCollection AddLogEntryLabelProviderSingleton(IServiceCollection services, Func`2<IServiceProvider, T> implementationFactory);
+    [ExtensionAttribute]
+public static IServiceCollection AddLogEntryLabelProviderSingleton(IServiceCollection services, T instance);
+}
+public class Google.Cloud.Diagnostics.Common.LoggingOptions : object {
+    private static string _baseLogName;
+    [CompilerGeneratedAttribute]
+private LogLevel <LogLevel>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <LogName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private MonitoredResource <MonitoredResource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BufferOptions <BufferOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RetryOptions <RetryOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Labels>k__BackingField;
+    public LogLevel LogLevel { get; }
+    public string LogName { get; }
+    public MonitoredResource MonitoredResource { get; }
+    public BufferOptions BufferOptions { get; }
+    public RetryOptions RetryOptions { get; }
+    public Dictionary`2<string, string> Labels { get; }
+    private LoggingOptions(LogLevel logLevel, string logName, Dictionary`2<string, string> labels, MonitoredResource monitoredResource, BufferOptions bufferOptions, RetryOptions retryOptions);
+    [CompilerGeneratedAttribute]
+public LogLevel get_LogLevel();
+    [CompilerGeneratedAttribute]
+public string get_LogName();
+    [CompilerGeneratedAttribute]
+public MonitoredResource get_MonitoredResource();
+    [CompilerGeneratedAttribute]
+public BufferOptions get_BufferOptions();
+    [CompilerGeneratedAttribute]
+public RetryOptions get_RetryOptions();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Labels();
+    public static LoggingOptions Create(LogLevel logLevel, string logName, Dictionary`2<string, string> labels, MonitoredResource monitoredResource, BufferOptions bufferOptions, RetryOptions retryOptions);
+}
+public class Google.Cloud.Diagnostics.Common.LoggingServiceOptions : object {
+    [CompilerGeneratedAttribute]
+private string <ServiceName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LogTarget <LogTarget>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LoggingServiceV2Client <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TextWriter <LoggerDiagnosticsOutput>k__BackingField;
+    [CompilerGeneratedAttribute]
+private LoggingOptions <Options>k__BackingField;
+    public string ServiceName { get; public set; }
+    public string Version { get; public set; }
+    public string ProjectId { get; public set; }
+    public LogTarget LogTarget { get; public set; }
+    public LoggingServiceV2Client Client { get; public set; }
+    public TextWriter LoggerDiagnosticsOutput { get; public set; }
+    public LoggingOptions Options { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ServiceName();
+    [CompilerGeneratedAttribute]
+public void set_ServiceName(string value);
+    [CompilerGeneratedAttribute]
+public string get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(string value);
+    public string get_ProjectId();
+    public void set_ProjectId(string value);
+    [CompilerGeneratedAttribute]
+public LogTarget get_LogTarget();
+    [CompilerGeneratedAttribute]
+public void set_LogTarget(LogTarget value);
+    [CompilerGeneratedAttribute]
+public LoggingServiceV2Client get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(LoggingServiceV2Client value);
+    [CompilerGeneratedAttribute]
+public TextWriter get_LoggerDiagnosticsOutput();
+    [CompilerGeneratedAttribute]
+public void set_LoggerDiagnosticsOutput(TextWriter value);
+    [CompilerGeneratedAttribute]
+public LoggingOptions get_Options();
+    [CompilerGeneratedAttribute]
+public void set_Options(LoggingOptions value);
+}
+[ExtensionAttribute]
+internal static class Google.Cloud.Diagnostics.Common.LogLevelExtensions : object {
+    [ExtensionAttribute]
+public static LogSeverity ToLogSeverity(LogLevel logLevel);
+}
+public class Google.Cloud.Diagnostics.Common.LogTarget : object {
+    [CompilerGeneratedAttribute]
+private LogTargetKind <Kind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ProjectId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OrganizationId>k__BackingField;
+    public LogTargetKind Kind { get; }
+    public string ProjectId { get; }
+    public string OrganizationId { get; }
+    private LogTarget(LogTargetKind kind, string projectId, string organizationId);
+    [CompilerGeneratedAttribute]
+public LogTargetKind get_Kind();
+    [CompilerGeneratedAttribute]
+public string get_ProjectId();
+    [CompilerGeneratedAttribute]
+public string get_OrganizationId();
+    public static LogTarget ForProject(string projectId);
+    public static LogTarget ForOrganization(string organizationId);
+    public string GetFullLogName(string name);
+}
+public enum Google.Cloud.Diagnostics.Common.LogTargetKind : Enum {
+    public int value__;
+    public static LogTargetKind Project;
+    public static LogTargetKind Organization;
+}
+public static class Google.Cloud.Diagnostics.Common.ManagedTracer : object {
+    public static IConsumer`1<Trace> CreateConsumer(TraceServiceClient client, TraceOptions options);
+    public static Func`2<ITraceContext, IManagedTracer> CreateFactory(string projectId, IConsumer`1<Trace> consumer, TraceOptions options);
+    public static IManagedTracer CreateDelegatingTracer(Func`1<IManagedTracer> tracerFactory);
+}
+internal class Google.Cloud.Diagnostics.Common.ManagedTracerFactory : object {
+    private string _projectId;
+    private IConsumer`1<Trace> _consumer;
+    private ITraceOptionsFactory _optionsFactory;
+    private TraceIdFactory _traceIdFactory;
+    internal ManagedTracerFactory(string projectId, IConsumer`1<Trace> consumer, ITraceOptionsFactory optionsFactory, TraceIdFactory traceIdFactory);
+    internal IManagedTracer CreateTracer(ITraceContext traceContext);
+    internal bool ShouldTrace(ITraceContext traceContext);
+}
+internal static class Google.Cloud.Diagnostics.Common.MessageSizer`1 : object {
+    public static int GetSize(T item);
+}
+public class Google.Cloud.Diagnostics.Common.NullManagedTracer : object {
+    public static NullManagedTracer Instance;
+    private static NullManagedTracer();
+    public sealed virtual ISpan StartSpan(string name, StartSpanOptions options);
+    public sealed virtual void RunInSpan(Action action, string name, StartSpanOptions options);
+    public sealed virtual T RunInSpan(Func`1<T> func, string name, StartSpanOptions options);
+    public sealed virtual Task`1<T> RunInSpanAsync(Func`1<Task`1<T>> func, string name, StartSpanOptions options);
+    public sealed virtual void AnnotateSpan(Dictionary`2<string, string> labels);
+    public sealed virtual void SetStackTrace(StackTrace stackTrace);
+    public sealed virtual string GetCurrentTraceId();
+    public sealed virtual Nullable`1<ulong> GetCurrentSpanId();
+}
+public static class Google.Cloud.Diagnostics.Common.Project : object {
+    private static MonitoredResource _detectedMonitoredResource;
+    public static string GetAndCheckProjectId(string projectId, MonitoredResource monitoredResource);
+    public static string GetProjectId(string projectId, MonitoredResource monitoredResource);
+    public static string GetAndCheckServiceName(string serviceName, MonitoredResource monitoredResource);
+    public static string GetServiceName(string serviceName, MonitoredResource monitoredResource);
+    public static string GetAndCheckServiceVersion(string serviceVersion, MonitoredResource monitoredResource);
+    public static string GetServiceVersion(string serviceVersion, MonitoredResource monitoredResource);
+    private static MonitoredResource GetMonitoredResource(MonitoredResource monitoredResource);
+    private static string GetProjectIdFromResource(MonitoredResource resource);
+    private static string GetServiceNameFromResource(MonitoredResource resource);
+    private static string GetServiceVersionFromResource(MonitoredResource resource);
+    private static string GetLabel(MonitoredResource resource, string labelKey);
+}
+internal class Google.Cloud.Diagnostics.Common.RateLimiter : object {
+    private static object _instanceMutex;
+    private static RateLimiter _instance;
+    private long _fixedDelayMillis;
+    private ITimer _timer;
+    private long _lastCallMillis;
+    private object _lastCallMutex;
+    internal RateLimiter(double qps, ITimer timer);
+    private static RateLimiter();
+    public static RateLimiter GetInstance(double qps);
+    public bool CanTrace();
+    internal static void Reset();
+}
+internal class Google.Cloud.Diagnostics.Common.RateLimitingTraceOptionsFactory : object {
+    private RateLimiter _rateLimiter;
+    private RateLimitingTraceOptionsFactory(TraceOptions options);
+    internal RateLimitingTraceOptionsFactory(RateLimiter rateLimiter);
+    public static RateLimitingTraceOptionsFactory Create(TraceOptions options);
+    public sealed virtual InternalTraceOptions CreateOptions();
+}
+public class Google.Cloud.Diagnostics.Common.RetryOptions : object {
+    public static int DefaultBufferSize;
+    public static int DefaultRetryAttempts;
+    public static TimeSpan DefaultRetryInterval;
+    [CompilerGeneratedAttribute]
+private RetryType <RetryType>k__BackingField;
+    [CompilerGeneratedAttribute]
+private ExceptionHandling <ExceptionHandling>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BufferOverflow <BufferOverflow>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <BufferSizeBytes>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <RetryAttempts>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <RetryInterval>k__BackingField;
+    public RetryType RetryType { get; }
+    public ExceptionHandling ExceptionHandling { get; }
+    public BufferOverflow BufferOverflow { get; }
+    public int BufferSizeBytes { get; }
+    public int RetryAttempts { get; }
+    public TimeSpan RetryInterval { get; }
+    internal RetryOptions(RetryType retryType, ExceptionHandling exceptionHandling, BufferOverflow bufferOverflow, Nullable`1<int> bufferSizeBytes, Nullable`1<int> retryAttempts, Nullable`1<TimeSpan> retryInterval);
+    private static RetryOptions();
+    [CompilerGeneratedAttribute]
+public RetryType get_RetryType();
+    [CompilerGeneratedAttribute]
+public ExceptionHandling get_ExceptionHandling();
+    [CompilerGeneratedAttribute]
+public BufferOverflow get_BufferOverflow();
+    [CompilerGeneratedAttribute]
+public int get_BufferSizeBytes();
+    [CompilerGeneratedAttribute]
+public int get_RetryAttempts();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_RetryInterval();
+    public static RetryOptions NoRetry(ExceptionHandling exceptionHandling);
+    public static RetryOptions Retry(ExceptionHandling exceptionHandling, BufferOverflow bufferOverflow, Nullable`1<int> bufferSizeBytes, Nullable`1<TimeSpan> retryInterval, Nullable`1<int> retryAttempts);
+}
+public enum Google.Cloud.Diagnostics.Common.RetryType : Enum {
+    public int value__;
+    public static RetryType None;
+    public static RetryType Retry;
+}
+internal class Google.Cloud.Diagnostics.Common.RpcRetryConsumer`1 : object {
+    private RetryOptions _options;
+    private Func`2<T, int> _sizer;
+    private Func`3<Action, RetryOptions, ISequentialThreadingTimer> _timerFactory;
+    private ISequentialThreadingTimer _timer;
+    private object _mutex;
+    internal IConsumer`1<T> _consumer;
+    private List`1<T> _buffer;
+    private int _sizeInBytes;
+    private int _retries;
+    internal RpcRetryConsumer`1(IConsumer`1<T> consumer, RetryOptions options, Func`2<T, int> sizer, Func`3<Action, RetryOptions, ISequentialThreadingTimer> timerFactory);
+    public sealed virtual void Receive(IEnumerable`1<T> items);
+    public sealed virtual Task ReceiveAsync(IEnumerable`1<T> items, CancellationToken cancellationToken);
+    public sealed virtual void Dispose();
+    private bool HandleException(IEnumerable`1<T> items, RpcException e);
+    private void FlushBuffer();
+}
+internal class Google.Cloud.Diagnostics.Common.SequentialThreadingTimer : object {
+    private CancellationTokenSource _source;
+    public sealed virtual void Initialize(Action callback, TimeSpan waitTime);
+    public sealed virtual void Dispose();
+}
+public static class Google.Cloud.Diagnostics.Common.ServiceContextUtils : object {
+    public static string ServiceContextServiceKey;
+    public static string ServiceContextVersionKey;
+    public static Struct CreateServiceContext(string serviceName, string version);
+}
+internal class Google.Cloud.Diagnostics.Common.SimpleManagedTracer : object {
+    private IConsumer`1<Trace> _consumer;
+    private Trace _trace;
+    private string _traceId;
+    private string _projectId;
+    private object _traceLock;
+    private int _openSpanCount;
+    private SpanIdFactory _spanIdFactory;
+    private Nullable`1<ulong> _rootSpanParentId;
+    private AsyncLocal`1<ImmutableStack`1<Span>> _traceStack;
+    private ImmutableStack`1<Span> TraceStack { get; private set; }
+    private SimpleManagedTracer(IConsumer`1<Trace> consumer, string projectId, string traceId, Nullable`1<ulong> rootSpanParentId);
+    public static SimpleManagedTracer Create(IConsumer`1<Trace> consumer, string projectId, string traceId, Nullable`1<ulong> rootSpanParentId);
+    public sealed virtual ISpan StartSpan(string name, StartSpanOptions options);
+    public sealed virtual void RunInSpan(Action action, string name, StartSpanOptions options);
+    public sealed virtual T RunInSpan(Func`1<T> func, string name, StartSpanOptions options);
+    [AsyncStateMachineAttribute("Google.Cloud.Diagnostics.Common.SimpleManagedTracer/<RunInSpanAsync>d__14`1")]
+public sealed virtual Task`1<T> RunInSpanAsync(Func`1<Task`1<T>> func, string name, StartSpanOptions options);
+    private void EndSpan(Span span);
+    public sealed virtual void AnnotateSpan(Dictionary`2<string, string> labels);
+    private void AnnotateSpan(TraceSpan span, Dictionary`2<string, string> labels);
+    public sealed virtual void SetStackTrace(StackTrace stackTrace);
+    public sealed virtual string GetCurrentTraceId();
+    public sealed virtual Nullable`1<ulong> GetCurrentSpanId();
+    private Nullable`1<ulong> GetCurrentSpanId(ImmutableStack`1<Span> traceStack);
+    private bool SetStackTraceAndReturnFalse(Exception e);
+    private void CheckStackNotEmpty(ImmutableStack`1<Span> traceStack);
+    private void Flush();
+    private Trace CreateTraceProto();
+    private ImmutableStack`1<Span> get_TraceStack();
+    private void set_TraceStack(ImmutableStack`1<Span> value);
+}
+internal class Google.Cloud.Diagnostics.Common.SimpleThreadingTimer : object {
+    private Timer _timer;
+    public sealed virtual void Initialize(TimerCallback callback, TimeSpan waitTime);
+    public sealed virtual void Dispose();
+}
+public class Google.Cloud.Diagnostics.Common.SimpleTraceContext : object {
+    [CompilerGeneratedAttribute]
+private string <TraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <SpanId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <ShouldTrace>k__BackingField;
+    public string TraceId { get; }
+    public Nullable`1<ulong> SpanId { get; }
+    public Nullable`1<bool> ShouldTrace { get; }
+    public SimpleTraceContext(string traceId, Nullable`1<ulong> spanId, Nullable`1<bool> shouldTrace);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TraceId();
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_SpanId();
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<bool> get_ShouldTrace();
+    internal static SimpleTraceContext FromTracer(IManagedTracer tracer);
+}
+internal class Google.Cloud.Diagnostics.Common.SizedBufferingConsumer`1 : FlushableConsumerBase`1<T> {
+    private Func`2<T, int> _sizer;
+    private int _bufferSize;
+    private IList`1<T> _items;
+    private int _size;
+    private SizedBufferingConsumer`1(IConsumer`1<T> consumer, Func`2<T, int> sizer, int bufferSize);
+    public static SizedBufferingConsumer`1<T> Create(IConsumer`1<T> consumer, Func`2<T, int> sizer, int bufferSize);
+    public virtual void Dispose();
+    protected virtual bool ReceiveWithSemaphoreHeld(IEnumerable`1<T> items);
+    protected virtual IEnumerable`1<T> GetAndResetItemsWithSemaphoreHeld();
+}
+internal class Google.Cloud.Diagnostics.Common.SpanIdFactory : object {
+    private static object _randomMutex;
+    private static Random _random;
+    private static SpanIdFactory();
+    public static SpanIdFactory Create();
+    public ulong NextId();
+}
+public enum Google.Cloud.Diagnostics.Common.SpanKind : Enum {
+    public int value__;
+    public static SpanKind Unspecified;
+    public static SpanKind RpcClient;
+    public static SpanKind RpcServer;
+}
+public class Google.Cloud.Diagnostics.Common.StartSpanOptions : object {
+    [CompilerGeneratedAttribute]
+private SpanKind <SpanKind>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Labels>k__BackingField;
+    public SpanKind SpanKind { get; }
+    public Dictionary`2<string, string> Labels { get; }
+    private StartSpanOptions(SpanKind spanKind, Dictionary`2<string, string> labels);
+    [CompilerGeneratedAttribute]
+public SpanKind get_SpanKind();
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Labels();
+    public static StartSpanOptions Create(SpanKind spanKind, Dictionary`2<string, string> labels);
+}
+internal class Google.Cloud.Diagnostics.Common.StopwatchTimer : object {
+    private Stopwatch _stopwatch;
+    private StopwatchTimer(Stopwatch stopwatch);
+    public static StopwatchTimer Create(Stopwatch stopwatch);
+    public sealed virtual void Start();
+    public sealed virtual long GetElapsedMilliseconds();
+}
+internal class Google.Cloud.Diagnostics.Common.TimedBufferingConsumer`1 : FlushableConsumerBase`1<T> {
+    private List`1<T> _items;
+    private IThreadingTimer _timer;
+    internal TimedBufferingConsumer`1(IConsumer`1<T> consumer, TimeSpan waitTime, Action`1<Exception> timerExceptionHandler, IThreadingTimer timer);
+    internal static TimedBufferingConsumer`1<T> Create(IConsumer`1<T> consumer, TimeSpan waitTime, Action`1<Exception> timerExceptionHandler);
+    public virtual void Dispose();
+    protected virtual bool ReceiveWithSemaphoreHeld(IEnumerable`1<T> items);
+    protected virtual IEnumerable`1<T> GetAndResetItemsWithSemaphoreHeld();
+}
+[ExtensionAttribute]
+public static class Google.Cloud.Diagnostics.Common.TraceExtensions : object {
+    [ExtensionAttribute]
+public static IServiceCollection AddGoogleTrace(IServiceCollection services, TraceServiceOptions options);
+}
+public class Google.Cloud.Diagnostics.Common.TraceHeaderContext : object {
+    private static TraceIdFactory _traceIdFactory;
+    private static TraceHeaderContext InvalidTraceHeaderContext;
+    public static string TraceHeader;
+    internal static Regex TraceHeaderRegex;
+    [CompilerGeneratedAttribute]
+private string <TraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<ulong> <SpanId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<bool> <ShouldTrace>k__BackingField;
+    public string TraceId { get; }
+    public Nullable`1<ulong> SpanId { get; }
+    public Nullable`1<bool> ShouldTrace { get; }
+    internal TraceHeaderContext(string traceId, Nullable`1<ulong> spanId, Nullable`1<bool> shouldTrace);
+    private static TraceHeaderContext();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TraceId();
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<ulong> get_SpanId();
+    [CompilerGeneratedAttribute]
+public sealed virtual Nullable`1<bool> get_ShouldTrace();
+    public static TraceHeaderContext Create(string traceId, Nullable`1<ulong> spanId, Nullable`1<bool> shouldTrace);
+    public static TraceHeaderContext FromHeader(string header);
+    public static TraceHeaderContext FromHeader(string header, Func`1<Nullable`1<bool>> traceFallbackPredicate);
+    public virtual string ToString();
+}
+internal class Google.Cloud.Diagnostics.Common.TraceIdFactory : object {
+    public static TraceIdFactory Create();
+    public string NextId();
+}
+public static class Google.Cloud.Diagnostics.Common.TraceLabels : object {
+    public static string HttpRequestSize;
+    public static string HttpHost;
+    public static string HttpMethod;
+    public static string HttpStatusCode;
+    public static string StackTrace;
+    public static string Agent;
+    public static Dictionary`2<string, string> FromStackTrace(StackTrace stackTrace);
+    public static Dictionary`2<string, string> GetAgentLabel();
+    internal static Dictionary`2<string, string> FromHttpRequestMessage(HttpRequestMessage request);
+    internal static Dictionary`2<string, string> FromHttpResponseMessage(HttpResponseMessage response);
+    private static string GenerateJsonStringStackTrace(StackTrace stackTrace);
+}
+public class Google.Cloud.Diagnostics.Common.TraceOptions : object {
+    internal static double DefaultQpsSampleRate;
+    [CompilerGeneratedAttribute]
+private double <QpsSampleRate>k__BackingField;
+    [CompilerGeneratedAttribute]
+private BufferOptions <BufferOptions>k__BackingField;
+    [CompilerGeneratedAttribute]
+private RetryOptions <RetryOptions>k__BackingField;
+    public double QpsSampleRate { get; }
+    public BufferOptions BufferOptions { get; }
+    public RetryOptions RetryOptions { get; }
+    private TraceOptions(double qpsSampleRate, BufferOptions bufferOptions, RetryOptions retryOptions);
+    [CompilerGeneratedAttribute]
+public double get_QpsSampleRate();
+    [CompilerGeneratedAttribute]
+public BufferOptions get_BufferOptions();
+    [CompilerGeneratedAttribute]
+public RetryOptions get_RetryOptions();
+    public static TraceOptions Create(double qpsSampleRate, BufferOptions bufferOptions, RetryOptions retryOptions);
+}
+public class Google.Cloud.Diagnostics.Common.TraceServiceOptions : object {
+    [CompilerGeneratedAttribute]
+private string <ProjectId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TraceOptions <Options>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TraceServiceClient <Client>k__BackingField;
+    public string ProjectId { get; public set; }
+    public TraceOptions Options { get; public set; }
+    public TraceServiceClient Client { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_ProjectId();
+    [CompilerGeneratedAttribute]
+public void set_ProjectId(string value);
+    [CompilerGeneratedAttribute]
+public TraceOptions get_Options();
+    [CompilerGeneratedAttribute]
+public void set_Options(TraceOptions value);
+    [CompilerGeneratedAttribute]
+public TraceServiceClient get_Client();
+    [CompilerGeneratedAttribute]
+public void set_Client(TraceServiceClient value);
+}
+public class Google.Cloud.Diagnostics.Common.TraceTarget : object {
+    [CompilerGeneratedAttribute]
+private string <ProjectId>k__BackingField;
+    public string ProjectId { get; }
+    private TraceTarget(string projectId);
+    [CompilerGeneratedAttribute]
+public string get_ProjectId();
+    public static TraceTarget ForProject(string projectId);
+    public string GetFullTraceName(string traceId);
+}
+internal class Google.Cloud.Diagnostics.Common.UnchainedTraceHeaderPropagatingHandler : DelegatingHandler {
+    private Func`1<IManagedTracer> _managedTracerFactory;
+    private Action`2<HttpRequestMessage, ITraceContext> _traceContextPropagator;
+    private Dictionary`2<string, string> _customLabels;
+    public UnchainedTraceHeaderPropagatingHandler(Func`1<IManagedTracer> managedTracerFactory);
+    public UnchainedTraceHeaderPropagatingHandler(Func`1<IManagedTracer> managedTracerFactory, Action`2<HttpRequestMessage, ITraceContext> traceContextPropagator);
+    public UnchainedTraceHeaderPropagatingHandler(Func`1<IManagedTracer> managedTracerFactory, Action`2<HttpRequestMessage, ITraceContext> traceContextPropagator, IDictionary`2<string, string> customLabels);
+    protected virtual Task`1<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken);
+    private static void PropagateGoogleTraceHeader(HttpRequestMessage request, ITraceContext context);
+    [CompilerGeneratedAttribute]
+[DebuggerHiddenAttribute]
+private Task`1<HttpResponseMessage> <>n__0(HttpRequestMessage request, CancellationToken cancellationToken);
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("27524")]
+internal class System.Runtime.CompilerServices.NullableAttribute : Attribute {
+    public Byte[] NullableFlags;
+    public NullableAttribute(byte );
+    public NullableAttribute(Byte[] );
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("5196")]
+internal class System.Runtime.CompilerServices.NullableContextAttribute : Attribute {
+    public byte Flag;
+    public NullableContextAttribute(byte );
+}

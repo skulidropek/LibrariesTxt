@@ -1,0 +1,1381 @@
+public enum Hangfire.Mongo.CheckQueuedJobsStrategy : Enum {
+    public int value__;
+    public static CheckQueuedJobsStrategy Poll;
+    public static CheckQueuedJobsStrategy Watch;
+    public static CheckQueuedJobsStrategy TailNotificationsCollection;
+}
+[ExtensionAttribute]
+public static class Hangfire.Mongo.CosmosDB.CosmosBootstrapperConfigurationExtensions : object {
+    [ExtensionAttribute]
+public static CosmosStorage UseCosmosStorage(IGlobalConfiguration configuration, IMongoClient mongoClient, string databaseName, CosmosStorageOptions storageOptions);
+}
+public class Hangfire.Mongo.CosmosDB.CosmosConnection : MongoConnection {
+    public CosmosConnection(HangfireDbContext database, MongoStorageOptions storageOptions);
+    public virtual DateTime GetUtcDateTime();
+}
+public class Hangfire.Mongo.CosmosDB.CosmosDbWriteOnlyTransaction : MongoWriteOnlyTransaction {
+    public CosmosDbWriteOnlyTransaction(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    protected virtual void ExecuteCommit(IMongoCollection`1<BsonDocument> jobGraph, List`1<WriteModel`1<BsonDocument>> writeModels, BulkWriteOptions bulkWriteOptions);
+}
+public class Hangfire.Mongo.CosmosDB.CosmosFactory : MongoFactory {
+    public virtual MongoWriteOnlyTransaction CreateMongoWriteOnlyTransaction(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoConnection CreateMongoConnection(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoJobQueueWatcher CreateMongoJobQueueWatcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+}
+public class Hangfire.Mongo.CosmosDB.CosmosQueueWatcher : MongoJobQueueWatcher {
+    public CosmosQueueWatcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions, IJobQueueSemaphore jobQueueSemaphore);
+    public virtual void Execute(CancellationToken cancellationToken);
+}
+public class Hangfire.Mongo.CosmosDB.CosmosStorage : MongoStorage {
+    public CosmosStorage(IMongoClient mongoClient, string databaseName, CosmosStorageOptions storageOptions);
+    [IteratorStateMachineAttribute("Hangfire.Mongo.CosmosDB.CosmosStorage/<GetComponents>d__1")]
+public virtual IEnumerable`1<IServerComponent> GetComponents();
+}
+public class Hangfire.Mongo.CosmosDB.CosmosStorageOptions : MongoStorageOptions {
+}
+public class Hangfire.Mongo.Database.HangfireDbContext : object {
+    private string _prefix;
+    [CompilerGeneratedAttribute]
+private IMongoClient <Client>k__BackingField;
+    [CompilerGeneratedAttribute]
+private IMongoDatabase <Database>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ConnectionId>k__BackingField;
+    public IMongoClient Client { get; }
+    public IMongoDatabase Database { get; }
+    public string ConnectionId { get; private set; }
+    public IMongoCollection`1<BsonDocument> Notifications { get; }
+    public IMongoCollection`1<BsonDocument> JobGraph { get; }
+    public IMongoCollection`1<BsonDocument> DistributedLock { get; }
+    public IMongoCollection`1<BsonDocument> Schema { get; }
+    public IMongoCollection`1<BsonDocument> Server { get; }
+    internal HangfireDbContext(string connectionString, string databaseName, string prefix);
+    public HangfireDbContext(IMongoClient mongoClient, string databaseName, string prefix);
+    [CompilerGeneratedAttribute]
+public IMongoClient get_Client();
+    [CompilerGeneratedAttribute]
+public IMongoDatabase get_Database();
+    [CompilerGeneratedAttribute]
+public string get_ConnectionId();
+    [CompilerGeneratedAttribute]
+private void set_ConnectionId(string value);
+    public IMongoCollection`1<BsonDocument> get_Notifications();
+    public IMongoCollection`1<BsonDocument> get_JobGraph();
+    public IMongoCollection`1<BsonDocument> get_DistributedLock();
+    public IMongoCollection`1<BsonDocument> get_Schema();
+    public IMongoCollection`1<BsonDocument> get_Server();
+}
+public class Hangfire.Mongo.DistributedLock.MongoDistributedLock : object {
+    private static ILog Logger;
+    private static ThreadLocal`1<Dictionary`2<string, int>> AcquiredLocks;
+    private string _resource;
+    private TimeSpan _timeout;
+    private HangfireDbContext _dbContext;
+    private MongoStorageOptions _storageOptions;
+    private Timer _heartbeatTimer;
+    private bool _completed;
+    private object _lockObject;
+    public MongoDistributedLock(string resource, TimeSpan timeout, HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    private static MongoDistributedLock();
+    public IDisposable AcquireLock();
+    public virtual void Dispose();
+    protected virtual void Acquire(TimeSpan timeout);
+    protected virtual TimeSpan CalculateTimeout(TimeSpan timeout);
+    protected virtual void Release();
+    protected virtual void Cleanup();
+    protected virtual void StartHeartBeat();
+    protected virtual DateTime Wait(string resource, TimeSpan timeout);
+    [CompilerGeneratedAttribute]
+private void <StartHeartBeat>b__16_0(object _);
+}
+public class Hangfire.Mongo.DistributedLock.MongoDistributedLockException : Exception {
+    public MongoDistributedLockException(string message);
+    public MongoDistributedLockException(string message, Exception innerException);
+}
+public abstract class Hangfire.Mongo.Dto.BaseJobDto : object {
+    [CompilerGeneratedAttribute]
+private ObjectId <Id>k__BackingField;
+    public ObjectId Id { get; public set; }
+    protected BaseJobDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public ObjectId get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(ObjectId value);
+    public BsonDocument Serialize();
+    protected abstract virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.CounterDto : KeyJobDto {
+    [CompilerGeneratedAttribute]
+private long <Value>k__BackingField;
+    public long Value { get; public set; }
+    public CounterDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public long get_Value();
+    [CompilerGeneratedAttribute]
+public void set_Value(long value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.DistributedLockDto : object {
+    [CompilerGeneratedAttribute]
+private ObjectId <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Resource>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <ExpireAt>k__BackingField;
+    public ObjectId Id { get; public set; }
+    public string Resource { get; public set; }
+    public DateTime ExpireAt { get; public set; }
+    public DistributedLockDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public ObjectId get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(ObjectId value);
+    [CompilerGeneratedAttribute]
+public string get_Resource();
+    [CompilerGeneratedAttribute]
+public void set_Resource(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_ExpireAt();
+    [CompilerGeneratedAttribute]
+public void set_ExpireAt(DateTime value);
+    public virtual BsonDocument Serialize();
+}
+public class Hangfire.Mongo.Dto.EnqueuedAndFetchedCountDto : object {
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <EnqueuedCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<int> <FetchedCount>k__BackingField;
+    public Nullable`1<int> EnqueuedCount { get; public set; }
+    public Nullable`1<int> FetchedCount { get; public set; }
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_EnqueuedCount();
+    [CompilerGeneratedAttribute]
+public void set_EnqueuedCount(Nullable`1<int> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<int> get_FetchedCount();
+    [CompilerGeneratedAttribute]
+public void set_FetchedCount(Nullable`1<int> value);
+}
+public abstract class Hangfire.Mongo.Dto.ExpiringJobDto : BaseJobDto {
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <ExpireAt>k__BackingField;
+    public Nullable`1<DateTime> ExpireAt { get; public set; }
+    protected ExpiringJobDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_ExpireAt();
+    [CompilerGeneratedAttribute]
+public void set_ExpireAt(Nullable`1<DateTime> value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.HashDto : KeyJobDto {
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Fields>k__BackingField;
+    public Dictionary`2<string, string> Fields { get; public set; }
+    public HashDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Fields();
+    [CompilerGeneratedAttribute]
+public void set_Fields(Dictionary`2<string, string> value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.JobDto : ExpiringJobDto {
+    [CompilerGeneratedAttribute]
+private string <StateName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InvocationData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Parameters>k__BackingField;
+    [CompilerGeneratedAttribute]
+private StateDto[] <StateHistory>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <FetchedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Queue>k__BackingField;
+    public string StateName { get; public set; }
+    public string InvocationData { get; public set; }
+    public string Arguments { get; public set; }
+    public Dictionary`2<string, string> Parameters { get; public set; }
+    public StateDto[] StateHistory { get; public set; }
+    public DateTime CreatedAt { get; public set; }
+    public Nullable`1<DateTime> FetchedAt { get; public set; }
+    public string Queue { get; public set; }
+    public JobDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public string get_StateName();
+    [CompilerGeneratedAttribute]
+public void set_StateName(string value);
+    [CompilerGeneratedAttribute]
+public string get_InvocationData();
+    [CompilerGeneratedAttribute]
+public void set_InvocationData(string value);
+    [CompilerGeneratedAttribute]
+public string get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(string value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Parameters();
+    [CompilerGeneratedAttribute]
+public void set_Parameters(Dictionary`2<string, string> value);
+    [CompilerGeneratedAttribute]
+public StateDto[] get_StateHistory();
+    [CompilerGeneratedAttribute]
+public void set_StateHistory(StateDto[] value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedAt();
+    [CompilerGeneratedAttribute]
+public void set_CreatedAt(DateTime value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_FetchedAt();
+    [CompilerGeneratedAttribute]
+public void set_FetchedAt(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public string get_Queue();
+    [CompilerGeneratedAttribute]
+public void set_Queue(string value);
+    protected virtual void Serialize(BsonDocument doc);
+}
+public abstract class Hangfire.Mongo.Dto.KeyJobDto : ExpiringJobDto {
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    public string Key { get; public set; }
+    protected KeyJobDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    [CompilerGeneratedAttribute]
+public void set_Key(string value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.ListDto : ExpiringJobDto {
+    [CompilerGeneratedAttribute]
+private string <Item>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    public string Item { get; public set; }
+    public string Value { get; public set; }
+    public ListDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public string get_Item();
+    [CompilerGeneratedAttribute]
+public void set_Item(string value);
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    [CompilerGeneratedAttribute]
+public void set_Value(string value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.MigrationLockDto : object {
+    [CompilerGeneratedAttribute]
+private ObjectId <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <ExpireAt>k__BackingField;
+    public ObjectId Id { get; public set; }
+    public DateTime ExpireAt { get; public set; }
+    public MigrationLockDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public ObjectId get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(ObjectId value);
+    [CompilerGeneratedAttribute]
+public DateTime get_ExpireAt();
+    [CompilerGeneratedAttribute]
+public void set_ExpireAt(DateTime value);
+    public BsonDocument Serialize();
+}
+public class Hangfire.Mongo.Dto.NotificationDto : object {
+    [CompilerGeneratedAttribute]
+private ObjectId <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private NotificationType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    [BsonIdAttribute]
+public ObjectId Id { get; public set; }
+    public NotificationType Type { get; public set; }
+    public string Value { get; public set; }
+    public NotificationDto(BsonDocument doc);
+    public static NotificationDto JobEnqueued(string queue);
+    [CompilerGeneratedAttribute]
+public ObjectId get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(ObjectId value);
+    [CompilerGeneratedAttribute]
+public NotificationType get_Type();
+    [CompilerGeneratedAttribute]
+public void set_Type(NotificationType value);
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    [CompilerGeneratedAttribute]
+public void set_Value(string value);
+    public BsonDocument Serialize();
+}
+public enum Hangfire.Mongo.Dto.NotificationType : Enum {
+    public int value__;
+    public static NotificationType JobEnqueued;
+}
+public class Hangfire.Mongo.Dto.SchemaDto : object {
+    [CompilerGeneratedAttribute]
+private MongoSchema <Version>k__BackingField;
+    [BsonElementAttribute("_id")]
+public MongoSchema Version { get; public set; }
+    public SchemaDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public MongoSchema get_Version();
+    [CompilerGeneratedAttribute]
+public void set_Version(MongoSchema value);
+    public BsonDocument Serialize();
+}
+[ExtensionAttribute]
+internal static class Hangfire.Mongo.Dto.SerializeExtensions : object {
+    [ExtensionAttribute]
+public static string StringOrNull(BsonValue bsonValue);
+    [ExtensionAttribute]
+public static BsonValue ToBsonValue(string value);
+}
+public class Hangfire.Mongo.Dto.ServerDto : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <WorkerCount>k__BackingField;
+    [CompilerGeneratedAttribute]
+private String[] <Queues>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <StartedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <LastHeartbeat>k__BackingField;
+    public string Id { get; public set; }
+    public int WorkerCount { get; public set; }
+    public String[] Queues { get; public set; }
+    public Nullable`1<DateTime> StartedAt { get; public set; }
+    public Nullable`1<DateTime> LastHeartbeat { get; public set; }
+    public ServerDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public int get_WorkerCount();
+    [CompilerGeneratedAttribute]
+public void set_WorkerCount(int value);
+    [CompilerGeneratedAttribute]
+public String[] get_Queues();
+    [CompilerGeneratedAttribute]
+public void set_Queues(String[] value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_StartedAt();
+    [CompilerGeneratedAttribute]
+public void set_StartedAt(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_LastHeartbeat();
+    [CompilerGeneratedAttribute]
+public void set_LastHeartbeat(Nullable`1<DateTime> value);
+    public BsonDocument Serialize();
+}
+public class Hangfire.Mongo.Dto.SetDto : KeyJobDto {
+    [CompilerGeneratedAttribute]
+private double <Score>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Value>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SetType>k__BackingField;
+    public double Score { get; public set; }
+    public string Value { get; public set; }
+    public string SetType { get; public set; }
+    public SetDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public double get_Score();
+    [CompilerGeneratedAttribute]
+public void set_Score(double value);
+    [CompilerGeneratedAttribute]
+public string get_Value();
+    [CompilerGeneratedAttribute]
+public void set_Value(string value);
+    [CompilerGeneratedAttribute]
+public string get_SetType();
+    [CompilerGeneratedAttribute]
+public void set_SetType(string value);
+    protected virtual void Serialize(BsonDocument document);
+}
+public class Hangfire.Mongo.Dto.StateDto : object {
+    [CompilerGeneratedAttribute]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Reason>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <Data>k__BackingField;
+    public string Name { get; public set; }
+    public string Reason { get; public set; }
+    public DateTime CreatedAt { get; public set; }
+    public Dictionary`2<string, string> Data { get; public set; }
+    public StateDto(BsonDocument doc);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+public void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Reason();
+    [CompilerGeneratedAttribute]
+public void set_Reason(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedAt();
+    [CompilerGeneratedAttribute]
+public void set_CreatedAt(DateTime value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_Data();
+    [CompilerGeneratedAttribute]
+public void set_Data(Dictionary`2<string, string> value);
+    public BsonDocument Serialize();
+}
+public interface Hangfire.Mongo.IJobQueueSemaphore {
+    public abstract virtual bool WaitAny(String[] queues, CancellationToken cancellationToken, TimeSpan timeout, String& queue, Boolean& timedOut);
+    public abstract virtual void Release(string queue);
+    public abstract virtual bool WaitNonBlock(string queue);
+}
+public class Hangfire.Mongo.JobQueueSemaphore : object {
+    private static ILog Logger;
+    private Dictionary`2<string, long> _pool;
+    private ManualResetEvent _releasedSignal;
+    private object _syncRoot;
+    private static JobQueueSemaphore();
+    public virtual bool WaitAny(String[] queues, CancellationToken cancellationToken, TimeSpan timeout, String& queue, Boolean& timedOut);
+    public virtual void Release(string queue);
+    public virtual bool WaitNonBlock(string queue);
+    public virtual string ToString();
+    public sealed virtual void Dispose();
+    [CompilerGeneratedAttribute]
+private long <WaitAny>b__4_0(string q);
+}
+public class Hangfire.Mongo.JobSummary : object {
+    [CompilerGeneratedAttribute]
+private string <Id>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <InvocationData>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Arguments>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTime <CreatedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <ExpireAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <FetchedAt>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <StateName>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <StateReason>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<DateTime> <StateChanged>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Dictionary`2<string, string> <StateData>k__BackingField;
+    public string Id { get; public set; }
+    public string InvocationData { get; public set; }
+    public string Arguments { get; public set; }
+    public DateTime CreatedAt { get; public set; }
+    public Nullable`1<DateTime> ExpireAt { get; public set; }
+    public Nullable`1<DateTime> FetchedAt { get; public set; }
+    public string StateName { get; public set; }
+    public string StateReason { get; public set; }
+    public Nullable`1<DateTime> StateChanged { get; public set; }
+    public Dictionary`2<string, string> StateData { get; public set; }
+    [CompilerGeneratedAttribute]
+public string get_Id();
+    [CompilerGeneratedAttribute]
+public void set_Id(string value);
+    [CompilerGeneratedAttribute]
+public string get_InvocationData();
+    [CompilerGeneratedAttribute]
+public void set_InvocationData(string value);
+    [CompilerGeneratedAttribute]
+public string get_Arguments();
+    [CompilerGeneratedAttribute]
+public void set_Arguments(string value);
+    [CompilerGeneratedAttribute]
+public DateTime get_CreatedAt();
+    [CompilerGeneratedAttribute]
+public void set_CreatedAt(DateTime value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_ExpireAt();
+    [CompilerGeneratedAttribute]
+public void set_ExpireAt(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_FetchedAt();
+    [CompilerGeneratedAttribute]
+public void set_FetchedAt(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public string get_StateName();
+    [CompilerGeneratedAttribute]
+public void set_StateName(string value);
+    [CompilerGeneratedAttribute]
+public string get_StateReason();
+    [CompilerGeneratedAttribute]
+public void set_StateReason(string value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<DateTime> get_StateChanged();
+    [CompilerGeneratedAttribute]
+public void set_StateChanged(Nullable`1<DateTime> value);
+    [CompilerGeneratedAttribute]
+public Dictionary`2<string, string> get_StateData();
+    [CompilerGeneratedAttribute]
+public void set_StateData(Dictionary`2<string, string> value);
+}
+public interface Hangfire.Mongo.Migration.IMongoMigrationContext {
+    public abstract virtual T GetItem(string key);
+    public abstract virtual void SetItem(string key, T value);
+}
+public abstract class Hangfire.Mongo.Migration.IndexMigration : object {
+    protected virtual void TryCreateIndexes(IMongoCollection`1<BsonDocument> collection, Func`2<FieldDefinition`1<BsonDocument>, IndexKeysDefinition`1<BsonDocument>> indexType, String[] indexNames);
+    protected virtual void TryCreateUniqueIndexes(IMongoCollection`1<BsonDocument> collection, Func`2<FieldDefinition`1<BsonDocument>, IndexKeysDefinition`1<BsonDocument>> indexType, String[] indexNames);
+    protected virtual void CreateIndexes(IMongoCollection`1<BsonDocument> collection, Func`2<FieldDefinition`1<BsonDocument>, IndexKeysDefinition`1<BsonDocument>> getIndexType, String[] indexNames, Func`2<string, CreateIndexOptions> createOptions);
+    protected virtual void DropExistingIndexes(IMongoCollection`1<BsonDocument> collection, String[] indexNames);
+}
+public class Hangfire.Mongo.Migration.MigrationLock : object {
+    private static ILog Logger;
+    private TimeSpan _timeout;
+    private IMongoCollection`1<BsonDocument> _migrationLock;
+    private BsonDocument _migrationIdFilter;
+    public MigrationLock(IMongoDatabase database, string migrateLockCollectionPrefix, TimeSpan timeout);
+    private static MigrationLock();
+    public void DeleteMigrationLock();
+    public void AcquireLock();
+    private static DateTime Wait();
+    public sealed virtual void Dispose();
+}
+public class Hangfire.Mongo.Migration.MongoMigrationContext : object {
+    private Dictionary`2<string, object> _environment;
+    public sealed virtual T GetItem(string key);
+    public sealed virtual void SetItem(string key, T value);
+}
+public class Hangfire.Mongo.Migration.MongoMigrationException : Exception {
+    public MongoMigrationException(IMongoMigrationStep migrationStep);
+    public MongoMigrationException(IMongoMigrationStep migrationStep, string message);
+    public MongoMigrationException(IMongoMigrationStep migrationStep, Exception innerException);
+    public MongoMigrationException(string message);
+    public MongoMigrationException(string message, Exception innerException);
+}
+public class Hangfire.Mongo.Migration.MongoMigrationFactory : object {
+    public virtual IList`1<IMongoMigrationStep> GetOrderedMigrations();
+}
+public class Hangfire.Mongo.Migration.MongoMigrationManager : object {
+    private MongoStorageOptions _storageOptions;
+    private IMongoDatabase _database;
+    public MongoSchema RequiredSchemaVersion { get; }
+    public MongoMigrationManager(MongoStorageOptions storageOptions, IMongoDatabase database);
+    public virtual MongoSchema get_RequiredSchemaVersion();
+    public virtual bool MigrateUp();
+    protected virtual SchemaDto GetCurrentSchema(IMongoDatabase database);
+}
+public class Hangfire.Mongo.Migration.MongoMigrationUtils : object {
+    public static IEnumerable`1<string> ExistingHangfireCollectionNames(IMongoDatabase database, MongoSchema schema, MongoStorageOptions storageOptions);
+    public static IEnumerable`1<string> ExistingDatabaseCollectionNames(IMongoDatabase database);
+    public static string GetBackupCollectionName(string collectionName, MongoSchema schema, MongoStorageOptions storageOptions);
+    public static string GetBackupDatabaseName(string databaseName, MongoSchema schema, MongoStorageOptions storageOptions);
+}
+[ExtensionAttribute]
+public static class Hangfire.Mongo.Migration.MongoSchemaExtensions : object {
+    [ExtensionAttribute]
+public static IList`1<string> CollectionNames(MongoSchema schema, string prefix);
+}
+public interface Hangfire.Mongo.Migration.Steps.IMongoMigrationStep {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public abstract virtual MongoSchema get_TargetSchema();
+    public abstract virtual long get_Sequence();
+    public abstract virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal abstract class Hangfire.Mongo.Migration.Steps.RemoveObsoleteCollectionsStep : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public abstract virtual MongoSchema get_TargetSchema();
+    public abstract virtual long get_Sequence();
+    public virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    protected IEnumerable`1<string> ObsoleteCollectionNames(IMongoDatabase database, MongoStorageOptions storageOptions);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version05.CreateJobIdIndex : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.CountersMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private static void MigrateCounters(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoCollection`1<BsonDocument> stateData);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.EnqueuedJobMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.JobMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.RecurringJobMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private void MigrateHash(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoCollection`1<BsonDocument> stateData);
+    private void MigrateSet(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoCollection`1<BsonDocument> stateData);
+    private void MigrateCounters(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoCollection`1<BsonDocument> stateData);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.RemoveObsoleteCollections : RemoveObsoleteCollectionsStep {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public virtual MongoSchema get_TargetSchema();
+    public virtual long get_Sequence();
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.ScheduledJobMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version06.StateDataCreateIndex : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version07.EnqueuedJobMigration : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version07.StateDataRename : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private static void RenameCollection(IMongoDatabase database, string oldName, string newName);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version08.PascalCaseRename : object {
+    private List`1<string> _propertyNames;
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private void FixCollection(IMongoDatabase database, string collectionName);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version09.CreateSignalCollection : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version10.UpdateSchemaCollection : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version11.UseObjectIdForJob : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private static void SetFieldAsObjectId(IMongoCollection`1<BsonDocument> collection, string fieldName);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version12.CreateIndexes : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version13.AddFieldsToHash : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version13.CombineJobsStateDataAndJobQueue : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version13.CreateIndexes : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version13.RemoveObsoleteCollections : RemoveObsoleteCollectionsStep {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public virtual MongoSchema get_TargetSchema();
+    public virtual long get_Sequence();
+}
+internal class Hangfire.Mongo.Migration.Steps.Version13.SumCounters : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version14.RemoveLegacyLocks : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version14.RemoveMergedHashDtos : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.CreateCompositeKeys : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+    private static void CreateCompositeKey(IMongoCollection`1<BsonDocument> jobGraph, Type type);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.CreateUniqueLockIndex : object {
+    private string _lockResourceIndexName;
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.MakeServerDataEmbeddedDocument : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.RemoveMergedCounters : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.UpdateIndexes : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version15.UpdateListDtoKeySchema : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version16.RemoveObsoleteCollections : object {
+    [CompilerGeneratedAttribute]
+private MongoSchema <TargetSchema>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Sequence>k__BackingField;
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual MongoSchema get_TargetSchema();
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version16.UpdateSetDtoKeyAndValueField : object {
+    [CompilerGeneratedAttribute]
+private MongoSchema <TargetSchema>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Sequence>k__BackingField;
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual MongoSchema get_TargetSchema();
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version17.AddNotificationsCollection : object {
+    [CompilerGeneratedAttribute]
+private MongoSchema <TargetSchema>k__BackingField;
+    [CompilerGeneratedAttribute]
+private long <Sequence>k__BackingField;
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    [CompilerGeneratedAttribute]
+public sealed virtual MongoSchema get_TargetSchema();
+    [CompilerGeneratedAttribute]
+public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version18.UpdateIndexes : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version19.AddTypeToSetDto : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version20.CompoundIndexes : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version20.RemoveJobQueueDto : object {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version21.AddIndexesMigration : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+internal class Hangfire.Mongo.Migration.Steps.Version22.AddQueueIndex : IndexMigration {
+    public MongoSchema TargetSchema { get; }
+    public long Sequence { get; }
+    public sealed virtual MongoSchema get_TargetSchema();
+    public sealed virtual long get_Sequence();
+    public sealed virtual bool Execute(IMongoDatabase database, MongoStorageOptions storageOptions, IMongoMigrationContext migrationContext);
+}
+public class Hangfire.Mongo.Migration.Strategies.Backup.CollectionMongoBackupStrategy : MongoBackupStrategy {
+    public virtual void Backup(MongoStorageOptions storageOptions, IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+    protected virtual void BackupCollection(IMongoDatabase database, string collectionName, string backupCollectionName);
+}
+public abstract class Hangfire.Mongo.Migration.Strategies.Backup.MongoBackupStrategy : object {
+    public virtual void Backup(MongoStorageOptions storageOptions, IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+}
+public class Hangfire.Mongo.Migration.Strategies.Backup.NoneMongoBackupStrategy : MongoBackupStrategy {
+}
+public class Hangfire.Mongo.Migration.Strategies.DropMongoMigrationStrategy : MongoMigrationStrategy {
+    public DropMongoMigrationStrategy(IMongoMigrationContext mongoMigrationContext);
+    public virtual void ValidateSchema(MongoSchema requiredSchema, MongoSchema currentSchema);
+    protected virtual void ExecuteMigration(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+    protected virtual void ExecuteStrategy(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+}
+public class Hangfire.Mongo.Migration.Strategies.MigrateMongoMigrationStrategy : MongoMigrationStrategy {
+    public MigrateMongoMigrationStrategy(IMongoMigrationContext mongoMigrationContext);
+    protected virtual void ExecuteStrategy(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+}
+public abstract class Hangfire.Mongo.Migration.Strategies.MongoMigrationStrategy : object {
+    private IMongoMigrationContext _mongoMigrationContext;
+    private static ILog Logger;
+    protected MongoStorageOptions StorageOptions;
+    protected MongoMigrationStrategy(IMongoMigrationContext mongoMigrationContext);
+    private static MongoMigrationStrategy();
+    public virtual void ValidateSchema(MongoSchema requiredSchema, MongoSchema currentSchema);
+    public void Execute(MongoStorageOptions storageOptions, IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+    protected virtual void ExecuteMigration(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+    protected abstract virtual void ExecuteStrategy(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+}
+public class Hangfire.Mongo.Migration.Strategies.ThrowMongoMigrationStrategy : MongoMigrationStrategy {
+    public ThrowMongoMigrationStrategy(IMongoMigrationContext mongoMigrationContext);
+    protected virtual void ExecuteStrategy(IMongoDatabase database, MongoSchema fromSchema, MongoSchema toSchema);
+}
+[ExtensionAttribute]
+public static class Hangfire.Mongo.MongoBootstrapperConfigurationExtensions : object {
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, string connectionString);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, string connectionString, string databaseName);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, string connectionString, MongoStorageOptions storageOptions);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, string connectionString, string databaseName, MongoStorageOptions storageOptions);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, MongoClientSettings mongoClientSettings, string databaseName);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, MongoClientSettings mongoClientSettings, string databaseName, MongoStorageOptions storageOptions);
+    [ExtensionAttribute]
+public static IGlobalConfiguration`1<MongoStorage> UseMongoStorage(IGlobalConfiguration configuration, IMongoClient mongoClient, string databaseName, MongoStorageOptions storageOptions);
+}
+public class Hangfire.Mongo.MongoConnectException : Exception {
+    public MongoConnectException(HangfireDbContext dbContext, string connectionString, TimeSpan connectionCheckTimeout, Exception e);
+}
+public class Hangfire.Mongo.MongoConnection : JobStorageConnection {
+    private static ILog Logger;
+    private MongoStorageOptions _storageOptions;
+    private MongoJobFetcher _jobFetcher;
+    private HangfireDbContext _dbContext;
+    private static bool _useServerStatus;
+    public MongoConnection(HangfireDbContext database, MongoStorageOptions storageOptions);
+    private static MongoConnection();
+    public virtual IWriteOnlyTransaction CreateWriteTransaction();
+    public virtual IDisposable AcquireDistributedLock(string resource, TimeSpan timeout);
+    public virtual string CreateExpiredJob(Job job, IDictionary`2<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
+    public virtual IFetchedJob FetchNextJob(String[] queues, CancellationToken cancellationToken);
+    public virtual void SetJobParameter(string id, string name, string value);
+    public virtual string GetJobParameter(string id, string name);
+    public virtual JobData GetJobData(string jobId);
+    public virtual StateData GetStateData(string jobId);
+    public virtual void AnnounceServer(string serverId, ServerContext context);
+    public virtual void RemoveServer(string serverId);
+    public virtual void Heartbeat(string serverId);
+    public virtual int RemoveTimedOutServers(TimeSpan timeOut);
+    public virtual HashSet`1<string> GetAllItemsFromSet(string key);
+    public virtual string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore);
+    public virtual List`1<string> GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore, int count);
+    public virtual void SetRangeInHash(string key, IEnumerable`1<KeyValuePair`2<string, string>> keyValuePairs);
+    public virtual Dictionary`2<string, string> GetAllEntriesFromHash(string key);
+    public virtual long GetSetCount(string key);
+    public virtual List`1<string> GetRangeFromSet(string key, int startingFrom, int endingAt);
+    public virtual TimeSpan GetSetTtl(string key);
+    public virtual long GetCounter(string key);
+    public virtual long GetHashCount(string key);
+    public virtual TimeSpan GetHashTtl(string key);
+    public virtual string GetValueFromHash(string key, string name);
+    public virtual long GetListCount(string key);
+    public virtual TimeSpan GetListTtl(string key);
+    public virtual List`1<string> GetRangeFromList(string key, int startingFrom, int endingAt);
+    public virtual List`1<string> GetAllItemsFromList(string key);
+    public virtual DateTime GetUtcDateTime();
+    private DateTime GetUtcDateUsingAggregation();
+    private DateTime GetUtcDateUsingServerStatus();
+    public virtual bool GetSetContains(string key, string value);
+    public virtual long GetSetCount(IEnumerable`1<string> keys, int limit);
+}
+public class Hangfire.Mongo.MongoExpirationManager : object {
+    private MongoStorageOptions _options;
+    private static ILog Logger;
+    private HangfireDbContext _dbContext;
+    private TimeSpan _checkInterval;
+    public MongoExpirationManager(HangfireDbContext dbContext, MongoStorageOptions options);
+    private static MongoExpirationManager();
+    public sealed virtual void Execute(BackgroundProcessContext context);
+    public sealed virtual void Execute(CancellationToken cancellationToken);
+}
+public class Hangfire.Mongo.MongoFactory : object {
+    [CompilerGeneratedAttribute]
+private IJobQueueSemaphore <JobQueueSemaphore>k__BackingField;
+    public IJobQueueSemaphore JobQueueSemaphore { get; public set; }
+    [CompilerGeneratedAttribute]
+public IJobQueueSemaphore get_JobQueueSemaphore();
+    [CompilerGeneratedAttribute]
+public void set_JobQueueSemaphore(IJobQueueSemaphore value);
+    public virtual MongoMigrationManager CreateMongoMigrationManager(MongoStorageOptions storageOptions, IMongoDatabase database);
+    public virtual MigrationLock CreateMigrationLock(IMongoDatabase database, string migrateLockCollectionPrefix, TimeSpan timeout);
+    public virtual HangfireDbContext CreateDbContext(IMongoClient mongoClient, string databaseName, string prefix);
+    public virtual MongoJobFetcher CreateMongoJobFetcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoConnection CreateMongoConnection(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoWriteOnlyTransaction CreateMongoWriteOnlyTransaction(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoDistributedLock CreateMongoDistributedLock(string resource, TimeSpan timeout, HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoFetchedJob CreateFetchedJob(HangfireDbContext dbContext, MongoStorageOptions storageOptions, DateTime fetchedAt, ObjectId id, ObjectId jobId, string queue);
+    public virtual MongoMonitoringApi CreateMongoMonitoringApi(HangfireDbContext dbContext);
+    public virtual MongoNotificationObserver CreateMongoNotificationObserver(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoJobQueueWatcher CreateMongoJobQueueWatcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    public virtual MongoExpirationManager CreateMongoExpirationManager(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+}
+public class Hangfire.Mongo.MongoFetchedJob : object {
+    private static ILog Logger;
+    private HangfireDbContext _db;
+    private MongoStorageOptions _storageOptions;
+    private DateTime _fetchedAt;
+    private ObjectId _id;
+    private object _syncRoot;
+    private bool _disposed;
+    private bool _removedFromQueue;
+    private bool _requeued;
+    private Timer _heartbeatTimer;
+    [CompilerGeneratedAttribute]
+private string <JobId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Queue>k__BackingField;
+    public DateTime FetchedAt { get; }
+    public ObjectId Id { get; }
+    public string JobId { get; }
+    public string Queue { get; }
+    public MongoFetchedJob(HangfireDbContext db, MongoStorageOptions storageOptions, DateTime fetchedAt, ObjectId id, ObjectId jobId, string queue);
+    private static MongoFetchedJob();
+    public DateTime get_FetchedAt();
+    public ObjectId get_Id();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_JobId();
+    [CompilerGeneratedAttribute]
+public string get_Queue();
+    public virtual void RemoveFromQueue();
+    public virtual void SetRemoved();
+    public virtual void Requeue();
+    public virtual void Dispose();
+    private void StartHeartbeat(TimeSpan slidingInvisibilityTimeout);
+}
+public class Hangfire.Mongo.MongoJobFetcher : object {
+    private static ILog Logger;
+    private MongoStorageOptions _storageOptions;
+    private IJobQueueSemaphore _semaphore;
+    private HangfireDbContext _dbContext;
+    private static FindOneAndUpdateOptions`1<BsonDocument> Options;
+    public MongoJobFetcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions, IJobQueueSemaphore semaphore);
+    private static MongoJobFetcher();
+    [NotNullAttribute]
+public virtual IFetchedJob FetchNextJob(String[] queues, CancellationToken cancellationToken);
+    public virtual MongoFetchedJob TryAllQueues(String[] queues, CancellationToken cancellationToken);
+    public virtual MongoFetchedJob TryGetEnqueuedJob(string queue, CancellationToken cancellationToken);
+}
+public class Hangfire.Mongo.MongoJobQueueWatcher : object {
+    protected static ILog Logger;
+    protected HangfireDbContext DbContext;
+    protected MongoStorageOptions StorageOptions;
+    protected IJobQueueSemaphore JobQueueSemaphore;
+    public MongoJobQueueWatcher(HangfireDbContext dbContext, MongoStorageOptions storageOptions, IJobQueueSemaphore jobQueueSemaphore);
+    private static MongoJobQueueWatcher();
+    public virtual void Execute(CancellationToken cancellationToken);
+    public sealed virtual void Execute(BackgroundProcessContext context);
+}
+public class Hangfire.Mongo.MongoJobUpdates : object {
+    [CompilerGeneratedAttribute]
+private BsonDocument <Set>k__BackingField;
+    [CompilerGeneratedAttribute]
+private List`1<BsonDocument> <Pushes>k__BackingField;
+    public BsonDocument Set { get; }
+    public List`1<BsonDocument> Pushes { get; }
+    [CompilerGeneratedAttribute]
+public BsonDocument get_Set();
+    [CompilerGeneratedAttribute]
+public List`1<BsonDocument> get_Pushes();
+    public UpdateOneModel`1<BsonDocument> CreateUpdateModel(string jobId);
+}
+public class Hangfire.Mongo.MongoMigrationOptions : object {
+    private MongoMigrationFactory _mongoMigrationFactory;
+    private MongoBackupStrategy _backupStrategy;
+    private MongoMigrationStrategy _migrationStrategy;
+    private string _backupPostfix;
+    public MongoMigrationFactory MongoMigrationFactory { get; public set; }
+    public MongoBackupStrategy BackupStrategy { get; public set; }
+    public MongoMigrationStrategy MigrationStrategy { get; public set; }
+    public string BackupPostfix { get; public set; }
+    public MongoMigrationFactory get_MongoMigrationFactory();
+    public void set_MongoMigrationFactory(MongoMigrationFactory value);
+    public MongoBackupStrategy get_BackupStrategy();
+    public void set_BackupStrategy(MongoBackupStrategy value);
+    public MongoMigrationStrategy get_MigrationStrategy();
+    public void set_MigrationStrategy(MongoMigrationStrategy value);
+    public string get_BackupPostfix();
+    public void set_BackupPostfix(string value);
+}
+public class Hangfire.Mongo.MongoMonitoringApi : JobStorageMonitor {
+    private HangfireDbContext _dbContext;
+    private static BsonArray StatisticsStateNames;
+    public MongoMonitoringApi(HangfireDbContext dbContext);
+    private static MongoMonitoringApi();
+    public virtual IList`1<QueueWithTopEnqueuedJobsDto> Queues();
+    public virtual IList`1<ServerDto> Servers();
+    public virtual JobDetailsDto JobDetails(string jobId);
+    public virtual StatisticsDto GetStatistics();
+    public virtual JobList`1<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage);
+    public virtual JobList`1<FetchedJobDto> FetchedJobs(string queue, int from, int perPage);
+    public virtual JobList`1<ProcessingJobDto> ProcessingJobs(int from, int count);
+    public virtual JobList`1<ScheduledJobDto> ScheduledJobs(int from, int count);
+    public virtual JobList`1<SucceededJobDto> SucceededJobs(int from, int count);
+    public virtual JobList`1<FailedJobDto> FailedJobs(int from, int count);
+    public virtual JobList`1<DeletedJobDto> DeletedJobs(int from, int count);
+    public virtual JobList`1<AwaitingJobDto> AwaitingJobs(int from, int count);
+    public virtual long ScheduledCount();
+    public virtual long EnqueuedCount(string queue);
+    public virtual long FetchedCount(string queue);
+    public virtual long FailedCount();
+    public virtual long ProcessingCount();
+    public virtual long SucceededListCount();
+    public virtual long DeletedListCount();
+    public virtual long AwaitingCount();
+    public virtual IDictionary`2<DateTime, long> SucceededByDatesCount();
+    public virtual IDictionary`2<DateTime, long> FailedByDatesCount();
+    public virtual IDictionary`2<DateTime, long> HourlySucceededJobs();
+    public virtual IDictionary`2<DateTime, long> HourlyFailedJobs();
+    public virtual IDictionary`2<DateTime, long> DeletedByDatesCount();
+    public virtual IDictionary`2<DateTime, long> HourlyDeletedJobs();
+    public virtual IReadOnlyList`1<string> GetQueues();
+    public virtual IReadOnlyList`1<string> GetEnqueuedJobIds(string queue, int from, int perPage);
+    public virtual IReadOnlyList`1<string> GetFetchedJobIds(string queue, int from, int perPage);
+    public virtual EnqueuedAndFetchedCountDto GetEnqueuedAndFetchedCount(string queue);
+    public virtual JobList`1<EnqueuedJobDto> EnqueuedJobs(IEnumerable`1<string> jobIds);
+    private static JobList`1<TDto> DeserializeJobs(ICollection`1<JobSummary> jobs, Func`6<JobSummary, Job, InvocationData, JobLoadException, SafeDictionary`2<string, string>, TDto> selector);
+    public static Job DeserializeJob(string invocationData, string arguments, InvocationData& data, JobLoadException& exception);
+    public static Job DeserializeJob(string invocationData, string arguments);
+    public virtual JobList`1<FetchedJobDto> FetchedJobs(HangfireDbContext connection, IEnumerable`1<string> jobIds);
+    private JobList`1<TDto> GetJobs(int from, int count, string stateName, Func`6<JobSummary, Job, InvocationData, JobLoadException, SafeDictionary`2<string, string>, TDto> selector);
+    public virtual long GetNumberOfJobsByStateName(string stateName);
+    public virtual Dictionary`2<DateTime, long> GetTimelineStats(string type);
+    public virtual Dictionary`2<DateTime, long> GetHourlyTimelineStats(string type);
+    public virtual Dictionary`2<DateTime, long> CreateTimeLineStats(IEnumerable`1<string> keys, IList`1<DateTime> dates);
+    [CompilerGeneratedAttribute]
+internal static int <GetStatistics>g__GetCountIfExists|6_2(string name, <>c__DisplayClass6_0& );
+}
+public class Hangfire.Mongo.MongoNotificationObserver : object {
+    private static ILog Logger;
+    private HangfireDbContext _dbContext;
+    private MongoStorageOptions _storageOptions;
+    private IJobQueueSemaphore _jobQueueSemaphore;
+    private int _failureTimeout;
+    internal static int MaxTimeout;
+    public MongoNotificationObserver(HangfireDbContext dbContext, MongoStorageOptions storageOptions, IJobQueueSemaphore jobQueueSemaphore);
+    private static MongoNotificationObserver();
+    public virtual void Execute(CancellationToken cancellationToken);
+    public virtual void Execute(BackgroundProcessContext context);
+    protected virtual void HandleMongoCommandException(MongoCommandException commandException, CancellationToken cancellationToken);
+    protected virtual int GetFailureTimeoutMs();
+}
+public enum Hangfire.Mongo.MongoSchema : Enum {
+    public int value__;
+    public static MongoSchema None;
+    public static MongoSchema Version04;
+    public static MongoSchema Version05;
+    public static MongoSchema Version06;
+    public static MongoSchema Version07;
+    public static MongoSchema Version08;
+    public static MongoSchema Version09;
+    public static MongoSchema Version10;
+    public static MongoSchema Version11;
+    public static MongoSchema Version12;
+    public static MongoSchema Version13;
+    public static MongoSchema Version14;
+    public static MongoSchema Version15;
+    public static MongoSchema Version16;
+    public static MongoSchema Version17;
+    public static MongoSchema Version18;
+    public static MongoSchema Version19;
+    public static MongoSchema Version20;
+    public static MongoSchema Version21;
+    public static MongoSchema Version22;
+}
+public class Hangfire.Mongo.MongoStorage : JobStorage {
+    protected string DatabaseName;
+    protected IMongoClient MongoClient;
+    protected MongoStorageOptions StorageOptions;
+    protected HangfireDbContext HangfireDbContext;
+    [CompilerGeneratedAttribute]
+private ReadOnlyDictionary`2<string, bool> <Features>k__BackingField;
+    public ReadOnlyDictionary`2<string, bool> Features { get; protected set; }
+    public MongoStorage(MongoClientSettings mongoClientSettings, string databaseName);
+    public MongoStorage(MongoClientSettings mongoClientSettings, string databaseName, MongoStorageOptions storageOptions);
+    public MongoStorage(IMongoClient mongoClient, string databaseName, MongoStorageOptions storageOptions);
+    [CompilerGeneratedAttribute]
+public ReadOnlyDictionary`2<string, bool> get_Features();
+    [CompilerGeneratedAttribute]
+protected void set_Features(ReadOnlyDictionary`2<string, bool> value);
+    private void CheckConnection();
+    public virtual bool HasFeature(string featureId);
+    public virtual IMonitoringApi GetMonitoringApi();
+    public virtual IStorageConnection GetConnection();
+    [IteratorStateMachineAttribute("Hangfire.Mongo.MongoStorage/<GetComponents>d__15")]
+public virtual IEnumerable`1<IServerComponent> GetComponents();
+    public virtual void WriteOptionsToLog(ILog logger);
+    public virtual string ToString();
+    private string CreateObscuredConnectionString();
+}
+public class Hangfire.Mongo.MongoStorageOptions : object {
+    private TimeSpan _queuePollInterval;
+    private TimeSpan _distributedLockLifetime;
+    private TimeSpan _migrationLockTimeout;
+    private MongoMigrationOptions _migrationOptions;
+    private MongoFactory _factory;
+    private string _prefix;
+    [CompilerGeneratedAttribute]
+private CheckQueuedJobsStrategy <CheckQueuedJobsStrategy>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <SupportsCappedCollection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private Nullable`1<TimeSpan> <SlidingInvisibilityTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <ClientId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <CheckConnection>k__BackingField;
+    [CompilerGeneratedAttribute]
+private bool <ByPassMigration>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <ConnectionCheckTimeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <JobExpirationCheckInterval>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeSpan <CountersAggregateInterval>k__BackingField;
+    public CheckQueuedJobsStrategy CheckQueuedJobsStrategy { get; public set; }
+    public MongoFactory Factory { get; public set; }
+    public string Prefix { get; public set; }
+    public TimeSpan QueuePollInterval { get; public set; }
+    public bool SupportsCappedCollection { get; public set; }
+    public Nullable`1<TimeSpan> SlidingInvisibilityTimeout { get; public set; }
+    public TimeSpan DistributedLockLifetime { get; public set; }
+    public TimeSpan MigrationLockTimeout { get; public set; }
+    public string ClientId { get; }
+    public bool CheckConnection { get; public set; }
+    public bool ByPassMigration { get; public set; }
+    public TimeSpan ConnectionCheckTimeout { get; public set; }
+    public TimeSpan JobExpirationCheckInterval { get; public set; }
+    public TimeSpan CountersAggregateInterval { get; public set; }
+    public MongoMigrationOptions MigrationOptions { get; public set; }
+    [CompilerGeneratedAttribute]
+public CheckQueuedJobsStrategy get_CheckQueuedJobsStrategy();
+    [CompilerGeneratedAttribute]
+public void set_CheckQueuedJobsStrategy(CheckQueuedJobsStrategy value);
+    public MongoFactory get_Factory();
+    public void set_Factory(MongoFactory value);
+    public string get_Prefix();
+    public void set_Prefix(string value);
+    public TimeSpan get_QueuePollInterval();
+    public void set_QueuePollInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public bool get_SupportsCappedCollection();
+    [CompilerGeneratedAttribute]
+public void set_SupportsCappedCollection(bool value);
+    [CompilerGeneratedAttribute]
+public Nullable`1<TimeSpan> get_SlidingInvisibilityTimeout();
+    [CompilerGeneratedAttribute]
+public void set_SlidingInvisibilityTimeout(Nullable`1<TimeSpan> value);
+    public TimeSpan get_DistributedLockLifetime();
+    public void set_DistributedLockLifetime(TimeSpan value);
+    public TimeSpan get_MigrationLockTimeout();
+    public void set_MigrationLockTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public string get_ClientId();
+    [CompilerGeneratedAttribute]
+public bool get_CheckConnection();
+    [CompilerGeneratedAttribute]
+public void set_CheckConnection(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_ByPassMigration();
+    [CompilerGeneratedAttribute]
+public void set_ByPassMigration(bool value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_ConnectionCheckTimeout();
+    [CompilerGeneratedAttribute]
+public void set_ConnectionCheckTimeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_JobExpirationCheckInterval();
+    [CompilerGeneratedAttribute]
+public void set_JobExpirationCheckInterval(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public TimeSpan get_CountersAggregateInterval();
+    [CompilerGeneratedAttribute]
+public void set_CountersAggregateInterval(TimeSpan value);
+    public MongoMigrationOptions get_MigrationOptions();
+    public void set_MigrationOptions(MongoMigrationOptions value);
+}
+internal static class Hangfire.Mongo.MongoVersionHelper : object {
+    public static Version GetVersion(IMongoDatabase database);
+}
+public class Hangfire.Mongo.MongoWriteOnlyTransaction : JobStorageTransaction {
+    [CompilerGeneratedAttribute]
+private MongoStorageOptions <StorageOptions>k__BackingField;
+    protected static ILog Logger;
+    [CompilerGeneratedAttribute]
+private HangfireDbContext <DbContext>k__BackingField;
+    private List`1<WriteModel`1<BsonDocument>> _writeModels;
+    private Dictionary`2<string, MongoJobUpdates> _jobUpdates;
+    private MongoDistributedLock _distributedLock;
+    private List`1<MongoFetchedJob> _removedJobs;
+    [CompilerGeneratedAttribute]
+private HashSet`1<string> <JobsAddedToQueue>k__BackingField;
+    protected MongoStorageOptions StorageOptions { get; }
+    public HangfireDbContext DbContext { get; }
+    protected HashSet`1<string> JobsAddedToQueue { get; }
+    public MongoWriteOnlyTransaction(HangfireDbContext dbContext, MongoStorageOptions storageOptions);
+    private static MongoWriteOnlyTransaction();
+    [CompilerGeneratedAttribute]
+protected MongoStorageOptions get_StorageOptions();
+    [CompilerGeneratedAttribute]
+public HangfireDbContext get_DbContext();
+    [CompilerGeneratedAttribute]
+protected HashSet`1<string> get_JobsAddedToQueue();
+    private MongoJobUpdates GetOrAddJobUpdates(string jobId);
+    public virtual void Dispose();
+    public virtual void AcquireDistributedLock(string resource, TimeSpan timeout);
+    public virtual string CreateJob(Job job, IDictionary`2<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
+    public virtual void RemoveFromQueue(IFetchedJob fetchedJob);
+    public virtual void ExpireJob(string jobId, TimeSpan expireIn);
+    public virtual void RemoveFromQueue(ObjectId id, DateTime fetchedAt, string queue);
+    public virtual void Requeue(ObjectId id, string queue);
+    public virtual string CreateExpiredJob(Job job, IDictionary`2<string, string> parameters, DateTime createdAt, TimeSpan expireIn);
+    public virtual void PersistJob(string jobId);
+    public virtual void SetJobState(string jobId, IState state);
+    public virtual void AddJobState(string jobId, IState state);
+    public virtual void SetJobParameter(string id, string name, string value);
+    public virtual void AddToQueue(string queue, string jobId);
+    public virtual void IncrementCounter(string key);
+    public virtual void IncrementCounter(string key, TimeSpan expireIn);
+    public virtual void DecrementCounter(string key);
+    public virtual void DecrementCounter(string key, TimeSpan expireIn);
+    protected virtual void SetCounter(string key, long amount, Nullable`1<TimeSpan> expireIn);
+    public virtual void AddToSet(string key, string value);
+    public virtual void AddToSet(string key, string value, double score);
+    public virtual void RemoveFromSet(string key, string value);
+    public virtual void InsertToList(string key, string value);
+    public virtual void RemoveFromList(string key, string value);
+    public virtual void TrimList(string key, int keepStartingFrom, int keepEndingAt);
+    public virtual void SetRangeInHash(string key, IEnumerable`1<KeyValuePair`2<string, string>> keyValuePairs);
+    public virtual void RemoveHash(string key);
+    public virtual void Commit();
+    protected virtual void ExecuteCommit(IMongoCollection`1<BsonDocument> jobGraph, List`1<WriteModel`1<BsonDocument>> writeModels, BulkWriteOptions bulkWriteOptions);
+    protected virtual void Log(IList`1<WriteModel`1<BsonDocument>> writeModels, long elapsedMilliseconds);
+    public virtual void SignalJobsAddedToQueues(ICollection`1<string> queues);
+    public virtual string SerializeWriteModel(WriteModel`1<BsonDocument> writeModel);
+    public virtual void ExpireSet(string key, TimeSpan expireIn);
+    public virtual void ExpireList(string key, TimeSpan expireIn);
+    public virtual void ExpireHash(string key, TimeSpan expireIn);
+    public virtual void PersistSet(string key);
+    public virtual void PersistList(string key);
+    public virtual void PersistHash(string key);
+    public virtual void AddRangeToSet(string key, IList`1<string> items);
+    protected virtual void AddRangeToSet(string key, IList`1<string> items, double score);
+    public virtual void RemoveSet(string key);
+    public virtual bool ListDtoHasItem(string key, InsertOneModel`1<BsonDocument> model);
+    public virtual BsonDocument CreateSetFilter(string key, string value);
+    public virtual BsonDocument CreateSetFilter(string key);
+    public virtual BsonDocument CreateSetUpdate(string key, string value, double score);
+}
+internal class Hangfire.Mongo.State : object {
+    public static string Succeeded;
+    public static string Processing;
+    public static string Failed;
+    public static string Deleted;
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+internal class Microsoft.CodeAnalysis.EmbeddedAttribute : Attribute {
+}
+[CompilerGeneratedAttribute]
+[EmbeddedAttribute]
+[AttributeUsageAttribute("2")]
+internal class System.Runtime.CompilerServices.RefSafetyRulesAttribute : Attribute {
+    public int Version;
+    public RefSafetyRulesAttribute(int );
+}
