@@ -1,0 +1,196 @@
+public class OtpNet.Base32Encoding : object {
+    public static Byte[] ToBytes(string input);
+    public static string ToString(Byte[] input);
+    private static int CharToValue(char c);
+    private static char ValueToChar(byte b);
+}
+public class OtpNet.Hotp : Otp {
+    [CompilerGeneratedAttribute]
+private int <HotpSize>k__BackingField;
+    public int HotpSize { get; private set; }
+    public Hotp(Byte[] secretKey, OtpHashMode mode, int hotpSize);
+    public Hotp(IKeyProvider key, OtpHashMode mode, int hotpSize);
+    [CompilerGeneratedAttribute]
+public int get_HotpSize();
+    [CompilerGeneratedAttribute]
+private void set_HotpSize(int value);
+    public string ComputeHOTP(long counter);
+    public bool VerifyHotp(string hotp, long counter);
+    protected virtual string Compute(long counter, OtpHashMode mode);
+    private static void VerifyParameters(int hotpSize);
+}
+public interface OtpNet.IKeyProvider {
+    public abstract virtual Byte[] ComputeHmac(OtpHashMode mode, Byte[] data);
+}
+public class OtpNet.InMemoryKey : object {
+    private object _stateSync;
+    private Byte[] _keyData;
+    private int _keyLength;
+    public InMemoryKey(Byte[] key);
+    internal Byte[] GetCopyOfKey();
+    public sealed virtual Byte[] ComputeHmac(OtpHashMode mode, Byte[] data);
+    private static HMAC CreateHmacHash(OtpHashMode otpHashMode);
+}
+public static class OtpNet.KeyGeneration : object {
+    public static Byte[] GenerateRandomKey(int length);
+    public static Byte[] GenerateRandomKey(OtpHashMode mode);
+    public static Byte[] DeriveKeyFromMaster(IKeyProvider masterKey, Byte[] publicIdentifier, OtpHashMode mode);
+    public static Byte[] DeriveKeyFromMaster(IKeyProvider masterKey, int serialNumber, OtpHashMode mode);
+    private static int LengthForMode(OtpHashMode mode);
+}
+internal class OtpNet.KeyUtilities : object {
+    internal static void Destroy(Byte[] sensitiveData);
+    internal static Byte[] GetBigEndianBytes(long input);
+    internal static Byte[] GetBigEndianBytes(int input);
+}
+public abstract class OtpNet.Otp : object {
+    protected IKeyProvider _secretKey;
+    protected OtpHashMode _hashMode;
+    public OtpHashMode HashMode { get; }
+    public Otp(Byte[] secretKey, OtpHashMode mode);
+    public Otp(IKeyProvider key, OtpHashMode mode);
+    public OtpHashMode get_HashMode();
+    protected abstract virtual string Compute(long counter, OtpHashMode mode);
+    protected internal long CalculateOtp(Byte[] data, OtpHashMode mode);
+    protected internal static string Digits(long input, int digitCount);
+    protected bool Verify(long initialStep, string valueToVerify, Int64& matchedStep, VerificationWindow window);
+    private bool ValuesEqual(string a, string b);
+}
+public enum OtpNet.OtpHashMode : Enum {
+    public int value__;
+    public static OtpHashMode Sha1;
+    public static OtpHashMode Sha256;
+    public static OtpHashMode Sha512;
+}
+public enum OtpNet.OtpType : Enum {
+    public int value__;
+    public static OtpType Totp;
+    public static OtpType Hotp;
+}
+public class OtpNet.OtpUri : object {
+    [CompilerGeneratedAttribute]
+private OtpType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Secret>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <User>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <Issuer>k__BackingField;
+    [CompilerGeneratedAttribute]
+private OtpHashMode <Algorithm>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Digits>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Period>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <Counter>k__BackingField;
+    public OtpType Type { get; private set; }
+    public string Secret { get; private set; }
+    public string User { get; private set; }
+    public string Issuer { get; private set; }
+    public OtpHashMode Algorithm { get; private set; }
+    public int Digits { get; private set; }
+    public int Period { get; private set; }
+    public int Counter { get; private set; }
+    public OtpUri(OtpType schema, string secret, string user, string issuer, OtpHashMode algorithm, int digits, int period, int counter);
+    public OtpUri(OtpType schema, Byte[] secret, string user, string issuer, OtpHashMode algorithm, int digits, int period, int counter);
+    [CompilerGeneratedAttribute]
+public OtpType get_Type();
+    [CompilerGeneratedAttribute]
+private void set_Type(OtpType value);
+    [CompilerGeneratedAttribute]
+public string get_Secret();
+    [CompilerGeneratedAttribute]
+private void set_Secret(string value);
+    [CompilerGeneratedAttribute]
+public string get_User();
+    [CompilerGeneratedAttribute]
+private void set_User(string value);
+    [CompilerGeneratedAttribute]
+public string get_Issuer();
+    [CompilerGeneratedAttribute]
+private void set_Issuer(string value);
+    [CompilerGeneratedAttribute]
+public OtpHashMode get_Algorithm();
+    [CompilerGeneratedAttribute]
+private void set_Algorithm(OtpHashMode value);
+    [CompilerGeneratedAttribute]
+public int get_Digits();
+    [CompilerGeneratedAttribute]
+private void set_Digits(int value);
+    [CompilerGeneratedAttribute]
+public int get_Period();
+    [CompilerGeneratedAttribute]
+private void set_Period(int value);
+    [CompilerGeneratedAttribute]
+public int get_Counter();
+    [CompilerGeneratedAttribute]
+private void set_Counter(int value);
+    public Uri ToUri();
+    public virtual string ToString();
+}
+public class OtpNet.TimeCorrection : object {
+    public static TimeCorrection UncorrectedInstance;
+    [CompilerGeneratedAttribute]
+private TimeSpan <CorrectionFactor>k__BackingField;
+    public TimeSpan CorrectionFactor { get; }
+    public DateTime CorrectedUtcNow { get; }
+    public TimeCorrection(DateTime correctUtc);
+    public TimeCorrection(DateTime correctTime, DateTime referenceTime);
+    private static TimeCorrection();
+    [CompilerGeneratedAttribute]
+public TimeSpan get_CorrectionFactor();
+    public DateTime get_CorrectedUtcNow();
+    public DateTime GetCorrectedTime(DateTime referenceTime);
+}
+public class OtpNet.Totp : Otp {
+    private static long UnicEpocTicks;
+    private static long TicksToSeconds;
+    [CompilerGeneratedAttribute]
+private int <Step>k__BackingField;
+    [CompilerGeneratedAttribute]
+private int <TotpSize>k__BackingField;
+    [CompilerGeneratedAttribute]
+private TimeCorrection <TimeCorrection>k__BackingField;
+    public int Step { get; private set; }
+    public int TotpSize { get; private set; }
+    public TimeCorrection TimeCorrection { get; private set; }
+    public Totp(Byte[] secretKey, int step, OtpHashMode mode, int totpSize, TimeCorrection timeCorrection);
+    public Totp(IKeyProvider key, int step, OtpHashMode mode, int totpSize, TimeCorrection timeCorrection);
+    [CompilerGeneratedAttribute]
+public int get_Step();
+    [CompilerGeneratedAttribute]
+private void set_Step(int value);
+    [CompilerGeneratedAttribute]
+public int get_TotpSize();
+    [CompilerGeneratedAttribute]
+private void set_TotpSize(int value);
+    [CompilerGeneratedAttribute]
+public TimeCorrection get_TimeCorrection();
+    [CompilerGeneratedAttribute]
+private void set_TimeCorrection(TimeCorrection value);
+    public string ComputeTotp(DateTime timestamp);
+    public string ComputeTotp();
+    public bool VerifyTotp(string totp, Int64& timeStepMatched, VerificationWindow window);
+    public bool VerifyTotp(DateTime timestamp, string totp, Int64& timeStepMatched, VerificationWindow window);
+    public int RemainingSeconds();
+    public int RemainingSeconds(DateTime timestamp);
+    public DateTime WindowStart();
+    public DateTime WindowStart(DateTime timestamp);
+    protected virtual string Compute(long counter, OtpHashMode mode);
+    private static void VerifyParameters(int step, int totpSize);
+    private string ComputeTotpFromSpecificTime(DateTime timestamp);
+    private bool VerifyTotpForSpecificTime(DateTime timestamp, string totp, VerificationWindow window, Int64& timeStepMatched);
+    private long CalculateTimeStepFromTimestamp(DateTime timestamp);
+    private int RemainingSecondsForSpecificTime(DateTime timestamp);
+    private DateTime WindowStartForSpecificTime(DateTime timestamp);
+}
+public class OtpNet.VerificationWindow : object {
+    private int _previous;
+    private int _future;
+    public static VerificationWindow RfcSpecifiedNetworkDelay;
+    public VerificationWindow(int previous, int future);
+    private static VerificationWindow();
+    [IteratorStateMachineAttribute("OtpNet.VerificationWindow/<ValidationCandidates>d__3")]
+public IEnumerable`1<long> ValidationCandidates(long initialFrame);
+}

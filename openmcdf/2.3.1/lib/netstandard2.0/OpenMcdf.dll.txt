@@ -1,0 +1,714 @@
+public class OpenMcdf.CFCorruptedFileException : CFException {
+    protected CFCorruptedFileException(SerializationInfo info, StreamingContext context);
+    public CFCorruptedFileException(string message);
+    public CFCorruptedFileException(string message, Exception innerException);
+}
+public class OpenMcdf.CFDisposedException : CFException {
+    protected CFDisposedException(SerializationInfo info, StreamingContext context);
+    public CFDisposedException(string message);
+    public CFDisposedException(string message, Exception innerException);
+}
+public class OpenMcdf.CFDuplicatedItemException : CFException {
+    protected CFDuplicatedItemException(SerializationInfo info, StreamingContext context);
+    public CFDuplicatedItemException(string message);
+    public CFDuplicatedItemException(string message, Exception innerException);
+}
+public class OpenMcdf.CFException : Exception {
+    protected CFException(SerializationInfo info, StreamingContext context);
+    public CFException(string message);
+    public CFException(string message, Exception innerException);
+}
+public class OpenMcdf.CFFileFormatException : CFException {
+    protected CFFileFormatException(SerializationInfo info, StreamingContext context);
+    public CFFileFormatException(string message);
+    public CFFileFormatException(string message, Exception innerException);
+}
+public class OpenMcdf.CFInvalidOperation : CFException {
+    protected CFInvalidOperation(SerializationInfo info, StreamingContext context);
+    public CFInvalidOperation(string message);
+    public CFInvalidOperation(string message, Exception innerException);
+}
+public abstract class OpenMcdf.CFItem : object {
+    private CompoundFile compoundFile;
+    private IDirectoryEntry dirEntry;
+    protected CompoundFile CompoundFile { get; }
+    internal IDirectoryEntry DirEntry { get; internal set; }
+    public string Name { get; }
+    public long Size { get; }
+    public bool IsStorage { get; }
+    public bool IsStream { get; }
+    public bool IsRoot { get; }
+    public DateTime CreationDate { get; public set; }
+    public DateTime ModifyDate { get; public set; }
+    public Guid CLSID { get; public set; }
+    protected CFItem(CompoundFile compoundFile);
+    protected CompoundFile get_CompoundFile();
+    protected void CheckDisposed();
+    internal IDirectoryEntry get_DirEntry();
+    internal void set_DirEntry(IDirectoryEntry value);
+    internal int CompareTo(CFItem other);
+    public int CompareTo(object obj);
+    public static bool op_Equality(CFItem leftItem, CFItem rightItem);
+    public static bool op_Inequality(CFItem leftItem, CFItem rightItem);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+    public string get_Name();
+    public long get_Size();
+    public bool get_IsStorage();
+    public bool get_IsStream();
+    public bool get_IsRoot();
+    public DateTime get_CreationDate();
+    public void set_CreationDate(DateTime value);
+    public DateTime get_ModifyDate();
+    public void set_ModifyDate(DateTime value);
+    public Guid get_CLSID();
+    public void set_CLSID(Guid value);
+    private sealed virtual override int System.IComparable<OpenMcdf.CFItem>.CompareTo(CFItem other);
+    public virtual string ToString();
+}
+internal class OpenMcdf.CFItemComparer : object {
+    public sealed virtual int Compare(CFItem x, CFItem y);
+}
+public class OpenMcdf.CFItemNotFound : CFException {
+    protected CFItemNotFound(SerializationInfo info, StreamingContext context);
+    public CFItemNotFound(string message);
+    public CFItemNotFound(string message, Exception innerException);
+}
+[FlagsAttribute]
+public enum OpenMcdf.CFSConfiguration : Enum {
+    public int value__;
+    public static CFSConfiguration Default;
+    public static CFSConfiguration SectorRecycle;
+    public static CFSConfiguration EraseFreeSectors;
+    public static CFSConfiguration NoValidationException;
+    public static CFSConfiguration LeaveOpen;
+}
+public class OpenMcdf.CFStorage : CFItem {
+    private RBTree children;
+    internal RBTree Children { get; }
+    internal CFStorage(CompoundFile compFile, IDirectoryEntry dirEntry);
+    internal RBTree get_Children();
+    private RBTree LoadChildren(int SID);
+    public CFStream AddStream(string streamName);
+    public CFStream GetStream(string streamName);
+    public bool TryGetStream(string streamName, CFStream& cfStream);
+    [ObsoleteAttribute("Please use TryGetStream(string, out cfStream) instead.")]
+public CFStream TryGetStream(string streamName);
+    public CFStorage GetStorage(string storageName);
+    [ObsoleteAttribute("Please use TryGetStorage(string, out cfStorage) instead.")]
+public CFStorage TryGetStorage(string storageName);
+    public bool TryGetStorage(string storageName, CFStorage& cfStorage);
+    public CFStorage AddStorage(string storageName);
+    public void VisitEntries(Action`1<CFItem> action, bool recursive);
+    public void Delete(string entryName);
+    public void RenameItem(string oldItemName, string newItemName);
+}
+public class OpenMcdf.CFStream : CFItem {
+    internal CFStream(CompoundFile compoundFile, IDirectoryEntry dirEntry);
+    public void SetData(Byte[] data);
+    public void Write(Byte[] data, long position);
+    internal void Write(Byte[] data, long position, int offset, int count);
+    public void Append(Byte[] data);
+    public Byte[] GetData();
+    public int Read(Byte[] buffer, long position, int count);
+    internal int Read(Byte[] buffer, long position, int offset, int count);
+    public void CopyFrom(Stream input);
+    public void Resize(long length);
+}
+public enum OpenMcdf.CFSUpdateMode : Enum {
+    public int value__;
+    public static CFSUpdateMode ReadOnly;
+    public static CFSUpdateMode Update;
+}
+public enum OpenMcdf.CFSVersion : Enum {
+    public int value__;
+    public static CFSVersion Ver_3;
+    public static CFSVersion Ver_4;
+}
+public class OpenMcdf.CompoundFile : object {
+    private CFSConfiguration configuration;
+    private static int HEADER_DIFAT_ENTRIES_COUNT;
+    private int DIFAT_SECTOR_FAT_ENTRIES_COUNT;
+    private int FAT_SECTOR_ENTRIES_COUNT;
+    private static int SIZE_OF_SID;
+    private bool sectorRecycle;
+    private bool eraseFreeSectors;
+    private static int FLUSHING_QUEUE_SIZE;
+    private static int FLUSHING_BUFFER_MAX_SIZE;
+    private SectorCollection sectors;
+    private Header header;
+    internal Stream sourceStream;
+    private bool validationExceptionEnabled;
+    private CFSUpdateMode updateMode;
+    private string fileName;
+    internal bool _transactionLockAdded;
+    internal int _lockSectorId;
+    internal bool _transactionLockAllocated;
+    private CFStorage rootStorage;
+    private List`1<int> levelSIDs;
+    private bool closeStream;
+    private bool _disposed;
+    private object lockObject;
+    private List`1<IDirectoryEntry> directoryEntries;
+    public CFSConfiguration Configuration { get; }
+    public bool ValidationExceptionEnabled { get; }
+    public bool HasSourceStream { get; }
+    public CFStorage RootStorage { get; }
+    public CFSVersion Version { get; }
+    internal bool IsClosed { get; }
+    internal IDirectoryEntry RootEntry { get; }
+    public CompoundFile(CFSVersion cfsVersion, CFSConfiguration configFlags);
+    public CompoundFile(string fileName);
+    public CompoundFile(string fileName, CFSUpdateMode updateMode, CFSConfiguration configParameters);
+    public CompoundFile(Stream stream, CFSUpdateMode updateMode, CFSConfiguration configParameters);
+    public CompoundFile(Stream stream);
+    public CFSConfiguration get_Configuration();
+    internal int GetSectorSize();
+    private void OnSizeLimitReached();
+    public bool get_ValidationExceptionEnabled();
+    public void Commit();
+    public void Commit(bool releaseMemory);
+    private void Load(Stream stream);
+    private void ValidateHeader(Header header);
+    private void LoadFile(string fileName);
+    private void LoadStream(Stream stream);
+    public bool get_HasSourceStream();
+    private void PersistMiniStreamToStream(List`1<Sector> miniSectorChain);
+    private void AllocateMiniSectorChain(List`1<Sector> sectorChain);
+    internal void FreeData(CFStream stream);
+    private void FreeChain(List`1<Sector> sectorChain, bool zeroSector);
+    private void FreeChain(List`1<Sector> sectorChain, int nth_sector_to_remove, bool zeroSector);
+    private void FreeMiniChain(List`1<Sector> sectorChain, bool zeroSector);
+    private void FreeMiniChain(List`1<Sector> sectorChain, int nth_sector_to_remove, bool zeroSector);
+    private void SetSectorChain(List`1<Sector> sectorChain);
+    private void AllocateSectorChain(List`1<Sector> sectorChain);
+    private void CheckForLockSector();
+    private void AllocateFATSectorChain(List`1<Sector> sectorChain);
+    private void AllocateDIFATSectorChain(List`1<Sector> FATsectorChain);
+    private List`1<Sector> GetDifatSectorChain();
+    private void EnsureUniqueSectorIndex(int nextSecID, HashSet`1<int> processedSectors);
+    private List`1<Sector> GetFatSectorChain();
+    private List`1<Sector> GetNormalSectorChain(int secID);
+    private List`1<Sector> GetMiniSectorChain(int secID);
+    internal List`1<Sector> GetSectorChain(int secID, SectorType chainType);
+    public CFStorage get_RootStorage();
+    public CFSVersion get_Version();
+    internal void ResetDirectoryEntry(int sid);
+    internal RBTree CreateNewTree();
+    internal RBTree GetChildrenTree(int sid);
+    private RBTree DoLoadChildrenTrusted(IDirectoryEntry de);
+    private void DoLoadChildren(RBTree bst, IDirectoryEntry de);
+    private void NullifyChildNodes(IDirectoryEntry de);
+    private void LoadSiblings(RBTree bst, IDirectoryEntry de);
+    private void DoLoadSiblings(RBTree bst, IDirectoryEntry de);
+    private bool ValidateSibling(int sid);
+    private void LoadDirectories();
+    private void CommitDirectory();
+    public void SaveAs(string fileName);
+    [ObsoleteAttribute("Use SaveAs method")]
+public void Save(string fileName);
+    public void Save(Stream stream);
+    internal Queue`1<Sector> FindFreeSectors(SectorType sType);
+    internal void AppendData(CFItem cfItem, Byte[] buffer);
+    internal void SetStreamLength(CFItem cfItem, long length);
+    internal void WriteData(CFItem cfItem, long position, Byte[] buffer);
+    internal void WriteData(CFItem cfItem, Byte[] buffer, long position, int offset, int count);
+    internal void WriteData(CFItem cfItem, Byte[] buffer);
+    private void CheckFileLength();
+    internal int ReadData(CFStream cFStream, long position, Byte[] buffer, int count);
+    internal int ReadData(CFStream cFStream, long position, Byte[] buffer, int offset, int count);
+    internal Byte[] GetData(CFStream cFStream);
+    public Byte[] GetDataBySID(int sid);
+    public Guid getGuidBySID(int sid);
+    public Guid getGuidForStream(int sid);
+    private static int Ceiling(double d);
+    private static int LowSaturation(int i);
+    internal void InvalidateDirectoryEntry(int sid);
+    internal void FreeAssociatedData(int sid);
+    public void Close();
+    [ObsoleteAttribute("Use flag LeaveOpen in CompoundFile constructor")]
+public void Close(bool closeStream);
+    private sealed virtual override void System.IDisposable.Dispose();
+    protected virtual void Dispose(bool disposing);
+    internal bool get_IsClosed();
+    internal IList`1<IDirectoryEntry> GetDirectories();
+    internal IDirectoryEntry get_RootEntry();
+    private IList`1<IDirectoryEntry> FindDirectoryEntries(string entryName);
+    public IList`1<CFItem> GetAllNamedEntries(string entryName);
+    public int GetNumDirectories();
+    public string GetNameDirEntry(int id);
+    public StgType GetStorageType(int id);
+    public static void ShrinkCompoundFile(Stream s);
+    public static void ShrinkCompoundFile(string fileName);
+    private static void DoCompression(CFStorage currSrcStorage, CFStorage currDstStorage);
+}
+internal class OpenMcdf.DirectoryEntry : object {
+    internal static int THIS_IS_GREATER;
+    internal static int OTHER_IS_GREATER;
+    private IList`1<IDirectoryEntry> dirRepository;
+    private int sid;
+    internal static int NOSTREAM;
+    internal static int ZERO;
+    private Byte[] entryName;
+    private ushort nameLength;
+    private StgType stgType;
+    private StgColor stgColor;
+    private int leftSibling;
+    private int rightSibling;
+    private int child;
+    private Guid storageCLSID;
+    private int stateBits;
+    private Byte[] creationDate;
+    private Byte[] modifyDate;
+    private int startSetc;
+    private long size;
+    private IDirectoryEntry parent;
+    public int SID { get; public set; }
+    public Byte[] EntryName { get; }
+    public ushort NameLength { get; public set; }
+    public StgType StgType { get; public set; }
+    public StgColor StgColor { get; public set; }
+    public int LeftSibling { get; public set; }
+    public int RightSibling { get; public set; }
+    public int Child { get; public set; }
+    public Guid StorageCLSID { get; public set; }
+    public int StateBits { get; public set; }
+    public Byte[] CreationDate { get; public set; }
+    public Byte[] ModifyDate { get; public set; }
+    public int StartSetc { get; public set; }
+    public long Size { get; public set; }
+    public string Name { get; }
+    public IRBNode Left { get; public set; }
+    public IRBNode Right { get; public set; }
+    public Color Color { get; public set; }
+    public IRBNode Parent { get; public set; }
+    private DirectoryEntry(string name, StgType stgType, IList`1<IDirectoryEntry> dirRepository);
+    private static DirectoryEntry();
+    public sealed virtual int get_SID();
+    public sealed virtual void set_SID(int value);
+    public sealed virtual Byte[] get_EntryName();
+    public sealed virtual string GetEntryName();
+    public sealed virtual void SetEntryName(string entryName);
+    public sealed virtual ushort get_NameLength();
+    public sealed virtual void set_NameLength(ushort value);
+    public sealed virtual StgType get_StgType();
+    public sealed virtual void set_StgType(StgType value);
+    public sealed virtual StgColor get_StgColor();
+    public sealed virtual void set_StgColor(StgColor value);
+    public sealed virtual int get_LeftSibling();
+    public sealed virtual void set_LeftSibling(int value);
+    public sealed virtual int get_RightSibling();
+    public sealed virtual void set_RightSibling(int value);
+    public sealed virtual int get_Child();
+    public sealed virtual void set_Child(int value);
+    public sealed virtual Guid get_StorageCLSID();
+    public sealed virtual void set_StorageCLSID(Guid value);
+    public sealed virtual int get_StateBits();
+    public sealed virtual void set_StateBits(int value);
+    public sealed virtual Byte[] get_CreationDate();
+    public sealed virtual void set_CreationDate(Byte[] value);
+    public sealed virtual Byte[] get_ModifyDate();
+    public sealed virtual void set_ModifyDate(Byte[] value);
+    public sealed virtual int get_StartSetc();
+    public sealed virtual void set_StartSetc(int value);
+    public sealed virtual long get_Size();
+    public sealed virtual void set_Size(long value);
+    public sealed virtual int CompareTo(object obj);
+    public virtual bool Equals(object obj);
+    private static ulong fnv_hash(Byte[] buffer);
+    public virtual int GetHashCode();
+    public sealed virtual void Write(Stream stream);
+    public sealed virtual void Read(Stream stream, CFSVersion ver);
+    public sealed virtual string get_Name();
+    public sealed virtual IRBNode get_Left();
+    public sealed virtual void set_Left(IRBNode value);
+    public sealed virtual IRBNode get_Right();
+    public sealed virtual void set_Right(IRBNode value);
+    public sealed virtual Color get_Color();
+    public sealed virtual void set_Color(Color value);
+    public sealed virtual IRBNode get_Parent();
+    public sealed virtual void set_Parent(IRBNode value);
+    public sealed virtual IRBNode Grandparent();
+    public sealed virtual IRBNode Sibling();
+    public sealed virtual IRBNode Uncle();
+    internal static IDirectoryEntry New(string name, StgType stgType, IList`1<IDirectoryEntry> dirRepository);
+    internal static IDirectoryEntry Mock(string name, StgType stgType);
+    internal static IDirectoryEntry TryNew(string name, StgType stgType, IList`1<IDirectoryEntry> dirRepository);
+    public virtual string ToString();
+    public sealed virtual void AssignValueTo(IRBNode other);
+}
+internal class OpenMcdf.Header : object {
+    private Byte[] headerSignature;
+    private Byte[] clsid;
+    private ushort minorVersion;
+    private ushort majorVersion;
+    private ushort byteOrder;
+    private ushort sectorShift;
+    private ushort miniSectorShift;
+    private Byte[] unUsed;
+    private int directorySectorsNumber;
+    private int fatSectorsNumber;
+    private int firstDirectorySectorID;
+    private UInt32 unUsed2;
+    private UInt32 minSizeStandardStream;
+    private int firstMiniFATSectorID;
+    private UInt32 miniFATSectorsNumber;
+    private int firstDIFATSectorID;
+    private UInt32 difatSectorsNumber;
+    private Int32[] difat;
+    private Byte[] OLE_CFS_SIGNATURE;
+    public Byte[] HeaderSignature { get; }
+    public Byte[] CLSID { get; public set; }
+    public ushort MinorVersion { get; }
+    public ushort MajorVersion { get; }
+    public ushort ByteOrder { get; }
+    public ushort SectorShift { get; }
+    public ushort MiniSectorShift { get; }
+    public Byte[] UnUsed { get; }
+    public int DirectorySectorsNumber { get; public set; }
+    public int FATSectorsNumber { get; public set; }
+    public int FirstDirectorySectorID { get; public set; }
+    public UInt32 UnUsed2 { get; }
+    public UInt32 MinSizeStandardStream { get; public set; }
+    public int FirstMiniFATSectorID { get; public set; }
+    public UInt32 MiniFATSectorsNumber { get; public set; }
+    public int FirstDIFATSectorID { get; public set; }
+    public UInt32 DIFATSectorsNumber { get; public set; }
+    public Int32[] DIFAT { get; }
+    public Header(ushort version);
+    public Byte[] get_HeaderSignature();
+    public Byte[] get_CLSID();
+    public void set_CLSID(Byte[] value);
+    public ushort get_MinorVersion();
+    public ushort get_MajorVersion();
+    public ushort get_ByteOrder();
+    public ushort get_SectorShift();
+    public ushort get_MiniSectorShift();
+    public Byte[] get_UnUsed();
+    public int get_DirectorySectorsNumber();
+    public void set_DirectorySectorsNumber(int value);
+    public int get_FATSectorsNumber();
+    public void set_FATSectorsNumber(int value);
+    public int get_FirstDirectorySectorID();
+    public void set_FirstDirectorySectorID(int value);
+    public UInt32 get_UnUsed2();
+    public UInt32 get_MinSizeStandardStream();
+    public void set_MinSizeStandardStream(UInt32 value);
+    public int get_FirstMiniFATSectorID();
+    public void set_FirstMiniFATSectorID(int value);
+    public UInt32 get_MiniFATSectorsNumber();
+    public void set_MiniFATSectorsNumber(UInt32 value);
+    public int get_FirstDIFATSectorID();
+    public void set_FirstDIFATSectorID(int value);
+    public UInt32 get_DIFATSectorsNumber();
+    public void set_DIFATSectorsNumber(UInt32 value);
+    public Int32[] get_DIFAT();
+    public void Write(Stream stream);
+    public void Read(Stream stream);
+    private void CheckVersion();
+    private void CheckSignature();
+}
+internal interface OpenMcdf.IDirectoryEntry {
+    public int Child { get; public set; }
+    public Byte[] CreationDate { get; public set; }
+    public Byte[] EntryName { get; }
+    public int LeftSibling { get; public set; }
+    public Byte[] ModifyDate { get; public set; }
+    public string Name { get; }
+    public ushort NameLength { get; public set; }
+    public int RightSibling { get; public set; }
+    public int SID { get; public set; }
+    public long Size { get; public set; }
+    public int StartSetc { get; public set; }
+    public int StateBits { get; public set; }
+    public StgColor StgColor { get; public set; }
+    public StgType StgType { get; public set; }
+    public Guid StorageCLSID { get; public set; }
+    public abstract virtual int get_Child();
+    public abstract virtual void set_Child(int value);
+    public abstract virtual Byte[] get_CreationDate();
+    public abstract virtual void set_CreationDate(Byte[] value);
+    public abstract virtual Byte[] get_EntryName();
+    public abstract virtual string GetEntryName();
+    public abstract virtual int get_LeftSibling();
+    public abstract virtual void set_LeftSibling(int value);
+    public abstract virtual Byte[] get_ModifyDate();
+    public abstract virtual void set_ModifyDate(Byte[] value);
+    public abstract virtual string get_Name();
+    public abstract virtual ushort get_NameLength();
+    public abstract virtual void set_NameLength(ushort value);
+    public abstract virtual void Read(Stream stream, CFSVersion ver);
+    public abstract virtual int get_RightSibling();
+    public abstract virtual void set_RightSibling(int value);
+    public abstract virtual void SetEntryName(string entryName);
+    public abstract virtual int get_SID();
+    public abstract virtual void set_SID(int value);
+    public abstract virtual long get_Size();
+    public abstract virtual void set_Size(long value);
+    public abstract virtual int get_StartSetc();
+    public abstract virtual void set_StartSetc(int value);
+    public abstract virtual int get_StateBits();
+    public abstract virtual void set_StateBits(int value);
+    public abstract virtual StgColor get_StgColor();
+    public abstract virtual void set_StgColor(StgColor value);
+    public abstract virtual StgType get_StgType();
+    public abstract virtual void set_StgType(StgType value);
+    public abstract virtual Guid get_StorageCLSID();
+    public abstract virtual void set_StorageCLSID(Guid value);
+    public abstract virtual void Write(Stream stream);
+}
+internal class OpenMcdf.Sector : object {
+    public static int MINISECTOR_SIZE;
+    public static int FREESECT;
+    public static int ENDOFCHAIN;
+    public static int FATSECT;
+    public static int DIFSECT;
+    private bool dirtyFlag;
+    private int size;
+    private Stream stream;
+    private SectorType type;
+    private int id;
+    private Byte[] data;
+    private object lockObject;
+    private bool _disposed;
+    public bool DirtyFlag { get; public set; }
+    public bool IsStreamed { get; }
+    internal SectorType Type { get; internal set; }
+    public int Id { get; public set; }
+    public int Size { get; }
+    public Sector(int size, Stream stream);
+    public Sector(int size, Byte[] data);
+    public Sector(int size);
+    private static Sector();
+    public bool get_DirtyFlag();
+    public void set_DirtyFlag(bool value);
+    public bool get_IsStreamed();
+    internal SectorType get_Type();
+    internal void set_Type(SectorType value);
+    public int get_Id();
+    public void set_Id(int value);
+    public int get_Size();
+    public Byte[] GetData();
+    public void ZeroData();
+    public void InitFATData();
+    internal void ReleaseData();
+    protected virtual void Dispose(bool disposing);
+    private sealed virtual override void System.IDisposable.Dispose();
+}
+[DefaultMemberAttribute("Item")]
+internal class OpenMcdf.SectorCollection : object {
+    private static int MAX_SECTOR_V4_COUNT_LOCK_RANGE;
+    private static int SLICE_SIZE;
+    private int count;
+    [CompilerGeneratedAttribute]
+private Ver3SizeLimitReached OnVer3SizeLimitReached;
+    private List`1<ArrayList> largeArraySlices;
+    private bool sizeLimitReached;
+    public Sector Item { get; public set; }
+    public int Count { get; }
+    public bool IsReadOnly { get; }
+    [CompilerGeneratedAttribute]
+public void add_OnVer3SizeLimitReached(Ver3SizeLimitReached value);
+    [CompilerGeneratedAttribute]
+public void remove_OnVer3SizeLimitReached(Ver3SizeLimitReached value);
+    private void DoCheckSizeLimitReached();
+    public sealed virtual int IndexOf(Sector item);
+    public sealed virtual void Insert(int index, Sector item);
+    public sealed virtual void RemoveAt(int index);
+    public sealed virtual Sector get_Item(int index);
+    public sealed virtual void set_Item(int index, Sector value);
+    private int add(Sector item);
+    public sealed virtual void Add(Sector item);
+    public sealed virtual void Clear();
+    public sealed virtual bool Contains(Sector item);
+    public sealed virtual void CopyTo(Sector[] array, int arrayIndex);
+    public sealed virtual int get_Count();
+    public sealed virtual bool get_IsReadOnly();
+    public sealed virtual bool Remove(Sector item);
+    [IteratorStateMachineAttribute("OpenMcdf.SectorCollection/<GetEnumerator>d__26")]
+public sealed virtual IEnumerator`1<Sector> GetEnumerator();
+    [IteratorStateMachineAttribute("OpenMcdf.SectorCollection/<System-Collections-IEnumerable-GetEnumerator>d__27")]
+private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+internal enum OpenMcdf.SectorType : Enum {
+    public int value__;
+    public static SectorType Normal;
+    public static SectorType Mini;
+    public static SectorType FAT;
+    public static SectorType DIFAT;
+    public static SectorType RangeLockSector;
+    public static SectorType Directory;
+}
+public enum OpenMcdf.StgColor : Enum {
+    public int value__;
+    public static StgColor Red;
+    public static StgColor Black;
+}
+public enum OpenMcdf.StgType : Enum {
+    public int value__;
+    public static StgType StgInvalid;
+    public static StgType StgStorage;
+    public static StgType StgStream;
+    public static StgType StgLockbytes;
+    public static StgType StgProperty;
+    public static StgType StgRoot;
+}
+internal class OpenMcdf.StreamRW : object {
+    private Byte[] buffer;
+    private Stream stream;
+    public StreamRW(Stream stream);
+    public long Seek(long offset);
+    public byte ReadByte();
+    public ushort ReadUInt16();
+    public int ReadInt32();
+    public UInt32 ReadUInt32();
+    public long ReadInt64();
+    public ulong ReadUInt64();
+    public Byte[] ReadBytes(int count);
+    public Byte[] ReadBytes(int count, Int32& r_count);
+    public void Write(byte b);
+    public void Write(ushort value);
+    public void Write(int value);
+    public void Write(long value);
+    public void Write(UInt32 value);
+    public void Write(Byte[] value);
+    public void Close();
+}
+internal class OpenMcdf.StreamView : Stream {
+    private int sectorSize;
+    private long position;
+    private List`1<Sector> sectorChain;
+    private Stream stream;
+    private bool isFatStream;
+    private List`1<Sector> freeSectors;
+    private long length;
+    private Byte[] buf;
+    public IEnumerable`1<Sector> FreeSectors { get; }
+    public List`1<Sector> BaseSectorChain { get; }
+    public bool CanRead { get; }
+    public bool CanSeek { get; }
+    public bool CanWrite { get; }
+    public long Length { get; }
+    public long Position { get; public set; }
+    public StreamView(List`1<Sector> sectorChain, int sectorSize, Stream stream);
+    public StreamView(List`1<Sector> sectorChain, int sectorSize, long length, Queue`1<Sector> availableSectors, Stream stream, bool isFatStream);
+    public IEnumerable`1<Sector> get_FreeSectors();
+    public List`1<Sector> get_BaseSectorChain();
+    public virtual bool get_CanRead();
+    public virtual bool get_CanSeek();
+    public virtual bool get_CanWrite();
+    public virtual void Flush();
+    public virtual long get_Length();
+    public virtual long get_Position();
+    public virtual void set_Position(long value);
+    public virtual void Close();
+    public int ReadInt32();
+    public virtual int Read(Byte[] buffer, int offset, int count);
+    public virtual long Seek(long offset, SeekOrigin origin);
+    private void adjustLength(long value);
+    private void adjustLength(long value, Queue`1<Sector> availableSectors);
+    public virtual void SetLength(long value);
+    public void WriteInt32(int val);
+    public virtual void Write(Byte[] buffer, int offset, int count);
+}
+public class OpenMcdf.Ver3SizeLimitReached : MulticastDelegate {
+    public Ver3SizeLimitReached(object object, IntPtr method);
+    public virtual void Invoke();
+    public virtual IAsyncResult BeginInvoke(AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public class OpenMcdf.VisitedEntryAction : MulticastDelegate {
+    public VisitedEntryAction(object object, IntPtr method);
+    public virtual void Invoke(CFItem item);
+    public virtual IAsyncResult BeginInvoke(CFItem item, AsyncCallback callback, object object);
+    public virtual void EndInvoke(IAsyncResult result);
+}
+public enum RedBlackTree.Color : Enum {
+    public int value__;
+    public static Color RED;
+    public static Color BLACK;
+}
+public interface RedBlackTree.IRBNode {
+    public IRBNode Left { get; public set; }
+    public IRBNode Right { get; public set; }
+    public Color Color { get; public set; }
+    public IRBNode Parent { get; public set; }
+    public abstract virtual IRBNode get_Left();
+    public abstract virtual void set_Left(IRBNode value);
+    public abstract virtual IRBNode get_Right();
+    public abstract virtual void set_Right(IRBNode value);
+    public abstract virtual Color get_Color();
+    public abstract virtual void set_Color(Color value);
+    public abstract virtual IRBNode get_Parent();
+    public abstract virtual void set_Parent(IRBNode value);
+    public abstract virtual IRBNode Grandparent();
+    public abstract virtual IRBNode Sibling();
+    public abstract virtual IRBNode Uncle();
+    public abstract virtual void AssignValueTo(IRBNode other);
+}
+internal enum RedBlackTree.NodeOperation : Enum {
+    public int value__;
+    public static NodeOperation LeftAssigned;
+    public static NodeOperation RightAssigned;
+    public static NodeOperation ColorAssigned;
+    public static NodeOperation ParentAssigned;
+    public static NodeOperation ValueAssigned;
+}
+public class RedBlackTree.RBTree : object {
+    [CompilerGeneratedAttribute]
+private IRBNode <Root>k__BackingField;
+    private static int INDENT_STEP;
+    [CompilerGeneratedAttribute]
+private Action`1<IRBNode> NodeInserted;
+    [CompilerGeneratedAttribute]
+private Action`2<IRBNode, NodeOperation> NodeOperation;
+    public IRBNode Root { get; public set; }
+    public RBTree(IRBNode root);
+    private static RBTree();
+    [CompilerGeneratedAttribute]
+public IRBNode get_Root();
+    [CompilerGeneratedAttribute]
+public void set_Root(IRBNode value);
+    private static Color NodeColor(IRBNode n);
+    private IRBNode LookupNode(IRBNode template);
+    public bool TryLookup(IRBNode template, IRBNode& val);
+    private void ReplaceNode(IRBNode oldn, IRBNode newn);
+    private void RotateLeft(IRBNode n);
+    private void RotateRight(IRBNode n);
+    public void Insert(IRBNode newNode);
+    private void InsertCase1(IRBNode n);
+    private void InsertCase2(IRBNode n);
+    private void InsertCase3(IRBNode n);
+    private void InsertCase4(IRBNode n);
+    private void InsertCase5(IRBNode n);
+    private static IRBNode MaximumNode(IRBNode n);
+    public void Delete(IRBNode template, IRBNode& deletedAlt);
+    private void DeleteCase1(IRBNode n);
+    private void DeleteCase2(IRBNode n);
+    private void DeleteCase3(IRBNode n);
+    private void DeleteCase4(IRBNode n);
+    private void DeleteCase5(IRBNode n);
+    private void DeleteCase6(IRBNode n);
+    public void VisitTree(Action`1<IRBNode> action);
+    private void DoVisitTree(Action`1<IRBNode> action, IRBNode walker);
+    internal void VisitTreeNodes(Action`1<IRBNode> action);
+    private void DoVisitTreeNodes(Action`1<IRBNode> action, IRBNode walker);
+    public RBTreeEnumerator GetEnumerator();
+    public void Print();
+    private static void PrintHelper(IRBNode n, int indent);
+    internal void FireNodeOperation(IRBNode node, NodeOperation operation);
+    [CompilerGeneratedAttribute]
+internal void add_NodeInserted(Action`1<IRBNode> value);
+    [CompilerGeneratedAttribute]
+internal void remove_NodeInserted(Action`1<IRBNode> value);
+    [CompilerGeneratedAttribute]
+internal void add_NodeOperation(Action`2<IRBNode, NodeOperation> value);
+    [CompilerGeneratedAttribute]
+internal void remove_NodeOperation(Action`2<IRBNode, NodeOperation> value);
+}
+public class RedBlackTree.RBTreeDuplicatedItemException : RBTreeException {
+    public RBTreeDuplicatedItemException(string msg);
+}
+public class RedBlackTree.RBTreeException : Exception {
+    public RBTreeException(string msg);
+}

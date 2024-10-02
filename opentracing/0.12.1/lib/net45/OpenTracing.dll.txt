@@ -1,0 +1,443 @@
+public interface OpenTracing.IScope {
+    public ISpan Span { get; }
+    public abstract virtual ISpan get_Span();
+}
+public interface OpenTracing.IScopeManager {
+    public IScope Active { get; }
+    public abstract virtual IScope get_Active();
+    public abstract virtual IScope Activate(ISpan span, bool finishSpanOnDispose);
+}
+public interface OpenTracing.ISpan {
+    public ISpanContext Context { get; }
+    public abstract virtual ISpanContext get_Context();
+    public abstract virtual ISpan SetTag(string key, string value);
+    public abstract virtual ISpan SetTag(string key, bool value);
+    public abstract virtual ISpan SetTag(string key, int value);
+    public abstract virtual ISpan SetTag(string key, double value);
+    public abstract virtual ISpan SetTag(BooleanTag tag, bool value);
+    public abstract virtual ISpan SetTag(IntOrStringTag tag, string value);
+    public abstract virtual ISpan SetTag(IntTag tag, int value);
+    public abstract virtual ISpan SetTag(StringTag tag, string value);
+    public abstract virtual ISpan Log(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public abstract virtual ISpan Log(DateTimeOffset timestamp, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public abstract virtual ISpan Log(string event);
+    public abstract virtual ISpan Log(DateTimeOffset timestamp, string event);
+    public abstract virtual ISpan SetBaggageItem(string key, string value);
+    public abstract virtual string GetBaggageItem(string key);
+    public abstract virtual ISpan SetOperationName(string operationName);
+    public abstract virtual void Finish();
+    public abstract virtual void Finish(DateTimeOffset finishTimestamp);
+}
+public interface OpenTracing.ISpanBuilder {
+    public abstract virtual ISpanBuilder AsChildOf(ISpanContext parent);
+    public abstract virtual ISpanBuilder AsChildOf(ISpan parent);
+    public abstract virtual ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext);
+    public abstract virtual ISpanBuilder IgnoreActiveSpan();
+    public abstract virtual ISpanBuilder WithTag(string key, string value);
+    public abstract virtual ISpanBuilder WithTag(string key, bool value);
+    public abstract virtual ISpanBuilder WithTag(string key, int value);
+    public abstract virtual ISpanBuilder WithTag(string key, double value);
+    public abstract virtual ISpanBuilder WithTag(BooleanTag tag, bool value);
+    public abstract virtual ISpanBuilder WithTag(IntOrStringTag tag, string value);
+    public abstract virtual ISpanBuilder WithTag(IntTag tag, int value);
+    public abstract virtual ISpanBuilder WithTag(StringTag tag, string value);
+    public abstract virtual ISpanBuilder WithStartTimestamp(DateTimeOffset timestamp);
+    public abstract virtual IScope StartActive();
+    public abstract virtual IScope StartActive(bool finishSpanOnDispose);
+    public abstract virtual ISpan Start();
+}
+public interface OpenTracing.ISpanContext {
+    public string TraceId { get; }
+    public string SpanId { get; }
+    public abstract virtual string get_TraceId();
+    public abstract virtual string get_SpanId();
+    public abstract virtual IEnumerable`1<KeyValuePair`2<string, string>> GetBaggageItems();
+}
+public interface OpenTracing.ITracer {
+    public IScopeManager ScopeManager { get; }
+    public ISpan ActiveSpan { get; }
+    public abstract virtual IScopeManager get_ScopeManager();
+    public abstract virtual ISpan get_ActiveSpan();
+    public abstract virtual ISpanBuilder BuildSpan(string operationName);
+    public abstract virtual void Inject(ISpanContext spanContext, IFormat`1<TCarrier> format, TCarrier carrier);
+    public abstract virtual ISpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+}
+public static class OpenTracing.LogFields : object {
+    public static string ErrorKind;
+    public static string ErrorObject;
+    public static string Event;
+    public static string Message;
+    public static string Stack;
+}
+public class OpenTracing.Mock.BinaryPropagator : object {
+    public sealed virtual void Inject(MockSpanContext context, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual MockSpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+    public MemoryStream Serialize(BinaryContext ctx);
+    public BinaryContext Deserialize(MemoryStream stream);
+}
+public class OpenTracing.Mock.ConsolePropagator : object {
+    public sealed virtual void Inject(MockSpanContext context, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual MockSpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+}
+public interface OpenTracing.Mock.IPropagator {
+    public abstract virtual void Inject(MockSpanContext context, IFormat`1<TCarrier> format, TCarrier carrier);
+    public abstract virtual MockSpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+}
+public class OpenTracing.Mock.MockSpan : object {
+    private static long _nextIdCounter;
+    private object _lock;
+    private MockTracer _mockTracer;
+    private MockSpanContext _context;
+    private DateTimeOffset _finishTimestamp;
+    private bool _finished;
+    private Dictionary`2<string, object> _tags;
+    private List`1<Reference> _references;
+    private List`1<LogEntry> _logEntries;
+    private List`1<Exception> _errors;
+    [CompilerGeneratedAttribute]
+private string <ParentId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private DateTimeOffset <StartTimestamp>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <OperationName>k__BackingField;
+    public string ParentId { get; }
+    public DateTimeOffset StartTimestamp { get; }
+    public DateTimeOffset FinishTimestamp { get; }
+    public string OperationName { get; private set; }
+    public Dictionary`2<string, object> Tags { get; }
+    public List`1<LogEntry> LogEntries { get; }
+    public List`1<Exception> GeneratedErrors { get; }
+    public List`1<Reference> References { get; }
+    public MockSpanContext Context { get; }
+    private ISpanContext OpenTracing.ISpan.Context { get; }
+    public MockSpan(MockTracer tracer, string operationName, DateTimeOffset startTimestamp, Dictionary`2<string, object> initialTags, List`1<Reference> references);
+    private static MockSpan();
+    private static string NextId();
+    [CompilerGeneratedAttribute]
+public string get_ParentId();
+    [CompilerGeneratedAttribute]
+public DateTimeOffset get_StartTimestamp();
+    public DateTimeOffset get_FinishTimestamp();
+    [CompilerGeneratedAttribute]
+public string get_OperationName();
+    [CompilerGeneratedAttribute]
+private void set_OperationName(string value);
+    public Dictionary`2<string, object> get_Tags();
+    public List`1<LogEntry> get_LogEntries();
+    public List`1<Exception> get_GeneratedErrors();
+    public List`1<Reference> get_References();
+    public MockSpanContext get_Context();
+    private sealed virtual override ISpanContext OpenTracing.ISpan.get_Context();
+    public sealed virtual ISpan SetOperationName(string operationName);
+    public sealed virtual ISpan SetTag(string key, bool value);
+    public sealed virtual ISpan SetTag(string key, double value);
+    public sealed virtual ISpan SetTag(string key, int value);
+    public sealed virtual ISpan SetTag(string key, string value);
+    public sealed virtual ISpan SetTag(BooleanTag tag, bool value);
+    public sealed virtual ISpan SetTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpan SetTag(IntTag tag, int value);
+    public sealed virtual ISpan SetTag(StringTag tag, string value);
+    private ISpan SetObjectTag(string key, object value);
+    public sealed virtual ISpan Log(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(string event);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, string event);
+    public sealed virtual ISpan SetBaggageItem(string key, string value);
+    public sealed virtual string GetBaggageItem(string key);
+    public sealed virtual void Finish();
+    public sealed virtual void Finish(DateTimeOffset finishTimestamp);
+    private static MockSpanContext FindPreferredParentRef(IList`1<Reference> references);
+    private static Dictionary`2<string, string> MergeBaggages(IList`1<Reference> references);
+    private void CheckForFinished(string format, Object[] args);
+    public virtual string ToString();
+}
+public class OpenTracing.Mock.MockSpanBuilder : object {
+    private MockTracer _tracer;
+    private string _operationName;
+    private DateTimeOffset _startTimestamp;
+    private List`1<Reference> _references;
+    private Dictionary`2<string, object> _initialTags;
+    private bool _ignoreActiveSpan;
+    public MockSpanBuilder(MockTracer tracer, string operationName);
+    public sealed virtual ISpanBuilder AsChildOf(ISpanContext parent);
+    public sealed virtual ISpanBuilder AsChildOf(ISpan parent);
+    public sealed virtual ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext);
+    public sealed virtual ISpanBuilder IgnoreActiveSpan();
+    public sealed virtual ISpanBuilder WithTag(string key, bool value);
+    public sealed virtual ISpanBuilder WithTag(string key, double value);
+    public sealed virtual ISpanBuilder WithTag(string key, int value);
+    public sealed virtual ISpanBuilder WithTag(string key, string value);
+    public sealed virtual ISpanBuilder WithTag(BooleanTag tag, bool value);
+    public sealed virtual ISpanBuilder WithTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpanBuilder WithTag(IntTag tag, int value);
+    public sealed virtual ISpanBuilder WithTag(StringTag tag, string value);
+    public sealed virtual ISpanBuilder WithStartTimestamp(DateTimeOffset startTimestamp);
+    public sealed virtual IScope StartActive();
+    public sealed virtual IScope StartActive(bool finishSpanOnDispose);
+    public sealed virtual ISpan Start();
+}
+public class OpenTracing.Mock.MockSpanContext : object {
+    private IDictionary`2<string, string> _baggage;
+    [CompilerGeneratedAttribute]
+private string <TraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SpanId>k__BackingField;
+    public string TraceId { get; }
+    public string SpanId { get; }
+    internal MockSpanContext(string traceId, string spanId, IDictionary`2<string, string> baggage);
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TraceId();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SpanId();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> GetBaggageItems();
+    public string GetBaggageItem(string key);
+    public MockSpanContext WithBaggageItem(string key, string val);
+}
+public class OpenTracing.Mock.MockTracer : object {
+    private object _lock;
+    private List`1<MockSpan> _finishedSpans;
+    private IPropagator _propagator;
+    private IScopeManager _scopeManager;
+    public IScopeManager ScopeManager { get; }
+    public ISpan ActiveSpan { get; }
+    public MockTracer(IScopeManager scopeManager);
+    public MockTracer(IScopeManager scopeManager, IPropagator propagator);
+    public MockTracer(IPropagator propagator);
+    public sealed virtual IScopeManager get_ScopeManager();
+    public sealed virtual ISpan get_ActiveSpan();
+    public void Reset();
+    public List`1<MockSpan> FinishedSpans();
+    protected virtual void OnSpanFinished(MockSpan mockSpan);
+    public sealed virtual ISpanBuilder BuildSpan(string operationName);
+    public sealed virtual void Inject(ISpanContext spanContext, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual ISpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+    internal void AppendFinishedSpan(MockSpan mockSpan);
+}
+public static class OpenTracing.Mock.Propagators : object {
+    public static IPropagator Console;
+    public static IPropagator TextMap;
+    public static IPropagator Binary;
+    private static Propagators();
+}
+public class OpenTracing.Mock.TextMapPropagator : object {
+    public static string SpanIdKey;
+    public static string TraceIdKey;
+    public static string BaggageKeyPrefix;
+    public sealed virtual void Inject(MockSpanContext context, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual MockSpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+}
+public class OpenTracing.Noop.NoopScopeManager : object {
+    internal static NoopScopeManager Instance;
+    public IScope Active { get; }
+    private static NoopScopeManager();
+    public sealed virtual IScope get_Active();
+    public sealed virtual IScope Activate(ISpan span, bool finishSpanOnDispose);
+    public virtual string ToString();
+}
+public class OpenTracing.Noop.NoopSpan : object {
+    internal static NoopSpan Instance;
+    public ISpanContext Context { get; }
+    private static NoopSpan();
+    public sealed virtual ISpanContext get_Context();
+    public sealed virtual void Finish();
+    public sealed virtual void Finish(DateTimeOffset finishTimestamp);
+    public sealed virtual ISpan SetTag(string key, string value);
+    public sealed virtual ISpan SetTag(string key, bool value);
+    public sealed virtual ISpan SetTag(string key, int value);
+    public sealed virtual ISpan SetTag(string key, double value);
+    public sealed virtual ISpan SetTag(BooleanTag tag, bool value);
+    public sealed virtual ISpan SetTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpan SetTag(IntTag tag, int value);
+    public sealed virtual ISpan SetTag(StringTag tag, string value);
+    public sealed virtual ISpan Log(IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, IEnumerable`1<KeyValuePair`2<string, object>> fields);
+    public sealed virtual ISpan Log(string event);
+    public sealed virtual ISpan Log(DateTimeOffset timestamp, string event);
+    public sealed virtual ISpan SetBaggageItem(string key, string value);
+    public sealed virtual string GetBaggageItem(string key);
+    public sealed virtual ISpan SetOperationName(string operationName);
+    public virtual string ToString();
+}
+public class OpenTracing.Noop.NoopSpanBuilder : object {
+    internal static NoopSpanBuilder Instance;
+    private static NoopSpanBuilder();
+    public sealed virtual ISpanBuilder AddReference(string referenceType, ISpanContext referencedContext);
+    public sealed virtual ISpanBuilder AsChildOf(ISpanContext parent);
+    public sealed virtual ISpanBuilder AsChildOf(ISpan parent);
+    public sealed virtual ISpanBuilder IgnoreActiveSpan();
+    public sealed virtual ISpanBuilder WithTag(string key, string value);
+    public sealed virtual ISpanBuilder WithTag(string key, bool value);
+    public sealed virtual ISpanBuilder WithTag(string key, int value);
+    public sealed virtual ISpanBuilder WithTag(string key, double value);
+    public sealed virtual ISpanBuilder WithTag(BooleanTag tag, bool value);
+    public sealed virtual ISpanBuilder WithTag(IntOrStringTag tag, string value);
+    public sealed virtual ISpanBuilder WithTag(IntTag tag, int value);
+    public sealed virtual ISpanBuilder WithTag(StringTag tag, string value);
+    public sealed virtual ISpanBuilder WithStartTimestamp(DateTimeOffset timestamp);
+    public sealed virtual IScope StartActive();
+    public sealed virtual IScope StartActive(bool finishSpanOnDispose);
+    public sealed virtual ISpan Start();
+    public virtual string ToString();
+}
+public class OpenTracing.Noop.NoopSpanContext : object {
+    internal static NoopSpanContext Instance;
+    [CompilerGeneratedAttribute]
+private string <TraceId>k__BackingField;
+    [CompilerGeneratedAttribute]
+private string <SpanId>k__BackingField;
+    public string TraceId { get; }
+    public string SpanId { get; }
+    private static NoopSpanContext();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_TraceId();
+    [CompilerGeneratedAttribute]
+public sealed virtual string get_SpanId();
+    public sealed virtual IEnumerable`1<KeyValuePair`2<string, string>> GetBaggageItems();
+    public virtual string ToString();
+}
+public class OpenTracing.Noop.NoopTracer : object {
+    internal static NoopTracer Instance;
+    public IScopeManager ScopeManager { get; }
+    public ISpan ActiveSpan { get; }
+    private static NoopTracer();
+    public sealed virtual IScopeManager get_ScopeManager();
+    public sealed virtual ISpan get_ActiveSpan();
+    public sealed virtual ISpanBuilder BuildSpan(string operationName);
+    public sealed virtual void Inject(ISpanContext spanContext, IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual ISpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+    public virtual string ToString();
+}
+public static class OpenTracing.Noop.NoopTracerFactory : object {
+    public static ITracer Create();
+}
+public class OpenTracing.Propagation.BinaryExtractAdapter : object {
+    private MemoryStream _stream;
+    public BinaryExtractAdapter(MemoryStream stream);
+    public sealed virtual void Set(MemoryStream stream);
+    public sealed virtual MemoryStream Get();
+}
+public class OpenTracing.Propagation.BinaryInjectAdapter : object {
+    private MemoryStream _stream;
+    public BinaryInjectAdapter(MemoryStream stream);
+    public sealed virtual void Set(MemoryStream stream);
+    public sealed virtual MemoryStream Get();
+}
+public static class OpenTracing.Propagation.BuiltinFormats : object {
+    public static IFormat`1<ITextMap> TextMap;
+    public static IFormat`1<ITextMap> HttpHeaders;
+    public static IFormat`1<IBinary> Binary;
+    private static BuiltinFormats();
+}
+public interface OpenTracing.Propagation.IBinary {
+    public abstract virtual void Set(MemoryStream stream);
+    public abstract virtual MemoryStream Get();
+}
+public interface OpenTracing.Propagation.IFormat`1 {
+}
+public interface OpenTracing.Propagation.ITextMap {
+    public abstract virtual void Set(string key, string value);
+}
+public class OpenTracing.Propagation.TextMapExtractAdapter : object {
+    private IDictionary`2<string, string> _dictionary;
+    public TextMapExtractAdapter(IDictionary`2<string, string> dictionary);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, string>> GetEnumerator();
+    public sealed virtual void Set(string key, string value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public class OpenTracing.Propagation.TextMapInjectAdapter : object {
+    private IDictionary`2<string, string> _dictionary;
+    public TextMapInjectAdapter(IDictionary`2<string, string> dictionary);
+    public sealed virtual IEnumerator`1<KeyValuePair`2<string, string>> GetEnumerator();
+    public sealed virtual void Set(string key, string value);
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+public static class OpenTracing.References : object {
+    public static string ChildOf;
+    public static string FollowsFrom;
+}
+public abstract class OpenTracing.Tag.AbstractTag`1 : object {
+    [CompilerGeneratedAttribute]
+private string <Key>k__BackingField;
+    public string Key { get; }
+    protected AbstractTag`1(string tagKey);
+    [CompilerGeneratedAttribute]
+public string get_Key();
+    public abstract virtual void Set(ISpan span, TTagValue tagValue);
+}
+public class OpenTracing.Tag.BooleanTag : AbstractTag`1<bool> {
+    public BooleanTag(string tagKey);
+    public virtual void Set(ISpan span, bool tagValue);
+}
+public class OpenTracing.Tag.IntOrStringTag : IntTag {
+    public IntOrStringTag(string tagKey);
+    public void Set(ISpan span, string tagValue);
+}
+public class OpenTracing.Tag.IntTag : AbstractTag`1<int> {
+    public IntTag(string tagKey);
+    public virtual void Set(ISpan span, int tagValue);
+}
+public class OpenTracing.Tag.StringTag : AbstractTag`1<string> {
+    public StringTag(string tagKey);
+    public virtual void Set(ISpan span, string tagValue);
+}
+public static class OpenTracing.Tag.Tags : object {
+    public static string SpanKindServer;
+    public static string SpanKindClient;
+    public static string SpanKindProducer;
+    public static string SpanKindConsumer;
+    public static StringTag HttpUrl;
+    public static IntTag HttpStatus;
+    public static StringTag HttpMethod;
+    public static IntOrStringTag PeerHostIpv4;
+    public static StringTag PeerHostIpv6;
+    public static StringTag PeerService;
+    public static StringTag PeerHostname;
+    public static IntTag PeerPort;
+    public static IntTag SamplingPriority;
+    public static StringTag SpanKind;
+    public static StringTag Component;
+    public static BooleanTag Error;
+    public static StringTag DbType;
+    public static StringTag DbInstance;
+    public static StringTag DbUser;
+    public static StringTag DbStatement;
+    public static StringTag MessageBusDestination;
+    private static Tags();
+}
+public class OpenTracing.Util.AsyncLocalScope : object {
+    private AsyncLocalScopeManager _scopeManager;
+    private ISpan _wrappedSpan;
+    private bool _finishOnDispose;
+    private IScope _scopeToRestore;
+    public ISpan Span { get; }
+    public AsyncLocalScope(AsyncLocalScopeManager scopeManager, ISpan wrappedSpan, bool finishOnDispose);
+    public sealed virtual ISpan get_Span();
+    public sealed virtual void Dispose();
+}
+public class OpenTracing.Util.AsyncLocalScopeManager : object {
+    private string _logicalDataKey;
+    public IScope Active { get; public set; }
+    public sealed virtual IScope get_Active();
+    public void set_Active(IScope value);
+    public sealed virtual IScope Activate(ISpan span, bool finishSpanOnDispose);
+}
+public class OpenTracing.Util.GlobalTracer : object {
+    private static object s_lock;
+    private static bool s_isRegistered;
+    private static GlobalTracer s_instance;
+    private ITracer _tracer;
+    public static ITracer Instance { get; }
+    public IScopeManager ScopeManager { get; }
+    public ISpan ActiveSpan { get; }
+    private static GlobalTracer();
+    public static ITracer get_Instance();
+    public static bool IsRegistered();
+    public static bool RegisterIfAbsent(ITracer tracer);
+    public static void Register(ITracer tracer);
+    public sealed virtual IScopeManager get_ScopeManager();
+    public sealed virtual ISpan get_ActiveSpan();
+    public sealed virtual ISpanBuilder BuildSpan(string operationName);
+    public sealed virtual ISpanContext Extract(IFormat`1<TCarrier> format, TCarrier carrier);
+    public sealed virtual void Inject(ISpanContext spanContext, IFormat`1<TCarrier> format, TCarrier carrier);
+    public virtual string ToString();
+}

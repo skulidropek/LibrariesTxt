@@ -1,0 +1,2841 @@
+public class Microsoft.PackageManagement.Implementation.PackageProvider : ProviderBase`1<IPackageProvider> {
+    private string _name;
+    public string Name { get; }
+    public string ProviderName { get; }
+    internal PackageProvider(IPackageProvider provider);
+    public virtual string get_Name();
+    public virtual string get_ProviderName();
+    public IAsyncEnumerable`1<PackageSource> AddPackageSource(string name, string location, bool trusted, IHostApi requestObject);
+    public IAsyncEnumerable`1<PackageSource> RemovePackageSource(string name, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackageByUri(Uri uri, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackageByFile(string filename, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackages(String[] names, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackagesByUris(Uri[] uris, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackagesByFiles(String[] filenames, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IHostApi requestObject);
+    public SoftwareIdentity GetPackageDetails(SoftwareIdentity softwareIdentity, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> InstallPackage(SoftwareIdentity softwareIdentity, IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> UninstallPackage(SoftwareIdentity softwareIdentity, IHostApi requestObject);
+    public IAsyncEnumerable`1<PackageSource> ResolvePackageSources(IHostApi requestObject);
+    public IAsyncEnumerable`1<SoftwareIdentity> DownloadPackage(SoftwareIdentity softwareIdentity, string destinationFilename, IHostApi requestObject);
+    [CompilerGeneratedAttribute]
+private void <ResolvePackageSources>b__18_0(RequestObject request);
+}
+public interface Microsoft.PackageManagement.Internal.Api.ICoreApi {
+    public IPackageManagementService PackageManagementService { get; }
+    public IProviderServices ProviderServices { get; }
+    public abstract virtual IPackageManagementService get_PackageManagementService();
+    public abstract virtual IProviderServices get_ProviderServices();
+}
+public interface Microsoft.PackageManagement.Internal.Api.IHostApi {
+    public bool IsCanceled { get; }
+    public IEnumerable`1<string> OptionKeys { get; }
+    public IWebProxy WebProxy { get; }
+    public IEnumerable`1<string> Sources { get; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    public bool IsInteractive { get; }
+    public int CallCount { get; }
+    public abstract virtual bool get_IsCanceled();
+    public abstract virtual string GetMessageString(string messageText, string defaultText);
+    public abstract virtual bool Warning(string messageText);
+    public abstract virtual bool Error(string id, string category, string targetObjectValue, string messageText);
+    public abstract virtual bool Message(string messageText);
+    public abstract virtual bool Verbose(string messageText);
+    public abstract virtual bool Debug(string messageText);
+    public abstract virtual int StartProgress(int parentActivityId, string messageText);
+    public abstract virtual bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed);
+    public abstract virtual bool Progress(int activityId, int progressPercentage, string messageText);
+    public abstract virtual bool CompleteProgress(int activityId, bool isSuccessful);
+    public abstract virtual IEnumerable`1<string> get_OptionKeys();
+    public abstract virtual IEnumerable`1<string> GetOptionValues(string key);
+    public abstract virtual IWebProxy get_WebProxy();
+    public abstract virtual IEnumerable`1<string> get_Sources();
+    public abstract virtual string get_CredentialUsername();
+    public abstract virtual SecureString get_CredentialPassword();
+    public abstract virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
+    public abstract virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
+    public abstract virtual bool ShouldContinue(string query, string caption, Boolean& yesToAll, Boolean& noToAll);
+    public abstract virtual bool ShouldContinue(string query, string caption);
+    public abstract virtual bool AskPermission(string permission);
+    public abstract virtual bool get_IsInteractive();
+    public abstract virtual int get_CallCount();
+}
+public interface Microsoft.PackageManagement.Internal.Api.IProviderServices {
+    public bool IsElevated { get; }
+    public abstract virtual bool get_IsElevated();
+    public abstract virtual IEnumerable`1<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject);
+    public abstract virtual string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
+    public abstract virtual string ParseProviderName(string canonicalPackageId);
+    public abstract virtual string ParsePackageName(string canonicalPackageId);
+    public abstract virtual string ParsePackageVersion(string canonicalPackageId);
+    public abstract virtual string ParsePackageSource(string canonicalPackageId);
+    public abstract virtual string DownloadFile(Uri remoteLocation, string localFilename, IRequest requestObject);
+    public abstract virtual string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IRequest requestObject);
+    public abstract virtual bool IsSupportedArchive(string localFilename, IRequest requestObject);
+    public abstract virtual IEnumerable`1<string> UnpackArchive(string localFilename, string destinationFolder, IRequest requestObject);
+    public abstract virtual bool Install(string fileName, string additionalArgs, IRequest requestObject);
+    public abstract virtual bool IsSignedAndTrusted(string filename, IRequest requestObject);
+    public abstract virtual int StartProcess(string filename, string arguments, bool requiresElevation, String& standardOutput, IRequest requestObject);
+}
+public interface Microsoft.PackageManagement.Internal.Api.IRequest {
+}
+public interface Microsoft.PackageManagement.Internal.Api.IResponseApi {
+    public abstract virtual string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+    public abstract virtual string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+    public abstract virtual string AddTagId(string tagId);
+    public abstract virtual string AddCulture(string culture);
+    public abstract virtual string AddMetadata(string name, string value);
+    public abstract virtual string AddMetadata(string elementPath, string name, string value);
+    public abstract virtual string AddMetadata(string elementPath, Uri namespace, string name, string value);
+    public abstract virtual string AddMeta(string elementPath);
+    public abstract virtual string AddEntity(string name, string regid, string role, string thumbprint);
+    public abstract virtual string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+    public abstract virtual string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+    public abstract virtual string AddPayload();
+    public abstract virtual string AddEvidence(DateTime date, string deviceId);
+    public abstract virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+    public abstract virtual string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+    public abstract virtual string AddProcess(string elementPath, string processName, int pid);
+    public abstract virtual string AddResource(string elementPath, string type);
+    public abstract virtual bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+    public abstract virtual bool YieldDynamicOption(string name, string expectedType, bool isRequired);
+    public abstract virtual bool YieldKeyValuePair(string key, string value);
+    public abstract virtual bool YieldValue(string value);
+}
+internal static class Microsoft.PackageManagement.Internal.Constants : object {
+    internal static String[] SupportedAssemblyTypes;
+    internal static int PackageManagementVersion;
+    internal static int TimeoutUnspecified;
+    internal static int TimeoutHostNotAvailable;
+    internal static int HostNotAvailableTimeout;
+    internal static int HostNotAvailableResponsiveness;
+    internal static int TimeoutAfterCancel;
+    internal static int ResponsivenessAfterCancel;
+    internal static TimeSpan DefaultCallTimeout;
+    internal static TimeSpan DefaultResponsiveness;
+    internal static TimeSpan Zero;
+    internal static string BootstrapNuGet;
+    internal static string MinVersion;
+    internal static string MSGPrefix;
+    internal static String[] Empty;
+    private static Constants();
+}
+public enum Microsoft.PackageManagement.Internal.ErrorCategory : Enum {
+    public int value__;
+    public static ErrorCategory NotSpecified;
+    public static ErrorCategory OpenError;
+    public static ErrorCategory CloseError;
+    public static ErrorCategory DeviceError;
+    public static ErrorCategory DeadlockDetected;
+    public static ErrorCategory InvalidArgument;
+    public static ErrorCategory InvalidData;
+    public static ErrorCategory InvalidOperation;
+    public static ErrorCategory InvalidResult;
+    public static ErrorCategory InvalidType;
+    public static ErrorCategory MetadataError;
+    public static ErrorCategory NotImplemented;
+    public static ErrorCategory NotInstalled;
+    public static ErrorCategory ObjectNotFound;
+    public static ErrorCategory OperationStopped;
+    public static ErrorCategory OperationTimeout;
+    public static ErrorCategory SyntaxError;
+    public static ErrorCategory ParserError;
+    public static ErrorCategory PermissionDenied;
+    public static ErrorCategory ResourceBusy;
+    public static ErrorCategory ResourceExists;
+    public static ErrorCategory ResourceUnavailable;
+    public static ErrorCategory ReadError;
+    public static ErrorCategory WriteError;
+    public static ErrorCategory FromStdErr;
+    public static ErrorCategory SecurityError;
+    public static ErrorCategory ProtocolError;
+    public static ErrorCategory ConnectionError;
+    public static ErrorCategory AuthenticationError;
+    public static ErrorCategory LimitsExceeded;
+    public static ErrorCategory QuotaExceeded;
+    public static ErrorCategory NotEnabled;
+}
+public class Microsoft.PackageManagement.Internal.Implementation.ActionRequestObject : RequestObject {
+    public ActionRequestObject(ProviderBase provider, IHostApi hostApi, Action`1<RequestObject> action);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.Archiver : ProviderBase`1<IArchiver> {
+    private string _name;
+    public string ProviderName { get; }
+    internal Archiver(IArchiver provider);
+    public virtual string get_ProviderName();
+    public virtual bool IsSupportedFile(string localFilename);
+    public IEnumerable`1<string> UnpackArchive(string localFilename, string destinationFolder, IHostApi host);
+}
+public class Microsoft.PackageManagement.Internal.Implementation.DefaultPackageProvider : Swidtag {
+    private string _providerName;
+    private string _providerVersion;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsLoaded>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <ProviderPath>k__BackingField;
+    internal bool IsLoaded { get; internal set; }
+    public string ProviderPath { get; public set; }
+    public DefaultPackageProvider(string name, string version);
+    public sealed virtual void InitializeProvider(IRequest requestObject);
+    [CompilerGeneratedAttribute]
+internal void set_IsLoaded(bool value);
+    [CompilerGeneratedAttribute]
+internal bool get_IsLoaded();
+    [CompilerGeneratedAttribute]
+public void set_ProviderPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_ProviderPath();
+    public sealed virtual string GetPackageProviderName();
+    public sealed virtual string GetProviderVersion();
+    public sealed virtual void AddPackageSource(string name, string location, bool trusted, IRequest requestObject);
+    public sealed virtual void ResolvePackageSources(IRequest requestObject);
+    public sealed virtual void GetDynamicOptions(string category, IRequest requestObject);
+    public sealed virtual void RemovePackageSource(string source, IRequest requestObject);
+    public sealed virtual void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject);
+    public sealed virtual void FindPackageByFile(string filePath, int id, IRequest requestObject);
+    public sealed virtual void FindPackageByUri(Uri uri, int id, IRequest requestObject);
+    public sealed virtual void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject);
+    public sealed virtual void DownloadPackage(string fastPath, string location, IRequest requestObject);
+    public sealed virtual void GetPackageDetails(string fastPath, IRequest requestObject);
+    public sealed virtual void InstallPackage(string fastPath, IRequest requestObject);
+    public sealed virtual void UninstallPackage(string fastPath, IRequest requestObject);
+    public sealed virtual void GetFeatures(IRequest requestObject);
+    public sealed virtual bool IsMethodImplemented(string methodName);
+    public sealed virtual void OnUnhandledException(string methodName, Exception exception);
+}
+public class Microsoft.PackageManagement.Internal.Implementation.DictionaryRequestObject : RequestObject {
+    private Dictionary`2<string, List`1<string>> _results;
+    public Dictionary`2<string, List`1<string>> Value { get; }
+    public DictionaryRequestObject(ProviderBase provider, IHostApi request, Action`1<RequestObject> action);
+    public sealed virtual Dictionary`2<string, List`1<string>> get_Value();
+    public virtual bool YieldKeyValuePair(string key, string value);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.Downloader : ProviderBase`1<IDownloader> {
+    private string _name;
+    public string ProviderName { get; }
+    internal Downloader(IDownloader provider);
+    public virtual string get_ProviderName();
+    public string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IHostApi requestObject);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.DynamicOptionRequestObject : EnumerableRequestObject`1<DynamicOption> {
+    private DynamicOption _currentItem;
+    private List`1<string> _list;
+    private OptionCategory _category;
+    public DynamicOptionRequestObject(ProviderBase provider, IHostApi request, Action`1<RequestObject> action, OptionCategory category);
+    public virtual bool YieldDynamicOption(string name, string expectedType, bool isRequired);
+    public virtual bool YieldKeyValuePair(string key, string value);
+    protected virtual void Complete();
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.EnumerableRequestObject`1 : RequestObject {
+    protected BlockingCollection`1<T> Results;
+    public bool IsConsumed { get; }
+    public bool HasData { get; }
+    public WaitHandle Ready { get; }
+    internal EnumerableRequestObject`1(ProviderBase provider, IHostApi request, Action`1<RequestObject> action);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual IEnumerable`1<T> GetConsumingEnumerable();
+    public sealed virtual IEnumerable`1<T> GetBlockingEnumerable();
+    public sealed virtual bool get_IsConsumed();
+    public sealed virtual bool get_HasData();
+    public sealed virtual WaitHandle get_Ready();
+    protected virtual void Complete();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__1_0();
+    [CompilerGeneratedAttribute]
+private void <.ctor>b__1_1();
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Implementation.Extensions : object {
+    [ExtensionAttribute]
+internal static string FormatMessageString(IHostApi request, string messageText, Object[] args);
+}
+public class Microsoft.PackageManagement.Internal.Implementation.FuncRequestObject`1 : RequestObject {
+    private T _result;
+    public T Value { get; }
+    public FuncRequestObject`1(ProviderBase provider, IHostApi hostApi, Func`2<RequestObject, T> function);
+    public sealed virtual T get_Value();
+}
+public class Microsoft.PackageManagement.Internal.Implementation.PackageDetailsRequestObject : RequestObject {
+    private SoftwareIdentity _softwareIdentity;
+    public PackageDetailsRequestObject(ProviderBase provider, IHostApi hostApi, SoftwareIdentity softwareIdentity, Action`1<RequestObject> action);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.PackageManagementService : object {
+    private static int _lastCallCount;
+    private static HashSet`1<string> _providersTriedThisCall;
+    private String[] _bootstrappableProviderNames;
+    private bool _initialized;
+    private String[] _defaultProviders;
+    private object _lockObject;
+    private IDictionary`2<string, IMetaProvider> _metaProviders;
+    private IDictionary`2<string, PackageProvider> _packageProviders;
+    internal IDictionary`2<string, Archiver> Archivers;
+    internal IDictionary`2<string, Downloader> Downloaders;
+    private Dictionary`2<string, List`1<PackageProvider>> _providerCacheTable;
+    private Dictionary`2<string, Byte[]> _providerFiles;
+    private string _baseDir;
+    internal bool InternalPackageManagementInstallOnly;
+    private string _nuget;
+    internal Dictionary`2<string, List`1<PackageProvider>> ProviderCacheTable { get; }
+    internal static string CurrentAssemblyLocation { get; }
+    internal string BaseDir { get; }
+    internal String[] BootstrappableProviderNames { get; internal set; }
+    internal IEnumerable`1<string> AutoLoadedAssemblyLocations { get; }
+    internal IEnumerable`1<string> ProviderAssembliesLocation { get; }
+    private IEnumerable`1<string> PowerShellModulePath { get; }
+    internal string UserAssemblyLocation { get; }
+    internal string SystemAssemblyLocation { get; }
+    public IEnumerable`1<PackageProvider> PackageProviders { get; }
+    public int Version { get; }
+    public IEnumerable`1<string> ProviderNames { get; }
+    public IEnumerable`1<string> AllProviderNames { get; }
+    internal IEnumerable`1<PackageProvider> DynamicProviders { get; }
+    internal Dictionary`2<string, List`1<PackageProvider>> get_ProviderCacheTable();
+    internal static string get_CurrentAssemblyLocation();
+    internal string get_BaseDir();
+    internal String[] get_BootstrappableProviderNames();
+    internal void set_BootstrappableProviderNames(String[] value);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<get_AutoLoadedAssemblyLocations>d__26")]
+internal IEnumerable`1<string> get_AutoLoadedAssemblyLocations();
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<get_ProviderAssembliesLocation>d__28")]
+internal IEnumerable`1<string> get_ProviderAssembliesLocation();
+    private IEnumerable`1<string> get_PowerShellModulePath();
+    internal string get_UserAssemblyLocation();
+    internal string get_SystemAssemblyLocation();
+    public sealed virtual IEnumerable`1<PackageProvider> get_PackageProviders();
+    public sealed virtual bool Initialize(IHostApi request);
+    public sealed virtual int get_Version();
+    public sealed virtual IEnumerable`1<string> get_ProviderNames();
+    public sealed virtual IEnumerable`1<string> get_AllProviderNames();
+    public sealed virtual IEnumerable`1<PackageProvider> SelectProvidersWithFeature(string featureName);
+    public sealed virtual IEnumerable`1<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+    public sealed virtual IEnumerable`1<PackageProvider> SelectProviders(string providerName, IHostApi hostApi);
+    public sealed virtual IEnumerable`1<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi hostApi);
+    public sealed virtual bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi hostApi);
+    public sealed virtual IEnumerable`1<PackageProvider> GetAvailableProviders(IHostApi request, String[] providerNames);
+    private IEnumerable`1<PackageProvider> GetAvailableProvider(IHostApi request, string providerName);
+    private IEnumerable`1<PackageProvider> GetPackageProviderFromCacheTable(string providerName);
+    private void ScanForAvailableProviders(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool shouldRefreshCache, bool logWarning);
+    public sealed virtual IEnumerable`1<PackageProvider> ImportPackageProvider(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool isPathRooted, bool force);
+    private IEnumerable`1<PackageProvider> ImportPackageProviderHelper(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool isPathRooted, bool force, bool throwErrorWhenImportWithName);
+    private IEnumerable`1<PackageProvider> ImportPackageProviderViaPath(IHostApi request, string providerPath, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool force);
+    private IEnumerable`1<PackageProvider> ImportPackageProviderViaName(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool force, bool throwErrorWhenImportWithName);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<FindMatchedProvidersFromInternalCacheTable>d__57")]
+private IEnumerable`1<PackageProvider> FindMatchedProvidersFromInternalCacheTable(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool force);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<ImportPowerShellProvider>d__58")]
+private IEnumerable`1<PackageProvider> ImportPowerShellProvider(IHostApi request, string modulePath, Version requiredVersion, bool shouldRefreshCache);
+    private IMetaProvider GetMetaProviderObject(IHostApi request);
+    private bool CompareProvider(PackageProvider p1, PackageProvider p2);
+    internal void AddToProviderCacheTable(string name, PackageProvider provider);
+    private void ResetProviderCachetable();
+    internal IEnumerable`1<string> ScanAllProvidersFromProviderAssembliesLocation(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, ProviderOption providerOption);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<ScanAllProvidersFromProviderAssembliesLocationPrivate>d__64")]
+private IEnumerable`1<string> ScanAllProvidersFromProviderAssembliesLocationPrivate(IHostApi request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, ProviderOption providerOption);
+    internal IEnumerable`1<string> AllProvidersFromProviderAssembliesLocation(IHostApi request);
+    private IEnumerable`1<string> ProvidersWithLatestVersionFromProviderAssembliesLocation(IHostApi request);
+    internal void LoadProviders(IHostApi request);
+    internal IEnumerable`1<PackageProvider> get_DynamicProviders();
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Implementation.PackageManagementService/<GetProvidersFromRegistry>d__70")]
+private static IEnumerator`1<string> GetProvidersFromRegistry(RegistryKey registryKey, string p);
+    public IEnumerable`1<PackageSource> GetAllSourceNames(IHostApi request);
+    internal bool LoadProviderAssembly(IHostApi request, string providerAssemblyName, bool shouldRefreshCache);
+    private string FindAssembly(string assemblyName, IHostApi request);
+    internal bool AcquireProviders(string assemblyPath, IHostApi request, bool shouldRefreshCache);
+    private static FourPartVersion GetAssemblyVersion(Assembly asm);
+    private PackageProvider RegisterPackageProvider(IPackageProvider provider, FourPartVersion asmVersion, IHostApi request, bool shouldRefreshCache);
+    private Archiver RegisterArchiver(IArchiver provider, FourPartVersion asmVersion, IHostApi request);
+    private Downloader RegisterDownloader(IDownloader provider, FourPartVersion asmVersion, IHostApi request);
+    internal bool TryLoadProviderViaMetaProvider(string metaproviderName, string providerNameOrPath, IHostApi request);
+    internal bool RegisterProvidersViaMetaProvider(IMetaProvider provider, FourPartVersion asmVersion, IHostApi request);
+    private bool LoadViaMetaProvider(IMetaProvider metaProvider, string name, FourPartVersion asmVersion, IHostApi request);
+    [CompilerGeneratedAttribute]
+private void <ResetProviderCachetable>b__62_0(KeyValuePair`2<string, PackageProvider> each);
+    [CompilerGeneratedAttribute]
+private bool <ProvidersWithLatestVersionFromProviderAssembliesLocation>b__66_0(string each);
+    [CompilerGeneratedAttribute]
+private bool <ProvidersWithLatestVersionFromProviderAssembliesLocation>b__66_1(string each);
+    [CompilerGeneratedAttribute]
+private bool <get_DynamicProviders>b__69_0(PackageProvider each);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.PackageSourceRequestObject : EnumerableRequestObject`1<PackageSource> {
+    private PackageSource _currentItem;
+    public PackageSourceRequestObject(ProviderBase provider, IHostApi request, Action`1<RequestObject> action);
+    private void CommitPackageSource();
+    public virtual bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+    public virtual bool YieldKeyValuePair(string key, string value);
+    protected virtual void Complete();
+}
+public abstract class Microsoft.PackageManagement.Internal.Implementation.ProviderBase : SoftwareIdentity {
+    public string ProviderName { get; }
+    public abstract virtual string get_ProviderName();
+}
+public abstract class Microsoft.PackageManagement.Internal.Implementation.ProviderBase`1 : ProviderBase {
+    private List`1<DynamicOption> _dynamicOptions;
+    private Dictionary`2<string, List`1<string>> _features;
+    private bool _initialized;
+    private Byte[][] _magicSignatures;
+    private String[] _supportedFileExtensions;
+    private String[] _supportedSchemes;
+    private FourPartVersion _version;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private T <Provider>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsLoaded>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <ProviderPath>k__BackingField;
+    internal T Provider { get; private set; }
+    public IDictionary`2<string, List`1<string>> Features { get; }
+    public FourPartVersion Version { get; public set; }
+    internal bool IsLoaded { get; internal set; }
+    public string ProviderPath { get; public set; }
+    public IEnumerable`1<string> SupportedFileExtensions { get; }
+    public IEnumerable`1<string> SupportedUriSchemes { get; }
+    internal Byte[][] MagicSignatures { get; }
+    public List`1<DynamicOption> DynamicOptions { get; }
+    protected ProviderBase`1(T provider);
+    [CompilerGeneratedAttribute]
+internal T get_Provider();
+    [CompilerGeneratedAttribute]
+private void set_Provider(T value);
+    public IDictionary`2<string, List`1<string>> get_Features();
+    public FourPartVersion get_Version();
+    public void set_Version(FourPartVersion value);
+    [CompilerGeneratedAttribute]
+internal bool get_IsLoaded();
+    [CompilerGeneratedAttribute]
+internal void set_IsLoaded(bool value);
+    [CompilerGeneratedAttribute]
+public string get_ProviderPath();
+    [CompilerGeneratedAttribute]
+public void set_ProviderPath(string value);
+    public void SetSwidTag(string providerPath);
+    public IEnumerable`1<string> get_SupportedFileExtensions();
+    public IEnumerable`1<string> get_SupportedUriSchemes();
+    internal Byte[][] get_MagicSignatures();
+    public List`1<DynamicOption> get_DynamicOptions();
+    public virtual bool IsSupportedFileName(string filename);
+    public virtual bool IsSupportedFile(string filename);
+    public virtual bool IsSupportedFile(Byte[] header);
+    public virtual bool IsSupportedScheme(Uri uri);
+    private bool BufferMatchesMagicBytes(Byte[] magic, Byte[] buffer, int maxSize);
+    public bool IsMethodImplemented(string methodName);
+    internal void Initialize(IHostApi request);
+    public IAsyncValue`1<Dictionary`2<string, List`1<string>>> GetFeatures(IHostApi requestObject);
+    public IAsyncEnumerable`1<DynamicOption> GetDynamicOptions(OptionCategory category, IHostApi requestObject);
+    [CompilerGeneratedAttribute]
+private void <GetFeatures>b__41_0(RequestObject request);
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.ProviderServicesImpl : object {
+    internal static IProviderServices Instance;
+    private static Regex _canonicalPackageRegex;
+    private PackageManagementService PackageManagementService { get; }
+    public bool IsElevated { get; }
+    private static ProviderServicesImpl();
+    private PackageManagementService get_PackageManagementService();
+    public sealed virtual bool get_IsElevated();
+    public sealed virtual IEnumerable`1<SoftwareIdentity> FindPackageByCanonicalId(string canonicalId, IRequest requestObject);
+    public sealed virtual string GetCanonicalPackageId(string providerName, string packageName, string version, string source);
+    public sealed virtual string ParseProviderName(string canonicalPackageId);
+    public sealed virtual string ParsePackageName(string canonicalPackageId);
+    public sealed virtual string ParsePackageVersion(string canonicalPackageId);
+    public sealed virtual string ParsePackageSource(string canonicalPackageId);
+    public sealed virtual bool IsSupportedArchive(string localFilename, IRequest request);
+    public sealed virtual string DownloadFile(Uri remoteLocation, string localFilename, IRequest request);
+    public sealed virtual string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IRequest request);
+    public sealed virtual IEnumerable`1<string> UnpackArchive(string localFilename, string destinationFolder, IRequest request);
+    public sealed virtual bool Install(string fileName, string additionalArgs, IRequest request);
+    public sealed virtual bool IsSignedAndTrusted(string filename, IRequest request);
+    public sealed virtual int StartProcess(string filename, string arguments, bool requiresElevation, String& standardOutput, IRequest requestObject);
+    public bool Error(IRequest request, ErrorCategory category, string targetObjectValue, string messageText, Object[] args);
+    public bool Warning(IRequest request, string messageText, Object[] args);
+    public bool Message(IRequest request, string messageText, Object[] args);
+    public bool Verbose(IRequest request, string messageText, Object[] args);
+    public bool Debug(IRequest request, string messageText, Object[] args);
+}
+public abstract class Microsoft.PackageManagement.Internal.Implementation.Request : object {
+    public IPackageManagementService PackageManagementService { get; }
+    public IProviderServices ProviderServices { get; }
+    public bool IsCanceled { get; }
+    public IEnumerable`1<string> OptionKeys { get; }
+    public IEnumerable`1<string> Sources { get; }
+    public IWebProxy WebProxy { get; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    public bool IsInteractive { get; }
+    public int CallCount { get; }
+    public abstract virtual IPackageManagementService get_PackageManagementService();
+    public abstract virtual IProviderServices get_ProviderServices();
+    public abstract virtual bool get_IsCanceled();
+    public abstract virtual string GetMessageString(string messageText, string defaultText);
+    public abstract virtual bool Warning(string messageText);
+    public abstract virtual bool Error(string id, string category, string targetObjectValue, string messageText);
+    public abstract virtual bool Message(string messageText);
+    public abstract virtual bool Verbose(string messageText);
+    public abstract virtual bool Debug(string messageText);
+    public abstract virtual int StartProgress(int parentActivityId, string messageText);
+    public abstract virtual bool Progress(int activityId, int progressPercentage, string messageText);
+    public abstract virtual bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed);
+    public abstract virtual bool CompleteProgress(int activityId, bool isSuccessful);
+    public abstract virtual IEnumerable`1<string> get_OptionKeys();
+    public abstract virtual IEnumerable`1<string> GetOptionValues(string key);
+    public abstract virtual IEnumerable`1<string> get_Sources();
+    public abstract virtual IWebProxy get_WebProxy();
+    public abstract virtual string get_CredentialUsername();
+    public abstract virtual SecureString get_CredentialPassword();
+    public abstract virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
+    public abstract virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
+    public abstract virtual bool ShouldContinue(string query, string caption, Boolean& yesToAll, Boolean& noToAll);
+    public abstract virtual bool ShouldContinue(string query, string caption);
+    public abstract virtual bool AskPermission(string permission);
+    public abstract virtual bool get_IsInteractive();
+    public abstract virtual int get_CallCount();
+    public abstract virtual string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+    public abstract virtual string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+    public abstract virtual bool IsSwidTagXml(string xmlSwidTag);
+    public abstract virtual string AddTagId(string tagId);
+    public abstract virtual string AddCulture(string xmlLang);
+    public abstract virtual string AddMetadata(string name, string value);
+    public abstract virtual string AddMetadata(string elementPath, string name, string value);
+    public abstract virtual string AddMetadata(string elementPath, Uri namespace, string name, string value);
+    public abstract virtual string AddMeta(string elementPath);
+    public abstract virtual string AddEntity(string name, string regid, string role, string thumbprint);
+    public abstract virtual string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+    public abstract virtual string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+    public abstract virtual string AddPayload();
+    public abstract virtual string AddEvidence(DateTime date, string deviceId);
+    public abstract virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+    public abstract virtual string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+    public abstract virtual string AddProcess(string elementPath, string processName, int pid);
+    public abstract virtual string AddResource(string elementPath, string type);
+    public abstract virtual bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+    public abstract virtual bool YieldDynamicOption(string name, string expectedType, bool isRequired);
+    public bool YieldDynamicOption(string name, string expectedType, bool isRequired, IEnumerable`1<string> permittedValues);
+    public abstract virtual bool YieldKeyValuePair(string key, string value);
+    public abstract virtual bool YieldValue(string value);
+    public bool Yield(Dictionary`2<string, String[]> dictionary);
+    public bool Yield(KeyValuePair`2<string, String[]> pair);
+    public bool Error(ErrorCategory category, string targetObjectValue, string messageText, Object[] args);
+    public bool Warning(string messageText, Object[] args);
+    public bool Message(string messageText, Object[] args);
+    public bool Verbose(string messageText, Object[] args);
+    public bool Debug(string messageText, Object[] args);
+    public int StartProgress(int parentActivityId, string messageText, Object[] args);
+    public bool Progress(string activity, string messageText, int activityId, int progressPercentage, int secondsRemaining, string currentOperation, int parentActivityId, bool completed, Object[] args);
+    public bool Progress(int activityId, int progressPercentage, string messageText, Object[] args);
+    public string GetOptionValue(string name);
+    private static string FixMeFormat(string formatString, Object[] args);
+    protected string FormatMessageString(string messageText, Object[] args);
+}
+public abstract class Microsoft.PackageManagement.Internal.Implementation.RequestObject : AsyncAction {
+    private static int _c;
+    protected Action`1<RequestObject> _action;
+    private IHostApi _hostApi;
+    protected Task _invocationTask;
+    protected ProviderBase Provider;
+    private bool CanCallHost { get; }
+    public bool IsCanceled { get; }
+    public IEnumerable`1<string> OptionKeys { get; }
+    public IEnumerable`1<string> Sources { get; }
+    public IWebProxy WebProxy { get; }
+    public string CredentialUsername { get; }
+    public SecureString CredentialPassword { get; }
+    public bool IsInteractive { get; }
+    public int CallCount { get; }
+    public IPackageManagementService PackageManagementService { get; }
+    public IProviderServices ProviderServices { get; }
+    internal RequestObject(ProviderBase provider, IHostApi hostApi, Action`1<RequestObject> action);
+    internal RequestObject(ProviderBase provider, IHostApi hostApi);
+    private bool get_CanCallHost();
+    public virtual bool get_IsCanceled();
+    public virtual void WarnBeforeResponsivenessCancellation();
+    public virtual void WarnBeforeTimeoutCancellation();
+    protected void InvokeImpl();
+    public string DropMsgPrefix(string messageText);
+    public sealed virtual string GetMessageString(string messageText, string defaultText);
+    public sealed virtual bool Warning(string messageText);
+    public sealed virtual bool Error(string id, string category, string targetObjectValue, string messageText);
+    public sealed virtual bool Message(string messageText);
+    public sealed virtual bool Verbose(string messageText);
+    public sealed virtual bool Debug(string messageText);
+    public sealed virtual int StartProgress(int parentActivityId, string messageText);
+    public sealed virtual bool Progress(int activityId, int progressPercentage, string messageText);
+    public sealed virtual bool Progress(string activity, string status, int id, int percentcomplete, int secondsremaining, string currentoperation, int parentid, bool completed);
+    public sealed virtual bool CompleteProgress(int activityId, bool isSuccessful);
+    public sealed virtual IEnumerable`1<string> get_OptionKeys();
+    public sealed virtual IEnumerable`1<string> GetOptionValues(string key);
+    public sealed virtual IEnumerable`1<string> get_Sources();
+    public sealed virtual IWebProxy get_WebProxy();
+    public sealed virtual string get_CredentialUsername();
+    public sealed virtual SecureString get_CredentialPassword();
+    public sealed virtual bool ShouldBootstrapProvider(string requestor, string providerName, string providerVersion, string providerType, string location, string destination);
+    public sealed virtual bool ShouldContinueWithUntrustedPackageSource(string package, string packageSource);
+    public sealed virtual bool ShouldContinue(string query, string caption, Boolean& yesToAll, Boolean& noToAll);
+    public sealed virtual bool ShouldContinue(string query, string caption);
+    public sealed virtual bool AskPermission(string permission);
+    public sealed virtual bool get_IsInteractive();
+    public sealed virtual int get_CallCount();
+    public sealed virtual IPackageManagementService get_PackageManagementService();
+    public sealed virtual IProviderServices get_ProviderServices();
+    public virtual string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+    public virtual string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+    public virtual string AddMetadata(string name, string value);
+    public virtual string AddTagId(string tagId);
+    public virtual string AddCulture(string xmlLang);
+    public virtual string AddMetadata(string elementPath, string name, string value);
+    public virtual string AddMetadata(string elementPath, Uri namespace, string name, string value);
+    public virtual string AddMeta(string elementPath);
+    public virtual string AddPayload();
+    public virtual string AddEvidence(DateTime date, string deviceId);
+    public virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+    public virtual string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+    public virtual string AddProcess(string elementPath, string processName, int pid);
+    public virtual string AddResource(string elementPath, string type);
+    public virtual string AddEntity(string name, string regid, string role, string thumbprint);
+    public virtual string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+    public virtual string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+    public virtual bool YieldPackageSource(string name, string location, bool isTrusted, bool isRegistered, bool isValidated);
+    public virtual bool YieldDynamicOption(string name, string expectedType, bool isRequired);
+    public virtual bool YieldKeyValuePair(string key, string value);
+    public virtual bool YieldValue(string value);
+    [CompilerGeneratedAttribute]
+private void <InvokeImpl>b__13_0();
+}
+internal class Microsoft.PackageManagement.Internal.Implementation.SoftwareIdentityRequestObject : EnumerableRequestObject`1<SoftwareIdentity> {
+    private SoftwareIdentity _currentItem;
+    private string _status;
+    public SoftwareIdentityRequestObject(ProviderBase provider, IHostApi request, Action`1<RequestObject> action, string status);
+    private void CommitCurrentItem();
+    public virtual string YieldSoftwareIdentity(string fastPath, string name, string version, string versionScheme, string summary, string source, string searchKey, string fullPath, string packageFileName);
+    public virtual string YieldSoftwareIdentityXml(string xmlSwidTag, bool commitImmediately);
+    public virtual string AddMetadata(string name, string value);
+    public virtual string AddTagId(string tagId);
+    public virtual string AddCulture(string xmlLang);
+    public virtual string AddMetadata(string elementPath, string name, string value);
+    public virtual string AddMetadata(string elementPath, Uri namespace, string name, string value);
+    public virtual string AddMeta(string elementPath);
+    public virtual string AddPayload();
+    public virtual string AddEvidence(DateTime date, string deviceId);
+    public virtual string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+    public virtual string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+    public virtual string AddProcess(string elementPath, string processName, int pid);
+    public virtual string AddResource(string elementPath, string type);
+    public virtual string AddEntity(string name, string regid, string role, string thumbprint);
+    public virtual string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+    public virtual string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+    protected virtual void Complete();
+}
+public interface Microsoft.PackageManagement.Internal.IPackageManagementService {
+    public int Version { get; }
+    public IEnumerable`1<string> ProviderNames { get; }
+    public IEnumerable`1<string> AllProviderNames { get; }
+    public IEnumerable`1<PackageProvider> PackageProviders { get; }
+    public abstract virtual int get_Version();
+    public abstract virtual IEnumerable`1<string> get_ProviderNames();
+    public abstract virtual IEnumerable`1<string> get_AllProviderNames();
+    public abstract virtual IEnumerable`1<PackageProvider> get_PackageProviders();
+    public abstract virtual IEnumerable`1<PackageProvider> GetAvailableProviders(IHostApi requestObject, String[] names);
+    public abstract virtual IEnumerable`1<PackageProvider> ImportPackageProvider(IHostApi requestObject, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool isRooted, bool force);
+    public abstract virtual bool Initialize(IHostApi requestObject);
+    public abstract virtual IEnumerable`1<PackageProvider> SelectProvidersWithFeature(string featureName);
+    public abstract virtual IEnumerable`1<PackageProvider> SelectProvidersWithFeature(string featureName, string value);
+    public abstract virtual IEnumerable`1<PackageProvider> SelectProviders(string providerName, IHostApi requestObject);
+    public abstract virtual IEnumerable`1<SoftwareIdentity> FindPackageByCanonicalId(string packageId, IHostApi requestObject);
+    public abstract virtual bool RequirePackageProvider(string requestor, string packageProviderName, string minimumVersion, IHostApi requestObject);
+}
+internal static class Microsoft.PackageManagement.Internal.PackageManager : object {
+    private static object _lockObject;
+    internal static IPackageManagementService _instance;
+    public static IPackageManagementService Instance { get; }
+    private static PackageManager();
+    public static IPackageManagementService get_Instance();
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.PackageManagement.Internal.Packaging.AttributeIndexer : object {
+    private XElement _element;
+    public string Item { get; }
+    public IEnumerable`1<XName> Keys { get; }
+    public IEnumerable`1<string> Values { get; }
+    public int Count { get; }
+    public AttributeIndexer(XElement element);
+    public string get_Item(XName key);
+    public IEnumerable`1<XName> get_Keys();
+    public IEnumerable`1<string> get_Values();
+    public int get_Count();
+    public virtual string ToString();
+}
+public class Microsoft.PackageManagement.Internal.Packaging.BaseElement : object {
+    private AttributeIndexer _attributeIndexer;
+    private string _uniqueId;
+    protected internal XElement Element;
+    internal string ElementUniqueId { get; }
+    public string Culture { get; internal set; }
+    public AttributeIndexer Attributes { get; }
+    protected internal BaseElement(XElement element);
+    protected internal BaseElement(XDocument element);
+    internal string get_ElementUniqueId();
+    public string get_Culture();
+    internal void set_Culture(string value);
+    public AttributeIndexer get_Attributes();
+    protected static bool IsMetaElement(XElement element);
+    private static string PathToElement(string parent, XElement element);
+    protected static string PathToElement(XElement element);
+    private static XElement FindChildElementViaPath(string parentPath, XElement element, string elementId);
+    protected virtual XElement FindElementWithUniqueId(string elementId);
+    internal string GetAttribute(XName attribute);
+    internal XElement AddAttribute(XName attribute, string value);
+    internal T AddElement(T swidElement);
+    public bool ContainsKey(XName key);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Directory : FilesystemItem {
+    public IEnumerable`1<Directory> Directories { get; }
+    public IEnumerable`1<File> Files { get; }
+    internal Directory(XElement element);
+    internal Directory(string name);
+    public IEnumerable`1<Directory> get_Directories();
+    public IEnumerable`1<File> get_Files();
+    internal Directory AddDirectory(string directoryName);
+    internal File AddFile(string filename);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.DynamicOption : object {
+    private IEnumerable`1<string> _values;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <ProviderName>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private OptionCategory <Category>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private OptionType <Type>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsRequired>k__BackingField;
+    public string ProviderName { get; public set; }
+    public OptionCategory Category { get; internal set; }
+    public string Name { get; internal set; }
+    public OptionType Type { get; internal set; }
+    public bool IsRequired { get; internal set; }
+    public IEnumerable`1<string> PossibleValues { get; internal set; }
+    [CompilerGeneratedAttribute]
+public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public void set_ProviderName(string value);
+    [CompilerGeneratedAttribute]
+public OptionCategory get_Category();
+    [CompilerGeneratedAttribute]
+internal void set_Category(OptionCategory value);
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+internal void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public OptionType get_Type();
+    [CompilerGeneratedAttribute]
+internal void set_Type(OptionType value);
+    [CompilerGeneratedAttribute]
+public bool get_IsRequired();
+    [CompilerGeneratedAttribute]
+internal void set_IsRequired(bool value);
+    public IEnumerable`1<string> get_PossibleValues();
+    internal void set_PossibleValues(IEnumerable`1<string> value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Entity : BaseElement {
+    public string Name { get; internal set; }
+    public IEnumerable`1<string> Roles { get; }
+    public string Role { get; internal set; }
+    public string Thumbprint { get; internal set; }
+    public string RegId { get; internal set; }
+    public IEnumerable`1<Meta> Meta { get; }
+    internal Entity(XElement element);
+    internal Entity(string name, string regId, string role);
+    public string get_Name();
+    internal void set_Name(string value);
+    public IEnumerable`1<string> get_Roles();
+    public string get_Role();
+    internal void set_Role(string value);
+    public string get_Thumbprint();
+    internal void set_Thumbprint(string value);
+    public string get_RegId();
+    internal void set_RegId(string value);
+    public IEnumerable`1<Meta> get_Meta();
+    internal void AddRole(string role);
+    internal Meta AddMeta();
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Evidence : ResourceCollection {
+    public Nullable`1<DateTime> Date { get; internal set; }
+    public string DeviceId { get; internal set; }
+    internal Evidence(XElement element);
+    public Nullable`1<DateTime> get_Date();
+    internal void set_Date(Nullable`1<DateTime> value);
+    public string get_DeviceId();
+    internal void set_DeviceId(string value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.File : FilesystemItem {
+    public Nullable`1<long> Size { get; internal set; }
+    public string Version { get; internal set; }
+    internal File(XElement element);
+    internal File(string filename);
+    public Nullable`1<long> get_Size();
+    internal void set_Size(Nullable`1<long> value);
+    public string get_Version();
+    internal void set_Version(string value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.FilesystemItem : Meta {
+    public Nullable`1<bool> IsKey { get; internal set; }
+    public string Location { get; internal set; }
+    public string Name { get; internal set; }
+    public string Root { get; internal set; }
+    internal FilesystemItem(XElement element);
+    public Nullable`1<bool> get_IsKey();
+    internal void set_IsKey(Nullable`1<bool> value);
+    public string get_Location();
+    internal void set_Location(string value);
+    public string get_Name();
+    internal void set_Name(string value);
+    public string get_Root();
+    internal void set_Root(string value);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Packaging.Iso19770_2 : object {
+    internal static XAttribute SwidtagNamespace { get; }
+    internal static XAttribute get_SwidtagNamespace();
+    [ExtensionAttribute]
+internal static string GetAttribute(XElement element, XName attribute);
+    [ExtensionAttribute]
+internal static XElement AddAttribute(XElement element, XName attribute, string value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Link : BaseElement {
+    public string Artifact { get; internal set; }
+    public Uri HRef { get; internal set; }
+    public string Media { get; internal set; }
+    public string Ownership { get; internal set; }
+    public string Relationship { get; internal set; }
+    public string MediaType { get; internal set; }
+    public string Use { get; internal set; }
+    internal Link(XElement element);
+    internal Link(Uri href, string relationship);
+    public string get_Artifact();
+    internal void set_Artifact(string value);
+    public Uri get_HRef();
+    internal void set_HRef(Uri value);
+    public string get_Media();
+    internal void set_Media(string value);
+    public string get_Ownership();
+    internal void set_Ownership(string value);
+    public string get_Relationship();
+    internal void set_Relationship(string value);
+    public string get_MediaType();
+    internal void set_MediaType(string value);
+    public string get_Use();
+    internal void set_Use(string value);
+    public virtual string ToString();
+}
+public class Microsoft.PackageManagement.Internal.Packaging.MediaQuery : object {
+    private static RegexOptions _flags;
+    internal static string Environment;
+    internal static string Prefix;
+    internal static string Attribute;
+    internal static string Value;
+    internal static string AttributeEnvironmentValue;
+    internal static string Expression;
+    internal static string Tokenizer;
+    private static Regex _tokenizerRegex;
+    private static Regex _expressionRegex;
+    private static MediaQuery();
+    private static bool ParseAndProcessExpression(Match expressionMatch, Hashtable environment);
+    private static bool EvaluateMediaString(MatchCollection matches, Hashtable environment, Int32& currentIndex, Boolean& malformed);
+    public static bool IsApplicable(string mediaQuery, Hashtable environment);
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.PackageManagement.Internal.Packaging.Meta : BaseElement {
+    public string Item { get; }
+    internal Meta(XElement element);
+    public string get_Item(string key);
+    public virtual string ToString();
+    public bool ContainsKey(string key);
+}
+[DefaultMemberAttribute("Item")]
+public class Microsoft.PackageManagement.Internal.Packaging.MetadataIndexer : object {
+    private Swidtag _swidtag;
+    public IEnumerable`1<string> Item { get; }
+    public IEnumerable`1<XName> Keys { get; }
+    public IEnumerable`1<string> Values { get; }
+    public int Count { get; }
+    public MetadataIndexer(Swidtag swidtag);
+    public IEnumerable`1<string> get_Item(string key);
+    public IEnumerable`1<XName> get_Keys();
+    public IEnumerable`1<string> get_Values();
+    public int get_Count();
+    public virtual string ToString();
+}
+public enum Microsoft.PackageManagement.Internal.Packaging.OptionCategory : Enum {
+    public int value__;
+    public static OptionCategory Package;
+    public static OptionCategory Provider;
+    public static OptionCategory Source;
+    public static OptionCategory Install;
+}
+public enum Microsoft.PackageManagement.Internal.Packaging.OptionType : Enum {
+    public int value__;
+    public static OptionType String;
+    public static OptionType StringArray;
+    public static OptionType Int;
+    public static OptionType Switch;
+    public static OptionType Folder;
+    public static OptionType File;
+    public static OptionType Path;
+    public static OptionType Uri;
+    public static OptionType SecureString;
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Payload : ResourceCollection {
+    internal Payload(XElement element);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Process : Meta {
+    public string Name { get; internal set; }
+    public Nullable`1<int> Pid { get; internal set; }
+    internal Process(XElement element);
+    internal Process(string processName);
+    public string get_Name();
+    internal void set_Name(string value);
+    public Nullable`1<int> get_Pid();
+    internal void set_Pid(Nullable`1<int> value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Resource : Meta {
+    public string Type { get; internal set; }
+    internal Resource(XElement element);
+    internal Resource(string type);
+    public string get_Type();
+    internal void set_Type(string value);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.ResourceCollection : BaseElement {
+    public IEnumerable`1<Directory> Directories { get; }
+    public IEnumerable`1<File> Files { get; }
+    public IEnumerable`1<Process> Processes { get; }
+    public IEnumerable`1<Resource> Resources { get; }
+    internal ResourceCollection(XElement element);
+    public IEnumerable`1<Directory> get_Directories();
+    public IEnumerable`1<File> get_Files();
+    public IEnumerable`1<Process> get_Processes();
+    public IEnumerable`1<Resource> get_Resources();
+    internal Directory AddDirectory(string directoryName);
+    internal File AddFile(string filename);
+    internal Process AddProcess(string name);
+    internal Resource AddResource(string type);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.SoftwareIdentityNameVersionComparer : object {
+    private static SoftwareIdentityVersionComparer VersionComparer;
+    private static SoftwareIdentityNameVersionComparer();
+    public sealed virtual bool Equals(SoftwareIdentity swidOne, SoftwareIdentity swidTwo);
+    public sealed virtual int GetHashCode(SoftwareIdentity obj);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.SoftwareIdentityVersionComparer : object {
+    public static SoftwareIdentityVersionComparer Instance;
+    private static SoftwareIdentityVersionComparer();
+    public sealed virtual int Compare(SoftwareIdentity x, SoftwareIdentity y);
+    public static int CompareVersions(string versionScheme, string xVersion, string yVersion);
+    private static int GuessComparison(string xVersion, string yVersion);
+    private static int CompareMultipartNumeric(string xVersion, string yVersion);
+    private static int CompareMultipartNumericSuffix(string xVersion, string yVersion);
+    private static int CompareSemVer(string xVersion, string yVersion);
+    private static int IndexOfNonNumericWithDots(string version);
+}
+public class Microsoft.PackageManagement.Internal.Packaging.SoftwareMetadata : Meta {
+    public string ActivationStatus { get; internal set; }
+    public string ChannelType { get; internal set; }
+    public string Description { get; internal set; }
+    public string ColloquialVersion { get; internal set; }
+    public string Edition { get; internal set; }
+    public string EntitlementKey { get; internal set; }
+    public string Generator { get; internal set; }
+    public string PersistentId { get; internal set; }
+    public string Product { get; internal set; }
+    public string ProductFamily { get; internal set; }
+    public string Revision { get; internal set; }
+    public string UnspscCode { get; internal set; }
+    public string UnspscVersion { get; internal set; }
+    public Nullable`1<bool> EntitlementDataRequired { get; internal set; }
+    internal SoftwareMetadata(XElement element);
+    public string get_ActivationStatus();
+    internal void set_ActivationStatus(string value);
+    public string get_ChannelType();
+    internal void set_ChannelType(string value);
+    public string get_Description();
+    internal void set_Description(string value);
+    public string get_ColloquialVersion();
+    internal void set_ColloquialVersion(string value);
+    public string get_Edition();
+    internal void set_Edition(string value);
+    public string get_EntitlementKey();
+    internal void set_EntitlementKey(string value);
+    public string get_Generator();
+    internal void set_Generator(string value);
+    public string get_PersistentId();
+    internal void set_PersistentId(string value);
+    public string get_Product();
+    internal void set_Product(string value);
+    public string get_ProductFamily();
+    internal void set_ProductFamily(string value);
+    public string get_Revision();
+    internal void set_Revision(string value);
+    public string get_UnspscCode();
+    internal void set_UnspscCode(string value);
+    public string get_UnspscVersion();
+    internal void set_UnspscVersion(string value);
+    public Nullable`1<bool> get_EntitlementDataRequired();
+    internal void set_EntitlementDataRequired(Nullable`1<bool> value);
+    public virtual string ToString();
+}
+public class Microsoft.PackageManagement.Internal.Packaging.Swidtag : BaseElement {
+    internal XDocument _swidTag;
+    public string SwidTagText { get; }
+    public IEnumerable`1<string> Dependencies { get; }
+    public Nullable`1<bool> IsCorpus { get; internal set; }
+    public string Name { get; internal set; }
+    public string Version { get; internal set; }
+    public string VersionScheme { get; internal set; }
+    public string TagVersion { get; internal set; }
+    public string TagId { get; internal set; }
+    public Nullable`1<bool> IsPatch { get; internal set; }
+    public Nullable`1<bool> IsSupplemental { get; internal set; }
+    public string AppliesToMedia { get; internal set; }
+    public IEnumerable`1<SoftwareMetadata> Meta { get; }
+    public IEnumerable`1<Link> Links { get; }
+    public IEnumerable`1<Entity> Entities { get; }
+    public Payload Payload { get; }
+    public Evidence Evidence { get; }
+    public Swidtag(XDocument document);
+    public Swidtag(XElement xmlDocument);
+    internal void SetSwidTag(XDocument swidTag);
+    private void ChangeCurrentNameSpace();
+    public string get_SwidTagText();
+    public static bool IsSwidtag(XElement xmlDocument);
+    public bool IsApplicable(Hashtable environment);
+    public IEnumerable`1<string> get_Dependencies();
+    public Nullable`1<bool> get_IsCorpus();
+    internal void set_IsCorpus(Nullable`1<bool> value);
+    public virtual string get_Name();
+    internal virtual void set_Name(string value);
+    public string get_Version();
+    internal void set_Version(string value);
+    public string get_VersionScheme();
+    internal void set_VersionScheme(string value);
+    public string get_TagVersion();
+    internal void set_TagVersion(string value);
+    public string get_TagId();
+    internal void set_TagId(string value);
+    public Nullable`1<bool> get_IsPatch();
+    internal void set_IsPatch(Nullable`1<bool> value);
+    public Nullable`1<bool> get_IsSupplemental();
+    internal void set_IsSupplemental(Nullable`1<bool> value);
+    public string get_AppliesToMedia();
+    internal void set_AppliesToMedia(string value);
+    public IEnumerable`1<SoftwareMetadata> get_Meta();
+    internal SoftwareMetadata AddMeta();
+    public IEnumerable`1<Link> get_Links();
+    internal Link AddLink(Uri referenceUri, string relationship);
+    public IEnumerable`1<Entity> get_Entities();
+    internal Entity AddEntity(string name, string regId, string role);
+    public Payload get_Payload();
+    internal Payload AddPayload();
+    public Evidence get_Evidence();
+    internal Evidence AddEvidence();
+}
+public interface Microsoft.PackageManagement.Internal.Providers.IArchiver {
+    [RequiredAttribute]
+public abstract virtual string GetArchiverName();
+    [RequiredAttribute]
+public abstract virtual IEnumerable`1<string> UnpackArchive(string localFilename, string destinationFolder, IHostApi requestObject);
+    public abstract virtual bool IsSupportedFile(string localFilename);
+}
+public interface Microsoft.PackageManagement.Internal.Providers.IDownloader {
+    [RequiredAttribute]
+public abstract virtual string GetDownloaderName();
+    [RequiredAttribute]
+public abstract virtual string DownloadFile(Uri remoteLocation, string localFilename, int timeoutMilliseconds, bool showProgress, IHostApi requestObject);
+}
+public interface Microsoft.PackageManagement.Internal.Providers.IMetaProvider {
+    [RequiredAttribute]
+public abstract virtual object CreateProvider(string name);
+    [RequiredAttribute]
+public abstract virtual string GetMetaProviderName();
+    [RequiredAttribute]
+public abstract virtual IEnumerable`1<string> GetProviderNames();
+    [RequiredAttribute]
+public abstract virtual string GetProviderPath(string name);
+    [RequiredAttribute]
+public abstract virtual void RefreshProviders(IRequest request, string providerName, Version requiredVersion, Version minimumVersion, Version maximumVersion, bool logWarning);
+    [RequiredAttribute]
+public abstract virtual IEnumerable`1<object> LoadAvailableProvider(IRequest request, string modulePath, Version requiredVersion, bool force);
+}
+public interface Microsoft.PackageManagement.Internal.Providers.IPackageProvider {
+    [RequiredAttribute]
+public abstract virtual string GetPackageProviderName();
+    public abstract virtual void AddPackageSource(string name, string location, bool trusted, IRequest requestObject);
+    public abstract virtual void ResolvePackageSources(IRequest requestObject);
+    public abstract virtual void RemovePackageSource(string source, IRequest requestObject);
+    public abstract virtual void FindPackage(string name, string requiredVersion, string minimumVersion, string maximumVersion, int id, IRequest requestObject);
+    public abstract virtual void FindPackageByFile(string filePath, int id, IRequest requestObject);
+    public abstract virtual void FindPackageByUri(Uri uri, int id, IRequest requestObject);
+    public abstract virtual void GetInstalledPackages(string name, string requiredVersion, string minimumVersion, string maximumVersion, IRequest requestObject);
+    public abstract virtual void DownloadPackage(string fastPath, string location, IRequest requestObject);
+    public abstract virtual void GetPackageDetails(string fastPath, IRequest requestObject);
+    public abstract virtual void InstallPackage(string fastPath, IRequest requestObject);
+    public abstract virtual void UninstallPackage(string fastPath, IRequest requestObject);
+}
+public interface Microsoft.PackageManagement.Internal.Providers.IProvider {
+    [RequiredAttribute]
+public abstract virtual void InitializeProvider(IRequest requestObject);
+    public abstract virtual void GetFeatures(IRequest requestObject);
+    public abstract virtual void GetDynamicOptions(string category, IRequest requestObject);
+    public abstract virtual bool IsMethodImplemented(string methodName);
+    public abstract virtual string GetProviderVersion();
+    public abstract virtual void OnUnhandledException(string methodName, Exception exception);
+}
+[GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+[DebuggerNonUserCodeAttribute]
+[CompilerGeneratedAttribute]
+internal class Microsoft.PackageManagement.Internal.Resources.Messages : object {
+    private static ResourceManager resourceMan;
+    private static CultureInfo resourceCulture;
+    [EditorBrowsableAttribute("2")]
+internal static ResourceManager ResourceManager { get; }
+    [EditorBrowsableAttribute("2")]
+internal static CultureInfo Culture { get; internal set; }
+    internal static string CreatefolderFailed { get; }
+    internal static string DependentPackageFailedInstall_dependency { get; }
+    internal static string DestinationPathNotSet { get; }
+    internal static string FailedProviderBootstrap { get; }
+    internal static string FileFailedVerification { get; }
+    internal static string HashNotEqual { get; }
+    internal static string InvalidFilename { get; }
+    internal static string MissingRequiredParameter { get; }
+    internal static string PackageSourceExists { get; }
+    internal static string ProtocolNotSupported { get; }
+    internal static string InvalidVersionRange { get; }
+    internal static string ProviderPluginLoadFailure { get; }
+    internal static string ProviderSwidtagUnavailable { get; }
+    internal static string RemoveEnvironmentVariableRequiresElevation { get; }
+    internal static string SchemeNotSupported { get; }
+    internal static string SourceLocationNotValid_Location { get; }
+    internal static string UnableToCopyFileTo { get; }
+    internal static string UnableToCreateShortcutTargetDoesNotExist { get; }
+    internal static string UnableToDownload { get; }
+    internal static string PackageFailedInstallErrorLog { get; }
+    internal static string UnableToInstallPackage_package_reason { get; }
+    internal static string UnableToOverwriteExistingFile { get; }
+    internal static string UnableToRemoveFile { get; }
+    internal static string UnableToResolveDependency_dependencyPackage { get; }
+    internal static string UnableToResolvePackage { get; }
+    internal static string UnableToResolveSource_NameOrLocation { get; }
+    internal static string UnableToUninstallPackage { get; }
+    internal static string UnknownFolderId { get; }
+    internal static string UnknownProvider { get; }
+    internal static string UnsupportedArchive { get; }
+    internal static string UnsupportedProviderType { get; }
+    internal static string UriSchemeNotSupported_Scheme { get; }
+    internal static string UserDeclinedUntrustedPackageInstall { get; }
+    internal static string FailedPowerShellMetaProvider { get; }
+    internal static string DuplicatedProviderName { get; }
+    internal static string FileNotFound { get; }
+    internal static string InvalidFileType { get; }
+    internal static string InvalidProvider { get; }
+    internal static string LoadingAssembly { get; }
+    internal static string LoadingPowerShellModule { get; }
+    internal static string ProviderImportedAlready { get; }
+    internal static string ProviderSuccessfullyLoaded { get; }
+    internal static string SkipPreviousProcessedProvider { get; }
+    internal static string ReImportProvider { get; }
+    internal static string SkippingProcessedAssembly { get; }
+    internal static string UnableToImportProvider { get; }
+    internal static string VersionPropertyWillbeIgnored { get; }
+    internal static string ImportPackageProvider { get; }
+    internal static string FailToReImportProvider { get; }
+    internal static string ModuleWithVersionNotFound { get; }
+    internal static string ProviderSuccessfullyLoadedFromLocation { get; }
+    internal static string AssemblyPackageProviderAlreadyLoaded { get; }
+    internal static string ProviderNameAndVersionNotAvailableFromFilePath { get; }
+    internal static string SingleAssemblyAllowed { get; }
+    internal static string NoMatchFoundForCriteria { get; }
+    internal static string InvalidParameter { get; }
+    internal static string InstallRequiresCurrentUserScopeParameterForNonAdminUser { get; }
+    internal static string InvalidHashFormat { get; }
+    internal static string MissingFileTag { get; }
+    internal static string MissingHashAttribute { get; }
+    internal static string MissingHashContent { get; }
+    internal static string UnsupportedHashAlgorithm { get; }
+    internal static string ProviderNotResponsive { get; }
+    internal static string ProviderTimeoutExceeded { get; }
+    internal static string SwidTagXmlInvalidNameSpace { get; }
+    internal static string SwidTagXmlNotValid { get; }
+    internal static ResourceManager get_ResourceManager();
+    internal static CultureInfo get_Culture();
+    internal static void set_Culture(CultureInfo value);
+    internal static string get_CreatefolderFailed();
+    internal static string get_DependentPackageFailedInstall_dependency();
+    internal static string get_DestinationPathNotSet();
+    internal static string get_FailedProviderBootstrap();
+    internal static string get_FileFailedVerification();
+    internal static string get_HashNotEqual();
+    internal static string get_InvalidFilename();
+    internal static string get_MissingRequiredParameter();
+    internal static string get_PackageSourceExists();
+    internal static string get_ProtocolNotSupported();
+    internal static string get_InvalidVersionRange();
+    internal static string get_ProviderPluginLoadFailure();
+    internal static string get_ProviderSwidtagUnavailable();
+    internal static string get_RemoveEnvironmentVariableRequiresElevation();
+    internal static string get_SchemeNotSupported();
+    internal static string get_SourceLocationNotValid_Location();
+    internal static string get_UnableToCopyFileTo();
+    internal static string get_UnableToCreateShortcutTargetDoesNotExist();
+    internal static string get_UnableToDownload();
+    internal static string get_PackageFailedInstallErrorLog();
+    internal static string get_UnableToInstallPackage_package_reason();
+    internal static string get_UnableToOverwriteExistingFile();
+    internal static string get_UnableToRemoveFile();
+    internal static string get_UnableToResolveDependency_dependencyPackage();
+    internal static string get_UnableToResolvePackage();
+    internal static string get_UnableToResolveSource_NameOrLocation();
+    internal static string get_UnableToUninstallPackage();
+    internal static string get_UnknownFolderId();
+    internal static string get_UnknownProvider();
+    internal static string get_UnsupportedArchive();
+    internal static string get_UnsupportedProviderType();
+    internal static string get_UriSchemeNotSupported_Scheme();
+    internal static string get_UserDeclinedUntrustedPackageInstall();
+    internal static string get_FailedPowerShellMetaProvider();
+    internal static string get_DuplicatedProviderName();
+    internal static string get_FileNotFound();
+    internal static string get_InvalidFileType();
+    internal static string get_InvalidProvider();
+    internal static string get_LoadingAssembly();
+    internal static string get_LoadingPowerShellModule();
+    internal static string get_ProviderImportedAlready();
+    internal static string get_ProviderSuccessfullyLoaded();
+    internal static string get_SkipPreviousProcessedProvider();
+    internal static string get_ReImportProvider();
+    internal static string get_SkippingProcessedAssembly();
+    internal static string get_UnableToImportProvider();
+    internal static string get_VersionPropertyWillbeIgnored();
+    internal static string get_ImportPackageProvider();
+    internal static string get_FailToReImportProvider();
+    internal static string get_ModuleWithVersionNotFound();
+    internal static string get_ProviderSuccessfullyLoadedFromLocation();
+    internal static string get_AssemblyPackageProviderAlreadyLoaded();
+    internal static string get_ProviderNameAndVersionNotAvailableFromFilePath();
+    internal static string get_SingleAssemblyAllowed();
+    internal static string get_NoMatchFoundForCriteria();
+    internal static string get_InvalidParameter();
+    internal static string get_InstallRequiresCurrentUserScopeParameterForNonAdminUser();
+    internal static string get_InvalidHashFormat();
+    internal static string get_MissingFileTag();
+    internal static string get_MissingHashAttribute();
+    internal static string get_MissingHashContent();
+    internal static string get_UnsupportedHashAlgorithm();
+    internal static string get_ProviderNotResponsive();
+    internal static string get_ProviderTimeoutExceeded();
+    internal static string get_SwidTagXmlInvalidNameSpace();
+    internal static string get_SwidTagXmlNotValid();
+}
+public abstract class Microsoft.PackageManagement.Internal.Utility.Async.AsyncAction : object {
+    private static TimeSpan DefaultCallTimeout;
+    private static TimeSpan DefaultResponsiveness;
+    private ActionState _actionState;
+    protected DateTime _callStart;
+    private DisposalState _disposalState;
+    protected Thread _invocationThread;
+    private DateTime _lastActivity;
+    private TimeSpan _responsiveness;
+    private TimeSpan _timeout;
+    private Timer _timer;
+    protected CancellationTokenSource _cancellationTokenSource;
+    private ManualResetEventSlim _completed;
+    private object _lock;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnComplete;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnCancel;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnAbort;
+    private TimeSpan TimeLeft { get; }
+    public WaitHandle CompleteEvent { get; }
+    public TimeSpan Timeout { get; public set; }
+    public TimeSpan Responsiveness { get; public set; }
+    public bool IsCanceled { get; }
+    public bool IsAborted { get; }
+    public bool IsCompleted { get; }
+    private static AsyncAction();
+    private TimeSpan get_TimeLeft();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnAbort(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnAbort(Action value);
+    public virtual void Dispose();
+    public virtual void Cancel();
+    public virtual void Abort();
+    public sealed virtual WaitHandle get_CompleteEvent();
+    public sealed virtual TimeSpan get_Timeout();
+    public sealed virtual void set_Timeout(TimeSpan value);
+    public sealed virtual TimeSpan get_Responsiveness();
+    public sealed virtual void set_Responsiveness(TimeSpan value);
+    public virtual bool get_IsCanceled();
+    public sealed virtual bool get_IsAborted();
+    public sealed virtual bool get_IsCompleted();
+    public virtual void Dispose(bool disposing);
+    private void DisposeTimer();
+    protected virtual void Complete();
+    public virtual void WarnBeforeResponsivenessCancellation();
+    public virtual void WarnBeforeTimeoutCancellation();
+    private void Signalled(object obj);
+    protected void Activity();
+    protected void StartCall();
+    private void ResetTimer();
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Async.AsyncActionExtensions : object {
+    [ExtensionAttribute]
+public static T Timeout(T asyncAction, int seconds);
+    [ExtensionAttribute]
+public static T Responsiveness(T asyncAction, int seconds);
+    [ExtensionAttribute]
+public static T CancelWhen(T asyncAction, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+public static T AbortWhen(T asyncAction, CancellationToken cancellationToken);
+    [ExtensionAttribute]
+public static T Wait(T asyncAction);
+    [ExtensionAttribute]
+public static T Wait(T asyncAction, int milliseconds);
+    [ExtensionAttribute]
+public static T Wait(T asyncAction, TimeSpan timespan);
+    [ExtensionAttribute]
+public static T OnCompletion(T asyncAction, Action onCompleteAction);
+    [ExtensionAttribute]
+public static T OnCancellation(T asyncAction, Action onCancelAction);
+    [ExtensionAttribute]
+public static T OnAborted(T asyncAction, Action onAbortAction);
+    [ExtensionAttribute]
+public static Task`1<T> AsTask(IAsyncValue`1<T> asyncValue);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Async.EmptyAsyncEnumerable`1 : object {
+    private static ManualResetEventSlim _completed;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private TimeSpan <Timeout>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private TimeSpan <Responsiveness>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnComplete;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnCancel;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Action OnAbort;
+    public WaitHandle CompleteEvent { get; }
+    public TimeSpan Timeout { get; public set; }
+    public TimeSpan Responsiveness { get; public set; }
+    public bool IsCanceled { get; }
+    public bool IsAborted { get; }
+    public bool IsCompleted { get; }
+    public bool IsConsumed { get; }
+    public bool HasData { get; }
+    public WaitHandle Ready { get; }
+    private static EmptyAsyncEnumerable`1();
+    public sealed virtual void Dispose();
+    public sealed virtual void Cancel();
+    public sealed virtual void Abort();
+    public sealed virtual WaitHandle get_CompleteEvent();
+    [CompilerGeneratedAttribute]
+public sealed virtual TimeSpan get_Timeout();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Timeout(TimeSpan value);
+    [CompilerGeneratedAttribute]
+public sealed virtual TimeSpan get_Responsiveness();
+    [CompilerGeneratedAttribute]
+public sealed virtual void set_Responsiveness(TimeSpan value);
+    public sealed virtual bool get_IsCanceled();
+    public sealed virtual bool get_IsAborted();
+    public sealed virtual bool get_IsCompleted();
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void add_OnAbort(Action value);
+    [CompilerGeneratedAttribute]
+public sealed virtual void remove_OnAbort(Action value);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    public sealed virtual IEnumerable`1<T> GetConsumingEnumerable();
+    public sealed virtual IEnumerable`1<T> GetBlockingEnumerable();
+    public sealed virtual bool get_IsConsumed();
+    public sealed virtual bool get_HasData();
+    public sealed virtual WaitHandle get_Ready();
+    public virtual void Dispose(bool disposing);
+}
+public interface Microsoft.PackageManagement.Internal.Utility.Async.IAsyncAction {
+    public WaitHandle CompleteEvent { get; }
+    public TimeSpan Timeout { get; public set; }
+    public TimeSpan Responsiveness { get; public set; }
+    public bool IsCanceled { get; }
+    public bool IsAborted { get; }
+    public bool IsCompleted { get; }
+    public abstract virtual WaitHandle get_CompleteEvent();
+    public abstract virtual TimeSpan get_Timeout();
+    public abstract virtual void set_Timeout(TimeSpan value);
+    public abstract virtual TimeSpan get_Responsiveness();
+    public abstract virtual void set_Responsiveness(TimeSpan value);
+    public abstract virtual bool get_IsCanceled();
+    public abstract virtual bool get_IsAborted();
+    public abstract virtual bool get_IsCompleted();
+    public abstract virtual void Cancel();
+    public abstract virtual void Abort();
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_OnComplete(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_OnCancel(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void add_OnAbort(Action value);
+    [CompilerGeneratedAttribute]
+public abstract virtual void remove_OnAbort(Action value);
+}
+public interface Microsoft.PackageManagement.Internal.Utility.Async.IAsyncEnumerable`1 {
+    public bool IsConsumed { get; }
+    public bool HasData { get; }
+    public WaitHandle Ready { get; }
+    public abstract virtual bool get_IsConsumed();
+    public abstract virtual bool get_HasData();
+    public abstract virtual WaitHandle get_Ready();
+    public abstract virtual IEnumerable`1<T> GetConsumingEnumerable();
+    public abstract virtual IEnumerable`1<T> GetBlockingEnumerable();
+}
+public interface Microsoft.PackageManagement.Internal.Utility.Async.IAsyncValue`1 {
+    public T Value { get; }
+    public abstract virtual T get_Value();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Collections.BlockingCollection`1 : BlockingCollection`1<T> {
+    private MutableEnumerable`1<T> _blockingEnumerable;
+    private ManualResetEventSlim _activity;
+    private object _lock;
+    public WaitHandle Ready { get; }
+    public bool HasData { get; }
+    public WaitHandle get_Ready();
+    public bool get_HasData();
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+    protected virtual void Dispose(bool isDisposing);
+    private void SetActivity();
+    public void Add(T item);
+    public void Add(T item, CancellationToken cancellationToken);
+    public IEnumerable`1<T> GetConsumingEnumerable();
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Collections.BlockingCollection`1/<GetConsumingEnumerable>d__14")]
+public IEnumerable`1<T> GetConsumingEnumerable(CancellationToken cancellationToken);
+    private bool SafeTryTake(T& item, int time, CancellationToken cancellationToken);
+    public IEnumerable`1<T> GetBlockingEnumerable();
+    public IEnumerable`1<T> GetBlockingEnumerable(CancellationToken cancellationToken);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Collections.BlockingCollection`1/<SafeGetBlockingEnumerable>d__18")]
+private IEnumerable`1<T> SafeGetBlockingEnumerable(CancellationToken cancellationToken);
+    public void CompleteAdding();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Collections.CancellableEnumerator`1 : object {
+    private IEnumerator _enumerator;
+    private CancellationTokenSource _cancellationTokenSource;
+    public T Current { get; }
+    private object System.Collections.IEnumerator.Current { get; }
+    public CancellableEnumerator`1(CancellationTokenSource cts, IEnumerator enumerator);
+    public sealed virtual void Cancel();
+    public sealed virtual bool MoveNext();
+    public sealed virtual void Dispose();
+    public sealed virtual void Reset();
+    public sealed virtual T get_Current();
+    private sealed virtual override object System.Collections.IEnumerator.get_Current();
+    protected virtual void Dispose(bool disposing);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Collections.EnumerableExtensions : object {
+    [ExtensionAttribute]
+public static MutableEnumerable`1<T> ReEnumerable(IEnumerable`1<T> collection);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Collections.EnumerableExtensions/<FilterWithFinalizer>d__1`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<TSource> FilterWithFinalizer(IEnumerable`1<TSource> source, Func`2<TSource, bool> predicate, Action`1<TSource> onFilterAction);
+}
+internal interface Microsoft.PackageManagement.Internal.Utility.Collections.ICancellableEnumerator`1 {
+    public abstract virtual void Cancel();
+}
+public class Microsoft.PackageManagement.Internal.Utility.Collections.List`2 : List`1<KeyValuePair`2<TKey, TValue>> {
+    public void Add(TKey key, TValue value);
+    public int IndexOf(TKey key, TValue value);
+    public bool Contains(TKey key, TValue value);
+    public bool Remove(TKey key, TValue value);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Collections.List`3 : List`1<Tuple`3<T1, T2, T3>> {
+    public void Add(T1 p1, T2 p2, T3 p3);
+    public bool Contains(T1 p1, T2 p2, T3 p3);
+    public bool Remove(T1 p1, T2 p2, T3 p3);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Collections.List`4 : List`1<Tuple`4<T1, T2, T3, T4>> {
+    public void Add(T1 p1, T2 p2, T3 p3, T4 p4);
+    public bool Contains(T1 p1, T2 p2, T3 p3, T4 p4);
+    public bool Remove(T1 p1, T2 p2, T3 p3, T4 p4);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Collections.List`5 : List`1<Tuple`5<T1, T2, T3, T4, T5>> {
+    public void Add(T1 p1, T2 p2, T3 p3, T4 p4, T5 p5);
+    public bool Contains(T1 p1, T2 p2, T3 p3, T4 p4, T5 p5);
+    public bool Remove(T1 p1, T2 p2, T3 p3, T4 p4, T5 p5);
+}
+internal abstract class Microsoft.PackageManagement.Internal.Utility.Collections.MutableEnumerable`1 : object {
+    private List`1<T> _list;
+    protected List`1<T> List { get; }
+    protected List`1<T> get_List();
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Collections.MutableEnumerable`1/<GetEnumerators>d__3")]
+public IEnumerable`1<IEnumerator`1<T>> GetEnumerators(int copies);
+    protected abstract virtual bool ItemExists(int index);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.PackageManagement.Internal.Utility.Collections.OrderedDictionary`2 : OrderedDictionary {
+    public TValue Item { get; public set; }
+    public ICollection`1<TKey> Keys { get; }
+    public ICollection`1<TValue> Values { get; }
+    public sealed virtual IEnumerator`1<KeyValuePair`2<TKey, TValue>> GetEnumerator();
+    public sealed virtual void Add(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual bool Contains(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual void CopyTo(KeyValuePair`2[] array, int arrayIndex);
+    public sealed virtual bool Remove(KeyValuePair`2<TKey, TValue> item);
+    public sealed virtual bool ContainsKey(TKey key);
+    public sealed virtual void Add(TKey key, TValue value);
+    public sealed virtual bool Remove(TKey key);
+    public sealed virtual bool TryGetValue(TKey key, TValue& value);
+    public sealed virtual TValue get_Item(TKey key);
+    public sealed virtual void set_Item(TKey key, TValue value);
+    public sealed virtual ICollection`1<TKey> get_Keys();
+    public sealed virtual ICollection`1<TValue> get_Values();
+}
+internal enum Microsoft.PackageManagement.Internal.Utility.Collections.PathCompareOption : Enum {
+    public int value__;
+    public static PathCompareOption Full;
+    public static PathCompareOption File;
+    public static PathCompareOption FileWithoutExtension;
+    public static PathCompareOption Extension;
+    public static PathCompareOption Nuget;
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Collections.PathEqualityComparer : object {
+    private PathCompareOption _option;
+    public PathEqualityComparer(PathCompareOption option);
+    public sealed virtual bool Equals(string x, string y);
+    public sealed virtual int GetHashCode(string obj);
+    private string ComparePath(string path);
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.PackageManagement.Internal.Utility.Collections.ReEnumerable`1 : MutableEnumerable`1<T> {
+    private IEnumerator`1<T> _sourceIterator;
+    private IEnumerable`1<T> _source;
+    public T Item { get; }
+    public int Count { get; }
+    public ReEnumerable`1(IEnumerable`1<T> source);
+    public ReEnumerable`1(IEnumerator`1<T> sourceIterator);
+    public T get_Item(int index);
+    public int get_Count();
+    protected virtual bool ItemExists(int index);
+    public MutableEnumerable`1<T> Concat(IEnumerable`1<T> additionalItems);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.CollectionExtensions : object {
+    private static MethodInfo _castMethod;
+    private static MethodInfo _toArrayMethod;
+    private static IDictionary`2<Type, MethodInfo> _castMethods;
+    private static IDictionary`2<Type, MethodInfo> _toArrayMethods;
+    private static CollectionExtensions();
+    [ExtensionAttribute]
+public static bool IsNullOrEmpty(IEnumerable`1<T> collection);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> ConcatSingleItem(IEnumerable`1<T> enumerable, T item);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> WhereNotNull(IEnumerable`1<T> enumerable);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Extensions.CollectionExtensions/<ToIEnumerable>d__7`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<T> ToIEnumerable(IEnumerator`1<T> enumerator);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> Concat(IEnumerable`1<T> set1, IEnumerator`1<T> set2);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> SingleItemAsEnumerable(T item);
+    [ExtensionAttribute]
+public static void AddRangeLocked(List`1<T> list, IEnumerable`1<T> items);
+    [ExtensionAttribute]
+public static void ParallelForEach(IEnumerable`1<T> enumerable, Action`1<T> action);
+    [ExtensionAttribute]
+public static void SerialForEach(IEnumerable`1<T> enumerable, Action`1<T> action);
+    [ExtensionAttribute]
+public static IEnumerable`1<Task> AsyncForEach(IEnumerable`1<T> enumerable, Action`1<T> action);
+    [ExtensionAttribute]
+public static void WaitAll(IEnumerable`1<Task> tasks);
+    [ExtensionAttribute]
+public static object ToIEnumerableT(IEnumerable`1<object> enumerable, Type elementType);
+    [ExtensionAttribute]
+public static object ToArrayT(IEnumerable`1<object> enumerable, Type elementType);
+    [ExtensionAttribute]
+public static int IndexWhere(IEnumerable`1<T> source, Func`3<T, int, bool> predicate);
+    [ExtensionAttribute]
+public static int IndexWhere(IEnumerable`1<T> source, Func`2<T, bool> predicate);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.DelegateExtensions : object {
+    private static Dictionary`2<Type, Delegate> _emptyDelegates;
+    private static DelegateExtensions();
+    [ExtensionAttribute]
+internal static Type GetDelegateReturnType(Delegate delegateInstance);
+    [ExtensionAttribute]
+internal static Type GetDelegateReturnType(Type delegateType);
+    [ExtensionAttribute]
+internal static IEnumerable`1<Type> GetDelegateParameterTypes(Type delegateType);
+    [ExtensionAttribute]
+internal static IEnumerable`1<string> GetDelegateParameterNames(Type delegateType);
+    [ExtensionAttribute]
+internal static Type[] GetParameterTypes(MethodInfo methodInfo);
+    [ExtensionAttribute]
+internal static bool IsDelegateAssignableFromMethod(Type delegateType, MethodInfo methodInfo);
+    [ExtensionAttribute]
+internal static bool IsDelegateAssignableFromDelegate(Type delegateType, Type candidateDelegateType);
+    [ExtensionAttribute]
+internal static Delegate CreateEmptyDelegate(Type delegateType);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.DictionaryExtensions : object {
+    [ExtensionAttribute]
+public static Tuple`2<T1, T2> Add(IDictionary`2<TKey, Tuple`2<T1, T2>> dictionary, TKey key, T1 v1, T2 v2);
+    [ExtensionAttribute]
+public static void RemoveSafe(IDictionary`2<TKey, TValue> dictionary, TKey key);
+    [ExtensionAttribute]
+public static TValue AddOrSet(IDictionary`2<TKey, TValue> dictionary, TKey key, TValue value);
+    [ExtensionAttribute]
+public static TValue GetOrAdd(IDictionary`2<TKey, TValue> dictionary, TKey key, Func`1<TValue> valueFunction);
+    [ExtensionAttribute]
+public static TValue GetOrSetIfDefault(IDictionary`2<TKey, TValue> dictionary, TKey key, Func`1<TValue> valueFunction);
+    [ExtensionAttribute]
+public static TValue TryPullValue(IDictionary`2<TKey, TValue> dictionary, TKey key);
+    [ExtensionAttribute]
+public static Dictionary`2<TKey, TElement> ToDictionaryNicely(IEnumerable`1<TSource> source, Func`2<TSource, TKey> keySelector, Func`2<TSource, TElement> elementSelector, IEqualityComparer`1<TKey> comparer);
+    [ExtensionAttribute]
+public static TValue Get(IDictionary`2<TKey, TValue> dictionary, TKey key);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Extensions.EqualityComparer`1 : object {
+    private Func`3<T, T, bool> _compareFn;
+    private Func`2<T, int> _hashFn;
+    public EqualityComparer`1(Func`3<T, T, bool> compareFn, Func`2<T, int> hashFn);
+    public EqualityComparer`1(Func`3<T, T, bool> compareFn);
+    public sealed virtual bool Equals(T x, T y);
+    public sealed virtual int GetHashCode(T obj);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.ExceptionExtensions : object {
+    [ExtensionAttribute]
+public static void Dump(Exception e);
+    [ExtensionAttribute]
+public static void Dump(Exception e, IHostApi request);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.FilesystemExtensions : object {
+    private static Char[] _pathCharacters;
+    private static int _counter;
+    public static string OriginalTempFolder;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private static string <TempPath>k__BackingField;
+    public static string TempPath { get; private set; }
+    public static int Counter { get; }
+    public static string CounterHex { get; }
+    private static FilesystemExtensions();
+    [CompilerGeneratedAttribute]
+public static string get_TempPath();
+    [CompilerGeneratedAttribute]
+private static void set_TempPath(string value);
+    public static int get_Counter();
+    public static string get_CounterHex();
+    [ExtensionAttribute]
+public static bool LooksLikeAFilename(string text);
+    [ExtensionAttribute]
+public static void TryHardToDelete(string location);
+    public static string GenerateTemporaryFileOrDirectoryNameInTempDirectory();
+    public static void ResetTempFolder();
+    [ExtensionAttribute]
+public static string CanonicalizePath(string path, bool isPotentiallyRelativePath);
+    [ExtensionAttribute]
+public static Byte[] ReadBytes(string path, int maxLength);
+    [ExtensionAttribute]
+public static bool FileExists(string path);
+    [ExtensionAttribute]
+public static bool DirectoryExists(string path);
+    [ExtensionAttribute]
+public static string MakeSafeFileName(string input);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.HashtableExtensions : object {
+    [ExtensionAttribute]
+public static bool IsNullOrEmpty(Hashtable hashtable);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> GetStringCollection(Hashtable hashtable, string path);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> GetStringCollection(Hashtable hashtable, String[] paths);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Extensions.HashtableExtensions/<Flatten>d__3")]
+[ExtensionAttribute]
+public static IEnumerable`1<KeyValuePair`2<string, string>> Flatten(Hashtable hashTable);
+}
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.Singleton`1 : object {
+    private static Dictionary`2<int, TResult> _singletons;
+    private static Int32[] _seeds;
+    private static Singleton`1();
+    public static int CreateHashCode(Object[] keys);
+    public static int CreateHashCode(object primaryKey, Object[] keys);
+    public static TResult GetOrAdd(Func`1<TResult> newInstance, object primaryKey, Object[] keys);
+    public static TResult Get(object primaryKey, Object[] keys);
+    public static TResult AddOrSet(TResult value, object primaryKey, Object[] keys);
+    public static void Remove(object primaryKey, Object[] keys);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.SingletonExtensions : object {
+    [ExtensionAttribute]
+public static TResult Get(object primaryKey, Object[] keys);
+    [ExtensionAttribute]
+public static TResult GetOrAdd(object primaryKey, Func`1<TResult> newInstance, Object[] keys);
+    [ExtensionAttribute]
+public static TResult AddOrSet(object primaryKey, TResult value, Object[] keys);
+    [ExtensionAttribute]
+public static void Remove(object primaryKey, Object[] keys);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.StringExtensions : object {
+    private static Char[] _wildcardCharacters;
+    private static Regex _escapeFilepathCharacters;
+    private static StringExtensions();
+    private static string FixMeFormat(string formatString, Object[] args);
+    [ExtensionAttribute]
+public static IEnumerable`1<string> Quote(IEnumerable`1<string> items);
+    [ExtensionAttribute]
+public static string JoinWithComma(IEnumerable`1<string> items);
+    [ExtensionAttribute]
+public static string JoinWith(IEnumerable`1<string> items, string delimiter);
+    [ExtensionAttribute]
+public static TSource SafeAggregate(IEnumerable`1<TSource> source, Func`3<TSource, TSource, TSource> func);
+    [ExtensionAttribute]
+public static Version ToVersion(string versionInput);
+    [ExtensionAttribute]
+public static bool ContainsIgnoreCase(IEnumerable`1<string> collection, string value);
+    [ExtensionAttribute]
+public static bool ContainsAnyOfIgnoreCase(IEnumerable`1<string> collection, Object[] values);
+    [ExtensionAttribute]
+public static bool ContainsAnyOfIgnoreCase(IEnumerable`1<string> collection, IEnumerable`1<string> values);
+    private static Regex WildcardToRegex(string wildcard, string noEscapePrefix);
+    [ExtensionAttribute]
+public static bool ContainsWildcards(string input);
+    [ExtensionAttribute]
+public static bool EqualsIgnoreEndSlash(string source, string input);
+    [ExtensionAttribute]
+public static bool ContainsIgnoreCase(string source, string input);
+    [ExtensionAttribute]
+public static bool IsFile(string input);
+    [ExtensionAttribute]
+public static bool IsWildcardMatch(string input, string wildcardMask);
+    [ExtensionAttribute]
+private static byte FromHexChar(char c);
+    [ExtensionAttribute]
+public static Byte[] FromHex(string hex);
+    [ExtensionAttribute]
+public static string FixVersion(string versionString);
+    [ExtensionAttribute]
+public static string format(string formatString, Object[] args);
+    [ExtensionAttribute]
+internal static Byte[] ToByteArray(string text);
+    [ExtensionAttribute]
+internal static string ToUnicodeString(IEnumerable`1<byte> bytes);
+    [ExtensionAttribute]
+public static bool IsTrue(string text);
+    [ExtensionAttribute]
+public static Nullable`1<bool> IsTruePreserveNull(string text);
+    [ExtensionAttribute]
+public static int ToInt32(string str, int defaultValue);
+    [ExtensionAttribute]
+public static bool EqualsIgnoreCase(string str, string str2);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Extensions.TaskExtensions : object {
+    [ExtensionAttribute]
+public static Task`1<T> AsResultTask(T result);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Extensions.ThreadPerTaskScheduler : TaskScheduler {
+    protected virtual IEnumerable`1<Task> GetScheduledTasks();
+    protected virtual void QueueTask(Task task);
+    protected virtual bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Extensions.Types : object {
+    private Type _first;
+    private Type[] _second;
+    public Types(Type first, Type[] second);
+    public virtual int GetHashCode();
+    public virtual bool Equals(object obj);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.AdminPrivilege : object {
+    public static bool IsElevated { get; }
+    public static bool get_IsElevated();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.AsyncProcess : object {
+    protected Process _process;
+    private BlockingCollection`1<string> _stdError;
+    private ManualResetEvent _stdErrStarted;
+    private BlockingCollection`1<string> _stdOut;
+    private ManualResetEvent _stdOutStarted;
+    public IEnumerable`1<string> StandardError { get; }
+    public IEnumerable`1<string> StandardOutput { get; }
+    public int ExitCode { get; }
+    public bool HasExited { get; }
+    public DateTime ExitTime { get; }
+    public int Id { get; }
+    public string MachineName { get; }
+    public ProcessModule MainModule { get; }
+    public IntPtr MaxWorkingSet { get; }
+    public IntPtr MinWorkingSet { get; }
+    public ProcessModuleCollection Modules { get; }
+    public long NonpagedSystemMemorySize64 { get; }
+    public long PagedMemorySize64 { get; }
+    public long PagedSystemMemorySize64 { get; }
+    public long PeakPagedMemorySize64 { get; }
+    public long PeakWorkingSet64 { get; }
+    public long PeakVirtualMemorySize64 { get; }
+    public bool PriorityBoostEnabled { get; public set; }
+    public ProcessPriorityClass PriorityClass { get; public set; }
+    public long PrivateMemorySize64 { get; }
+    public TimeSpan PrivilegedProcessorTime { get; }
+    public string ProcessName { get; }
+    public IntPtr ProcessorAffinity { get; public set; }
+    public int SessionId { get; }
+    public DateTime StartTime { get; }
+    public ProcessThreadCollection Threads { get; }
+    public TimeSpan TotalProcessorTime { get; }
+    public TimeSpan UserProcessorTime { get; }
+    public long VirtualMemorySize64 { get; }
+    public bool EnableRaisingEvents { get; public set; }
+    public long WorkingSet64 { get; }
+    protected AsyncProcess(Process process);
+    public IEnumerable`1<string> get_StandardError();
+    public IEnumerable`1<string> get_StandardOutput();
+    public int get_ExitCode();
+    public bool get_HasExited();
+    public DateTime get_ExitTime();
+    public void Close();
+    public int get_Id();
+    public string get_MachineName();
+    public ProcessModule get_MainModule();
+    public IntPtr get_MaxWorkingSet();
+    public IntPtr get_MinWorkingSet();
+    public ProcessModuleCollection get_Modules();
+    public long get_NonpagedSystemMemorySize64();
+    public long get_PagedMemorySize64();
+    public long get_PagedSystemMemorySize64();
+    public long get_PeakPagedMemorySize64();
+    public long get_PeakWorkingSet64();
+    public long get_PeakVirtualMemorySize64();
+    public bool get_PriorityBoostEnabled();
+    public void set_PriorityBoostEnabled(bool value);
+    public ProcessPriorityClass get_PriorityClass();
+    public void set_PriorityClass(ProcessPriorityClass value);
+    public long get_PrivateMemorySize64();
+    public TimeSpan get_PrivilegedProcessorTime();
+    public string get_ProcessName();
+    public IntPtr get_ProcessorAffinity();
+    public void set_ProcessorAffinity(IntPtr value);
+    public int get_SessionId();
+    public DateTime get_StartTime();
+    public ProcessThreadCollection get_Threads();
+    public TimeSpan get_TotalProcessorTime();
+    public TimeSpan get_UserProcessorTime();
+    public long get_VirtualMemorySize64();
+    public bool get_EnableRaisingEvents();
+    public void set_EnableRaisingEvents(bool value);
+    public long get_WorkingSet64();
+    public sealed virtual void Dispose();
+    public static AsyncProcess Start(ProcessStartInfo startInfo);
+    private void ErrorDataReceived(object sender, DataReceivedEventArgs args);
+    private void OutputDataReceived(object sender, DataReceivedEventArgs args);
+    private void ProcessExited(object sender, EventArgs args);
+    public static AsyncProcess Start(ProcessStartInfo startInfo, IDictionary environment);
+    public static AsyncProcess Start(string fileName);
+    public static AsyncProcess Start(string fileName, IDictionary environment);
+    public static AsyncProcess Start(string fileName, string parameters, IDictionary environment);
+    public static AsyncProcess Start(string fileName, string parameters);
+    public void Kill();
+    public bool WaitForExit(int milliseconds);
+    public void WaitForExit();
+    public void add_Exited(EventHandler value);
+    public void remove_Exited(EventHandler value);
+    protected virtual void Dispose(bool disposing);
+    public static void EnterDebugMode();
+    public static void LeaveDebugMode();
+    public static AsyncProcess GetProcessById(int processId, string machineName);
+    public static AsyncProcess GetProcessById(int processId);
+    public static AsyncProcess[] GetProcessesByName(string processName);
+    public static AsyncProcess[] GetProcessesByName(string processName, string machineName);
+    public static AsyncProcess[] GetProcesses();
+    public static AsyncProcess[] GetProcesses(string machineName);
+    public static AsyncProcess GetCurrentProcess();
+    public void Refresh();
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.DisposableModule : object {
+    private Module _module;
+    public bool IsInvalid { get; }
+    public bool get_IsInvalid();
+    public sealed virtual void Dispose();
+    public void Dispose(bool disposing);
+    public static Module op_Implicit(DisposableModule instance);
+    public static DisposableModule op_Implicit(Module module);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.EnumResourceLanguages : MulticastDelegate {
+    public EnumResourceLanguages(object object, IntPtr method);
+    public virtual bool Invoke(Module module, ResourceType type, ResourceId resourceId, LanguageId language, Unused unused);
+    public virtual IAsyncResult BeginInvoke(Module module, ResourceType type, ResourceId resourceId, LanguageId language, Unused unused, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.EnumResourceNames : MulticastDelegate {
+    public EnumResourceNames(object object, IntPtr method);
+    public virtual bool Invoke(Module module, ResourceType type, ResourceId resourceId, Unused unused);
+    public virtual IAsyncResult BeginInvoke(Module module, ResourceType type, ResourceId resourceId, Unused unused, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.EnumResourceTypes : MulticastDelegate {
+    public EnumResourceTypes(object object, IntPtr method);
+    public virtual bool Invoke(Module module, ResourceType type, Unused unused);
+    public virtual IAsyncResult BeginInvoke(Module module, ResourceType type, Unused unused, AsyncCallback callback, object object);
+    public virtual bool EndInvoke(IAsyncResult result);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.LanguageId : ValueType {
+    internal static LanguageId None;
+    private ushort value;
+}
+[FlagsAttribute]
+internal enum Microsoft.PackageManagement.Internal.Utility.Platform.LoadLibraryFlags : Enum {
+    public UInt32 value__;
+    public static LoadLibraryFlags DontResolveDllReferences;
+    public static LoadLibraryFlags AsDatafile;
+    public static LoadLibraryFlags LoadWithAlteredSearchPath;
+    public static LoadLibraryFlags LoadIgnoreCodeAuthzLevel;
+    public static LoadLibraryFlags AsImageResource;
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.Module : ValueType {
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public Module(IntPtr ptr);
+    public bool get_IsInvalid();
+    public void Free();
+}
+internal static class Microsoft.PackageManagement.Internal.Utility.Platform.NativeMethods : object {
+    internal static int WNetGetConnection(string localName, StringBuilder remoteName, Int32& length);
+    internal static WinVerifyTrustResult WinVerifyTrust(IntPtr hwnd, Guid pgActionID, WinTrustData pWVTData);
+    internal static Module LoadLibraryEx(string filename, Unused unused, LoadLibraryFlags dwFlags);
+    internal static bool EnumResourceTypesEx(Module module, EnumResourceTypes callback, Unused unused, ResourceEnumFlags flags, LanguageId langid);
+    internal static bool EnumResourceNamesEx(Module module, ResourceType resourceType, EnumResourceNames callback, Unused unused, ResourceEnumFlags flags, UInt32 langid);
+    internal static bool EnumResourceLanguagesEx(Module module, ResourceType resourceType, ResourceId resourceId, EnumResourceLanguages callback, Unused unused, ResourceEnumFlags flags, LanguageId language);
+    internal static Resource FindResourceEx(Module module, ResourceType resourceType, ResourceId resourceId, LanguageId language);
+    internal static ResourceData LoadResource(Module module, Resource resource);
+    internal static IntPtr LockResource(ResourceData data);
+    internal static int SizeofResource(Module module, Resource hResInfo);
+    internal static bool FreeLibrary(Module instance);
+}
+public static class Microsoft.PackageManagement.Internal.Utility.Platform.OSInformation : object {
+    private static string _dollarPSHome;
+    private static string _sudoUser;
+    private static Nullable`1<bool> _isWindows;
+    private static Nullable`1<bool> _isWindowsPowerShell;
+    private static Nullable`1<bool> _isSudoUser;
+    private static Nullable`1<bool> _isFipsEnabled;
+    private static string _allUserhomeDirectory;
+    public static bool IsWindows { get; }
+    public static bool IsWindowsPowerShell { get; }
+    public static string ConfigLocation { get; }
+    public static string DataHomeLocation { get; }
+    public static string AllUserLocation { get; }
+    internal static string AllUserHomeDirectory { get; }
+    public static string ProgramFilesDirectory { get; }
+    public static string LocalAppDataDirectory { get; }
+    public static bool IsSudoUser { get; }
+    internal static bool IsFipsEnabled { get; }
+    private static OSInformation();
+    public static bool get_IsWindows();
+    public static bool get_IsWindowsPowerShell();
+    public static string get_ConfigLocation();
+    public static string get_DataHomeLocation();
+    public static string get_AllUserLocation();
+    internal static string get_AllUserHomeDirectory();
+    public static string get_ProgramFilesDirectory();
+    public static string get_LocalAppDataDirectory();
+    internal static string SelectDirectory(XDG_Type dirpath);
+    public static bool get_IsSudoUser();
+    private static string RunPowerShellCommand(string commandName);
+    internal static bool get_IsFipsEnabled();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.PlatformUtility : object {
+    private static Lazy`1<PlatformUtility> _platformUtility;
+    internal static PlatformUtility Instance { get; }
+    private static PlatformUtility();
+    internal static PlatformUtility get_Instance();
+    internal static IEnumerable`1<XElement> LoadFrom(string filename);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.PowerShellCoreObject : object {
+    internal static IEnumerable`1<XElement> LoadFrom(string filename);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.Resource : ValueType {
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public Resource(IntPtr ptr);
+    public bool get_IsInvalid();
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.ResourceData : ValueType {
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public ResourceData(IntPtr ptr);
+    public bool get_IsInvalid();
+}
+[FlagsAttribute]
+internal enum Microsoft.PackageManagement.Internal.Utility.Platform.ResourceEnumFlags : Enum {
+    public UInt32 value__;
+    public static ResourceEnumFlags None;
+    public static ResourceEnumFlags LanguageNeutral;
+    public static ResourceEnumFlags Mui;
+    public static ResourceEnumFlags Validate;
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.ResourceId : ValueType {
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public ResourceId(IntPtr ptr);
+    public bool get_IsInvalid();
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.ResourceType : ValueType {
+    public static ResourceType None;
+    public static ResourceType Cursor;
+    public static ResourceType Bitmap;
+    public static ResourceType Icon;
+    public static ResourceType Menu;
+    public static ResourceType Dialog;
+    public static ResourceType String;
+    public static ResourceType FontDir;
+    public static ResourceType Font;
+    public static ResourceType Accelerator;
+    public static ResourceType RCData;
+    public static ResourceType MessageTable;
+    public static ResourceType GroupCursor;
+    public static ResourceType GroupIcon;
+    public static ResourceType Version;
+    public static ResourceType DialogInclude;
+    public static ResourceType PlugPlay;
+    public static ResourceType Vxd;
+    public static ResourceType AniCursor;
+    public static ResourceType AniIcon;
+    public static ResourceType Html;
+    public static ResourceType Manifest;
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public ResourceType(IntPtr ptr);
+    public ResourceType(int ptr);
+    private static ResourceType();
+    public bool get_IsInvalid();
+}
+public class Microsoft.PackageManagement.Internal.Utility.Platform.Unused : ValueType {
+    internal static Unused Nothing;
+    public IntPtr handle;
+    public bool IsInvalid { get; }
+    public Unused(IntPtr ptr);
+    public bool get_IsInvalid();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.WindowsPowerShellObject : object {
+    private static Byte[] Utf;
+    private static WindowsPowerShellObject();
+    internal static IEnumerable`1<XElement> LoadFrom(string filename);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.WinTrustData : object {
+    private UInt32 StructSize;
+    private IntPtr PolicyCallbackData;
+    private IntPtr SIPClientData;
+    private UInt32 UIChoice;
+    private UInt32 RevocationChecks;
+    private UInt32 UnionChoice;
+    private IntPtr FileInfoPtr;
+    private UInt32 StateAction;
+    private IntPtr StateData;
+    private string URLReference;
+    private UInt32 ProvFlags;
+    private UInt32 UIContext;
+    public WinTrustData(string filename);
+    protected virtual override void Finalize();
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Platform.WinTrustFileInfo : object {
+    private UInt32 StructSize;
+    private IntPtr FilePath;
+    private IntPtr hFile;
+    private IntPtr pgKnownSubject;
+    public WinTrustFileInfo(string filePath);
+    protected virtual override void Finalize();
+}
+internal enum Microsoft.PackageManagement.Internal.Utility.Platform.WinVerifyTrustResult : Enum {
+    public UInt32 value__;
+    public static WinVerifyTrustResult Success;
+    public static WinVerifyTrustResult ProviderUnknown;
+    public static WinVerifyTrustResult ActionUnknown;
+    public static WinVerifyTrustResult SubjectFormUnknown;
+    public static WinVerifyTrustResult SubjectNotTrusted;
+    public static WinVerifyTrustResult UntrustedRootCert;
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Plugin.AssignableTypeComparer : object {
+    public static AssignableTypeComparer Instance;
+    private static AssignableTypeComparer();
+    public sealed virtual bool Equals(Type x, Type y);
+    public sealed virtual int GetHashCode(Type obj);
+    public static bool IsAssignableOrCompatible(Type x, Type y);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Plugin.DynamicInterface : object {
+    private static Dictionary`2<Types, bool> _isCreatableFromTypesCache;
+    private static Dictionary`2<Types, bool> _isCastableFromTypesCache;
+    private static DynamicInterface();
+    public static TInterface Create(Type[] types);
+    [ExtensionAttribute]
+public static TInterface Create(Type type);
+    [ExtensionAttribute]
+public static object Create(Type tInterface, Type[] types);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Internal.Utility.Plugin.DynamicInterface/<Flatten>d__6")]
+private static IEnumerable`1<object> Flatten(IEnumerable`1<object> items);
+    private static IEnumerable`1<object> Flatten(Object[] items);
+    public static TInterface DynamicCast(Object[] instances);
+    private static object DynamicCast(Type tInterface, Object[] instances);
+    [ExtensionAttribute]
+public static bool CanCreateFrom(Type tInterface, Type[] types);
+    public static bool CanCreateFrom(Type[] types);
+    [ExtensionAttribute]
+public static bool CanDynamicCastFrom(Type tInterface, Type[] types);
+    private static IEnumerable`1<Type> FilterOnMissingDefaultConstructors(Type[] types);
+    private static IEnumerable`1<MethodInfo> GetMissingMethods(Type tInterface, Type[] types);
+    [ExtensionAttribute]
+public static bool CanDynamicCastFrom(Type tInterface, Object[] instances);
+    private static IEnumerable`1<MethodInfo> GetMethodsMissingFromInstances(Type tInterface, Object[] instances);
+    private static IEnumerable`1<MethodInfo> GetMethodsMissingFromInstance(IEnumerable`1<MethodInfo> methods, object instance);
+    private static object CreateProxy(Type tInterface, Object[] instances);
+    [ExtensionAttribute]
+public static IEnumerable`1<Type> FindCompatibleTypes(Assembly assembly);
+}
+[ExtensionAttribute]
+public static class Microsoft.PackageManagement.Internal.Utility.Plugin.DynamicInterfaceExtensions : object {
+    private static Type[] _emptyTypes;
+    private static Dictionary`2<Type, MethodInfo[]> _methodCache;
+    private static Dictionary`2<Type[], MethodInfo[]> _methodCacheForTypes;
+    private static Dictionary`2<Type, FieldInfo[]> _delegateFieldsCache;
+    private static Dictionary`2<Type, PropertyInfo[]> _delegatePropertiesCache;
+    private static Dictionary`2<Type, MethodInfo[]> _requiredMethodsCache;
+    private static Dictionary`2<Type, MethodInfo[]> _virtualMethodsCache;
+    private static Dictionary`2<Assembly, Type[]> _creatableTypesCache;
+    private static DynamicInterfaceExtensions();
+    [ExtensionAttribute]
+public static MethodInfo FindMethod(MethodInfo[] methods, MethodInfo methodSignature);
+    [ExtensionAttribute]
+public static MethodInfo FindMethod(MethodInfo[] methods, Type delegateType);
+    [ExtensionAttribute]
+public static Delegate FindDelegate(FieldInfo[] fields, object actualInstance, MethodInfo signature);
+    [ExtensionAttribute]
+public static Delegate FindDelegate(PropertyInfo[] properties, object actualInstance, MethodInfo signature);
+    [ExtensionAttribute]
+public static Delegate FindDelegate(FieldInfo[] fields, object actualInstance, Type delegateType);
+    [ExtensionAttribute]
+public static Delegate FindDelegate(PropertyInfo[] properties, object actualInstance, Type delegateType);
+    private static bool DoNamesMatchAcceptably(string originalName, string candidateName);
+    private static bool DoSignaturesMatchAcceptably(MethodInfo member, MethodInfo candidate);
+    [ExtensionAttribute]
+internal static MethodInfo[] GetPublicMethods(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo[] GetPublicMethods(Type[] types);
+    [ExtensionAttribute]
+internal static IEnumerable`1<FieldInfo> GetPublicFields(Type type);
+    [ExtensionAttribute]
+internal static FieldInfo[] GetPublicDelegateFields(Type type);
+    [ExtensionAttribute]
+internal static PropertyInfo[] GetPublicDelegateProperties(Type type);
+    [ExtensionAttribute]
+internal static IEnumerable`1<PropertyInfo> GetPublicProperties(Type type);
+    private static IEnumerable`1<MethodInfo> DisambiguateMethodsBySignature(IEnumerable`1[] setsOfMethods);
+    [ExtensionAttribute]
+internal static MethodInfo[] GetVirtualMethods(Type type);
+    [ExtensionAttribute]
+internal static MethodInfo[] GetRequiredMethods(Type type);
+    [ExtensionAttribute]
+internal static ConstructorInfo GetDefaultConstructor(Type t);
+    [ExtensionAttribute]
+internal static string ToSignatureString(MethodInfo method);
+    [ExtensionAttribute]
+public static string NiceName(Type type);
+    [ExtensionAttribute]
+public static string FullNiceName(Type type);
+    internal static Func`2<string, bool> GenerateInstancesSupportsMethod(Object[] actualInstance);
+    internal static Func`2<string, bool> GenerateInstanceSupportsMethod(object actualInstance);
+    [ExtensionAttribute]
+public static TInterface As(object instance);
+    [ExtensionAttribute]
+public static TInterface Extend(object obj, Object[] objects);
+    [ExtensionAttribute]
+public static bool IsDelegate(Type t);
+    [ExtensionAttribute]
+public static bool IsIEnumerableT(Type t);
+    [ExtensionAttribute]
+public static IEnumerable`1<Type> CreatableTypes(Assembly assembly);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Plugin.DynamicType : object {
+    private static int _typeCounter;
+    private static Dictionary`2<string, DynamicType> _proxyClassDefinitions;
+    private TypeBuilder _dynamicType;
+    private HashSet`1<string> _implementedMethods;
+    private List`1<FieldBuilder> _storageFields;
+    private AssemblyBuilder _dynamicAssembly;
+    private string _proxyName;
+    private Type _type;
+    private MethodInfo OnUnhandledException;
+    internal Type Type { get; }
+    private DynamicType(Type interfaceType, OrderedDictionary`2<Type, List`2<MethodInfo, MethodInfo>> methods, List`2<Delegate, MethodInfo> delegates, List`1<MethodInfo> stubs);
+    private static DynamicType();
+    internal static object Create(Type tInterface, OrderedDictionary`2<Type, List`2<MethodInfo, MethodInfo>> instanceMethods, List`2<Delegate, MethodInfo> delegateMethods, List`1<MethodInfo> stubMethods, List`2<Type, object> usedInstances);
+    internal Type get_Type();
+    internal object CreateInstance(List`2<Type, object> instances, List`2<Delegate, MethodInfo> delegates);
+    private TypeBuilder DefineDynamicType(Type interfaceType);
+    internal void DefineConstructor(Type parentClassType);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Plugin.DynamicTypeExtensions : object {
+    private static Type[] _emptyTypes;
+    private static MethodInfo _asMethod;
+    private static MethodInfo AsMethod { get; }
+    private static DynamicTypeExtensions();
+    private static MethodInfo get_AsMethod();
+    [ExtensionAttribute]
+internal static void OverrideInitializeLifetimeService(TypeBuilder dynamicType);
+    [ExtensionAttribute]
+internal static void GenerateIsMethodImplemented(TypeBuilder dynamicType);
+    [ExtensionAttribute]
+internal static void GenerateMethodForDirectCall(TypeBuilder dynamicType, MethodInfo method, FieldBuilder backingField, MethodInfo instanceMethod, MethodInfo onUnhandledException);
+    [ExtensionAttribute]
+internal static ILGenerator CreateMethod(TypeBuilder dynamicType, MethodInfo method);
+    [ExtensionAttribute]
+internal static ILGenerator CreateMethod(TypeBuilder dynamicType, string methodName, Type returnType, Type[] parameterTypes);
+    [ExtensionAttribute]
+internal static void GenerateMethodForDelegateCall(TypeBuilder dynamicType, MethodInfo method, FieldBuilder field, MethodInfo onUnhandledException);
+    [ExtensionAttribute]
+internal static void GenerateStubMethod(TypeBuilder dynamicType, MethodInfo method);
+    private static void SetDefaultReturnValue(ILGenerator il, Type returnType);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Internal.Utility.Plugin.FluentIlExtensions : object {
+    private static OpCode[] _loadArgumentInstruction;
+    private static OpCode[] _storeLocationInstruction;
+    private static OpCode[] _loadLocationInstruction;
+    private static FluentIlExtensions();
+    [ExtensionAttribute]
+public static void EmitLoadArgument(ILGenerator il, int argument);
+    [ExtensionAttribute]
+public static void EmitStoreLocation(ILGenerator il, int argument);
+    [ExtensionAttribute]
+public static void EmitLoadLocation(ILGenerator il, int argument);
+    [ExtensionAttribute]
+private static void EmitIndexedInstruction(ILGenerator il, OpCode[] index, int argument);
+    [ExtensionAttribute]
+public static void Return(ILGenerator il);
+    [ExtensionAttribute]
+public static void LoadLocation(ILGenerator il, int location);
+    [ExtensionAttribute]
+public static void LoadLocation(ILGenerator il, LocalBuilder local);
+    [ExtensionAttribute]
+public static void StoreLocation(ILGenerator il, int location);
+    [ExtensionAttribute]
+public static void StoreLocation(ILGenerator il, LocalBuilder local);
+    [ExtensionAttribute]
+public static void LoadArgument(ILGenerator il, int location);
+    [ExtensionAttribute]
+public static void LoadThis(ILGenerator il);
+    [ExtensionAttribute]
+public static void Call(ILGenerator il, ConstructorInfo constructorInfo);
+    [ExtensionAttribute]
+public static void Call(ILGenerator il, MethodInfo methodInfo);
+    [ExtensionAttribute]
+public static void StoreField(ILGenerator il, FieldInfo field);
+    [ExtensionAttribute]
+public static void LoadField(ILGenerator il, FieldInfo field);
+    [ExtensionAttribute]
+public static void LoadNull(ILGenerator il);
+    [ExtensionAttribute]
+public static void BranchFalse(ILGenerator il, Label label);
+    [ExtensionAttribute]
+public static void CallVirtual(ILGenerator il, MethodInfo methodInfo);
+    [ExtensionAttribute]
+public static void LoadLocalAddress(ILGenerator il, LocalBuilder local);
+    [ExtensionAttribute]
+public static void LoadInt32(ILGenerator il, int value);
+    [ExtensionAttribute]
+public static void InitObject(ILGenerator il, Type t);
+    [ExtensionAttribute]
+public static void LoadFloat(ILGenerator il, float f);
+    [ExtensionAttribute]
+public static void LoadDouble(ILGenerator il, double d);
+    [ExtensionAttribute]
+public static void ConvertToInt64(ILGenerator il);
+    [ExtensionAttribute]
+public static void Box(ILGenerator il, Type type);
+}
+internal class Microsoft.PackageManagement.Internal.Utility.Plugin.RequiredAttribute : Attribute {
+}
+[ExtensionAttribute]
+public static class Microsoft.PackageManagement.Internal.Utility.Plugin.WrappedDelegate : object {
+    [ExtensionAttribute]
+internal static T CreateProxiedDelegate(Delegate delegateInstance);
+    [ExtensionAttribute]
+internal static T CreateProxiedDelegate(object instance, MethodInfo method);
+    [ExtensionAttribute]
+internal static Delegate CreateProxiedDelegate(object instance, MethodInfo method, Type expectedDelegateType);
+    [ExtensionAttribute]
+internal static object CreateWrappedProxy(Type expectedDelegateType, Delegate dlg);
+    public static Type GetFuncOrActionType(IEnumerable`1<Type> argTypes, Type returnType);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Versions.FourPartVersion : ValueType {
+    private ulong _version;
+    public ushort Major { get; }
+    public ushort Minor { get; }
+    public ushort Build { get; }
+    public ushort Revision { get; }
+    public ushort get_Major();
+    public ushort get_Minor();
+    public ushort get_Build();
+    public ushort get_Revision();
+    public sealed virtual int CompareTo(object obj);
+    public sealed virtual int CompareTo(FourPartVersion other);
+    public sealed virtual bool Equals(FourPartVersion other);
+    public virtual string ToString();
+    public static ulong op_Implicit(FourPartVersion version);
+    public ulong ToULong();
+    public static Version op_Implicit(FourPartVersion version);
+    public static string op_Implicit(FourPartVersion version);
+    public static FourPartVersion op_Implicit(Version version);
+    public static FourPartVersion op_Implicit(ulong version);
+    public static FourPartVersion op_Implicit(string version);
+    public static FourPartVersion op_Implicit(DateTime dateAsVersion);
+    private static string ULongToString(ulong version);
+    private static ulong StringToULong(string version);
+    public static TwoPartVersion op_Implicit(FourPartVersion version);
+    public static bool op_Equality(FourPartVersion a, FourPartVersion b);
+    public static bool op_Inequality(FourPartVersion a, FourPartVersion b);
+    public static bool op_LessThan(FourPartVersion a, FourPartVersion b);
+    public static bool op_GreaterThan(FourPartVersion a, FourPartVersion b);
+    public static bool op_LessThanOrEqual(FourPartVersion a, FourPartVersion b);
+    public static bool op_GreaterThanOrEqual(FourPartVersion a, FourPartVersion b);
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+    public static FourPartVersion op_Implicit(FileVersionInfo versionInfo);
+    public static FourPartVersion FromFileVersionInfo(FileVersionInfo versionInfo);
+    public static FourPartVersion Parse(string input);
+    public static bool TryParse(string input, FourPartVersion& ret);
+}
+public class Microsoft.PackageManagement.Internal.Utility.Versions.TwoPartVersion : ValueType {
+    private UInt32 _version;
+    public ushort Major { get; }
+    public ushort Minor { get; }
+    public ushort get_Major();
+    public ushort get_Minor();
+    public sealed virtual int CompareTo(object obj);
+    public sealed virtual int CompareTo(TwoPartVersion other);
+    public sealed virtual bool Equals(TwoPartVersion other);
+    public virtual string ToString();
+    public static UInt32 op_Implicit(TwoPartVersion version);
+    public static string op_Implicit(TwoPartVersion version);
+    public static TwoPartVersion op_Implicit(UInt32 version);
+    public static TwoPartVersion op_Implicit(string version);
+    private static string UIntToString(UInt32 version);
+    private static UInt32 StringToUInt(string version);
+    public static FourPartVersion op_Implicit(TwoPartVersion version);
+    public static bool op_Equality(TwoPartVersion a, TwoPartVersion b);
+    public static bool op_Inequality(TwoPartVersion a, TwoPartVersion b);
+    public static bool op_LessThan(TwoPartVersion a, TwoPartVersion b);
+    public static bool op_GreaterThan(TwoPartVersion a, TwoPartVersion b);
+    public static bool op_LessThanOrEqual(TwoPartVersion a, TwoPartVersion b);
+    public static bool op_GreaterThanOrEqual(TwoPartVersion a, TwoPartVersion b);
+    public virtual bool Equals(object o);
+    public virtual int GetHashCode();
+    public static TwoPartVersion op_Implicit(FileVersionInfo versionInfo);
+    public static TwoPartVersion Parse(string input);
+    public static bool TryParse(string input, TwoPartVersion& ret);
+}
+public class Microsoft.PackageManagement.Packaging.PackageSource : object {
+    internal Dictionary`2<string, string> DetailsCollection;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <Name>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <Location>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private PackageProvider <Provider>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsTrusted>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsRegistered>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsValidated>k__BackingField;
+    public string Name { get; internal set; }
+    public string Location { get; internal set; }
+    public string Source { get; }
+    public string ProviderName { get; }
+    public PackageProvider Provider { get; internal set; }
+    public bool IsTrusted { get; internal set; }
+    public bool IsRegistered { get; internal set; }
+    public bool IsValidated { get; internal set; }
+    public IDictionary`2<string, string> Details { get; }
+    [CompilerGeneratedAttribute]
+public string get_Name();
+    [CompilerGeneratedAttribute]
+internal void set_Name(string value);
+    [CompilerGeneratedAttribute]
+public string get_Location();
+    [CompilerGeneratedAttribute]
+internal void set_Location(string value);
+    public string get_Source();
+    public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public PackageProvider get_Provider();
+    [CompilerGeneratedAttribute]
+internal void set_Provider(PackageProvider value);
+    [CompilerGeneratedAttribute]
+public bool get_IsTrusted();
+    [CompilerGeneratedAttribute]
+internal void set_IsTrusted(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsRegistered();
+    [CompilerGeneratedAttribute]
+internal void set_IsRegistered(bool value);
+    [CompilerGeneratedAttribute]
+public bool get_IsValidated();
+    [CompilerGeneratedAttribute]
+internal void set_IsValidated(bool value);
+    public IDictionary`2<string, string> get_Details();
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Microsoft.PackageManagement.Packaging.SoftwareIdentity : Swidtag {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <FastPackageReference>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private PackageProvider <Provider>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <Source>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <Status>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <SearchKey>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <FullPath>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <PackageFilename>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <FromTrustedSource>k__BackingField;
+    public string FastPackageReference { get; public set; }
+    internal PackageProvider Provider { get; internal set; }
+    public string ProviderName { get; }
+    public string Source { get; internal set; }
+    public string Status { get; internal set; }
+    public string SearchKey { get; internal set; }
+    public string FullPath { get; internal set; }
+    public string PackageFilename { get; internal set; }
+    public bool FromTrustedSource { get; public set; }
+    public string Summary { get; internal set; }
+    public IEnumerable`1<Swidtag> SwidTags { get; }
+    public string CanonicalId { get; }
+    public MetadataIndexer Metadata { get; }
+    internal string InstallationPath { get; }
+    public SoftwareIdentity(XDocument document);
+    [CompilerGeneratedAttribute]
+public string get_FastPackageReference();
+    [CompilerGeneratedAttribute]
+public void set_FastPackageReference(string value);
+    [CompilerGeneratedAttribute]
+internal PackageProvider get_Provider();
+    [CompilerGeneratedAttribute]
+internal void set_Provider(PackageProvider value);
+    public string get_ProviderName();
+    [CompilerGeneratedAttribute]
+public string get_Source();
+    [CompilerGeneratedAttribute]
+internal void set_Source(string value);
+    [CompilerGeneratedAttribute]
+public string get_Status();
+    [CompilerGeneratedAttribute]
+internal void set_Status(string value);
+    [CompilerGeneratedAttribute]
+public string get_SearchKey();
+    [CompilerGeneratedAttribute]
+internal void set_SearchKey(string value);
+    [CompilerGeneratedAttribute]
+public string get_FullPath();
+    [CompilerGeneratedAttribute]
+internal void set_FullPath(string value);
+    [CompilerGeneratedAttribute]
+public string get_PackageFilename();
+    [CompilerGeneratedAttribute]
+internal void set_PackageFilename(string value);
+    [CompilerGeneratedAttribute]
+public bool get_FromTrustedSource();
+    [CompilerGeneratedAttribute]
+public void set_FromTrustedSource(bool value);
+    public string get_Summary();
+    internal void set_Summary(string value);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Packaging.SoftwareIdentity/<get_SwidTags>d__40")]
+public IEnumerable`1<Swidtag> get_SwidTags();
+    public string get_CanonicalId();
+    public MetadataIndexer get_Metadata();
+    internal string get_InstallationPath();
+    internal static string CreateCanonicalId(string provider, string name, string version, string source);
+    public void FetchPackageDetails(IHostApi api);
+    internal void AddMetadataAttribute(string metaKey, string value);
+    protected virtual XElement FindElementWithUniqueId(string elementId);
+    internal string AddMeta(string elementPath);
+    internal string AddLink(Uri referenceUri, string relationship, string mediaType, string ownership, string use, string appliesToMedia, string artifact);
+    internal string AddEntity(string name, string regid, string role, string thumbprint);
+    public string AddMetadataValue(string elementPath, Uri namespace, string name, string value);
+    internal string AddMetadataValue(string elementPath, string name, string value);
+    internal string AddResource(string elementPath, string type);
+    internal string AddProcess(string elementPath, string processName, int pid);
+    internal string AddFile(string elementPath, string fileName, string location, string root, bool isKey, long size, string version);
+    internal string AddDirectory(string elementPath, string directoryName, string location, string root, bool isKey);
+    internal Evidence AddEvidence(DateTime date, string deviceId);
+    public string AddDependency(string providerName, string packageName, string version, string source, string appliesTo);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.CollectionExtensions : object {
+    private static MethodInfo _castMethod;
+    private static MethodInfo _toArrayMethod;
+    private static IDictionary`2<Type, MethodInfo> _castMethods;
+    private static IDictionary`2<Type, MethodInfo> _toArrayMethods;
+    private static CollectionExtensions();
+    [ExtensionAttribute]
+public static bool IsNullOrEmpty(IEnumerable`1<T> collection);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> ConcatSingleItem(IEnumerable`1<T> enumerable, T item);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> WhereNotNull(IEnumerable`1<T> enumerable);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Provider.Utility.CollectionExtensions/<ToIEnumerable>d__7`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<T> ToIEnumerable(IEnumerator`1<T> enumerator);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> Concat(IEnumerable`1<T> set1, IEnumerator`1<T> set2);
+    [ExtensionAttribute]
+public static IEnumerable`1<T> SingleItemAsEnumerable(T item);
+    [ExtensionAttribute]
+public static void AddRangeLocked(List`1<T> list, IEnumerable`1<T> items);
+    [ExtensionAttribute]
+public static void SerialForEach(IEnumerable`1<T> enumerable, Action`1<T> action);
+    [ExtensionAttribute]
+public static IEnumerable`1<Task> AsyncForEach(IEnumerable`1<T> enumerable, Action`1<T> action);
+    [ExtensionAttribute]
+public static void WaitAll(IEnumerable`1<Task> tasks);
+    [ExtensionAttribute]
+public static int IndexWhere(IEnumerable`1<T> source, Func`3<T, int, bool> predicate);
+    [ExtensionAttribute]
+public static int IndexWhere(IEnumerable`1<T> source, Func`2<T, bool> predicate);
+}
+public class Microsoft.PackageManagement.Provider.Utility.DependencyVersion : object {
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private SemanticVersion <MinVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsMinInclusive>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private SemanticVersion <MaxVersion>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private bool <IsMaxInclusive>k__BackingField;
+    public SemanticVersion MinVersion { get; public set; }
+    public bool IsMinInclusive { get; public set; }
+    public SemanticVersion MaxVersion { get; public set; }
+    public bool IsMaxInclusive { get; public set; }
+    [CompilerGeneratedAttribute]
+public SemanticVersion get_MinVersion();
+    [CompilerGeneratedAttribute]
+public void set_MinVersion(SemanticVersion value);
+    [CompilerGeneratedAttribute]
+public bool get_IsMinInclusive();
+    [CompilerGeneratedAttribute]
+public void set_IsMinInclusive(bool value);
+    [CompilerGeneratedAttribute]
+public SemanticVersion get_MaxVersion();
+    [CompilerGeneratedAttribute]
+public void set_MaxVersion(SemanticVersion value);
+    [CompilerGeneratedAttribute]
+public bool get_IsMaxInclusive();
+    [CompilerGeneratedAttribute]
+public void set_IsMaxInclusive(bool value);
+    public static DependencyVersion ParseDependencyVersion(string value);
+    public virtual string ToString();
+}
+public class Microsoft.PackageManagement.Provider.Utility.DependencyVersionComparerBasedOnMinVersion : object {
+    public sealed virtual int Compare(DependencyVersion dep1, DependencyVersion dep2);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.EnumerableExtensions : object {
+    [ExtensionAttribute]
+public static MutableEnumerable`1<T> ReEnumerable(IEnumerable`1<T> collection);
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Provider.Utility.EnumerableExtensions/<FilterWithFinalizer>d__1`1")]
+[ExtensionAttribute]
+public static IEnumerable`1<TSource> FilterWithFinalizer(IEnumerable`1<TSource> source, Func`2<TSource, bool> predicate, Action`1<TSource> onFilterAction);
+}
+internal class Microsoft.PackageManagement.Provider.Utility.EqualityComparer`1 : object {
+    private Func`3<T, T, bool> _compareFn;
+    private Func`2<T, int> _hashFn;
+    public EqualityComparer`1(Func`3<T, T, bool> compareFn, Func`2<T, int> hashFn);
+    public EqualityComparer`1(Func`3<T, T, bool> compareFn);
+    public sealed virtual bool Equals(T x, T y);
+    public sealed virtual int GetHashCode(T obj);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.FilesystemExtensions : object {
+    private static Char[] _pathCharacters;
+    private static int _counter;
+    public static string OriginalTempFolder;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private static string <TempPath>k__BackingField;
+    public static string TempPath { get; private set; }
+    public static int Counter { get; }
+    public static string CounterHex { get; }
+    private static FilesystemExtensions();
+    [CompilerGeneratedAttribute]
+public static string get_TempPath();
+    [CompilerGeneratedAttribute]
+private static void set_TempPath(string value);
+    public static int get_Counter();
+    public static string get_CounterHex();
+    [ExtensionAttribute]
+public static bool LooksLikeAFilename(string text);
+    [ExtensionAttribute]
+public static void TryHardToDelete(string location);
+    [ExtensionAttribute]
+public static string GenerateTemporaryFilename(string filename);
+    [ExtensionAttribute]
+public static string CanonicalizePath(string path, bool isPotentiallyRelativePath);
+    [ExtensionAttribute]
+public static Byte[] ReadBytes(string path, int maxLength);
+    [ExtensionAttribute]
+public static bool FileExists(string path);
+    [ExtensionAttribute]
+public static bool DirectoryExists(string path);
+    [ExtensionAttribute]
+public static string MakeSafeFileName(string input);
+}
+public static class Microsoft.PackageManagement.Provider.Utility.FileUtility : object {
+    public static string GetTempFileFullPath(string fileExtension);
+    public static string MakePackageFileName(bool excludeVersion, string packageName, string version, string fileExtension);
+    public static string MakePackageDirectoryName(bool excludeVersion, string destinationPath, string packageName, string version);
+    public static void CopyDirectory(string source, string dest, bool copySubDirs);
+    public static void DeleteDirectory(string fullPath, bool recursive, bool isThrow);
+    public static void DeleteFile(string fullPath, bool isThrow);
+    public static IEnumerable`1<string> GetFiles(string fullPath, string filter, bool recursive);
+    public static IEnumerable`1<string> GetDirectories(string fullPath);
+    public static DateTimeOffset GetLastModified(string fullPath);
+    private static void DeleteFile(string path);
+    private static void MakeFileWritable(string path);
+    private static void DeleteDirectory(string fullPath, bool recursive);
+    private static void DoSafeAction(Action action, bool isThrow);
+    private static void Attempt(Action action, int retries, int delayBeforeRetry);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.HttpContentExtensions : object {
+    [AsyncStateMachineAttribute("Microsoft.PackageManagement.Provider.Utility.HttpContentExtensions/<ReadAsFileAsync>d__0")]
+[DebuggerStepThroughAttribute]
+[ExtensionAttribute]
+internal static Task`1<long> ReadAsFileAsync(HttpContent content, string fileName);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.LinqExtensions : object {
+    [ExtensionAttribute]
+internal static Dictionary`2<TKey, TElement> ToDictionaryNicely(IEnumerable`1<TSource> source, Func`2<TSource, TKey> keySelector, Func`2<TSource, TElement> elementSelector, IEqualityComparer`1<TKey> comparer);
+    [ExtensionAttribute]
+internal static TValue AddOrSet(IDictionary`2<TKey, TValue> dictionary, TKey key, TValue value);
+    [ExtensionAttribute]
+internal static TSource SafeAggregate(IEnumerable`1<TSource> source, Func`3<TSource, TSource, TSource> func);
+}
+internal abstract class Microsoft.PackageManagement.Provider.Utility.MutableEnumerable`1 : object {
+    private List`1<T> _list;
+    protected List`1<T> List { get; }
+    protected List`1<T> get_List();
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Provider.Utility.MutableEnumerable`1/<GetEnumerators>d__3")]
+public IEnumerable`1<IEnumerator`1<T>> GetEnumerators(int copies);
+    protected abstract virtual bool ItemExists(int index);
+    public sealed virtual IEnumerator`1<T> GetEnumerator();
+    private sealed virtual override IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.ObjectExtensions : object {
+    [ExtensionAttribute]
+internal static string ToStringSafe(object obj);
+}
+internal static class Microsoft.PackageManagement.Provider.Utility.PathUtility : object {
+    internal static string EnsureTrailingSlash(string path);
+    private static string EnsureTrailingCharacter(string path, char trailingCharacter);
+    internal static HttpResponseMessage GetHttpResponse(HttpClient httpClient, string query, Func`1<bool> isCanceled, Action`2<string, int> logRetry, Action`1<string> verbose, Action`1<string> debug);
+    internal static HttpResponseMessage GetHttpResponse(HttpClient httpClient, string query, Func`1<bool> isCanceled, Action`2<string, int> logRetry, Action`1<string> verbose, Action`1<string> debug, int remainingTry);
+    internal static string UriCombine(string query, string append);
+    internal static string SecureStringToString(SecureString secure);
+    internal static NetworkCredential GetNetworkCredential(string username, SecureString password);
+    internal static HttpClient GetHttpClientHelper(string username, SecureString password, IWebProxy webProxy);
+}
+[DefaultMemberAttribute("Item")]
+internal class Microsoft.PackageManagement.Provider.Utility.ReEnumerable`1 : MutableEnumerable`1<T> {
+    private IEnumerator`1<T> _sourceIterator;
+    private IEnumerable`1<T> _source;
+    public T Item { get; }
+    public int Count { get; }
+    public ReEnumerable`1(IEnumerable`1<T> source);
+    public ReEnumerable`1(IEnumerator`1<T> sourceIterator);
+    public T get_Item(int index);
+    public int get_Count();
+    protected virtual bool ItemExists(int index);
+    public MutableEnumerable`1<T> Concat(IEnumerable`1<T> additionalItems);
+}
+[TypeConverterAttribute("Microsoft.PackageManagement.Provider.Utility.SemanticVersionTypeConverter")]
+public class Microsoft.PackageManagement.Provider.Utility.SemanticVersion : object {
+    private static RegexOptions _flags;
+    internal static string AllowFourPartsVersion;
+    internal static string ThreePartsVersion;
+    internal static string ReleasePattern;
+    internal static string BuildPattern;
+    internal static string SemanticVersionPattern;
+    private static Regex _semanticVersionRegex;
+    private static Regex _strictSemanticVersionRegex;
+    private string _originalString;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private Version <Version>k__BackingField;
+    [CompilerGeneratedAttribute]
+[DebuggerBrowsableAttribute("0")]
+private string <SpecialVersion>k__BackingField;
+    public Version Version { get; private set; }
+    public string SpecialVersion { get; private set; }
+    public SemanticVersion(string version);
+    public SemanticVersion(int major, int minor, int build, int revision);
+    public SemanticVersion(int major, int minor, int build, string specialVersion);
+    public SemanticVersion(Version version);
+    public SemanticVersion(Version version, string specialVersion);
+    private SemanticVersion(Version version, string specialVersion, string originalString);
+    public SemanticVersion(SemanticVersion semVer);
+    private static SemanticVersion();
+    [CompilerGeneratedAttribute]
+public Version get_Version();
+    [CompilerGeneratedAttribute]
+private void set_Version(Version value);
+    [CompilerGeneratedAttribute]
+public string get_SpecialVersion();
+    [CompilerGeneratedAttribute]
+private void set_SpecialVersion(string value);
+    public String[] GetOriginalVersionComponents();
+    private static String[] SplitAndPadVersionString(string version);
+    public static SemanticVersion Parse(string version);
+    public static bool TryParse(string version, SemanticVersion& value);
+    public static bool TryParseStrict(string version, SemanticVersion& value);
+    private static bool TryParseInternal(string version, Regex regex, SemanticVersion& semVer);
+    private static Version NormalizeVersionValue(Version version);
+    public sealed virtual int CompareTo(object obj);
+    public sealed virtual int CompareTo(SemanticVersion other);
+    public static bool op_Equality(SemanticVersion version1, SemanticVersion version2);
+    public static bool op_Inequality(SemanticVersion version1, SemanticVersion version2);
+    public static bool op_LessThan(SemanticVersion version1, SemanticVersion version2);
+    public static bool op_LessThanOrEqual(SemanticVersion version1, SemanticVersion version2);
+    public static bool op_GreaterThan(SemanticVersion version1, SemanticVersion version2);
+    public static bool op_GreaterThanOrEqual(SemanticVersion version1, SemanticVersion version2);
+    public virtual string ToString();
+    public sealed virtual bool Equals(SemanticVersion other);
+    public virtual bool Equals(object obj);
+    public virtual int GetHashCode();
+}
+public class Microsoft.PackageManagement.Provider.Utility.SemanticVersionTypeConverter : TypeConverter {
+    public virtual bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType);
+    public virtual object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.StringExtensions : object {
+    [ExtensionAttribute]
+internal static string SafeTrim(string value);
+    [ExtensionAttribute]
+internal static string ToBase64(string text);
+    [ExtensionAttribute]
+internal static string FromBase64(string text);
+    [ExtensionAttribute]
+internal static string FixVersion(string versionString);
+    [ExtensionAttribute]
+private static Byte[] ToByteArray(string text);
+    [ExtensionAttribute]
+private static string ToUtf8String(IEnumerable`1<byte> bytes);
+    [ExtensionAttribute]
+public static bool EqualsIgnoreCase(string str, string str2);
+    [ExtensionAttribute]
+public static bool IsTrue(string text);
+    [ExtensionAttribute]
+public static bool CompareVersion(string version1, string version2);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.VersionExtensions : object {
+    [IteratorStateMachineAttribute("Microsoft.PackageManagement.Provider.Utility.VersionExtensions/<GetComparableVersionStrings>d__0")]
+[ExtensionAttribute]
+internal static IEnumerable`1<string> GetComparableVersionStrings(SemanticVersion version);
+}
+[ExtensionAttribute]
+internal static class Microsoft.PackageManagement.Provider.Utility.XElementExtensions : object {
+    [ExtensionAttribute]
+internal static IEnumerable`1<XElement> ElementsNoNamespace(XContainer container, string localName);
+    [ExtensionAttribute]
+internal static string GetOptionalAttributeValue(XElement element, string localName, string namespaceName);
+}
+public static class Microsoft.PackageManagement.Provider.Utility.XmlUtility : object {
+    public static XDocument LoadSafe(string filePath);
+    public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace);
+    private static XmlReaderSettings CreateSafeSettings(bool ignoreWhiteSpace);
+}
